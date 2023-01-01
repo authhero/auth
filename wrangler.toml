@@ -1,0 +1,11 @@
+# Add your worker name here
+name = "tsoa-worker-template"
+main = "src/server.ts"
+compatibility_date = "2022-07-06"
+
+# Add your account_id here..
+account_id = "bfbba687e68f84266013cc6dd14759c9"
+
+kv_namespaces = []
+
+[vars]
