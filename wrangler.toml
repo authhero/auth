@@ -1,11 +1,18 @@
 # Add your worker name here
-name = "tsoa-worker-template"
+name = "cloudworker-auth"
 main = "src/server.ts"
 compatibility_date = "2022-07-06"
 
 # Add your account_id here..
-account_id = "bfbba687e68f84266013cc6dd14759c9"
+account_id = "0c8c22bdcd98c3dc6a35190650ef7906"
 
 kv_namespaces = []
 
 [vars]
+
+[durable_objects]
+bindings = [{name = "USER", class_name = "User"}]
+
+[[migrations]]
+tag = "v1" # Should be unique for each entry
+new_classes = ["User"]

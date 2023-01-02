@@ -1,6 +1,6 @@
 import { Router, bodyparser } from "cloudworker-router";
 
-import { Env } from "./models/Env";
+import { Env } from "./types/Env";
 import { RegisterRoutes } from "../build/routes";
 import swagger from "../build/swagger.json";
 import packageJson from "../package.json";

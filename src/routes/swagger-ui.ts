@@ -1,5 +1,5 @@
 import { Context } from "cloudworker-router";
-import { Env } from "../models/Env";
+import { Env } from "../types/Env";
 
 function getSwaggerHtml() {
   return `<!-- HTML for static distribution bundle build -->
