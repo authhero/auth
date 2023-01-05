@@ -34,14 +34,27 @@ The tokens are exposed at: `/.well-known/jwks.json`
 ## TODO-list
 
 – [x] Exposing JWKS-keys
+
 – [x] Register / Login with email and password
+
 – [ ] Using bcrypt for password
+
 – [ ] Support passwordless with email
+
 – [ ] Password reset flows
+
 – [ ] Sync users to D1 database for queries
+
 – [ ] Logs per user
+
 – [ ] Rate-limits
+
 – [ ] Social logins
+
 – [ ] 2-factor auth
+
+– [ ] Refresh tokens flow
+
 – [ ] Client Credentials flow
+
 – [ ] PKCE

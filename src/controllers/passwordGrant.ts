@@ -13,9 +13,7 @@ export default async function passwordGrant(
 
   const response = await user.validatePassword(params.password);
 
-  console.log("Response: " + JSON.stringify(response));
-
-  if (!response) {
+  if (!response.ok) {
     return null;
   }
 
