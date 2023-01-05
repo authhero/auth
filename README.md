@@ -37,7 +37,7 @@ The tokens are exposed at: `/.well-known/jwks.json`
 
 – [x] Register / Login with email and password
 
-– [ ] Using bcrypt for password
+– [x] Using bcrypt for password
 
 – [ ] Support passwordless with email
 
