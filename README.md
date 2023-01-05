@@ -10,8 +10,7 @@ This is oauth2 compatible auth solution with support for the following login met
 It's based on the following tech stack
 
 - Cloudflare workers (with tsoa)
-- Durable objects, KV and R2 for storage
-- Queues for storing logs to R2
+- Durable objects and KV for storage
 - Mailchannels for passoword reset and code/magic links
 
 It's API only, so bring your own UI :)
@@ -28,4 +27,21 @@ The tokens are exposed at: `/.well-known/jwks.json`
 - Run `yarn` to install the dependencies
 - Run `yarn dev` to start a debug session. This builds the paths and runs `wrangler dev`.
 
-## Building blocks
+## Limitations
+
+- Currently, there is only support for one client
+
+## TODO-list
+
+– [x] Exposing JWKS-keys
+– [x] Register / Login with email and password
+– [ ] Using bcrypt for password
+– [ ] Support passwordless with email
+– [ ] Password reset flows
+– [ ] Sync users to D1 database for queries
+– [ ] Logs per user
+– [ ] Rate-limits
+– [ ] Social logins
+– [ ] 2-factor auth
+– [ ] Client Credentials flow
+– [ ] PKCE

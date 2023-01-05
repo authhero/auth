@@ -1,8 +1,8 @@
 // src/users/usersController.ts
 import { Body, Controller, Post, Request, Route, Tags } from "tsoa-workers";
-import { nanoid } from "nanoid";
 import sendEmail from "../../services/email";
 import { RequestWithContext } from "../../types/RequestWithContext";
+import UserClient from "../../models/UserClient";
 
 export interface PasssworlessOptions {
   client_id: string;
@@ -24,23 +24,10 @@ export class PasswordlessController extends Controller {
     @Body() body: PasssworlessOptions,
     @Request() request: RequestWithContext
   ): Promise<string> {
-    const { env } = request.ctx;
+    const { ctx } = request;
 
-    const code = nanoid();
-
-    const id = env.USER.idFromName(body.email);
-    const obj = request.ctx.env.USER.get(id);
-    const response = await obj.fetch(request.ctx.request.url, {
-      method: "PUT",
-      body: JSON.stringify({
-        code,
-        token: "dummy token",
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to persist code");
-    }
+    const user = new UserClient(ctx, body.email);
+    const { code } = await user.createCode();
 
     await sendEmail({
       to: [{ email: body.email, name: "" }],

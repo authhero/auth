@@ -10,8 +10,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@sagi.io/workers-jwt": "^0.0.23",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",
     "cloudworker-router": "4.1.0",
+    "itty-durable": "^1.6.0",
     "kysely": "^0.22.0",
     "kysely-d1": "^0.0.6",
     "nanoid": "^4.0.0",
@@ -20,8 +23,10 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20221111.1",
+    "@types/bcryptjs": "^2.4.2",
     "@types/node": "^18.11.18",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "wrangler": "^2.6.2"
   }
 }
