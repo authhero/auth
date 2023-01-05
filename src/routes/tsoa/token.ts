@@ -1,6 +1,8 @@
 import { TokenResponse, TokenParams, GrantType } from "../../types/Token";
 import { Body, Controller, Post, Request, Route, Tags } from "tsoa-workers";
 import { RequestWithContext } from "../../types/RequestWithContext";
+import UserClient from "../../models/UserClient";
+import passwordGrant from "../..//controllers/passwordGrant";
 
 @Route("")
 @Tags("token")
@@ -13,7 +15,7 @@ export class TokenRoutes extends Controller {
     @Body() body: TokenParams,
     @Request() request: RequestWithContext
   ): Promise<TokenResponse | string> {
-    const { env } = request.ctx;
+    const { ctx } = request;
 
     let tokenResponse: TokenResponse | null = null;
 
@@ -24,18 +26,16 @@ export class TokenRoutes extends Controller {
         break;
       case GrantType.ClientCredential:
         break;
+      case GrantType.Password:
+        tokenResponse = await passwordGrant(ctx, body);
+        break;
       case GrantType.Passwordless:
-        const id = env.USER.idFromName(body.username);
-        const response = await request.ctx.env.USER.get(id).fetch(
-          request.ctx.request.url
-        );
-        console.log("status: " + response.status);
-        const tmp = await response.text();
-        console.log("te: " + tmp);
+        const user = new UserClient(ctx, body.username);
 
-        const user: any = JSON.parse(tmp);
+        const valid = await user.validateCode(body.otp);
+
         tokenResponse = {
-          access_token: user.token,
+          access_token: valid.toString(),
           token_type: "bearer",
           expires_in: 86400,
         };

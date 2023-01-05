@@ -3,13 +3,15 @@ export enum GrantType {
   AuthorizationCode = "authorization_code",
   ClientCredential = "client_credentials",
   Passwordless = "passwordless",
+  Password = "password",
 }
 
 export type TokenParams =
   | RefreshTokenGrantTypeParams
   | AuthorizationCodeGrantTypeParams
   | ClientCredentialGrantTypeParams
-  | PasswordlessGrantTypeParams;
+  | PasswordlessGrantTypeParams
+  | PasswordGrantTypeParams;
 
 export interface RefreshTokenGrantTypeParams {
   grant_type: GrantType.RefreshToken;
@@ -39,6 +41,15 @@ export interface PasswordlessGrantTypeParams {
   otp: string;
   realm: "email";
   audience?: string;
+}
+
+export interface PasswordGrantTypeParams {
+  grant_type: GrantType.Password;
+  username: string;
+  password: string;
+  client_id: string;
+  audience?: string;
+  scope?: string;
 }
 
 export interface TokenResponse {
