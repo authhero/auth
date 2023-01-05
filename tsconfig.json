@@ -5,6 +5,7 @@
     "target": "es2020",
     "strict": true,
     "resolveJsonModule": true,
+    "experimentalDecorators": true,
     // The following three options are set for
     "allowJs": true,
     "checkJs": false,
