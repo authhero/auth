@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import generateOTP from "../utils/otp";
 import { IUser, RegisterParams, StatusResponse } from "../types/IUser";
 
@@ -49,7 +50,7 @@ export class User implements DurableObject, IUser {
       };
     }
 
-    this.userStorage.password = params.password;
+    this.userStorage.password = bcrypt.hashSync(params.password, 10);
 
     await this.saveUserStorage();
 
@@ -68,10 +69,10 @@ export class User implements DurableObject, IUser {
   }
 
   async validatePassword(password: string): Promise<StatusResponse> {
-    console.log("password: " + password);
-    console.log("password2: " + this.userStorage.password);
     return {
-      ok: password === this.userStorage.password,
+      ok:
+        !!this.userStorage.password &&
+        bcrypt.compareSync(password, this.userStorage.password),
     };
   }
 
