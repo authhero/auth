@@ -35,6 +35,8 @@ export class User implements DurableObject, IUser {
     this.userStorage.code = generateOTP();
     this.userStorage.codeExpireAt = Date.now() + 300 * 1000;
 
+    await this.saveUserStorage();
+
     return {
       code: this.userStorage.code,
       expireAt: this.userStorage.codeExpireAt,
@@ -60,19 +62,29 @@ export class User implements DurableObject, IUser {
   }
 
   async validateCode(code: string): Promise<StatusResponse> {
+    const ok =
+      code === this.userStorage.code &&
+      this.userStorage.codeExpireAt !== undefined &&
+      Date.now() < this.userStorage.codeExpireAt;
+
+    if (ok) {
+      // Remove once used
+      delete this.userStorage.code;
+      await this.saveUserStorage();
+    }
+
     return {
-      ok:
-        code === this.userStorage.code &&
-        this.userStorage.codeExpireAt !== undefined &&
-        Date.now() < this.userStorage.codeExpireAt,
+      ok,
     };
   }
 
   async validatePassword(password: string): Promise<StatusResponse> {
+    const ok =
+      !!this.userStorage.password &&
+      bcrypt.compareSync(password, this.userStorage.password);
+
     return {
-      ok:
-        !!this.userStorage.password &&
-        bcrypt.compareSync(password, this.userStorage.password),
+      ok,
     };
   }
 
@@ -96,6 +108,7 @@ export class User implements DurableObject, IUser {
             break;
           case "validateCode":
             result = await this.validateCode(body.code);
+            console.log("Result: " + JSON.stringify(result));
             break;
           case "validatePassword":
             result = await this.validatePassword(body.password);

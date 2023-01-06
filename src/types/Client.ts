@@ -3,4 +3,6 @@ export interface Client {
   name: string;
   audience: string;
   issuer: string;
+  senderEmail: string;
+  senderName: string;
 }
