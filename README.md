@@ -39,7 +39,7 @@ The tokens are exposed at: `/.well-known/jwks.json`
 
 – [x] Using bcrypt for password
 
-– [ ] Support passwordless with email
+– [x] Support passwordless with email (code)
 
 – [ ] Password reset flows
 
@@ -50,6 +50,8 @@ The tokens are exposed at: `/.well-known/jwks.json`
 – [ ] Rate-limits
 
 – [ ] Social logins
+
+– [ ] Support passwordless with email (magic link)
 
 – [ ] 2-factor auth
 

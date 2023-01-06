@@ -9,4 +9,6 @@ export const client: Client = {
   name: "Default Client",
   audience: "https://exemple.com",
   issuer: "https://auth.exemple.com",
+  senderEmail: "markus@ahlstrand.es",
+  senderName: "Auth",
 };

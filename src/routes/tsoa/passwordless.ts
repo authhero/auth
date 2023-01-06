@@ -3,6 +3,7 @@ import { Body, Controller, Post, Request, Route, Tags } from "tsoa-workers";
 import sendEmail from "../../services/email";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import UserClient from "../../models/UserClient";
+import { client } from "../../constants";
 
 export interface PasssworlessOptions {
   client_id: string;
@@ -29,16 +30,17 @@ export class PasswordlessController extends Controller {
     const user = new UserClient(ctx, body.email);
     const { code } = await user.createCode();
 
+    const message = `Here's your login code: ${code}`;
     await sendEmail({
       to: [{ email: body.email, name: "" }],
       from: {
-        email: "markus@sesamy.com",
-        name: "Markus Test",
+        email: client.senderEmail,
+        name: client.senderName,
       },
       content: [
         {
           type: "text/plain",
-          value: `Here's your login code: ${code}`,
+          value: message,
         },
       ],
       subject: "Login code",
