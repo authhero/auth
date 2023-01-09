@@ -1,11 +1,15 @@
 # Cloudworker auth
 
-This is oauth2 compatible auth solution with support for the following login methods:
+This is work in progress and not yet ready for even testing.
+
+The plan is to make a oauth2 compatible auth solution with support for the following login methods:
 
 - Email/password
 - Social (google, facebook, apple)
 - Magic link
 - Code
+
+After having being burnt by several freemium model auth solutions that get too expensive once you start growing the user base I wanted a solution where you easily can eject and host it straight on Cloudflare.
 
 It's based on the following tech stack
 

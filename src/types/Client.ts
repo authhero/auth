@@ -5,4 +5,5 @@ export interface Client {
   issuer: string;
   senderEmail: string;
   senderName: string;
+  loginBaseUrl: string;
 }
