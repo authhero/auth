@@ -17,6 +17,9 @@ export class TokenRoutes extends Controller {
   ): Promise<TokenResponse | string> {
     const { ctx } = request;
 
+    // Add wildcard cors for now. Check allowed origins on client
+    this.setHeader("access-control-allow-origin", "*");
+
     let tokenResponse: TokenResponse | null = null;
 
     switch (body.grant_type) {

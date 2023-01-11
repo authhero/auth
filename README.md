@@ -9,7 +9,7 @@ The plan is to make a oauth2 compatible auth solution with support for the follo
 - Magic link
 - Code
 
-After having being burnt by several freemium model auth solutions that get too expensive once you start growing the user base I wanted a solution where you easily can eject and host it straight on Cloudflare.
+After having been burnt by several freemium model auth solutions that get too expensive once you start growing the user base I wanted a solution where you easily can eject and host it straight on Cloudflare.
 
 It's based on the following tech stack
 
@@ -64,3 +64,5 @@ The tokens are exposed at: `/.well-known/jwks.json`
 – [ ] Client Credentials flow
 
 – [ ] PKCE
+
+- [ ] Silent authentication

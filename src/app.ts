@@ -33,3 +33,5 @@ app.post("/create-key", async (ctx: Context<Env>) => {
 app.use(bodyparser);
 
 RegisterRoutes(app);
+
+app.use(app.allowedMethods());
