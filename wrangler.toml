@@ -11,6 +11,11 @@ kv_namespaces = [
 
 [vars]
 
+[[r2_buckets]]
+binding = 'AUTH_TEMPLATES'
+preview_bucket_name = 'auth-templates'
+bucket_name = 'auth-templates'
+
 [durable_objects]
 bindings = [{name = "USER", class_name = "User"}]
 

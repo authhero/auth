@@ -3,4 +3,5 @@ export interface Env {
   USER: DurableObjectNamespace;
   AUTH_DB: D1Database;
   CERTIFICATES: KVNamespace;
+  AUTH_TEMPLATES: R2Bucket;
 }

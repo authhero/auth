@@ -1,5 +1,5 @@
 // src/users/usersController.ts
-import { Body, Controller, Post, Request, Route, Tags } from "tsoa-workers";
+import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import sendEmail from "../../services/email";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import UserClient from "../../models/UserClient";

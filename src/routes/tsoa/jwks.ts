@@ -1,5 +1,5 @@
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { Controller, Get, Request, Route, Tags } from "tsoa-workers";
+import { Controller, Get, Request, Route, Tags } from "@tsoa/runtime";
 import { CERTIFICATE_EXPIRE_IN_SECONDS, client } from "../../constants";
 import { JwksKeys } from "../../types/jwks";
 
