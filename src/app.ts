@@ -6,6 +6,7 @@ import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import rotateKeys from "./routes/rotate-keys";
+import { serve } from "./routes/login";
 
 export const app = new Router<Env>();
 
@@ -24,62 +25,7 @@ app.get("/spec", async () => {
 
 app.get("/docs", swaggerUi);
 
-app.get("/login", async (ctx: Context<Env>) => {
-  const response = await ctx.env.AUTH_TEMPLATES.get("login.html");
-
-  if (!response) {
-    return new Response("Not Found", {
-      status: 404,
-      headers: {
-        "content-type": "text/plain",
-      },
-    });
-  }
-
-  return new Response(await response.text(), {
-    headers: {
-      "content-type": "text/html",
-    },
-  });
-});
-
-app.get("/register", async (ctx: Context<Env>) => {
-  const response = await ctx.env.AUTH_TEMPLATES.get("register.html");
-
-  if (!response) {
-    return new Response("Not Found", {
-      status: 404,
-      headers: {
-        "content-type": "text/plain",
-      },
-    });
-  }
-
-  return new Response(await response.text(), {
-    headers: {
-      "content-type": "text/html",
-    },
-  });
-});
-
-app.get("/style.css", async (ctx: Context<Env>) => {
-  const response = await ctx.env.AUTH_TEMPLATES.get("style.css");
-
-  if (!response) {
-    return new Response("Not Found", {
-      status: 404,
-      headers: {
-        "content-type": "text/plain",
-      },
-    });
-  }
-
-  return new Response(await response.text(), {
-    headers: {
-      "content-type": "text/css",
-    },
-  });
-});
+app.get("/u/:file*", serve);
 
 app.post("/create-key", async (ctx: Context<Env>) => {
   await rotateKeys(ctx.env);
