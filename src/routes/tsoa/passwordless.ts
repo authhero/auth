@@ -2,7 +2,7 @@
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import sendEmail from "../../services/email";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import UserClient from "../../models/UserClient";
+import { User } from "../../models/User";
 import { client } from "../../constants";
 
 export interface PasssworlessOptions {
@@ -27,8 +27,8 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = new UserClient(ctx, body.email);
-    const { code } = await user.createCode();
+    const user = User.getInstance(ctx.env.USER, body.email);
+    const { code } = await user.createCode.query();
 
     const message = `Here's your login code: ${code}`;
     await sendEmail({

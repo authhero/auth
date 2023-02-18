@@ -1,6 +1,6 @@
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
-import UserClient from "../models/UserClient";
+import { User } from "../models/User";
 import { PasswordGrantTypeParams, TokenResponse } from "../types/Token";
 import { TokenFactory } from "../services/token-factory";
 import { getCertificate } from "../models/Certificate";
@@ -9,12 +9,12 @@ export default async function passwordGrant(
   ctx: Context<Env>,
   params: PasswordGrantTypeParams
 ): Promise<TokenResponse | null> {
-  const user = new UserClient(ctx, params.username);
+  const user = User.getInstance(ctx.env.USER, params.username);
 
-  const response = await user.validatePassword(params.password);
+  const validatePassword = await user.validatePassword.query(params.password);
 
-  if (!response.ok) {
-    return null;
+  if (!validatePassword) {
+    throw new Error("Incorrect password");
   }
 
   const certificate = await getCertificate(ctx);

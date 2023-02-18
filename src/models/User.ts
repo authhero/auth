@@ -1,132 +1,94 @@
+import { createProxy } from "trpc-durable-objects";
 import bcrypt from "bcryptjs";
-import generateOTP from "../utils/otp";
-import { IUser, RegisterParams, StatusResponse } from "../types/IUser";
+import { initTRPC } from "@trpc/server";
+import { z } from "zod";
+import { Context } from "trpc-durable-objects";
 
-interface UserStorage {
+import generateOTP from "../utils/otp";
+
+interface Code {
   code?: string;
   codeExpireAt?: number;
   password?: string;
 }
 
-/**
- * Durable object to create a consistent storage
- */
-export class User implements DurableObject, IUser {
-  state: DurableObjectState;
-  userStorage: UserStorage = {};
+const t = initTRPC.context<Context>().create();
 
-  constructor(state: DurableObjectState) {
-    this.state = state;
+const publicProcedure = t.procedure;
 
-    this.state.blockConcurrencyWhile(async () => {
-      const userStorage = await this.state.storage.get<UserStorage>(
-        "userStorage"
+const router = t.router;
+
+enum StorageKeys {
+  passwordHash = "password-hash",
+}
+
+const userRouter = router({
+  createCode: publicProcedure
+    .input(z.string().nullish())
+    .query(async ({ input, ctx }) => {
+      const result = {
+        code: generateOTP(),
+        expireAt: Date.now() + 300 * 1000,
+      };
+
+      await ctx.state.storage.put("code", JSON.stringify(result));
+
+      return result;
+    }),
+  register: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    const passwordHash = await ctx.state.storage.get<string>(
+      StorageKeys.passwordHash
+    );
+
+    if (passwordHash) {
+      throw new Error("Conflict");
+    }
+
+    await ctx.state.storage.put("password-hash", bcrypt.hashSync(input, 10));
+  }),
+  verfifyCode: publicProcedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      const codeJSON = await ctx.state.storage.get<string>("code");
+
+      // Verify code
+    }),
+  validateCode: publicProcedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      const loginCode = await ctx.state.storage.get<Code>("login-code");
+
+      if (!loginCode) {
+        throw new Error("Code not found");
+      }
+
+      const ok =
+        input === loginCode.code &&
+        loginCode.codeExpireAt !== undefined &&
+        Date.now() < loginCode.codeExpireAt;
+
+      if (!ok) {
+        throw new Error("Unauthorized");
+      }
+
+      // Remove once used
+      await ctx.state.storage.delete("login-code");
+    }),
+  validatePassword: publicProcedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      const passwordHash = await ctx.state.storage.get<string>(
+        StorageKeys.passwordHash
       );
 
-      this.userStorage = userStorage || {};
-    });
-  }
+      if (!passwordHash) {
+        throw new Error("No password defined");
+      }
 
-  async saveUserStorage() {
-    await this.state.storage.put<UserStorage>("userStorage", this.userStorage);
-  }
+      return bcrypt.compareSync(input, passwordHash);
+    }),
+});
 
-  async createCode() {
-    this.userStorage.code = generateOTP();
-    this.userStorage.codeExpireAt = Date.now() + 300 * 1000;
+type UserRouter = typeof userRouter;
 
-    await this.saveUserStorage();
-
-    return {
-      code: this.userStorage.code,
-      expireAt: this.userStorage.codeExpireAt,
-    };
-  }
-
-  async register(params: RegisterParams): Promise<StatusResponse> {
-    if (this.userStorage.password) {
-      return {
-        ok: false,
-        code: 409,
-        message: "Conflict",
-      };
-    }
-
-    this.userStorage.password = bcrypt.hashSync(params.password, 10);
-
-    await this.saveUserStorage();
-
-    return {
-      ok: true,
-    };
-  }
-
-  async validateCode(code: string): Promise<StatusResponse> {
-    const ok =
-      code === this.userStorage.code &&
-      this.userStorage.codeExpireAt !== undefined &&
-      Date.now() < this.userStorage.codeExpireAt;
-
-    if (ok) {
-      // Remove once used
-      delete this.userStorage.code;
-      await this.saveUserStorage();
-    }
-
-    return {
-      ok,
-    };
-  }
-
-  async validatePassword(password: string): Promise<StatusResponse> {
-    const ok =
-      !!this.userStorage.password &&
-      bcrypt.compareSync(password, this.userStorage.password);
-
-    return {
-      ok,
-    };
-  }
-
-  async fetch(request: Request) {
-    const url = new URL(request.url);
-    const path = url.pathname.slice(1);
-
-    let result: any;
-    switch (request.method) {
-      case "POST":
-        const body: any = await request.json();
-
-        switch (path) {
-          case "createCode":
-            result = await this.createCode();
-            break;
-          case "register":
-            result = {
-              valid: await this.register(body),
-            };
-            break;
-          case "validateCode":
-            result = await this.validateCode(body.code);
-            console.log("Result: " + JSON.stringify(result));
-            break;
-          case "validatePassword":
-            result = await this.validatePassword(body.password);
-            break;
-        }
-    }
-
-    if (result) {
-      return new Response(JSON.stringify(result), {
-        status: 200,
-        headers: {
-          "content-type": "application/json",
-        },
-      });
-    }
-
-    return new Response("Not Found", {
-      status: 404,
-    });
-  }
-}
+export const User = createProxy<UserRouter>(userRouter);

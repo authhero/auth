@@ -1,8 +1,7 @@
 // src/users/usersController.ts
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import UserClient from "../../models/UserClient";
-import { RegisterParams } from "../../types/IUser";
+import { User } from "../../models/User";
 import sendEmail from "../../services/email";
 import { client } from "../../constants";
 
@@ -20,6 +19,17 @@ export interface ResetPasswordParams {
   email: string;
 }
 
+export interface VerifyEmailParams {
+  client_id?: string;
+  code: string;
+  email: string;
+}
+
+export interface RegisterParams {
+  email: string;
+  password: string;
+}
+
 @Route("dbconnection")
 @Tags("dbconnection")
 export class DbConnectionController extends Controller {
@@ -30,14 +40,10 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = new UserClient(ctx, body.email);
-    const response = await user.register(body);
+    const user = User.getInstance(ctx.env.USER, body.email);
+    await user.register.query(body.password);
 
-    if (response.ok) {
-      return "Created";
-    }
-    this.setStatus(response.code || 500);
-    return response.message || "Failed";
+    return "OK";
   }
 
   @Post("reset_password")
@@ -47,8 +53,8 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = new UserClient(ctx, body.email);
-    const { code } = await user.createCode();
+    const user = User.getInstance(ctx.env.USER, body.email);
+    const { code } = await user.createCode.query();
 
     const message = `Click this link to reset your password: ${client.loginBaseUrl}/reset-password?email=${body.email}&code=${code}`;
     await sendEmail({
@@ -71,29 +77,13 @@ export class DbConnectionController extends Controller {
 
   @Post("verify_email")
   public async verifyEmail(
-    @Body() body: ResetPasswordParams,
+    @Body() body: VerifyEmailParams,
     @Request() request: RequestWithContext
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = new UserClient(ctx, body.email);
-    const { code } = await user.createCode();
-
-    const message = `Click this link to verify your email: ${client.loginBaseUrl}/verify-email?email=${body.email}&code=${code}`;
-    await sendEmail({
-      to: [{ email: body.email, name: "" }],
-      from: {
-        email: client.senderEmail,
-        name: client.senderName,
-      },
-      content: [
-        {
-          type: "text/plain",
-          value: message,
-        },
-      ],
-      subject: "Verify email",
-    });
+    const user = User.getInstance(ctx.env.USER, body.email);
+    const { code } = await user.verfifyCode.query(body.code);
 
     return "ok";
   }
