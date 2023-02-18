@@ -1,5 +1,5 @@
 import { TokenResponse, TokenParams, GrantType } from "../../types/Token";
-import { Body, Controller, Post, Request, Route, Tags } from "tsoa-workers";
+import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import passwordGrant from "../../controllers/passwordGrant";
 import passwordlessGrant from "../../controllers/passwordlessGrant";

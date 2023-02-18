@@ -6,6 +6,7 @@ import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import rotateKeys from "./routes/rotate-keys";
+import { serve } from "./routes/login";
 
 export const app = new Router<Env>();
 
@@ -23,6 +24,8 @@ app.get("/spec", async () => {
 });
 
 app.get("/docs", swaggerUi);
+
+app.get("/u/:file*", serve);
 
 app.post("/create-key", async (ctx: Context<Env>) => {
   await rotateKeys(ctx.env);
