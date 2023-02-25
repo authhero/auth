@@ -16,6 +16,12 @@ binding = 'AUTH_TEMPLATES'
 preview_bucket_name = 'auth-templates'
 bucket_name = 'auth-templates'
 
+[[ d1_databases ]]
+binding = "AUTH_DB"
+database_name = "auth"
+database_id = "3a755926-9eed-47a6-843e-9db66dd1fe16"
+preview_database_id = "3a755926-9eed-47a6-843e-9db66dd1fe16"
+
 [durable_objects]
 bindings = [{name = "USER", class_name = "User"}]
 

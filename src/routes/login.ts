@@ -5,9 +5,11 @@ import { Env } from "../types/Env";
 export async function serve(ctx: Context<Env>) {
   const path = ctx.params.file || "index.html";
 
-  console.log("Path: " + path);
+  let response = await ctx.env.AUTH_TEMPLATES.get(`build/${path}`);
 
-  const response = await ctx.env.AUTH_TEMPLATES.get(`build/${path}`);
+  if (!response) {
+    response = await ctx.env.AUTH_TEMPLATES.get(`build/index.html`);
+  }
 
   if (!response) {
     return new Response("Not Found", {

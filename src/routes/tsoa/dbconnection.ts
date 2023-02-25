@@ -4,6 +4,7 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { User } from "../../models/User";
 import sendEmail from "../../services/email";
 import { client } from "../../constants";
+import { getDb } from "../../services/db";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -35,13 +36,21 @@ export interface RegisterParams {
 export class DbConnectionController extends Controller {
   @Post("register")
   public async registerUser(
-    @Body() body: RegisterParams,
+    @Body() registerParams: RegisterParams,
     @Request() request: RequestWithContext
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, body.email);
-    await user.register.query(body.password);
+    const user = User.getInstance(ctx.env.USER, registerParams.email);
+    // This throws if if fails
+    await user.register.query(registerParams.password);
+
+    const db = getDb(ctx);
+    await db
+      .insertInto("users")
+      .values({ email: registerParams.email, clientId: "default" })
+      .returning("id")
+      .executeTakeFirstOrThrow();
 
     return "OK";
   }

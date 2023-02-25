@@ -7,8 +7,12 @@ import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import rotateKeys from "./routes/rotate-keys";
 import { serve } from "./routes/login";
+import { migrateDown, migrateToLatest } from "./migrate";
+import errorHandler from "./middlewares/errorHandler";
 
 export const app = new Router<Env>();
+
+app.use(errorHandler);
 
 app.get("/", async () => {
   return new Response(
@@ -24,6 +28,46 @@ app.get("/spec", async () => {
 });
 
 app.get("/docs", swaggerUi);
+
+app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
+  try {
+    await migrateToLatest(ctx);
+    return new Response("OK");
+  } catch (err: any) {
+    return new Response(
+      JSON.stringify({
+        message: err.message,
+        cause: err.cause,
+      }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+        },
+      }
+    );
+  }
+});
+
+app.post("/migrate-down", async (ctx: Context<Env>) => {
+  try {
+    await migrateDown(ctx);
+    return new Response("OK");
+  } catch (err: any) {
+    return new Response(
+      JSON.stringify({
+        message: err.message,
+        cause: err.cause,
+      }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+        },
+      }
+    );
+  }
+});
 
 app.get("/u/:file*", serve);
 

@@ -16,7 +16,6 @@
     "body-parser": "^1.20.1",
     "bootstrap": "^5.2.3",
     "cloudworker-router": "4.1.0",
-    "itty-durable": "^1.6.0",
     "kysely": "^0.23.4",
     "kysely-d1": "^0.2.0",
     "mime": "^3.0.0",
