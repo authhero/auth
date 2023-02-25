@@ -31,6 +31,12 @@ The tokens are exposed at: `/.well-known/jwks.json`
 - Run `yarn` to install the dependencies
 - Run `yarn dev` to start a debug session. This builds the paths and runs `wrangler dev`.
 
+## Open login form
+
+```
+https://cloudworker-auth.sesamy-dev.workers.dev/u/login?client_id=test&redirect_uri=https://cloudworker-auth.sesamy-dev.workers.dev/u/
+```
+
 ## Limitations
 
 - Currently, there is only support for one client
