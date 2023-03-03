@@ -7,6 +7,7 @@ import {
   Tags,
   SuccessResponse,
 } from "@tsoa/runtime";
+import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
 
 @Route("")
@@ -22,15 +23,44 @@ export class AuthorizeController extends Controller {
     @Query("scope") scope: string,
     @Query("state") state: string,
     @Query("prompt") prompt?: string,
-    @Query("audience") audience?: string
+    @Query("audience") audience?: string,
+    @Query("scope") connection?: string
   ): Promise<string> {
+    // TODO: Move to middleware
+    const client = await getClient(clientId);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+
     // Silent authentication
     if (prompt == "none") {
       return "This should render some javascript";
     }
 
+    // Social login
+    if (connection) {
+      const oauthProvider = client.oauthProviders.find(
+        (p) => p.name === connection
+      );
+      if (!oauthProvider) {
+        throw new Error("Connection not found");
+      }
+
+      const oauthLoginUrl = new URL(oauthProvider.loginUrl);
+      oauthLoginUrl.searchParams.set("scope", scope);
+      oauthLoginUrl.searchParams.set("state", state);
+      // TODO: this should be pointing to the callback url
+      oauthLoginUrl.searchParams.set("redirect_uri", client.loginBaseUrl);
+      this.setHeader("locaction", oauthProvider.loginUrl);
+      this.setStatus(307);
+      return "Redireting to login";
+    }
+
     const url = new URL(request.ctx.request.url);
-    url.pathname = "/login";
+    url.searchParams.set("scope", scope);
+    url.searchParams.set("state", state);
+
+    url.pathname = "/u/login";
 
     this.setStatus(302);
     this.setHeader("location", url.toString());
@@ -59,9 +89,13 @@ export class AuthorizeController extends Controller {
     @Query("redirect_uri") redirectUri: string,
     @Query("scope") scope: string,
     @Query("audience") audience: string,
-    @Query("state") state: string
+    @Query("state") state: string,
+    @Query("code") code: string
   ): Promise<string> {
-    // TODO: validate that the return to is valid for the current clietn
+    const client = await getClient(clientId);
+    if (!client) {
+      throw new Error("Client not found");
+    }
 
     this.setStatus(302);
     this.setHeader("location", redirectUri);

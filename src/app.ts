@@ -69,7 +69,7 @@ app.post("/migrate-down", async (ctx: Context<Env>) => {
   }
 });
 
-app.get("/u/:file*", serve);
+app.get("/static/:file*", serve);
 
 app.post("/create-key", async (ctx: Context<Env>) => {
   await rotateKeys(ctx.env);

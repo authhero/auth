@@ -1,5 +1,13 @@
 // src/users/usersController.ts
-import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
+import {
+  Body,
+  Controller,
+  Post,
+  Request,
+  Route,
+  Tags,
+  Path,
+} from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { User } from "../../models/User";
 import sendEmail from "../../services/email";
@@ -31,24 +39,31 @@ export interface RegisterParams {
   password: string;
 }
 
-@Route("dbconnection")
+function getId(clientId: string, email: string) {
+  return `${clientId}|auth|${email}`;
+}
+
+@Route("{clientId}/dbconnection")
 @Tags("dbconnection")
 export class DbConnectionController extends Controller {
   @Post("register")
   public async registerUser(
-    @Body() registerParams: RegisterParams,
-    @Request() request: RequestWithContext
+    @Body() body: RegisterParams,
+    @Request() request: RequestWithContext,
+    @Path("clientId") clientId: string
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, registerParams.email);
+    console.log("ClientId: " + clientId);
+
+    const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
     // This throws if if fails
-    await user.register.query(registerParams.password);
+    await user.register.query(body.password);
 
     const db = getDb(ctx);
     await db
       .insertInto("users")
-      .values({ email: registerParams.email, clientId: "default" })
+      .values({ email: body.email, clientId })
       .returning("id")
       .executeTakeFirstOrThrow();
 
@@ -58,11 +73,12 @@ export class DbConnectionController extends Controller {
   @Post("reset_password")
   public async resetPassword(
     @Body() body: ResetPasswordParams,
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
+    @Path("clientId") clientId: string
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, body.email);
+    const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
     const { code } = await user.createCode.query();
 
     const message = `Click this link to reset your password: ${client.loginBaseUrl}/reset-password?email=${body.email}&code=${code}`;
@@ -87,11 +103,12 @@ export class DbConnectionController extends Controller {
   @Post("verify_email")
   public async verifyEmail(
     @Body() body: VerifyEmailParams,
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
+    @Path("clientId") clientId: string
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, body.email);
+    const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
     const { code } = await user.verfifyCode.query(body.code);
 
     return "ok";

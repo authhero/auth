@@ -9,15 +9,22 @@ The plan is to make a oauth2 compatible auth solution with support for the follo
 - Magic link
 - Code
 
-After having been burnt by several freemium model auth solutions that get too expensive once you start growing the user base I wanted a solution where you easily can eject and host it straight on Cloudflare.
+After having been burnt by several freemium model auth solutions that get too expensive once you start growing the user base I wanted a solution where you can get started with a hosted solution but alos easily can eject and host it yourself straight on Cloudflare.
 
 It's based on the following tech stack
 
 - Cloudflare workers (with tsoa)
-- Durable objects and KV for storage
+- Durable objects (with trpc) for login logic and storage
+- Cloudflare queues for events
+- D1 sqlite database for admin api
+- KV storage for logs
 - Mailchannels for passoword reset and code/magic links
 
-It's API only, so bring your own UI :)
+It contains a hosted UI for the login forms that can be easily styled or modified using liquid templates. Or you can roll your own UI and just use the the API.
+
+## Auth0 compability
+
+The goal is to keep the API compatible with the auth0 api so that all the client libraries from auth0 works. This way there's no need to maintain a separate set of client libraries and it makes the migration from auth0 very easy.
 
 ## Tokens
 
@@ -34,14 +41,40 @@ The tokens are exposed at: `/.well-known/jwks.json`
 ## Open login form
 
 ```
-https://cloudworker-auth.sesamy-dev.workers.dev/u/login?client_id=test&redirect_uri=https://cloudworker-auth.sesamy-dev.workers.dev/u/
+https://cloudworker-auth.sesamy-dev.workers.dev/u/login?client_id=test&redirect_uri=https://cloudworker-auth.sesamy-dev.workers.dev/u/login
 ```
 
-## Limitations
+# Login methods
+
+A user account can be created using email/password, code, magiclinks or using social accounts such as Google or Facebook.
+
+## Social logins
+
+Any oauth2 or openid-connect accounts should work just fine.
+
+The flow for loggin in with a oauth2 account is as follows:
+
+- The user navigates to the /authorize endpoint with a connection parameter matching the oauth2 provider.
+- The user is redirected to the login form.
+- Once the user signed in the user is redirected to the /callback endpoint
+
+When a oauth2 flow is intiated a state is passed from the client? When the user is redirected back to the callback endpoint after a successful login the state passed in the querystring is compared to the persisted state. If it matches the code is resolved to an access-token using the client secret.
+
+The access-token is used to query the profile endpoint and sync the user profile information.
+
+# Clients
+
+A client is for now a completely separate authentication service, similar to the tenants in auth0.
+
+# Linking accounts
+
+Each user object is connected to one email, so for instance there would be one common user object for a user that logged in with email/password, code and google. The user object will keep an array of the login methods and store separate profiles for syncing purposes.
+
+# Limitations
 
 - Currently, there is only support for one client
 
-## TODO-list
+# TODO-list
 
 – [x] Exposing JWKS-keys
 
@@ -53,7 +86,7 @@ https://cloudworker-auth.sesamy-dev.workers.dev/u/login?client_id=test&redirect_
 
 – [ ] Password reset flows
 
-– [ ] Sync users to D1 database for queries
+– [x] Sync users to D1 database for queries
 
 – [ ] Logs per user
 
