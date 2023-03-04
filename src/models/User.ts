@@ -91,4 +91,8 @@ const userRouter = router({
 
 type UserRouter = typeof userRouter;
 
+export function getId(clientId: string, email: string) {
+  return `${clientId}|auth|${email}`;
+}
+
 export const User = createProxy<UserRouter>(userRouter);

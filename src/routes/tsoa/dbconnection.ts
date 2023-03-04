@@ -9,7 +9,7 @@ import {
   Path,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { User } from "../../models/User";
+import { getId, User } from "../../models/User";
 import sendEmail from "../../services/email";
 import { client } from "../../constants";
 import { getDb } from "../../services/db";
@@ -37,10 +37,6 @@ export interface VerifyEmailParams {
 export interface RegisterParams {
   email: string;
   password: string;
-}
-
-function getId(clientId: string, email: string) {
-  return `${clientId}|auth|${email}`;
 }
 
 @Route("{clientId}/dbconnection")

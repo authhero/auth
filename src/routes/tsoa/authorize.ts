@@ -7,8 +7,10 @@ import {
   Tags,
   SuccessResponse,
 } from "@tsoa/runtime";
+import { LoginState } from "../../types/LoginState";
 import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
+import { encode } from "../../utils/base64";
 
 @Route("")
 @Tags("authorize")
@@ -24,7 +26,8 @@ export class AuthorizeController extends Controller {
     @Query("state") state: string,
     @Query("prompt") prompt?: string,
     @Query("audience") audience?: string,
-    @Query("scope") connection?: string
+    @Query("connection") connection?: string,
+    @Query("username") username?: string
   ): Promise<string> {
     // TODO: Move to middleware
     const client = await getClient(clientId);
@@ -56,9 +59,16 @@ export class AuthorizeController extends Controller {
       return "Redireting to login";
     }
 
-    const url = new URL(request.ctx.request.url);
-    url.searchParams.set("scope", scope);
-    url.searchParams.set("state", state);
+    const url = new URL(`${request.ctx.protocol}//${request.ctx.host}`);
+    const loginState: LoginState = {
+      grantType: responseType,
+      clientId,
+      scope,
+      state,
+      username,
+    };
+
+    url.searchParams.set("state", encode(JSON.stringify(loginState)));
 
     url.pathname = "/u/login";
 

@@ -2,12 +2,10 @@ import {
   Controller,
   Get,
   Post,
-  Patch,
   Request,
   Route,
   Tags,
   Body,
-  Path,
   Query,
 } from "@tsoa/runtime";
 import { Env } from "../../types/Env";
@@ -16,6 +14,9 @@ import { Liquid, Template } from "liquidjs";
 const engine = new Liquid();
 
 import { RequestWithContext } from "../../types/RequestWithContext";
+import { getId, User } from "../../models/User";
+import { LoginState } from "../../types/LoginState";
+import { decode } from "../../utils/base64";
 
 export interface LoginParams {
   username: string;
@@ -44,8 +45,10 @@ export class LoginController extends Controller {
   @Get("login")
   public async getLogin(
     @Request() request: RequestWithContext,
-    @Query("username") username?: string
+    @Query("state") state: string
   ): Promise<string> {
+    const loginState: LoginState = JSON.parse(atob(state));
+
     const template = await getTemplate(request.ctx.env.AUTH_TEMPLATES, "login");
 
     if (!template) {
@@ -55,18 +58,23 @@ export class LoginController extends Controller {
     this.setHeader("content-type", "text/html");
     this.setStatus(200);
 
-    return engine.render(template, { username });
+    return engine.render(template, { ...loginState, state });
   }
 
-  @Post("login")
-  public async postLogin(
+  /**
+   * Renders a signup user form
+   * @param request
+   */
+  @Get("signup")
+  public async getSignup(
     @Request() request: RequestWithContext,
-    @Body() loginParams: LoginParams
+    @Query("state") state: string
   ): Promise<string> {
-    console.log(JSON.stringify(loginParams));
+    const loginState: LoginState = JSON.parse(atob(state));
 
-    const template = await request.ctx.env.AUTH_TEMPLATES.get(
-      "templates/login.html"
+    const template = await getTemplate(
+      request.ctx.env.AUTH_TEMPLATES,
+      "signup"
     );
 
     if (!template) {
@@ -75,8 +83,64 @@ export class LoginController extends Controller {
 
     this.setHeader("content-type", "text/html");
     this.setStatus(200);
-    const body = await template.text();
 
-    return body;
+    return engine.render(template, { ...loginState, state });
+  }
+
+  @Post("signup")
+  public async postSignup(
+    @Request() request: RequestWithContext,
+    @Body() loginParams: LoginParams,
+    @Query("state") state: string
+  ): Promise<string> {
+    const loginState: LoginState = JSON.parse(decode(state));
+
+    const user = User.getInstance(
+      request.ctx.env.USER,
+      getId(loginState.clientId, loginParams.username)
+    );
+
+    await user.register.query(loginParams.password);
+
+    // TODO: either validate email or pass user on
+    return "User registered";
+  }
+
+  @Post("login")
+  public async postLogin(
+    @Request() request: RequestWithContext,
+    @Body() loginParams: LoginParams,
+    @Query("state") state: string
+  ): Promise<string> {
+    const loginState: LoginState = JSON.parse(decode(state));
+
+    const user = User.getInstance(
+      request.ctx.env.USER,
+      getId(loginState.clientId, loginParams.username)
+    );
+
+    const validPassword = await user.validatePassword.query(
+      loginParams.password
+    );
+
+    if (validPassword) {
+      return "TODO: Redirect with code or token";
+    }
+
+    const template = await getTemplate(request.ctx.env.AUTH_TEMPLATES, "login");
+
+    if (!template) {
+      return "Not Found";
+    }
+
+    this.setHeader("content-type", "text/html");
+    this.setStatus(200);
+
+    return engine.render(template, {
+      ...loginState,
+      state,
+      username: loginParams.username,
+      errorMessage: "Invalid Password",
+    });
   }
 }
