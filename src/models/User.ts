@@ -5,6 +5,11 @@ import { z } from "zod";
 import { Context } from "trpc-durable-objects";
 
 import generateOTP from "../utils/otp";
+import {
+  UnauthenticatedError,
+  NoUserFoundError,
+  UserConflictError,
+} from "../errors";
 
 interface Code {
   code?: string;
@@ -19,11 +24,48 @@ const publicProcedure = t.procedure;
 const router = t.router;
 
 enum StorageKeys {
+  authenticationCode = "authentication-code",
+  emailValidationCode = "email-validation-code",
+  emailValidated = "email-validated",
+  passwordResetCode = "password-reset-code",
   passwordHash = "password-hash",
+  socialConnections = "social-connections",
 }
 
-const userRouter = router({
-  createCode: publicProcedure
+interface SocialConnection {
+  type: string;
+  userId: string;
+  profile: any;
+}
+
+export const userRouter = router({
+  connectWithSocial: publicProcedure
+    .input(z.string().describe("connection name"))
+    .mutation(async ({ input, ctx }) => {
+      const socialConnections = await ctx.state.storage.get<SocialConnection[]>(
+        StorageKeys.socialConnections
+      );
+
+      const connection = socialConnections?.find((sc) => sc.type === input);
+
+      throw new Error("Not implemented");
+    }),
+  createAuthenticationCode: publicProcedure
+    .input(z.string().nullish())
+    .mutation(async ({ input, ctx }) => {
+      const result = {
+        code: generateOTP(),
+        expireAt: Date.now() + 300 * 1000,
+      };
+
+      await ctx.state.storage.put(
+        StorageKeys.authenticationCode,
+        JSON.stringify(result)
+      );
+
+      return result;
+    }),
+  createEmailValidationCode: publicProcedure
     .input(z.string().nullish())
     .query(async ({ input, ctx }) => {
       const result = {
@@ -31,35 +73,61 @@ const userRouter = router({
         expireAt: Date.now() + 300 * 1000,
       };
 
-      await ctx.state.storage.put("code", JSON.stringify(result));
+      await ctx.state.storage.put(
+        StorageKeys.emailValidationCode,
+        JSON.stringify(result)
+      );
 
       return result;
     }),
-  register: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    const passwordHash = await ctx.state.storage.get<string>(
-      StorageKeys.passwordHash
-    );
-
-    if (passwordHash) {
-      throw new Error("Conflict");
-    }
-
-    await ctx.state.storage.put("password-hash", bcrypt.hashSync(input, 10));
-  }),
-  verfifyCode: publicProcedure
-    .input(z.string())
+  createPasswordResetCode: publicProcedure
+    .input(z.string().nullish())
     .query(async ({ input, ctx }) => {
-      const codeJSON = await ctx.state.storage.get<string>("code");
+      const result = {
+        code: generateOTP(),
+        expireAt: Date.now() + 300 * 1000,
+      };
 
-      // Verify code
+      await ctx.state.storage.put(
+        StorageKeys.passwordResetCode,
+        JSON.stringify(result)
+      );
+
+      return result;
     }),
-  validateCode: publicProcedure
+  isEmailValidated: publicProcedure.query(async ({ ctx }) => {
+    return ctx.state.storage.get<boolean>(StorageKeys.emailValidated);
+  }),
+  registerPassword: publicProcedure
     .input(z.string())
     .query(async ({ input, ctx }) => {
-      const loginCode = await ctx.state.storage.get<Code>("login-code");
+      const passwordHash = await ctx.state.storage.get<string>(
+        StorageKeys.passwordHash
+      );
+
+      if (passwordHash) {
+        throw new UserConflictError();
+      }
+
+      await ctx.state.storage.put(
+        StorageKeys.passwordHash,
+        bcrypt.hashSync(input, 10)
+      );
+    }),
+  setEmailValidated: publicProcedure
+    .input(z.boolean())
+    .query(async ({ input, ctx }) => {
+      await ctx.state.storage.put(StorageKeys.emailValidated, input);
+    }),
+  validateAuthenticationCode: publicProcedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      const loginCode = await ctx.state.storage.get<Code>(
+        StorageKeys.authenticationCode
+      );
 
       if (!loginCode) {
-        throw new Error("Code not found");
+        throw new UnauthenticatedError();
       }
 
       const ok =
@@ -68,12 +136,39 @@ const userRouter = router({
         Date.now() < loginCode.codeExpireAt;
 
       if (!ok) {
-        throw new Error("Unauthorized");
+        throw new UnauthenticatedError();
       }
 
       // Remove once used
-      await ctx.state.storage.delete("login-code");
+      await ctx.state.storage.delete(StorageKeys.authenticationCode);
     }),
+  validateEmailValidationCode: publicProcedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      const emailValidationCode = await ctx.state.storage.get<Code>(
+        StorageKeys.emailValidationCode
+      );
+
+      if (!emailValidationCode) {
+        throw new UnauthenticatedError();
+      }
+
+      const ok =
+        input === emailValidationCode.code &&
+        emailValidationCode.codeExpireAt !== undefined &&
+        Date.now() < emailValidationCode.codeExpireAt;
+
+      if (!ok) {
+        throw new UnauthenticatedError();
+      }
+
+      // Set the email to validated
+      await ctx.state.storage.put(StorageKeys.emailValidated, true);
+
+      // Remove once used
+      await ctx.state.storage.delete(StorageKeys.emailValidationCode);
+    }),
+
   validatePassword: publicProcedure
     .input(z.string())
     .query(async ({ input, ctx }) => {
@@ -82,10 +177,12 @@ const userRouter = router({
       );
 
       if (!passwordHash) {
-        throw new Error("No password defined");
+        throw new NoUserFoundError();
       }
 
-      return bcrypt.compareSync(input, passwordHash);
+      if (!bcrypt.compareSync(input, passwordHash)) {
+        throw new UnauthenticatedError();
+      }
     }),
 });
 

@@ -100,7 +100,7 @@ export class LoginController extends Controller {
       getId(loginState.clientId, loginParams.username)
     );
 
-    await user.register.query(loginParams.password);
+    await user.registerPassword.query(loginParams.password);
 
     // TODO: either validate email or pass user on
     return "User registered";
@@ -119,28 +119,27 @@ export class LoginController extends Controller {
       getId(loginState.clientId, loginParams.username)
     );
 
-    const validPassword = await user.validatePassword.query(
-      loginParams.password
-    );
+    try {
+      const validPassword = await user.validatePassword.query(
+        loginParams.password
+      );
 
-    if (validPassword) {
       return "TODO: Redirect with code or token";
+    } catch (err) {
+      const template = await getTemplate(
+        request.ctx.env.AUTH_TEMPLATES,
+        "login"
+      );
+
+      this.setHeader("content-type", "text/html");
+      this.setStatus(200);
+
+      return engine.render(template, {
+        ...loginState,
+        state,
+        username: loginParams.username,
+        errorMessage: "Invalid Password",
+      });
     }
-
-    const template = await getTemplate(request.ctx.env.AUTH_TEMPLATES, "login");
-
-    if (!template) {
-      return "Not Found";
-    }
-
-    this.setHeader("content-type", "text/html");
-    this.setStatus(200);
-
-    return engine.render(template, {
-      ...loginState,
-      state,
-      username: loginParams.username,
-      errorMessage: "Invalid Password",
-    });
   }
 }
