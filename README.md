@@ -46,7 +46,7 @@ https://cloudworker-auth.sesamy-dev.workers.dev/authorize?client_id=default&redi
 
 # Login methods
 
-A user account can be created using email/password, code, magiclinks or using social accounts such as Google or Facebook.
+A user account can be created using email/password, code, magic-links or using social accounts such as Google or Facebook.
 
 ## Social logins
 

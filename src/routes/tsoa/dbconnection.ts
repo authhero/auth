@@ -50,8 +50,6 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    console.log("ClientId: " + clientId);
-
     const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
     // This throws if if fails
     await user.registerPassword.query(body.password);
@@ -75,7 +73,7 @@ export class DbConnectionController extends Controller {
     const { ctx } = request;
 
     const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
-    const { code } = await user.createAuthenticationCode.mutate();
+    const { code } = await user.createPasswordResetCode.mutate();
 
     const message = `Click this link to reset your password: ${client.loginBaseUrl}/reset-password?email=${body.email}&code=${code}`;
     await sendEmail({

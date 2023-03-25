@@ -3,5 +3,5 @@ export interface LoginState {
   state?: string;
   scope?: string;
   clientId: string;
-  grantType: string;
+  grantType?: string;
 }

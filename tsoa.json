@@ -9,6 +9,6 @@
   "routes": {
     "authenticationModule": "./src/authentication.ts",
     "routesDir": "build",
-    "middlewareTemplate": "node_modules/tsoa-workers/lib/cloudworker-router.hbs"
+    "middlewareTemplate": "node_modules/tsoa-workers/cloudworker-router.hbs"
   }
 }

@@ -28,7 +28,7 @@ export class PasswordlessController extends Controller {
     const { ctx } = request;
 
     const user = User.getInstance(ctx.env.USER, body.email);
-    const { code } = await user.createCode.query();
+    const { code } = await user.createAuthenticationCode.mutate();
 
     const message = `Here's your login code: ${code}`;
     await sendEmail({

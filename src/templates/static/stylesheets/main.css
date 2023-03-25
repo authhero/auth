@@ -235,6 +235,11 @@ iframe {
     width: 100%
 }
 
+input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .login100-form-title {
     display: block;
     font-family: Poppins-Bold;

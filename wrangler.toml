@@ -10,6 +10,7 @@ kv_namespaces = [
 ]
 
 [vars]
+AUTH_DOMAIN_URL = "https://cloudworker-auth.sesamy-dev.workers.dev/"
 
 [[r2_buckets]]
 binding = 'AUTH_TEMPLATES'

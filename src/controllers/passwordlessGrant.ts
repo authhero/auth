@@ -11,7 +11,7 @@ export default async function passwordlessGrant(
 ): Promise<TokenResponse | null> {
   const user = User.getInstance(ctx.env.USER, params.username);
 
-  const validCode = await user.validateCode.query(params.otp);
+  const validCode = await user.validateAuthenticationCode.query(params.otp);
 
   if (!validCode) {
     throw new Error("Invalid code");

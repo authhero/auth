@@ -8,31 +8,34 @@ import {
   Body,
   Query,
 } from "@tsoa/runtime";
-import { Env } from "../../types/Env";
-import { Liquid, Template } from "liquidjs";
-
-const engine = new Liquid();
+import sendEmail from "../../services/email";
 
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId, User } from "../../models/User";
 import { LoginState } from "../../types/LoginState";
-import { decode } from "../../utils/base64";
+import { decode, encode } from "../../utils/base64";
+import { getClient } from "../../services/clients";
+import {
+  renderMessage,
+  renderForgotPassword,
+  renderResetPassword,
+  renderSignup,
+  renderLogin,
+} from "../../templates/render";
 
 export interface LoginParams {
   username: string;
   password: string;
 }
 
-async function getTemplate(bucket: R2Bucket, templateName: string) {
-  let response = await bucket.get(`templates/${templateName}.liquid`);
+export interface PasswordResetParams {
+  username: string;
+}
 
-  if (!response) {
-    throw new Error("Template not found");
-  }
-
-  const templateString = await response.text();
-
-  return engine.parse(templateString);
+export interface ResetPasswordState {
+  username: string;
+  code: string;
+  clientId: string;
 }
 
 @Route("u")
@@ -47,18 +50,13 @@ export class LoginController extends Controller {
     @Request() request: RequestWithContext,
     @Query("state") state: string
   ): Promise<string> {
+    const { ctx } = request;
     const loginState: LoginState = JSON.parse(atob(state));
 
-    const template = await getTemplate(request.ctx.env.AUTH_TEMPLATES, "login");
-
-    if (!template) {
-      return "Not Found";
-    }
-
-    this.setHeader("content-type", "text/html");
-    this.setStatus(200);
-
-    return engine.render(template, { ...loginState, state });
+    return renderLogin(ctx.env.AUTH_TEMPLATES, this, {
+      ...loginState,
+      state,
+    });
   }
 
   /**
@@ -70,21 +68,10 @@ export class LoginController extends Controller {
     @Request() request: RequestWithContext,
     @Query("state") state: string
   ): Promise<string> {
+    const { ctx } = request;
     const loginState: LoginState = JSON.parse(atob(state));
 
-    const template = await getTemplate(
-      request.ctx.env.AUTH_TEMPLATES,
-      "signup"
-    );
-
-    if (!template) {
-      return "Not Found";
-    }
-
-    this.setHeader("content-type", "text/html");
-    this.setStatus(200);
-
-    return engine.render(template, { ...loginState, state });
+    return renderSignup(ctx.env.AUTH_TEMPLATES, this, { ...loginState, state });
   }
 
   @Post("signup")
@@ -93,6 +80,7 @@ export class LoginController extends Controller {
     @Body() loginParams: LoginParams,
     @Query("state") state: string
   ): Promise<string> {
+    const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
     const user = User.getInstance(
@@ -102,8 +90,133 @@ export class LoginController extends Controller {
 
     await user.registerPassword.query(loginParams.password);
 
-    // TODO: either validate email or pass user on
-    return "User registered";
+    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+      page_title: "User created",
+      message: "Your user has been created",
+    });
+  }
+
+  /**
+   * Renders a forgot password form
+   * @param request
+   */
+  @Get("forgot-password")
+  public async getForgotPassword(
+    @Request() request: RequestWithContext,
+    @Query("state") state: string
+  ): Promise<string> {
+    const { ctx } = request;
+    const loginState: LoginState = JSON.parse(atob(state));
+
+    return renderForgotPassword(ctx.env.AUTH_TEMPLATES, this, loginState);
+  }
+
+  /**
+   * Renders a forgot password form
+   * @param request
+   */
+  @Post("forgot-password")
+  public async postForgotPassword(
+    @Request() request: RequestWithContext,
+    @Body() params: PasswordResetParams,
+    @Query("state") state: string
+  ): Promise<string> {
+    const { ctx } = request;
+
+    const loginState: LoginState = JSON.parse(decode(state));
+    const { clientId } = loginState;
+
+    const client = await getClient(clientId);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+
+    const user = User.getInstance(
+      ctx.env.USER,
+      getId(clientId, params.username)
+    );
+    const { code } = await user.createPasswordResetCode.mutate();
+
+    const passwordResetState = encode(
+      JSON.stringify({
+        username: params.username,
+        clientId,
+        code,
+      })
+    );
+
+    const message = `Click this link to reset your password: ${ctx.env.AUTH_DOMAIN_URL}u/reset-password?state=${passwordResetState}`;
+    await sendEmail({
+      to: [{ email: params.username, name: "" }],
+      from: {
+        email: client.senderEmail,
+        name: client.senderName,
+      },
+      content: [
+        {
+          type: "text/plain",
+          value: message,
+        },
+      ],
+      subject: "Reset password",
+    });
+
+    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+      page_title: "Password reset",
+      message: "A code has been sent to your email address",
+    });
+  }
+
+  /**
+   * Renders a reset password form
+   * @param request
+   */
+  @Get("reset-password")
+  public async getResetPassword(
+    @Request() request: RequestWithContext,
+    @Query("state") state: string
+  ): Promise<string> {
+    const { ctx } = request;
+    const resetPasswordState: ResetPasswordState = JSON.parse(decode(state));
+
+    return renderResetPassword(ctx.env.AUTH_TEMPLATES, this, {
+      ...resetPasswordState,
+      state,
+    });
+  }
+
+  /**
+   * Renders a reset password form
+   * @param request
+   */
+  @Post("reset-password")
+  public async postResetPassword(
+    @Request() request: RequestWithContext,
+    @Body() params: { password: string },
+    @Query("state") state: string
+  ): Promise<string> {
+    const { ctx } = request;
+    const resetPasswordState: ResetPasswordState = JSON.parse(decode(state));
+
+    const user = User.getInstance(
+      request.ctx.env.USER,
+      getId(resetPasswordState.clientId, resetPasswordState.username)
+    );
+
+    if (
+      !(await user.validatePasswordResetCode.query(resetPasswordState.code))
+    ) {
+      return renderResetPassword(ctx.env.AUTH_TEMPLATES, this, {
+        ...resetPasswordState,
+        state,
+        errorMessage: "Invalid code",
+      });
+    }
+
+    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+      page_title: "Password reset",
+      message: "The password has been reset",
+    });
   }
 
   @Post("login")
@@ -112,6 +225,7 @@ export class LoginController extends Controller {
     @Body() loginParams: LoginParams,
     @Query("state") state: string
   ): Promise<string> {
+    const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
     const user = User.getInstance(
@@ -120,25 +234,17 @@ export class LoginController extends Controller {
     );
 
     try {
-      const validPassword = await user.validatePassword.query(
-        loginParams.password
-      );
+      await user.validatePassword.query(loginParams.password);
 
-      return "TODO: Redirect with code or token";
-    } catch (err) {
-      const template = await getTemplate(
-        request.ctx.env.AUTH_TEMPLATES,
-        "login"
-      );
-
-      this.setHeader("content-type", "text/html");
-      this.setStatus(200);
-
-      return engine.render(template, {
+      return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+        page_title: "Logged in",
+        message: "You are logged in",
+      });
+    } catch (err: any) {
+      return renderLogin(ctx.env.AUTH_TEMPLATES, this, {
         ...loginState,
-        state,
         username: loginParams.username,
-        errorMessage: "Invalid Password",
+        errorMessage: err.message,
       });
     }
   }

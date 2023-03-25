@@ -12,4 +12,5 @@ export const client: Client = {
   senderEmail: "markus@ahlstrand.es",
   senderName: "Auth",
   loginBaseUrl: "https://auth.example.com",
+  oauthProviders: [],
 };

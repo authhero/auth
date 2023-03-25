@@ -82,7 +82,7 @@ export const userRouter = router({
     }),
   createPasswordResetCode: publicProcedure
     .input(z.string().nullish())
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const result = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
@@ -168,7 +168,20 @@ export const userRouter = router({
       // Remove once used
       await ctx.state.storage.delete(StorageKeys.emailValidationCode);
     }),
+  validatePasswordResetCode: publicProcedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      const passwordResetCode = await ctx.state.storage.get<Code>(
+        StorageKeys.passwordResetCode
+      );
 
+      return (
+        passwordResetCode &&
+        input === passwordResetCode.code &&
+        passwordResetCode.codeExpireAt !== undefined &&
+        Date.now() < passwordResetCode.codeExpireAt
+      );
+    }),
   validatePassword: publicProcedure
     .input(z.string())
     .query(async ({ input, ctx }) => {
