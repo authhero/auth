@@ -138,7 +138,7 @@ export interface Security {
   oauth2: string[];
 }
 
-export function authenticationHandler<Env>(security: Security[]) {
+export function authenticationHandler(security: Security[]) {
   const [scope] = security[0].oauth2;
   return async function jwtMiddleware(
     ctx: Context<Env>,

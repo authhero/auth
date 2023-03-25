@@ -2,6 +2,7 @@
   "transform": {
     "^.+\\.(t|j)sx?$": "ts-jest"
   },
+  "testEnvironment": "jsdom",
   "testRegex": "/test/.*\\.spec\\.ts$",
   "collectCoverageFrom": ["src/**/*.{ts,js}"]
 }

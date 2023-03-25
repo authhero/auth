@@ -53,10 +53,7 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(atob(state));
 
-    return renderLogin(ctx.env.AUTH_TEMPLATES, this, {
-      ...loginState,
-      state,
-    });
+    return renderLogin(ctx.env.AUTH_TEMPLATES, this, loginState);
   }
 
   /**
