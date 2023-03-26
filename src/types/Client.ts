@@ -1,8 +1,7 @@
-export interface OauthProvider {
+import { OauthProviderParams } from "../services/oauth2-client";
+
+export interface OauthProvider extends OauthProviderParams {
   name: string;
-  clientId: string;
-  clientSecret: string;
-  loginUrl: string;
 }
 
 export interface Client {

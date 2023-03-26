@@ -1,6 +1,6 @@
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
-import { JWKS_CACHE_TIMEOUT_IN_SECONDS, client } from "../constants";
+import { JWKS_CACHE_TIMEOUT_IN_SECONDS } from "../constants";
 
 export interface Certificate {
   privateKey: string;
@@ -10,7 +10,7 @@ export interface Certificate {
 }
 
 export async function getCertificate(ctx: Context<Env>): Promise<Certificate> {
-  const certificatesString = await ctx.env.CERTIFICATES.get(client.id);
+  const certificatesString = await ctx.env.CERTIFICATES.get("default");
   if (!certificatesString) {
     throw new Error("No Certificate Found");
   }

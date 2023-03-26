@@ -85,7 +85,7 @@ export class LoginController extends Controller {
       getId(loginState.clientId, loginParams.username)
     );
 
-    await user.registerPassword.query(loginParams.password);
+    await user.registerPassword.mutate(loginParams.password);
 
     return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
       page_title: "User created",
@@ -123,7 +123,7 @@ export class LoginController extends Controller {
     const loginState: LoginState = JSON.parse(decode(state));
     const { clientId } = loginState;
 
-    const client = await getClient(clientId);
+    const client = await getClient(ctx, clientId);
     if (!client) {
       throw new Error("Client not found");
     }

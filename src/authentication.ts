@@ -1,5 +1,4 @@
 import { Context, Next } from "cloudworker-router";
-import { client } from "./constants";
 import { Env } from "./types/Env";
 
 interface TokenData {
@@ -62,8 +61,8 @@ function decodeJwt(token: string): TokenData {
   };
 }
 
-async function getJwks(ctx: Context<Env>) {
-  const certificatesString = await ctx.env.CERTIFICATES.get(client.id);
+async function getJwks(ctx: Context<Env>, clientId: string) {
+  const certificatesString = await ctx.env.CERTIFICATES.get(clientId);
   const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
     (cert: any) => {
       return { kid: cert.kid, ...cert.publicKey };
@@ -81,14 +80,18 @@ function isValidScopes(token: TokenData, scopes: string[]) {
   return match;
 }
 
-async function isValidJwtSignature(ctx: Context<Env>, token: TokenData) {
+async function isValidJwtSignature(
+  ctx: Context<Env>,
+  clientId: string,
+  token: TokenData
+) {
   const encoder = new TextEncoder();
   const data = encoder.encode([token.raw.header, token.raw.payload].join("."));
   const signature = new Uint8Array(
     Array.from(token.signature).map((c) => c.charCodeAt(0))
   );
 
-  const jwkKeys = await getJwks(ctx);
+  const jwkKeys = await getJwks(ctx, clientId);
 
   const jwkKey = jwkKeys.find((key) => key.kid === token.header.kid);
 
@@ -110,6 +113,7 @@ async function isValidJwtSignature(ctx: Context<Env>, token: TokenData) {
 
 export async function getUser(
   ctx: Context<Env>,
+  clientId: string,
   bearer: string,
   scopes: string[]
 ): Promise<any | null> {
@@ -127,7 +131,7 @@ export async function getUser(
     return null;
   }
 
-  if (!(await isValidJwtSignature(ctx, token))) {
+  if (!(await isValidJwtSignature(ctx, clientId, token))) {
     return null;
   }
 
@@ -151,7 +155,12 @@ export function authenticationHandler(security: Security[]) {
       });
     }
     const bearer = authHeader.slice(7);
-    ctx.state.user = await getUser(ctx, bearer, scope.split(" "));
+    ctx.state.user = await getUser(
+      ctx,
+      ctx.params.clientId,
+      bearer,
+      scope.split(" ")
+    );
 
     if (!ctx.state.user) {
       return new Response("Not Authorized", {

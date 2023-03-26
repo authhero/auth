@@ -17,6 +17,10 @@ interface Code {
   password?: string;
 }
 
+interface Profiles {
+  [key: string]: any;
+}
+
 const t = initTRPC.context<Context>().create();
 
 const publicProcedure = t.procedure;
@@ -29,6 +33,7 @@ enum StorageKeys {
   emailValidated = "email-validated",
   passwordResetCode = "password-reset-code",
   passwordHash = "password-hash",
+  profile = "profile",
   socialConnections = "social-connections",
 }
 
@@ -100,7 +105,7 @@ export const userRouter = router({
   }),
   registerPassword: publicProcedure
     .input(z.string())
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const passwordHash = await ctx.state.storage.get<string>(
         StorageKeys.passwordHash
       );
@@ -119,9 +124,22 @@ export const userRouter = router({
     .query(async ({ input, ctx }) => {
       await ctx.state.storage.put(StorageKeys.emailValidated, input);
     }),
+  patchProfile: publicProcedure
+    .input(
+      z.object({
+        connection: z.string(),
+        profile: z.object({}),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const existingProfiles =
+        (await ctx.state.storage.get<Profiles>(StorageKeys.profile)) || {};
+      existingProfiles.connection = input.profile;
+      await ctx.state.storage.put(StorageKeys.profile, existingProfiles);
+    }),
   validateAuthenticationCode: publicProcedure
     .input(z.string())
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const loginCode = await ctx.state.storage.get<Code>(
         StorageKeys.authenticationCode
       );

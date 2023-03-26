@@ -3,5 +3,7 @@ export interface LoginState {
   state?: string;
   scope?: string;
   clientId: string;
-  grantType?: string;
+  responseType?: string;
+  redirectUri?: string;
+  connection?: string;
 }

@@ -11,8 +11,8 @@ import {
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId, User } from "../../models/User";
 import sendEmail from "../../services/email";
-import { client } from "../../constants";
 import { getDb } from "../../services/db";
+import { getClient } from "../../services/clients";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -52,7 +52,7 @@ export class DbConnectionController extends Controller {
 
     const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
     // This throws if if fails
-    await user.registerPassword.query(body.password);
+    await user.registerPassword.mutate(body.password);
 
     const db = getDb(ctx);
     await db
@@ -74,6 +74,8 @@ export class DbConnectionController extends Controller {
 
     const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
     const { code } = await user.createPasswordResetCode.mutate();
+
+    const client = await getClient(ctx, clientId);
 
     const message = `Click this link to reset your password: ${client.loginBaseUrl}/reset-password?email=${body.email}&code=${code}`;
     await sendEmail({

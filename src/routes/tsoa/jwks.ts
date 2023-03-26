@@ -1,6 +1,6 @@
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Controller, Get, Request, Route, Tags } from "@tsoa/runtime";
-import { CERTIFICATE_EXPIRE_IN_SECONDS, client } from "../../constants";
+import { CERTIFICATE_EXPIRE_IN_SECONDS } from "../../constants";
 import { JwksKeys } from "../../types/jwks";
 
 @Route("")
@@ -15,7 +15,7 @@ export class JWKSRoutes extends Controller {
   ): Promise<JwksKeys> {
     const { env } = request.ctx;
 
-    const certificatesString = await env.CERTIFICATES.get(client.id);
+    const certificatesString = await env.CERTIFICATES.get("default");
     const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
       (cert: any) => {
         return { kid: cert.kid, ...cert.publicKey };

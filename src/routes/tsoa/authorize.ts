@@ -10,13 +10,18 @@ import {
 import { LoginState } from "../../types/LoginState";
 import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { encode } from "../../utils/base64";
+import { decode, encode } from "../../utils/base64";
+import { contentTypes, headers } from "../../constants";
+import { OAuth2Client } from "../../services/oauth2-client";
+import { getId, User } from "../../models/User";
+import { TokenFactory } from "../../services/token-factory";
+import { getCertificate } from "../../models/Certificate";
 
 @Route("")
 @Tags("authorize")
 export class AuthorizeController extends Controller {
   @Get("authorize")
-  @SuccessResponse(302, "Redirct")
+  @SuccessResponse(302, "Redirect")
   public async authorize(
     @Request() request: RequestWithContext,
     @Query("client_id") clientId: string,
@@ -30,7 +35,7 @@ export class AuthorizeController extends Controller {
     @Query("username") username?: string
   ): Promise<string> {
     // TODO: Move to middleware
-    const client = await getClient(clientId);
+    const client = await getClient(request.ctx, clientId);
     if (!client) {
       throw new Error("Client not found");
     }
@@ -39,6 +44,16 @@ export class AuthorizeController extends Controller {
     if (prompt == "none") {
       return "This should render some javascript";
     }
+
+    const loginState: LoginState = {
+      responseType,
+      redirectUri,
+      clientId,
+      scope,
+      state,
+      username,
+      connection,
+    };
 
     // Social login
     if (connection) {
@@ -49,31 +64,30 @@ export class AuthorizeController extends Controller {
         throw new Error("Connection not found");
       }
 
-      const oauthLoginUrl = new URL(oauthProvider.loginUrl);
+      const oauthLoginUrl = new URL(oauthProvider.authorizationEndpoint);
       oauthLoginUrl.searchParams.set("scope", scope);
-      oauthLoginUrl.searchParams.set("state", state);
+      oauthLoginUrl.searchParams.set(
+        "state",
+        encode(JSON.stringify(loginState))
+      );
       // TODO: this should be pointing to the callback url
-      oauthLoginUrl.searchParams.set("redirect_uri", client.loginBaseUrl);
-      this.setHeader("locaction", oauthProvider.loginUrl);
-      this.setStatus(307);
-      return "Redireting to login";
+      oauthLoginUrl.searchParams.set(
+        "redirect_uri",
+        `${client.loginBaseUrl}callback`
+      );
+      oauthLoginUrl.searchParams.set("client_id", oauthProvider.clientId);
+      oauthLoginUrl.searchParams.set("response_type", "code");
+      this.setHeader(headers.location, oauthLoginUrl.href);
+      this.setStatus(302);
+      return `Redirecting to ${connection}`;
     }
 
     const url = new URL(`${request.ctx.protocol}//${request.ctx.host}`);
-    const loginState: LoginState = {
-      grantType: responseType,
-      clientId,
-      scope,
-      state,
-      username,
-    };
-
     url.searchParams.set("state", encode(JSON.stringify(loginState)));
-
     url.pathname = "/u/login";
 
     this.setStatus(302);
-    this.setHeader("location", url.toString());
+    this.setHeader(headers.location, url.toString());
     return "Redirect";
   }
 
@@ -94,22 +108,68 @@ export class AuthorizeController extends Controller {
   @Get("callback")
   @SuccessResponse("302", "Redirect")
   public async callback(
-    @Query("client_id") clientId: string,
-    @Query("response_type") responseType: string,
-    @Query("redirect_uri") redirectUri: string,
-    @Query("scope") scope: string,
-    @Query("audience") audience: string,
+    @Request() request: RequestWithContext,
     @Query("state") state: string,
-    @Query("code") code: string
+    @Query("scope") scope: string,
+    @Query("code") code: string,
+    @Query("prompt") prompt: string,
+    @Query("authuser") authUser?: string,
+    @Query("hd") hd?: string
   ): Promise<string> {
-    const client = await getClient(clientId);
+    const { ctx } = request;
+
+    const loginState: LoginState = JSON.parse(decode(state));
+    const client = await getClient(ctx, loginState.clientId);
     if (!client) {
       throw new Error("Client not found");
     }
 
+    const oauthProvider = client.oauthProviders.find(
+      (p) => p.name === loginState.connection
+    );
+
+    // We need the profile enpdoint to connect the user to the account. Another option would be to unpack the id token..
+    if (!oauthProvider || !oauthProvider.profileEndpoint) {
+      throw new Error("Connection not found");
+    }
+
+    const oauth2Client = new OAuth2Client(
+      oauthProvider,
+      `${client.loginBaseUrl}callback`,
+      loginState.scope?.split(" ") || []
+    );
+
+    const token = await oauth2Client.exchangeCodeForToken(code);
+
+    const profile = await oauth2Client.getUserProfile(token.access_token);
+
+    const userId = getId(loginState.clientId, profile.email);
+    const user = User.getInstance(request.ctx.env.USER, userId);
+
+    await user.patchProfile.mutate({
+      connection: oauthProvider.name,
+      profile,
+    });
+
+    const certificate = await getCertificate(ctx);
+    const tokenFactory = new TokenFactory(
+      certificate.privateKey,
+      certificate.kid
+    );
+
+    // TODO: Check if it's code or implicit grant.
+    const newToken = await tokenFactory.createToken({
+      scopes: loginState.scope!.split(" "),
+      userId,
+    });
+
+    // TODO: This is quick and dirty.. we should validate the values.
+    const redirectUri = new URL(loginState.redirectUri!);
+    redirectUri.searchParams.set("token", newToken!);
+
     this.setStatus(302);
-    this.setHeader("location", redirectUri);
-    this.setHeader("content-type", "text/plain");
+    this.setHeader(headers.location, redirectUri.href);
+    this.setHeader(headers.contentType, contentTypes.text);
 
     return "Redirecting";
   }
@@ -122,8 +182,8 @@ export class AuthorizeController extends Controller {
   ): Promise<string> {
     // TODO: validate that the return to is valid for the current clietn
     this.setStatus(302);
-    this.setHeader("location", returnTo);
-    this.setHeader("content-type", "text/plain");
+    this.setHeader(headers.location, returnTo);
+    this.setHeader(headers.contentType, contentTypes.text);
 
     return "Redirecting";
   }

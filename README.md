@@ -92,7 +92,7 @@ Each user object is connected to one email, so for instance, there would be one 
 
 – [ ] Rate-limits
 
-– [ ] Social logins
+– [x] Social logins
 
 – [ ] Support passwordless with email (magic link)
 

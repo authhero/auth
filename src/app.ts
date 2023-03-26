@@ -71,6 +71,16 @@ app.post("/migrate-down", async (ctx: Context<Env>) => {
 
 app.get("/static/:file*", serve);
 
+app.get("/test", async () => {
+  return new Response("Test redirect", {
+    status: 302,
+    headers: {
+      location:
+        "/authorize?client_id=default&redirect_uri=https://auth2.sesamy.dev/info&scope=profile%20email%20openid&state=1234&response_type=implicit",
+    },
+  });
+});
+
 app.post("/create-key", async (ctx: Context<Env>) => {
   await rotateKeys(ctx.env);
 

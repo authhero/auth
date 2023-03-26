@@ -1,4 +1,3 @@
-import { client } from "../constants";
 import { getToken } from "@sagi.io/workers-jwt";
 
 const DAY_IN_SECONDS = 60 * 60 * 24;
@@ -51,11 +50,11 @@ export class TokenFactory {
     userId: string;
   }): Promise<string | null> {
     const payload: Payload = {
-      aud: client.audience,
+      aud: "https://example.com",
       scope: scopes.join(" "),
       sub: userId,
       kid: this.keyId,
-      iss: client.issuer,
+      iss: "client.issuer",
     };
 
     return getJwt(this.privateKeyPEM, this.keyId, payload);
