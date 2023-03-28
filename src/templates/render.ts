@@ -16,15 +16,26 @@ async function getTemplate(bucket: R2Bucket, templateName: string) {
   return engine.parse(templateString);
 }
 
-export interface RenderForgotPasswordContext {
-  username?: string;
-  clientId: string;
+export async function renderAuthIframe(
+  bucket: R2Bucket,
+  controller: Controller,
+  context: { targetOrigin: string }
+) {
+  const template = await getTemplate(bucket, "auth-iframe");
+
+  controller.setHeader("content-type", "text/html");
+  controller.setStatus(200);
+
+  return engine.render(template, context);
 }
 
 export async function renderForgotPassword(
   bucket: R2Bucket,
   controller: Controller,
-  context: RenderForgotPasswordContext
+  context: {
+    username?: string;
+    clientId: string;
+  }
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 

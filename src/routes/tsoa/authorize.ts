@@ -16,6 +16,7 @@ import { OAuth2Client } from "../../services/oauth2-client";
 import { getId, User } from "../../models/User";
 import { TokenFactory } from "../../services/token-factory";
 import { getCertificate } from "../../models/Certificate";
+import { renderAuthIframe } from "../../templates/render";
 
 @Route("")
 @Tags("authorize")
@@ -34,6 +35,8 @@ export class AuthorizeController extends Controller {
     @Query("connection") connection?: string,
     @Query("username") username?: string
   ): Promise<string> {
+    const { ctx } = request;
+
     // TODO: Move to middleware
     const client = await getClient(request.ctx, clientId);
     if (!client) {
@@ -42,7 +45,9 @@ export class AuthorizeController extends Controller {
 
     // Silent authentication
     if (prompt == "none") {
-      return "This should render some javascript";
+      return renderAuthIframe(ctx.env.AUTH_TEMPLATES, this, {
+        targetOrigin: redirectUri,
+      });
     }
 
     const loginState: LoginState = {

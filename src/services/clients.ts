@@ -15,7 +15,7 @@ export async function getClient(ctx: Context<Env>, id: string) {
       loginBaseUrl: ctx.env.AUTH_DOMAIN_URL,
       oauthProviders: [
         {
-          name: "google",
+          name: "google-oauth2",
           authorizationEndpoint: "https://accounts.google.com/o/oauth2/auth",
           tokenEndpoint: "https://oauth2.googleapis.com/token",
           profileEndpoint: "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -26,7 +26,9 @@ export async function getClient(ctx: Context<Env>, id: string) {
     },
   ];
 
-  const client = clients.find((c) => c.id === id);
+  // Return the first client in the list for now..
+  // const client = clients.find((c) => c.id === id);
+  const client = clients[0];
 
   if (!client) {
     throw new Error("Client not found");
