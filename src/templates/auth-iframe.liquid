@@ -8,14 +8,14 @@
 <body>
     <script type="text/javascript">
         (function (window, document) {
-            var targetOrigin = "https://login2.sesamy.dev";
+            var targetOrigin = "{{targetOrigin}}";
             var webMessageRequest = {};
             var authorizationResponse = {
                 type: "authorization_response",
                 response: {
                     "error": "login_required",
                     "error_description": "Login required",
-                    "state": "N0dBvQZHkazXhOPlqciU~H2mpI_xHVCQ"
+                    "state": "{{state}}"
                 }
             };
             var mainWin = (window.opener) ? window.opener : window.parent;

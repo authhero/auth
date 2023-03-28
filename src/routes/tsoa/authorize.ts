@@ -47,6 +47,7 @@ export class AuthorizeController extends Controller {
     if (prompt == "none") {
       return renderAuthIframe(ctx.env.AUTH_TEMPLATES, this, {
         targetOrigin: redirectUri,
+        state,
       });
     }
 

@@ -19,7 +19,7 @@ async function getTemplate(bucket: R2Bucket, templateName: string) {
 export async function renderAuthIframe(
   bucket: R2Bucket,
   controller: Controller,
-  context: { targetOrigin: string }
+  context: { targetOrigin: string; state: string }
 ) {
   const template = await getTemplate(bucket, "auth-iframe");
 
