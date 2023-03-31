@@ -8,7 +8,7 @@ export async function getClient(ctx: Context<Env>, id: string) {
     {
       id: "default",
       name: "Default",
-      audience: "https://example.com",
+      audience: "default",
       issuer: "https://example.com",
       senderEmail: "markus@ahlstrand.es",
       senderName: "Cloudworker Auth",

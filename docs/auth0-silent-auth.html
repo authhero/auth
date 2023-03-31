@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Authorization Response</title>
+</head>
+
+<body>
+    <script type="text/javascript">
+        (function (window, document) {
+            var targetOrigin = "https://login2.sesamy.dev"; 
+            var webMessageRequest = {};
+
+            var authorizationResponse = {
+                type: "authorization_response",
+                response: {
+                    "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im03bDFfQVhJUmZ1OWwzVHpnYjhzSSJ9.eyJpc3MiOiJodHRwczovL2F1dGguc2VzYW15LmRldi8iLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwODc5MTAwNDY3MTA3MjgxNzc5NCIsImF1ZCI6WyJodHRwczovL3Nlc2FteS5jb20iLCJodHRwczovL3Nlc2FteS1kZXYuZXUuYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTY4MDI0MDkyMiwiZXhwIjoxNjgwMjY5NzIyLCJhenAiOiIwTjB3VUhYRmwwVE1UWTJMOWFESll2d1g3WHk4NEhrVyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJwZXJtaXNzaW9ucyI6WyJhZG1pbiIsImJyZWFraXQiLCJrdmFydGFsIiwibWFya2V0aW5nIiwidGhpcmRlYXIiXX0.g7He8cGGa7Y8Od6KdAGl88GSlwmaOxGoe58Rt7jzkY9XmqHRHWwRGGBGfN4v3PzcBh5UTz-8c1KJUsBEXgTi90s315VxXQYnXWdt7cYxLycFPL2cNcBhxYYTq07I3TWtb2qP-Sz4xe3CE60fg4NXzT6vkAGHw-DMvbvb1KTQBZ_XQYDZeXziebIAznwnbC_dLGsuTiE6FhctPdajmMYe8GAeudHM8WuJP_PtYrFXhKdwfTdUqYKs-ELai3yqVXnBdvDfj_t-RQ1zH1C7SJUNrIv7cRYti5L7Za3uvFglJImHtKql-t-s536RqDxTNYIkkXnQ3N3SabE3B5VijCJjhw",
+                    "scope": "openid profile email",
+                    "expires_in": 28800,
+                    "token_type": "Bearer",
+                    "state": "6z2IIdi3zTaq_RcdHjO_FN1CIV.gfvta",
+                    "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im03bDFfQVhJUmZ1OWwzVHpnYjhzSSJ9.eyJnaXZlbl9uYW1lIjoiTWFya3VzIiwiZmFtaWx5X25hbWUiOiJBaGxzdHJhbmQiLCJuaWNrbmFtZSI6Im1hcmt1cyIsIm5hbWUiOiJNYXJrdXMgQWhsc3RyYW5kIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FHTm15eGFoZ3NaMW1CRGZqWWJ5ZGd0TkRXZ1M3OEF2WWs2OFNTb0YxaXQtPXM5Ni1jIiwibG9jYWxlIjoiZW4iLCJ1cGRhdGVkX2F0IjoiMjAyMy0wMy0zMVQwNToyOTozOC41NjFaIiwiZW1haWwiOiJtYXJrdXNAc2VzYW15LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJpc3MiOiJodHRwczovL2F1dGguc2VzYW15LmRldi8iLCJhdWQiOiIwTjB3VUhYRmwwVE1UWTJMOWFESll2d1g3WHk4NEhrVyIsImlhdCI6MTY4MDI0MDkyMiwiZXhwIjoxNjgwMjc2OTIyLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwODc5MTAwNDY3MTA3MjgxNzc5NCIsImF0X2hhc2giOiJtYWNPNUU4RjZOYmlvRE1yenhPRTl3Iiwic2lkIjoiXy1pelFtMWtTeUlfV3otVlQtRHBKU2FKMU4tZHBLNmkiLCJub25jZSI6Ijd2NmpfaVY3VH5wYk9oQi1nQ2ZoMm9YSGVrTH5rMUhlIn0.Dawx6z2szvSsj7Ammpu6mDeCNtcanjaqxenEX8SbPJFQLftjMBFpYLdV9ycdOLCwa0GyKxhQ7Q_tGwf2-K06SZbwbwObIK9BoRzB_PTvBCZJ-StDbMaI3aLFNQN4wMEy9trRTT9XCDEsoUOlWkC1sQZcQzCzl-fbvc6U8dtTkERWAZqm9-GCbmH_hhhlr1DtXBlmVPCNnpiuHIMsBhaxgnaSSOAr_vCdo7FTNrsZBgvi2erT44nOXqAw3A686LYi9y1p1bRZqD2t_LwLS_mI_F9TqnJ2Fmaot1aAD2uErpk0bIbIOc7UDVPSTAM8LcbztJ16wqZoLAxiZceUYLQ0fA"
+                }
+            };
+            var mainWin = (window.opener) ? window.opener : window.parent;
+            if (webMessageRequest["web_message_uri"] && webMessageRequest["web_message_target"]) {
+                window.addEventListener("message", function (evt) {
+                    if (evt.origin != targetOrigin) return;
+                    switch (evt.data.type) {
+                        case "relay_response":
+                            var messageTargetWindow = evt.source.frames[webMessageRequest["web_message_target"]];
+                            if (messageTargetWindow) {
+                                messageTargetWindow.postMessage(authorizationResponse, webMessageRequest["web_message_uri"]);
+                                window.close();
+                            }
+                            break;
+                    }
+                });
+                mainWin.postMessage({ type: "relay_request" }, targetOrigin);
+            } else {
+                mainWin.postMessage(authorizationResponse, targetOrigin);
+            }
+        })(this, this.document);
+
+    </script>
+</body>
+
+</html>

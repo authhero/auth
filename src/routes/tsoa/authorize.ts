@@ -17,6 +17,12 @@ import { getId, User } from "../../models/User";
 import { TokenFactory } from "../../services/token-factory";
 import { getCertificate } from "../../models/Certificate";
 import { renderAuthIframe } from "../../templates/render";
+import {
+  getStateFromCookie,
+  serializeClearCookie,
+  serializeStateInCookie,
+} from "../../services/cookies";
+import { State } from "../../models/State";
 
 @Route("")
 @Tags("authorize")
@@ -33,7 +39,8 @@ export class AuthorizeController extends Controller {
     @Query("prompt") prompt?: string,
     @Query("audience") audience?: string,
     @Query("connection") connection?: string,
-    @Query("username") username?: string
+    @Query("username") username?: string,
+    @Query("nonce") nonce?: string
   ): Promise<string> {
     const { ctx } = request;
 
@@ -45,9 +52,49 @@ export class AuthorizeController extends Controller {
 
     // Silent authentication
     if (prompt == "none") {
+      const tokenState = getStateFromCookie(request.ctx.headers.get("cookie"));
+      const redirectURL = new URL(redirectUri);
+
+      if (tokenState) {
+        const stateInstance = State.getInstanceById(ctx.env.STATE, tokenState);
+        const tokenResponseString = await stateInstance.getState.query();
+
+        if (tokenResponseString) {
+          const tokenResponse = JSON.parse(tokenResponseString);
+          tokenResponse.state = state;
+
+          const certificate = await getCertificate(ctx);
+          const tokenFactory = new TokenFactory(
+            certificate.privateKey,
+            certificate.kid
+          );
+
+          tokenResponse.accessToken = await tokenFactory.createAccessToken({
+            scopes: tokenResponse.scope.split(" "),
+            userId: tokenResponse.userId,
+            iss: ctx.env.AUTH_DOMAIN_URL,
+          });
+
+          tokenResponse.id_token = await tokenFactory.createIDToken({
+            userId: tokenResponse.userId,
+            iss: ctx.env.AUTH_DOMAIN_URL,
+            nonce,
+          });
+
+          return renderAuthIframe(ctx.env.AUTH_TEMPLATES, this, {
+            targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
+            response: JSON.stringify(tokenResponse),
+          });
+        }
+      }
+
       return renderAuthIframe(ctx.env.AUTH_TEMPLATES, this, {
-        targetOrigin: redirectUri,
-        state,
+        targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
+        response: JSON.stringify({
+          error: "login_required",
+          error_description: "Login required",
+          state,
+        }),
       });
     }
 
@@ -150,28 +197,51 @@ export class AuthorizeController extends Controller {
     const profile = await oauth2Client.getUserProfile(token.access_token);
 
     const userId = getId(loginState.clientId, profile.email);
-    const user = User.getInstance(request.ctx.env.USER, userId);
+    const user = User.getInstanceByName(request.ctx.env.USER, userId);
 
     await user.patchProfile.mutate({
       connection: oauthProvider.name,
       profile,
     });
 
-    const certificate = await getCertificate(ctx);
-    const tokenFactory = new TokenFactory(
-      certificate.privateKey,
-      certificate.kid
-    );
-
-    // TODO: Check if it's code or implicit grant.
-    const newToken = await tokenFactory.createToken({
-      scopes: loginState.scope!.split(" "),
+    const payload = {
       userId,
+      scope: "openid profile email",
+      expires_in: 28800,
+      token_type: "Bearer",
+      state: loginState.state,
+    };
+
+    const durableObjectId = ctx.env.STATE.newUniqueId();
+    const stateInstance = State.getInstance(ctx.env.STATE, durableObjectId);
+    await stateInstance.createState.mutate({
+      state: JSON.stringify(payload, null, 2),
+    });
+
+    serializeStateInCookie(durableObjectId.toString()).forEach((cookie) => {
+      this.setHeader(headers.setCookie, cookie);
     });
 
     // TODO: This is quick and dirty.. we should validate the values.
     const redirectUri = new URL(loginState.redirectUri!);
-    redirectUri.searchParams.set("token", newToken!);
+
+    if (loginState.responseType === "implicit") {
+      const certificate = await getCertificate(ctx);
+      const tokenFactory = new TokenFactory(
+        certificate.privateKey,
+        certificate.kid
+      );
+
+      const accessToken = await tokenFactory.createAccessToken({
+        scopes: loginState.scope!.split(" "),
+        userId,
+        iss: ctx.env.AUTH_DOMAIN_URL,
+      });
+
+      redirectUri.searchParams.set("access_token", accessToken!);
+    }
+
+    // Redirect to resume endpoint?
 
     this.setStatus(302);
     this.setHeader(headers.location, redirectUri.href);
@@ -180,14 +250,17 @@ export class AuthorizeController extends Controller {
     return "Redirecting";
   }
 
-  @Get("logout")
+  @Get("v2/logout")
   @SuccessResponse("302", "Redirect")
   public async logout(
     @Query("client_id") clientId: string,
-    @Query("return_to") returnTo: string
+    @Query("returnTo") returnTo: string
   ): Promise<string> {
-    // TODO: validate that the return to is valid for the current clietn
+    // TODO: validate that the return to is valid for the current client
     this.setStatus(302);
+    serializeClearCookie().forEach((cookie) => {
+      this.setHeader(headers.setCookie, cookie);
+    });
     this.setHeader(headers.location, returnTo);
     this.setHeader(headers.contentType, contentTypes.text);
 

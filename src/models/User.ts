@@ -189,9 +189,15 @@ export const userRouter = router({
   validatePasswordResetCode: publicProcedure
     .input(z.string())
     .query(async ({ input, ctx }) => {
-      const passwordResetCode = await ctx.state.storage.get<Code>(
+      const passwordResetCodeString = await ctx.state.storage.get<string>(
         StorageKeys.passwordResetCode
       );
+
+      if (!passwordResetCodeString) {
+        throw new Error();
+      }
+
+      const passwordResetCode: Code = JSON.parse(passwordResetCodeString);
 
       return (
         passwordResetCode &&

@@ -19,7 +19,7 @@ async function getTemplate(bucket: R2Bucket, templateName: string) {
 export async function renderAuthIframe(
   bucket: R2Bucket,
   controller: Controller,
-  context: { targetOrigin: string; state: string }
+  context: { targetOrigin: string; response: any }
 ) {
   const template = await getTemplate(bucket, "auth-iframe");
 
@@ -35,6 +35,7 @@ export async function renderForgotPassword(
   context: {
     username?: string;
     clientId: string;
+    state: string;
   }
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
@@ -83,6 +84,7 @@ export interface RenderSignupContext {
   username?: string;
   clientId: string;
   state: string;
+  errorMessage?: string;
 }
 
 export async function renderSignup(

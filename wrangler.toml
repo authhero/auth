@@ -25,8 +25,12 @@ database_id = "3a755926-9eed-47a6-843e-9db66dd1fe16"
 preview_database_id = "3a755926-9eed-47a6-843e-9db66dd1fe16"
 
 [durable_objects]
-bindings = [{name = "USER", class_name = "User"}]
+bindings = [{name = "USER", class_name = "User"}, {name = "STATE", class_name = "State"}]
 
 [[migrations]]
 tag = "v1" # Should be unique for each entry
 new_classes = ["User"]
+
+[[migrations]]
+tag = "v2" # Should be unique for each entry
+new_classes = ["State"]

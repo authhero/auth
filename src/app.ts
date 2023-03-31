@@ -76,7 +76,7 @@ app.get("/test", async () => {
     status: 302,
     headers: {
       location:
-        "/authorize?client_id=default&redirect_uri=https://auth2.sesamy.dev/info&scope=profile%20email%20openid&state=1234&response_type=implicit",
+        "/authorize?client_id=default&redirect_uri=https://auth2.sesamy.dev/u/info&scope=profile%20email%20openid&state=1234&response_type=implicit",
     },
   });
 });

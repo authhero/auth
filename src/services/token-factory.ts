@@ -23,13 +23,26 @@ export async function getJwt(
   });
 }
 
-interface Payload {
+interface AcessTokenPayload {
   aud: string;
   azp?: string;
   kid: string;
   scope: string;
   sub: string;
   iss: string;
+}
+
+interface IDTokenPayload {
+  aud: string;
+  kid: string;
+  sub: string;
+  iss: string;
+  nonce?: string;
+  email?: string;
+  given_name?: string;
+  family_name?: string;
+  nickname?: string;
+  name?: string;
 }
 
 export class TokenFactory {
@@ -42,19 +55,41 @@ export class TokenFactory {
     this.keyId = keyId;
   }
 
-  async createToken({
+  async createAccessToken({
     scopes,
     userId,
+    iss,
   }: {
     scopes: string[];
     userId: string;
+    iss: string;
   }): Promise<string | null> {
-    const payload: Payload = {
-      aud: "https://example.com",
+    const payload: AcessTokenPayload = {
+      aud: "default",
       scope: scopes.join(" "),
       sub: userId,
       kid: this.keyId,
-      iss: "client.issuer",
+      iss,
+    };
+
+    return getJwt(this.privateKeyPEM, this.keyId, payload);
+  }
+
+  async createIDToken({
+    userId,
+    nonce,
+    iss,
+  }: {
+    userId: string;
+    nonce?: string;
+    iss: string;
+  }): Promise<string | null> {
+    const payload: IDTokenPayload = {
+      aud: "default",
+      sub: userId,
+      kid: this.keyId,
+      nonce,
+      iss,
     };
 
     return getJwt(this.privateKeyPEM, this.keyId, payload);

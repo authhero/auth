@@ -1,6 +1,10 @@
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Controller, Get, Request, Route, Tags } from "@tsoa/runtime";
-import { CERTIFICATE_EXPIRE_IN_SECONDS } from "../../constants";
+import {
+  CERTIFICATE_EXPIRE_IN_SECONDS,
+  contentTypes,
+  headers,
+} from "../../constants";
 import { JwksKeys } from "../../types/jwks";
 
 @Route("")
@@ -22,9 +26,11 @@ export class JWKSRoutes extends Controller {
       }
     );
 
-    this.setHeader("content-type", "application/json");
+    this.setHeader(headers.contentType, contentTypes.json);
+    this.setHeader(headers.accessControlAllowOrigin, "*");
+    this.setHeader(headers.accessControlAllowMethod, "GET");
     this.setHeader(
-      "cache-control",
+      headers.cacheControl,
       `public, max-age=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-while-revalidate=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-if-error=86400`
     );
 

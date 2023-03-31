@@ -9,7 +9,7 @@ export default async function passwordlessGrant(
   ctx: Context<Env>,
   params: PasswordlessGrantTypeParams
 ): Promise<TokenResponse | null> {
-  const user = User.getInstance(ctx.env.USER, params.username);
+  const user = User.getInstanceByName(ctx.env.USER, params.username);
 
   const validCode = await user.validateAuthenticationCode.mutate(params.otp);
 
@@ -23,9 +23,10 @@ export default async function passwordlessGrant(
     certificate.kid
   );
 
-  const token = await tokenFactory.createToken({
+  const token = await tokenFactory.createAccessToken({
     scopes: params.scope?.split(" ") ?? [],
     userId: params.username,
+    iss: ctx.env.AUTH_DOMAIN_URL,
   });
 
   if (!token) {

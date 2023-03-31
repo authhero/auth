@@ -50,7 +50,10 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
+    const user = User.getInstanceByName(
+      ctx.env.USER,
+      getId(clientId, body.email)
+    );
     // This throws if if fails
     await user.registerPassword.mutate(body.password);
 
@@ -72,7 +75,10 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
+    const user = User.getInstanceByName(
+      ctx.env.USER,
+      getId(clientId, body.email)
+    );
     const { code } = await user.createPasswordResetCode.mutate();
 
     const client = await getClient(ctx, clientId);
@@ -104,7 +110,10 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, getId(clientId, body.email));
+    const user = User.getInstanceByName(
+      ctx.env.USER,
+      getId(clientId, body.email)
+    );
     const { code } = await user.validateEmailValidationCode.query(body.code);
 
     return "ok";

@@ -80,12 +80,28 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
-    const user = User.getInstance(
+    const user = User.getInstanceByName(
       request.ctx.env.USER,
       getId(loginState.clientId, loginParams.username)
     );
 
-    await user.registerPassword.mutate(loginParams.password);
+    try {
+      await user.registerPassword.mutate(loginParams.password);
+    } catch (err: any) {
+      const signupState = encode(
+        JSON.stringify({
+          username: loginParams.username,
+          clientId: loginState.clientId,
+        })
+      );
+
+      return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        username: loginParams.username,
+        errorMessage: err.message,
+        state: signupState,
+      });
+    }
 
     return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
       page_title: "User created",
@@ -103,9 +119,12 @@ export class LoginController extends Controller {
     @Query("state") state: string
   ): Promise<string> {
     const { ctx } = request;
-    const loginState: LoginState = JSON.parse(atob(state));
+    const loginState = JSON.parse(atob(state));
 
-    return renderForgotPassword(ctx.env.AUTH_TEMPLATES, this, loginState);
+    return renderForgotPassword(ctx.env.AUTH_TEMPLATES, this, {
+      ...loginState,
+      state,
+    });
   }
 
   /**
@@ -128,7 +147,7 @@ export class LoginController extends Controller {
       throw new Error("Client not found");
     }
 
-    const user = User.getInstance(
+    const user = User.getInstanceByName(
       ctx.env.USER,
       getId(clientId, params.username)
     );
@@ -195,7 +214,7 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const resetPasswordState: ResetPasswordState = JSON.parse(decode(state));
 
-    const user = User.getInstance(
+    const user = User.getInstanceByName(
       request.ctx.env.USER,
       getId(resetPasswordState.clientId, resetPasswordState.username)
     );
@@ -225,7 +244,7 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
-    const user = User.getInstance(
+    const user = User.getInstanceByName(
       request.ctx.env.USER,
       getId(loginState.clientId, loginParams.username)
     );
@@ -244,5 +263,19 @@ export class LoginController extends Controller {
         errorMessage: err.message,
       });
     }
+  }
+
+  /**
+   * Renders a info page for the user
+   * @param request
+   */
+  @Get("info")
+  public async info(@Request() request: RequestWithContext): Promise<string> {
+    const { ctx } = request;
+
+    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+      page_title: "User info",
+      message: "This is the user info page",
+    });
   }
 }

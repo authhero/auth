@@ -27,7 +27,7 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstance(ctx.env.USER, body.email);
+    const user = User.getInstanceByName(ctx.env.USER, body.email);
     const { code } = await user.createAuthenticationCode.mutate();
 
     const client = await getClient(ctx, body.client_id);
