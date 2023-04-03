@@ -9,11 +9,12 @@ import {
   UnauthenticatedError,
   NoUserFoundError,
   UserConflictError,
+  AuthenticationCodeExpired,
 } from "../errors";
 
 interface Code {
   code?: string;
-  codeExpireAt?: number;
+  expireAt?: number;
   password?: string;
 }
 
@@ -58,7 +59,7 @@ export const userRouter = router({
   createAuthenticationCode: publicProcedure
     .input(z.string().nullish())
     .mutation(async ({ input, ctx }) => {
-      const result = {
+      const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
       };
@@ -73,7 +74,7 @@ export const userRouter = router({
   createEmailValidationCode: publicProcedure
     .input(z.string().nullish())
     .query(async ({ input, ctx }) => {
-      const result = {
+      const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
       };
@@ -88,7 +89,7 @@ export const userRouter = router({
   createPasswordResetCode: publicProcedure
     .input(z.string().nullish())
     .mutation(async ({ input, ctx }) => {
-      const result = {
+      const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
       };
@@ -140,21 +141,27 @@ export const userRouter = router({
   validateAuthenticationCode: publicProcedure
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
-      const loginCode = await ctx.state.storage.get<Code>(
+      const codeString = await ctx.state.storage.get<string>(
         StorageKeys.authenticationCode
       );
 
-      if (!loginCode) {
+      if (!codeString) {
         throw new UnauthenticatedError();
       }
 
+      const code: Code = JSON.parse(codeString);
+
       const ok =
-        input === loginCode.code &&
-        loginCode.codeExpireAt !== undefined &&
-        Date.now() < loginCode.codeExpireAt;
+        input === code.code &&
+        code.expireAt !== undefined &&
+        Date.now() < code.expireAt;
 
       if (!ok) {
         throw new UnauthenticatedError();
+      }
+
+      if (!code.expireAt || Date.now() > code.expireAt) {
+        throw new AuthenticationCodeExpired();
       }
 
       // Remove once used
@@ -173,8 +180,8 @@ export const userRouter = router({
 
       const ok =
         input === emailValidationCode.code &&
-        emailValidationCode.codeExpireAt !== undefined &&
-        Date.now() < emailValidationCode.codeExpireAt;
+        emailValidationCode.expireAt !== undefined &&
+        Date.now() < emailValidationCode.expireAt;
 
       if (!ok) {
         throw new UnauthenticatedError();
@@ -202,8 +209,8 @@ export const userRouter = router({
       return (
         passwordResetCode &&
         input === passwordResetCode.code &&
-        passwordResetCode.codeExpireAt !== undefined &&
-        Date.now() < passwordResetCode.codeExpireAt
+        passwordResetCode.expireAt !== undefined &&
+        Date.now() < passwordResetCode.expireAt
       );
     }),
   validatePassword: publicProcedure

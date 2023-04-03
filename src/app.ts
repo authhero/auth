@@ -9,9 +9,11 @@ import rotateKeys from "./routes/rotate-keys";
 import { serve } from "./routes/login";
 import { migrateDown, migrateToLatest } from "./migrate";
 import errorHandler from "./middlewares/errorHandler";
+import corsMiddleware from "./middlewares/cors";
 
 export const app = new Router<Env>();
 
+app.use(corsMiddleware);
 app.use(errorHandler);
 
 app.get("/", async () => {

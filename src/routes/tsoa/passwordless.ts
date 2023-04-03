@@ -4,6 +4,8 @@ import sendEmail from "../../services/email";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { User } from "../../models/User";
 import { getClient } from "../../services/clients";
+import { contentTypes, headers } from "../../constants";
+import { AuthenticationCodeExpired } from "../../errors";
 
 export interface PasssworlessOptions {
   client_id: string;
@@ -12,15 +14,30 @@ export interface PasssworlessOptions {
   email: string;
   send?: "link" | "code";
   authParams?: {
+    response_type?: string;
     redirect_uri?: string;
+    audience?: string;
+    state?: string;
+    nonce?: string;
     scope?: string;
   };
 }
 
-@Route("passwordless")
+export interface LoginTicket {
+  login_ticket: string;
+  co_verifier: string;
+  co_id: string;
+}
+
+export interface LoginError {
+  error: string;
+  error_description: string;
+}
+
+@Route("")
 @Tags("passwordless")
 export class PasswordlessController extends Controller {
-  @Post("start")
+  @Post("passwordless/start")
   public async getUser(
     @Body() body: PasssworlessOptions,
     @Request() request: RequestWithContext
@@ -49,5 +66,54 @@ export class PasswordlessController extends Controller {
     });
 
     return "ok";
+  }
+
+  /**
+   * The endpoint used to authenticate using an OTP in auth0
+   * @param body
+   * @param request
+   * @returns
+   */
+  @Post("co/authenticate")
+  public async validateOTP(
+    @Body()
+    body: {
+      client_id: string;
+      username: string;
+      otp: string;
+      realm: "email";
+      credential_type: string;
+    },
+    @Request() request: RequestWithContext
+  ): Promise<LoginTicket | LoginError> {
+    const { ctx } = request;
+
+    const user = User.getInstanceByName(ctx.env.USER, body.username);
+    try {
+      await user.validateAuthenticationCode.mutate(body.otp);
+
+      this.setHeader(headers.contentType, contentTypes.json);
+      return {
+        login_ticket: "v6jJzfGgd1BLdQdQCfYgTUdnAkRzCjcA",
+        co_verifier: "WFLZu4rZim_AlCHRvOLYLUogrN20v2kW",
+        co_id: "7MPaWjDjeFL0",
+      };
+    } catch (err) {
+      this.setStatus(401);
+      this.setHeader(headers.contentType, contentTypes.json);
+
+      if (err instanceof AuthenticationCodeExpired) {
+        return {
+          error: "access_denied",
+          error_description:
+            "The verification code has expired. Please try to login again.",
+        };
+      }
+
+      return {
+        error: "access_denied",
+        error_description: "Wrong email or verification code.",
+      };
+    }
   }
 }

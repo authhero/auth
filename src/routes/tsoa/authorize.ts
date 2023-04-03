@@ -16,13 +16,17 @@ import { OAuth2Client } from "../../services/oauth2-client";
 import { getId, User } from "../../models/User";
 import { TokenFactory } from "../../services/token-factory";
 import { getCertificate } from "../../models/Certificate";
-import { renderAuthIframe } from "../../templates/render";
 import {
-  getStateFromCookie,
   serializeClearCookie,
   serializeStateInCookie,
 } from "../../services/cookies";
 import { State } from "../../models/State";
+import silentAuth from "../../authentication-types/silent";
+import socialAuth from "../../authentication-types/social";
+
+enum ResponseType {
+  tokenIdToken = "token id_token",
+}
 
 @Route("")
 @Tags("authorize")
@@ -32,7 +36,7 @@ export class AuthorizeController extends Controller {
   public async authorize(
     @Request() request: RequestWithContext,
     @Query("client_id") clientId: string,
-    @Query("response_type") responseType: string,
+    @Query("response_type") responseType: ResponseType,
     @Query("redirect_uri") redirectUri: string,
     @Query("scope") scope: string,
     @Query("state") state: string,
@@ -40,11 +44,11 @@ export class AuthorizeController extends Controller {
     @Query("audience") audience?: string,
     @Query("connection") connection?: string,
     @Query("username") username?: string,
-    @Query("nonce") nonce?: string
+    @Query("nonce") nonce?: string,
+    @Query("login_ticket") loginTicket?: string
   ): Promise<string> {
     const { ctx } = request;
 
-    // TODO: Move to middleware
     const client = await getClient(request.ctx, clientId);
     if (!client) {
       throw new Error("Client not found");
@@ -52,50 +56,14 @@ export class AuthorizeController extends Controller {
 
     // Silent authentication
     if (prompt == "none") {
-      const tokenState = getStateFromCookie(request.ctx.headers.get("cookie"));
-      const redirectURL = new URL(redirectUri);
-
-      if (tokenState) {
-        const stateInstance = State.getInstanceById(ctx.env.STATE, tokenState);
-        const tokenResponseString = await stateInstance.getState.query();
-
-        if (tokenResponseString) {
-          const tokenResponse = JSON.parse(tokenResponseString);
-          tokenResponse.state = state;
-
-          const certificate = await getCertificate(ctx);
-          const tokenFactory = new TokenFactory(
-            certificate.privateKey,
-            certificate.kid
-          );
-
-          tokenResponse.accessToken = await tokenFactory.createAccessToken({
-            scopes: tokenResponse.scope.split(" "),
-            userId: tokenResponse.userId,
-            iss: ctx.env.AUTH_DOMAIN_URL,
-          });
-
-          tokenResponse.id_token = await tokenFactory.createIDToken({
-            userId: tokenResponse.userId,
-            iss: ctx.env.AUTH_DOMAIN_URL,
-            nonce,
-          });
-
-          return renderAuthIframe(ctx.env.AUTH_TEMPLATES, this, {
-            targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
-            response: JSON.stringify(tokenResponse),
-          });
-        }
-      }
-
-      return renderAuthIframe(ctx.env.AUTH_TEMPLATES, this, {
-        targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
-        response: JSON.stringify({
-          error: "login_required",
-          error_description: "Login required",
-          state,
-        }),
-      });
+      return silentAuth(
+        ctx,
+        this,
+        request.ctx.headers.get("cookie"),
+        redirectUri,
+        state,
+        nonce
+      );
     }
 
     const loginState: LoginState = {
@@ -107,36 +75,15 @@ export class AuthorizeController extends Controller {
       username,
       connection,
     };
+    const loginStateString = encode(JSON.stringify(loginState));
 
     // Social login
     if (connection) {
-      const oauthProvider = client.oauthProviders.find(
-        (p) => p.name === connection
-      );
-      if (!oauthProvider) {
-        throw new Error("Connection not found");
-      }
-
-      const oauthLoginUrl = new URL(oauthProvider.authorizationEndpoint);
-      oauthLoginUrl.searchParams.set("scope", scope);
-      oauthLoginUrl.searchParams.set(
-        "state",
-        encode(JSON.stringify(loginState))
-      );
-      // TODO: this should be pointing to the callback url
-      oauthLoginUrl.searchParams.set(
-        "redirect_uri",
-        `${client.loginBaseUrl}callback`
-      );
-      oauthLoginUrl.searchParams.set("client_id", oauthProvider.clientId);
-      oauthLoginUrl.searchParams.set("response_type", "code");
-      this.setHeader(headers.location, oauthLoginUrl.href);
-      this.setStatus(302);
-      return `Redirecting to ${connection}`;
+      return socialAuth(this, client, connection, scope, loginStateString);
     }
 
     const url = new URL(`${request.ctx.protocol}//${request.ctx.host}`);
-    url.searchParams.set("state", encode(JSON.stringify(loginState)));
+    url.searchParams.set("state", loginStateString);
     url.pathname = "/u/login";
 
     this.setStatus(302);

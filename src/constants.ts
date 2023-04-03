@@ -3,8 +3,10 @@ export const CERTIFICATE_EXPIRE_IN_SECONDS = 60 * 60 * 36;
 export const ACCESS_TOKEN_EXPIRE_IN_SECONDS = 60 * 60 * 24;
 
 export const headers = {
+  accessControlAllowHeaders: "Access-Control-Allow-Headers",
   accessControlAllowOrigin: "Access-Control-Allow-Origin",
   accessControlAllowMethod: "Access-Control-Allow-Methods",
+  accessControlAllowCredentials: "Access-Control-Allow-Credentials",
   cacheControl: "Cache-Control",
   contentType: "Content-Type",
   location: "Location",
