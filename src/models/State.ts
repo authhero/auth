@@ -31,6 +31,7 @@ export const stateRouter = router({
 });
 
 export async function stateAlarm(state: DurableObjectState) {
+  console.log("Delete state");
   state.storage.deleteAll();
 }
 

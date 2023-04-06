@@ -1,6 +1,8 @@
 export const JWKS_CACHE_TIMEOUT_IN_SECONDS = 60 * 15;
 export const CERTIFICATE_EXPIRE_IN_SECONDS = 60 * 60 * 36;
 export const ACCESS_TOKEN_EXPIRE_IN_SECONDS = 60 * 60 * 24;
+export const MONTH_IN_SECONDS = 30 * 24 * 60 * 60;
+export const BEARER = "Bearer";
 
 export const headers = {
   accessControlAllowHeaders: "Access-Control-Allow-Headers",

@@ -8,10 +8,20 @@ export class UnauthenticatedError extends Error {
   }
 }
 
-export class AuthenticationCodeExpired extends Error {
+export class AuthenticationCodeExpiredError extends Error {
   status = 401;
 
   constructor(message = "Authentication code expired") {
+    super();
+
+    this.message = message;
+  }
+}
+
+export class InvalidCodeError extends Error {
+  status = 401;
+
+  constructor(message = "Invalid code") {
     super();
 
     this.message = message;

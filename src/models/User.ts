@@ -9,11 +9,14 @@ import {
   UnauthenticatedError,
   NoUserFoundError,
   UserConflictError,
-  AuthenticationCodeExpired,
+  InvalidCodeError,
+  AuthenticationCodeExpiredError,
 } from "../errors";
+import { AuthParams } from "../types/AuthParams";
 
 interface Code {
-  code?: string;
+  authParams: AuthParams;
+  code: string;
   expireAt?: number;
   password?: string;
 }
@@ -57,11 +60,16 @@ export const userRouter = router({
       throw new Error("Not implemented");
     }),
   createAuthenticationCode: publicProcedure
-    .input(z.string().nullish())
+    .input(
+      z.object({
+        authParams: z.custom<AuthParams>(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
+        authParams: input.authParams,
       };
 
       await ctx.state.storage.put(
@@ -77,6 +85,7 @@ export const userRouter = router({
       const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
+        authParams: {},
       };
 
       await ctx.state.storage.put(
@@ -92,6 +101,7 @@ export const userRouter = router({
       const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
+        authParams: {},
       };
 
       await ctx.state.storage.put(
@@ -103,6 +113,9 @@ export const userRouter = router({
     }),
   isEmailValidated: publicProcedure.query(async ({ ctx }) => {
     return ctx.state.storage.get<boolean>(StorageKeys.emailValidated);
+  }),
+  test: publicProcedure.query(async ({ ctx }) => {
+    return ctx.state.storage.get(StorageKeys.authenticationCode);
   }),
   registerPassword: publicProcedure
     .input(z.string())
@@ -151,40 +164,36 @@ export const userRouter = router({
 
       const code: Code = JSON.parse(codeString);
 
-      const ok =
-        input === code.code &&
-        code.expireAt !== undefined &&
-        Date.now() < code.expireAt;
-
-      if (!ok) {
-        throw new UnauthenticatedError();
+      if (input !== code.code) {
+        throw new InvalidCodeError();
       }
 
       if (!code.expireAt || Date.now() > code.expireAt) {
-        throw new AuthenticationCodeExpired();
+        throw new AuthenticationCodeExpiredError();
       }
 
       // Remove once used
-      await ctx.state.storage.delete(StorageKeys.authenticationCode);
+      await ctx.state.storage.put(StorageKeys.authenticationCode, "");
+
+      return code.authParams;
     }),
   validateEmailValidationCode: publicProcedure
     .input(z.string())
     .query(async ({ input, ctx }) => {
-      const emailValidationCode = await ctx.state.storage.get<Code>(
+      const code = await ctx.state.storage.get<Code>(
         StorageKeys.emailValidationCode
       );
 
-      if (!emailValidationCode) {
+      if (!code) {
         throw new UnauthenticatedError();
       }
 
-      const ok =
-        input === emailValidationCode.code &&
-        emailValidationCode.expireAt !== undefined &&
-        Date.now() < emailValidationCode.expireAt;
+      if (input !== code.code) {
+        throw new InvalidCodeError();
+      }
 
-      if (!ok) {
-        throw new UnauthenticatedError();
+      if (!code.expireAt || Date.now() > code.expireAt) {
+        throw new AuthenticationCodeExpiredError();
       }
 
       // Set the email to validated

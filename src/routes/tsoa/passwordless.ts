@@ -1,11 +1,24 @@
 // src/users/usersController.ts
-import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Request,
+  Route,
+  Tags,
+} from "@tsoa/runtime";
 import sendEmail from "../../services/email";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { User } from "../../models/User";
+import { getId, User } from "../../models/User";
 import { getClient } from "../../services/clients";
 import { contentTypes, headers } from "../../constants";
-import { AuthenticationCodeExpired } from "../../errors";
+import { AuthenticationCodeExpiredError, InvalidCodeError } from "../../errors";
+import { State } from "../../models";
+import randomString from "../../utils/random-string";
+import { base64ToHex, hexToBase64 } from "../../utils/base64";
+import { AuthParams } from "../../types/AuthParams";
 
 export interface PasssworlessOptions {
   client_id: string;
@@ -13,14 +26,7 @@ export interface PasssworlessOptions {
   connection: "email";
   email: string;
   send?: "link" | "code";
-  authParams?: {
-    response_type?: string;
-    redirect_uri?: string;
-    audience?: string;
-    state?: string;
-    nonce?: string;
-    scope?: string;
-  };
+  authParams?: AuthParams;
 }
 
 export interface LoginTicket {
@@ -37,15 +43,47 @@ export interface LoginError {
 @Route("")
 @Tags("passwordless")
 export class PasswordlessController extends Controller {
+  @Get("passwordless/test")
+  public async test(
+    @Request() request: RequestWithContext,
+    @Query("username") username?: string,
+    @Query("state") state?: string
+  ): Promise<string> {
+    const { ctx } = request;
+    this.setStatus(200);
+
+    // Debug stuff...
+    // if (username) {
+    //   const user = User.getInstanceByName(ctx.env.USER, username);
+    //   this.setHeader(headers.contentType, contentTypes.json);
+    //   return user.test.query();
+    // }
+
+    // if (state) {
+    //   const stateJson = State.getInstanceById(
+    //     ctx.env.STATE,
+    //     base64ToHex(state)
+    //   );
+    //   this.setHeader(headers.contentType, contentTypes.json);
+    //   const value = await stateJson.getState.query();
+
+    //   return value || "no value";
+    // }
+
+    return "Hello";
+  }
+
   @Post("passwordless/start")
-  public async getUser(
+  public async startPasswordless(
     @Body() body: PasssworlessOptions,
     @Request() request: RequestWithContext
   ): Promise<string> {
     const { ctx } = request;
 
     const user = User.getInstanceByName(ctx.env.USER, body.email);
-    const { code } = await user.createAuthenticationCode.mutate();
+    const { code } = await user.createAuthenticationCode.mutate({
+      authParams: body.authParams!,
+    });
 
     const client = await getClient(ctx, body.client_id);
 
@@ -90,19 +128,35 @@ export class PasswordlessController extends Controller {
 
     const user = User.getInstanceByName(ctx.env.USER, body.username);
     try {
-      await user.validateAuthenticationCode.mutate(body.otp);
+      const authParams = await user.validateAuthenticationCode.mutate(body.otp);
+
+      const coVerifier = randomString(32);
+      const coID = randomString(12);
+
+      const durableObjectId = ctx.env.STATE.newUniqueId();
+      const stateInstance = State.getInstance(ctx.env.STATE, durableObjectId);
+
+      await stateInstance.createState.mutate({
+        state: JSON.stringify({
+          coVerifier,
+          coID,
+          username: body.username,
+          userId: getId(body.client_id, body.username),
+          authParams,
+        }),
+      });
 
       this.setHeader(headers.contentType, contentTypes.json);
       return {
-        login_ticket: "v6jJzfGgd1BLdQdQCfYgTUdnAkRzCjcA",
-        co_verifier: "WFLZu4rZim_AlCHRvOLYLUogrN20v2kW",
-        co_id: "7MPaWjDjeFL0",
+        login_ticket: hexToBase64(durableObjectId.toString()),
+        co_verifier: coVerifier,
+        co_id: coID,
       };
-    } catch (err) {
+    } catch (err: any) {
       this.setStatus(401);
       this.setHeader(headers.contentType, contentTypes.json);
 
-      if (err instanceof AuthenticationCodeExpired) {
+      if (err instanceof AuthenticationCodeExpiredError) {
         return {
           error: "access_denied",
           error_description:
@@ -110,9 +164,16 @@ export class PasswordlessController extends Controller {
         };
       }
 
+      if (err instanceof InvalidCodeError) {
+        return {
+          error: "access_denied",
+          error_description: "Wrong email or verification code.",
+        };
+      }
+
       return {
         error: "access_denied",
-        error_description: "Wrong email or verification code.",
+        error_description: `Server error: ${err.message}`,
       };
     }
   }
