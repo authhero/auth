@@ -7,15 +7,10 @@ import {
   Tags,
   SuccessResponse,
 } from "@tsoa/runtime";
-import { AuthParams, LoginState } from "../../types";
+import { AuthParams } from "../../types";
 import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { decode, encode } from "../../utils/base64";
 import { contentTypes, headers } from "../../constants";
-import { OAuth2Client } from "../../services/oauth2-client";
-import { getId, User } from "../../models/User";
-import { TokenFactory } from "../../services/token-factory";
-import { getCertificate } from "../../models/Certificate";
 import { serializeClearCookie } from "../../services/cookies";
 import {
   silentAuth,
@@ -23,11 +18,14 @@ import {
   socialAuth,
   universalAuth,
   socialAuthCallback,
+  SocialAuthState,
 } from "../../authentication-types";
-import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
+import { decode } from "../../utils/base64";
 
 enum ResponseType {
-  tokenIdToken = "token id_token",
+  TOKEN_ID_TOKEN = "token id_token",
+  IMPLICIT = "implicit",
+  CODE = "code",
 }
 
 @Route("")
@@ -40,7 +38,7 @@ export class AuthorizeController extends Controller {
     @Query("client_id") clientId: string,
     @Query("response_type") responseType: ResponseType,
     @Query("redirect_uri") redirectUri: string,
-    @Query("scope") scope: string,
+    @Query("scope") scope: string = "openid email profile",
     @Query("state") state: string,
     @Query("prompt") prompt?: string,
     @Query("audience") audience?: string,
@@ -57,12 +55,13 @@ export class AuthorizeController extends Controller {
     }
 
     const authParams: AuthParams = {
-      redirect_uri: redirectUri,
-      scope: scope,
-      state: state,
-      audience: audience,
-      nonce: nonce,
-      response_type: responseType,
+      redirectUri,
+      scope,
+      state,
+      clientId,
+      audience,
+      nonce,
+      responseType,
     };
 
     // Silent authentication
@@ -114,8 +113,9 @@ export class AuthorizeController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
+    const socialAuthState: SocialAuthState = JSON.parse(decode(state));
     // This should probably not pass on the controller..
-    return socialAuthCallback(ctx, this, state, code);
+    return socialAuthCallback(ctx, this, socialAuthState, code);
   }
 
   @Get("v2/logout")

@@ -1,6 +1,7 @@
 import { Controller } from "tsoa";
 import { Liquid } from "liquidjs";
 import { encode } from "../utils/base64";
+import { AuthParams } from "../types";
 
 const engine = new Liquid();
 
@@ -55,8 +56,8 @@ export async function renderForgotPassword(
 }
 
 export interface RenderLoginContext {
+  authParams: AuthParams;
   username?: string;
-  clientId: string;
   errorMessage?: string;
 }
 
@@ -73,7 +74,10 @@ export async function renderLogin(
   controller.setStatus(200);
 
   const state = encode(JSON.stringify(context));
-  const content = await engine.render(template, { ...context, state });
+  const content = await engine.render(template, {
+    ...context.authParams,
+    state,
+  });
   return engine.render(layoutTemplate, {
     ...context,
     content,

@@ -15,7 +15,7 @@ import {
 import { AuthParams } from "../types/AuthParams";
 
 interface Code {
-  authParams: AuthParams;
+  authParams?: AuthParams;
   code: string;
   expireAt?: number;
   password?: string;
@@ -85,7 +85,6 @@ export const userRouter = router({
       const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
-        authParams: {},
       };
 
       await ctx.state.storage.put(
@@ -101,7 +100,6 @@ export const userRouter = router({
       const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
-        authParams: {},
       };
 
       await ctx.state.storage.put(

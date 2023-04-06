@@ -8,9 +8,8 @@ import { OAuth2Client } from "../services/oauth2-client";
 import { getId, User } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 
-interface SocialAuthState {
+export interface SocialAuthState {
   authParams: AuthParams;
-  clientId: string;
   connection: string;
 }
 
@@ -27,13 +26,12 @@ export async function socialAuth(
     throw new Error("Connection not found");
   }
 
-  const socialAuthState: SocialAuthState = {
+  const state: SocialAuthState = {
     authParams,
     connection,
-    clientId: client.id,
   };
 
-  const encodedSocialAuthState = encode(JSON.stringify(socialAuthState));
+  const encodedSocialAuthState = encode(JSON.stringify(state));
 
   const oauthLoginUrl = new URL(oauthProvider.authorizationEndpoint);
   if (authParams.scope) {
@@ -55,17 +53,16 @@ export async function socialAuth(
 export async function socialAuthCallback(
   ctx: Context<Env>,
   controller: Controller,
-  state: string,
+  state: SocialAuthState,
   code: string
 ) {
-  const socialAuthState: SocialAuthState = JSON.parse(decode(state));
-  const client = await getClient(ctx, socialAuthState.clientId);
+  const client = await getClient(ctx, state.authParams.clientId);
   if (!client) {
     throw new Error("Client not found");
   }
 
   const oauthProvider = client.oauthProviders.find(
-    (p) => p.name === socialAuthState.connection
+    (p) => p.name === state.connection
   );
 
   // We need the profile enpdoint to connect the user to the account. Another option would be to unpack the id token..
@@ -76,14 +73,14 @@ export async function socialAuthCallback(
   const oauth2Client = new OAuth2Client(
     oauthProvider,
     `${client.loginBaseUrl}callback`,
-    socialAuthState.authParams.scope?.split(" ") || []
+    state.authParams.scope?.split(" ") || []
   );
 
   const token = await oauth2Client.exchangeCodeForToken(code);
 
   const profile = await oauth2Client.getUserProfile(token.access_token);
 
-  const userId = getId(socialAuthState.clientId, profile.email);
+  const userId = getId(state.authParams.clientId, profile.email);
   const user = User.getInstanceByName(ctx.env.USER, userId);
 
   await user.patchProfile.mutate({
@@ -91,16 +88,10 @@ export async function socialAuthCallback(
     profile,
   });
 
-  await setSilentAuthCookies(
-    ctx,
-    controller,
-    userId,
-    socialAuthState.authParams.scope,
-    state
-  );
+  await setSilentAuthCookies(ctx, controller, userId, state.authParams.scope);
 
   // TODO: This is quick and dirty.. we should validate the values.
-  const redirectUri = new URL(socialAuthState.authParams.redirect_uri!);
+  const redirectUri = new URL(state.authParams.redirectUri);
 
   controller.setStatus(302);
   controller.setHeader(headers.location, redirectUri.href);

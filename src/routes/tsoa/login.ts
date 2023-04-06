@@ -51,7 +51,7 @@ export class LoginController extends Controller {
     @Query("state") state: string
   ): Promise<string> {
     const { ctx } = request;
-    const loginState: LoginState = JSON.parse(atob(state));
+    const loginState: LoginState = JSON.parse(decode(state));
 
     return renderLogin(ctx.env.AUTH_TEMPLATES, this, loginState);
   }
@@ -66,7 +66,7 @@ export class LoginController extends Controller {
     @Query("state") state: string
   ): Promise<string> {
     const { ctx } = request;
-    const loginState: LoginState = JSON.parse(atob(state));
+    const loginState: LoginState = JSON.parse(decode(state));
 
     return renderSignup(ctx.env.AUTH_TEMPLATES, this, { ...loginState, state });
   }
@@ -82,7 +82,7 @@ export class LoginController extends Controller {
 
     const user = User.getInstanceByName(
       request.ctx.env.USER,
-      getId(loginState.clientId, loginParams.username)
+      getId(loginState.authParams.clientId, loginParams.username)
     );
 
     try {
@@ -91,7 +91,7 @@ export class LoginController extends Controller {
       const signupState = encode(
         JSON.stringify({
           username: loginParams.username,
-          clientId: loginState.clientId,
+          clientId: loginState.authParams.clientId,
         })
       );
 
@@ -140,7 +140,7 @@ export class LoginController extends Controller {
     const { ctx } = request;
 
     const loginState: LoginState = JSON.parse(decode(state));
-    const { clientId } = loginState;
+    const { clientId } = loginState.authParams;
 
     const client = await getClient(ctx, clientId);
     if (!client) {
@@ -246,7 +246,7 @@ export class LoginController extends Controller {
 
     const user = User.getInstanceByName(
       request.ctx.env.USER,
-      getId(loginState.clientId, loginParams.username)
+      getId(loginState.client_id, loginParams.username)
     );
 
     try {
@@ -258,7 +258,7 @@ export class LoginController extends Controller {
       });
     } catch (err: any) {
       return renderLogin(ctx.env.AUTH_TEMPLATES, this, {
-        ...loginState,
+        authParams: loginState.authParams,
         username: loginParams.username,
         errorMessage: err.message,
       });

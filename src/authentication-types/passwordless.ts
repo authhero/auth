@@ -37,7 +37,7 @@ export async function passwordlessAuth(
     authParams,
   });
 
-  await setSilentAuthCookies(ctx, controller, userId, authParams.scope!, state);
+  await setSilentAuthCookies(ctx, controller, userId, authParams.scope!);
 
   const redirectURL = new URL(redirectUri);
 

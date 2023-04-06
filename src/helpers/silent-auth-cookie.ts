@@ -10,15 +10,13 @@ export async function setSilentAuthCookies(
   ctx: Context<Env>,
   controller: Controller,
   userId: string,
-  scope?: string,
-  state?: string
+  scope?: string
 ) {
   const payload = {
     userId,
     scope,
     expires_in: 28800,
     token_type: BEARER,
-    state,
   };
 
   const durableObjectId = ctx.env.STATE.newUniqueId();

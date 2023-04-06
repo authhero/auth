@@ -1,6 +1,7 @@
 export interface AuthParams {
-  response_type?: string;
-  redirect_uri?: string;
+  clientId: string;
+  responseType?: string;
+  redirectUri: string;
   audience?: string;
   state?: string;
   nonce?: string;
