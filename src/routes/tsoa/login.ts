@@ -68,7 +68,10 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
-    return renderSignup(ctx.env.AUTH_TEMPLATES, this, { ...loginState, state });
+    return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
+      clientId: loginState.authParams.clientId,
+      state,
+    });
   }
 
   @Post("signup")
@@ -96,7 +99,7 @@ export class LoginController extends Controller {
       );
 
       return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
-        ...loginState,
+        clientId: loginState.authParams.clientId,
         username: loginParams.username,
         errorMessage: err.message,
         state: signupState,
@@ -246,7 +249,7 @@ export class LoginController extends Controller {
 
     const user = User.getInstanceByName(
       request.ctx.env.USER,
-      getId(loginState.client_id, loginParams.username)
+      getId(loginState.authParams.clientId, loginParams.username)
     );
 
     try {

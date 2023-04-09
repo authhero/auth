@@ -5,7 +5,7 @@ import { PasswordGrantTypeParams, TokenResponse } from "../types/Token";
 import { TokenFactory } from "../services/token-factory";
 import { getCertificate } from "../models/Certificate";
 
-export default async function passwordGrant(
+export async function passwordGrant(
   ctx: Context<Env>,
   params: PasswordGrantTypeParams
 ): Promise<TokenResponse | null> {

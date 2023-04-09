@@ -4,9 +4,9 @@
   "description": "",
   "main": "build/src/server.js",
   "scripts": {
-    "build": "tsoa spec-and-routes",
-    "dev": "tsoa spec-and-routes && wrangler dev",
-    "mf": "tsoa spec-and-routes && tsc & miniflare",
+    "build": "node tsoa.mjs",
+    "dev": "node tsoa.mjs && wrangler dev",
+    "mf": "node tsoa.mjs && tsc & miniflare",
     "test": "jest --config jestconfig.json --verbose"
   },
   "author": "",

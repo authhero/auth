@@ -6,6 +6,12 @@ export enum GrantType {
   Password = "password",
 }
 
+export enum AuthorizationResponseType {
+  TOKEN_ID_TOKEN = "token id_token",
+  IMPLICIT = "implicit",
+  CODE = "code",
+}
+
 export type TokenParams =
   | RefreshTokenGrantTypeParams
   | AuthorizationCodeGrantTypeParams
@@ -23,6 +29,12 @@ export interface AuthorizationCodeGrantTypeParams {
   grant_type: GrantType.AuthorizationCode;
   code: string;
   client_secret: string;
+  client_id: string;
+}
+
+export interface PKCEAuthorizationCodeGrantTypeParams {
+  grant_type: GrantType.AuthorizationCode;
+  code_verifier: string;
   client_id: string;
 }
 

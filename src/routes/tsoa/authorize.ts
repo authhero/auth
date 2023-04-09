@@ -7,7 +7,7 @@ import {
   Tags,
   SuccessResponse,
 } from "@tsoa/runtime";
-import { AuthParams } from "../../types";
+import { AuthorizationResponseType, AuthParams } from "../../types";
 import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { contentTypes, headers } from "../../constants";
@@ -19,14 +19,8 @@ import {
   universalAuth,
   socialAuthCallback,
   SocialAuthState,
-} from "../../authentication-types";
+} from "../../authentication-flows";
 import { decode } from "../../utils/base64";
-
-enum ResponseType {
-  TOKEN_ID_TOKEN = "token id_token",
-  IMPLICIT = "implicit",
-  CODE = "code",
-}
 
 @Route("")
 @Tags("authorize")
@@ -36,7 +30,7 @@ export class AuthorizeController extends Controller {
   public async authorize(
     @Request() request: RequestWithContext,
     @Query("client_id") clientId: string,
-    @Query("response_type") responseType: ResponseType,
+    @Query("response_type") responseType: AuthorizationResponseType,
     @Query("redirect_uri") redirectUri: string,
     @Query("scope") scope: string = "openid email profile",
     @Query("state") state: string,
@@ -45,7 +39,9 @@ export class AuthorizeController extends Controller {
     @Query("connection") connection?: string,
     @Query("username") username?: string,
     @Query("nonce") nonce?: string,
-    @Query("login_ticket") loginTicket?: string
+    @Query("login_ticket") loginTicket?: string,
+    @Query("code_challenge_method") codeChallengeMethod?: string,
+    @Query("code_challenge") codeChallenge?: string
   ): Promise<string> {
     const { ctx } = request;
 
@@ -72,7 +68,10 @@ export class AuthorizeController extends Controller {
         request.ctx.headers.get("cookie"),
         redirectUri,
         state,
-        nonce
+        responseType,
+        nonce,
+        codeChallengeMethod,
+        codeChallenge
       );
     }
 

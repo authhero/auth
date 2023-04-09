@@ -1,8 +1,11 @@
 import { TokenResponse, TokenParams, GrantType } from "../../types/Token";
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import passwordGrant from "../../controllers/passwordGrant";
-import passwordlessGrant from "../../controllers/passwordlessGrant";
+import {
+  authorizationCodeGrant,
+  passwordGrant,
+  passwordlessGrant,
+} from "../../authorization-grants";
 
 @Route("")
 @Tags("token")
@@ -26,6 +29,7 @@ export class TokenRoutes extends Controller {
       case GrantType.RefreshToken:
         break;
       case GrantType.AuthorizationCode:
+        tokenResponse = await authorizationCodeGrant(ctx, body);
         break;
       case GrantType.ClientCredential:
         break;

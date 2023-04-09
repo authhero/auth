@@ -3,7 +3,7 @@ import { getStateFromCookie } from "../services/cookies";
 import { getCertificate, State } from "../models";
 import { TokenFactory } from "../services/token-factory";
 import { Context } from "cloudworker-router";
-import { Env } from "../types";
+import { AuthorizationResponseType, Env } from "../types";
 import { renderAuthIframe } from "../templates/render";
 import { base64ToHex } from "../utils/base64";
 
@@ -13,7 +13,10 @@ export async function silentAuth(
   cookieHeader: string | null,
   redirectUri: string,
   state: string,
-  nonce?: string
+  responseType: AuthorizationResponseType,
+  nonce?: string,
+  codeChallengeMethod?: string,
+  codeChallenge?: string
 ) {
   const tokenState = getStateFromCookie(cookieHeader);
   const redirectURL = new URL(redirectUri);
