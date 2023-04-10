@@ -251,6 +251,7 @@ export class LoginController extends Controller {
       request.ctx.env.USER,
       getId(loginState.authParams.clientId, loginParams.username)
     );
+    ("");
 
     try {
       await user.validatePassword.query(loginParams.password);

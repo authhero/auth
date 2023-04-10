@@ -7,7 +7,11 @@ import {
   Tags,
   SuccessResponse,
 } from "@tsoa/runtime";
-import { AuthorizationResponseType, AuthParams } from "../../types";
+import {
+  AuthorizationResponseType,
+  AuthParams,
+  CodeChallengeMethod,
+} from "../../types";
 import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { contentTypes, headers } from "../../constants";
@@ -40,7 +44,7 @@ export class AuthorizeController extends Controller {
     @Query("username") username?: string,
     @Query("nonce") nonce?: string,
     @Query("login_ticket") loginTicket?: string,
-    @Query("code_challenge_method") codeChallengeMethod?: string,
+    @Query("code_challenge_method") codeChallengeMethod?: CodeChallengeMethod,
     @Query("code_challenge") codeChallenge?: string
   ): Promise<string> {
     const { ctx } = request;
@@ -62,17 +66,17 @@ export class AuthorizeController extends Controller {
 
     // Silent authentication
     if (prompt == "none") {
-      return silentAuth(
+      return silentAuth({
         ctx,
-        this,
-        request.ctx.headers.get("cookie"),
+        controller: this,
+        cookieHeader: request.ctx.headers.get("cookie"),
         redirectUri,
         state,
         responseType,
         nonce,
         codeChallengeMethod,
-        codeChallenge
-      );
+        codeChallenge,
+      });
     }
 
     // Social login

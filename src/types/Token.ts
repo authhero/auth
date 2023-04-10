@@ -6,12 +6,6 @@ export enum GrantType {
   Password = "password",
 }
 
-export enum AuthorizationResponseType {
-  TOKEN_ID_TOKEN = "token id_token",
-  IMPLICIT = "implicit",
-  CODE = "code",
-}
-
 export type TokenParams =
   | RefreshTokenGrantTypeParams
   | AuthorizationCodeGrantTypeParams
