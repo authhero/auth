@@ -31,7 +31,12 @@ export async function generateAuthResponse({
   });
 
   const idToken = await tokenFactory.createIDToken({
+    clientId: authParams.clientId,
     userId: userId,
+    given_name: "given",
+    family_name: "familiy",
+    nickname: "nick",
+    name: "name",
     iss: ctx.env.AUTH_DOMAIN_URL,
     nonce: authParams.nonce,
   });
@@ -44,6 +49,7 @@ export async function generateAuthResponse({
     access_token: accessToken,
     id_token: idToken,
     token_type: "Bearer",
+    scope: authParams.scope,
     expires_in: ACCESS_TOKEN_EXPIRE_IN_SECONDS,
   };
 

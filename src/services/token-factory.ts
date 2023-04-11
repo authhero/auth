@@ -36,6 +36,23 @@ interface IDTokenPayload {
   aud: string;
   kid: string;
   sub: string;
+  sid: string;
+  iss: string;
+  nonce?: string;
+  email?: string;
+  email_verified?: boolean;
+  locale: string;
+  updated_at: string;
+  picture: string;
+  given_name?: string;
+  family_name?: string;
+  nickname?: string;
+  name?: string;
+}
+
+export interface CreateIDTokenParams {
+  clientId: string;
+  userId: string;
   iss: string;
   nonce?: string;
   email?: string;
@@ -76,20 +93,30 @@ export class TokenFactory {
   }
 
   async createIDToken({
+    clientId,
     userId,
+    given_name,
+    family_name,
+    nickname,
+    name,
     nonce,
     iss,
-  }: {
-    userId: string;
-    nonce?: string;
-    iss: string;
-  }): Promise<string | null> {
+  }: CreateIDTokenParams): Promise<string | null> {
     const payload: IDTokenPayload = {
-      aud: "default",
+      aud: clientId,
       sub: userId,
       kid: this.keyId,
+      given_name,
+      family_name,
+      nickname,
+      name,
       nonce,
       iss,
+      picture:
+        "https://lh3.googleusercontent.com/a/AGNmyxahgsZ1mBDfjYbydgtNDWgS78AvYk68SSoF1it-=s96-c",
+      locale: "en",
+      sid: "BVhF_cwjxxUN5dKFU9b9dc9N9-VyPuLf",
+      updated_at: "2023-04-11T20:33:16.226Z",
     };
 
     return getJwt(this.privateKeyPEM, this.keyId, payload);

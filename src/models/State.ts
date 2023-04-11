@@ -38,3 +38,24 @@ export async function stateAlarm(state: DurableObjectState) {
 type StateRouter = typeof stateRouter;
 
 export const State = createProxy<StateRouter>(stateRouter, stateAlarm);
+
+export async function createState(
+  namespace: DurableObjectNamespace,
+  state?: any,
+  ttl?: number
+) {
+  const durableObjectId = namespace.newUniqueId();
+  const instance = State.getInstance(namespace, durableObjectId);
+
+  if (state) {
+    await instance.createState.mutate({
+      state: typeof state === "object" ? JSON.stringify(state) : state,
+      ttl,
+    });
+  }
+
+  return {
+    instance,
+    id: durableObjectId.toString(),
+  };
+}

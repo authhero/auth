@@ -2,7 +2,7 @@ import { Context } from "cloudworker-router";
 import { serializeStateInCookie } from "../services/cookies";
 import { Controller } from "tsoa";
 import { BEARER, headers, MONTH_IN_SECONDS } from "../constants";
-import { State } from "../models";
+import { createState } from "../models";
 import { Env } from "../types";
 import { hexToBase64 } from "../utils/base64";
 
@@ -19,18 +19,13 @@ export async function setSilentAuthCookies(
     token_type: BEARER,
   };
 
-  const durableObjectId = ctx.env.STATE.newUniqueId();
-  const stateInstance = State.getInstance(ctx.env.STATE, durableObjectId);
-  await stateInstance.createState.mutate({
-    state: JSON.stringify(payload, null, 2),
-    ttl: MONTH_IN_SECONDS,
-  });
-
-  console.log("DO-id: " + durableObjectId.toString());
-
-  serializeStateInCookie(hexToBase64(durableObjectId.toString())).forEach(
-    (cookie) => {
-      controller.setHeader(headers.setCookie, cookie);
-    }
+  const { id: stateId } = await createState(
+    ctx.env.STATE,
+    JSON.stringify(payload),
+    MONTH_IN_SECONDS
   );
+
+  serializeStateInCookie(hexToBase64(stateId)).forEach((cookie) => {
+    controller.setHeader(headers.setCookie, cookie);
+  });
 }

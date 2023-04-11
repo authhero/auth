@@ -17,6 +17,7 @@ export async function passwordGrant(
     throw new Error("Incorrect password");
   }
 
+  // TODO: clean this up and use the genrate-auth-response function
   const certificate = await getCertificate(ctx);
   const tokenFactory = new TokenFactory(
     certificate.privateKey,

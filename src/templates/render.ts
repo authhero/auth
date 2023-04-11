@@ -73,10 +73,10 @@ export async function renderLogin(
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const state = encode(JSON.stringify(context));
+  const loginState = encode(JSON.stringify(context));
   const content = await engine.render(template, {
     ...context.authParams,
-    state,
+    loginState,
   });
   return engine.render(layoutTemplate, {
     ...context,

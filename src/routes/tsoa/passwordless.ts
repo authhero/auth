@@ -15,9 +15,9 @@ import { getId, User } from "../../models/User";
 import { getClient } from "../../services/clients";
 import { contentTypes, headers } from "../../constants";
 import { AuthenticationCodeExpiredError, InvalidCodeError } from "../../errors";
-import { State } from "../../models";
+import { State, createState } from "../../models";
 import randomString from "../../utils/random-string";
-import { base64ToHex, hexToBase64 } from "../../utils/base64";
+import { hexToBase64 } from "../../utils/base64";
 import { AuthParams } from "../../types/AuthParams";
 
 export interface PasssworlessOptions {
@@ -133,22 +133,20 @@ export class PasswordlessController extends Controller {
       const coVerifier = randomString(32);
       const coID = randomString(12);
 
-      const durableObjectId = ctx.env.STATE.newUniqueId();
-      const stateInstance = State.getInstance(ctx.env.STATE, durableObjectId);
-
-      await stateInstance.createState.mutate({
-        state: JSON.stringify({
+      const { id: stateId } = await createState(
+        ctx.env.STATE,
+        JSON.stringify({
           coVerifier,
           coID,
           username: body.username,
           userId: getId(body.client_id, body.username),
           authParams,
-        }),
-      });
+        })
+      );
 
       this.setHeader(headers.contentType, contentTypes.json);
       return {
-        login_ticket: hexToBase64(durableObjectId.toString()),
+        login_ticket: hexToBase64(stateId),
         co_verifier: coVerifier,
         co_id: coID,
       };

@@ -86,18 +86,7 @@ export class AuthorizeController extends Controller {
       return passwordlessAuth(ctx, this, loginTicket, state, redirectUri);
     }
 
-    return universalAuth(this, authParams);
-  }
-
-  @Get("authorize/resume")
-  @SuccessResponse("302", "Redirect")
-  public async resume(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string
-  ): Promise<string> {
-    // This endpoint seems to set the silent auth cookie and pass the client back
-
-    return state;
+    return universalAuth({ controller: this, authParams });
   }
 
   /**
@@ -117,8 +106,12 @@ export class AuthorizeController extends Controller {
     const { ctx } = request;
 
     const socialAuthState: SocialAuthState = JSON.parse(decode(state));
-    // This should probably not pass on the controller..
-    return socialAuthCallback(ctx, this, socialAuthState, code);
+    return socialAuthCallback({
+      ctx,
+      controller: this,
+      state: socialAuthState,
+      code,
+    });
   }
 
   @Get("v2/logout")

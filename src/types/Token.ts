@@ -9,6 +9,7 @@ export enum GrantType {
 export type TokenParams =
   | RefreshTokenGrantTypeParams
   | AuthorizationCodeGrantTypeParams
+  | PKCEAuthorizationCodeGrantTypeParams
   | ClientCredentialGrantTypeParams
   | PasswordlessGrantTypeParams
   | PasswordGrantTypeParams;
@@ -28,8 +29,10 @@ export interface AuthorizationCodeGrantTypeParams {
 
 export interface PKCEAuthorizationCodeGrantTypeParams {
   grant_type: GrantType.AuthorizationCode;
+  code: string;
   code_verifier: string;
   client_id: string;
+  redirect_uri: string;
 }
 
 export interface ClientCredentialGrantTypeParams {
@@ -61,6 +64,7 @@ export interface PasswordGrantTypeParams {
 export interface TokenResponse {
   access_token: string;
   id_token?: string;
+  scope?: string;
   refresh_token?: string;
   token_type: string;
   expires_in: number;

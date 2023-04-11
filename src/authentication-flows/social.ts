@@ -1,11 +1,11 @@
 import { Controller } from "@tsoa/runtime";
-import { AuthParams, Client, Env } from "../types";
+import { AuthorizationResponseType, AuthParams, Client, Env } from "../types";
 import { contentTypes, headers } from "../constants";
-import { decode, encode } from "../utils/base64";
+import { encode, hexToBase64 } from "../utils/base64";
 import { Context } from "cloudworker-router";
 import { getClient } from "../services/clients";
 import { OAuth2Client } from "../services/oauth2-client";
-import { getId, User } from "../models";
+import { createState, getId, User } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 
 export interface SocialAuthState {
@@ -50,12 +50,14 @@ export async function socialAuth(
   return `Redirecting to ${connection}`;
 }
 
-export async function socialAuthCallback(
-  ctx: Context<Env>,
-  controller: Controller,
-  state: SocialAuthState,
-  code: string
-) {
+export interface socialAuthCallbackParams {
+  ctx: Context<Env>;
+  controller: Controller;
+  state: SocialAuthState;
+  code: string;
+}
+
+export async function socialAuthCallback({ ctx, controller, state, code }) {
   const client = await getClient(ctx, state.authParams.clientId);
   if (!client) {
     throw new Error("Client not found");
@@ -92,6 +94,22 @@ export async function socialAuthCallback(
 
   // TODO: This is quick and dirty.. we should validate the values.
   const redirectUri = new URL(state.authParams.redirectUri);
+
+  switch (state.authParams.responseType) {
+    case AuthorizationResponseType.CODE:
+      const { id: stateId } = await createState(ctx.env.STATE, {
+        userId,
+        authParams: state.authParams,
+      });
+      redirectUri.searchParams.set("code", hexToBase64(stateId));
+      if (state.authParams.state) {
+        redirectUri.searchParams.set("state", state.authParams.state);
+      }
+      break;
+    case AuthorizationResponseType.IMPLICIT:
+      // TODO: add implicit auth
+      break;
+  }
 
   controller.setStatus(302);
   controller.setHeader(headers.location, redirectUri.href);

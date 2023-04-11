@@ -1,11 +1,20 @@
 import { TokenResponse, TokenParams, GrantType } from "../../types/Token";
-import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
+import {
+  Body,
+  Controller,
+  Post,
+  Query,
+  Request,
+  Route,
+  Tags,
+} from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import {
   authorizationCodeGrant,
   passwordGrant,
   passwordlessGrant,
 } from "../../authorization-grants";
+import { contentTypes, headers } from "../../constants";
 
 @Route("")
 @Tags("token")
@@ -20,16 +29,13 @@ export class TokenRoutes extends Controller {
   ): Promise<TokenResponse | string> {
     const { ctx } = request;
 
-    // Add wildcard cors for now. Check allowed origins on client
-    this.setHeader("access-control-allow-origin", "*");
-
     let tokenResponse: TokenResponse | null = null;
 
     switch (body.grant_type) {
       case GrantType.RefreshToken:
         break;
       case GrantType.AuthorizationCode:
-        tokenResponse = await authorizationCodeGrant(ctx, body);
+        tokenResponse = await authorizationCodeGrant(ctx, this, body);
         break;
       case GrantType.ClientCredential:
         break;
@@ -47,6 +53,7 @@ export class TokenRoutes extends Controller {
       return "Invalid Request";
     }
 
+    this.setHeader(headers.contentType, contentTypes.json);
     return tokenResponse;
   }
 }

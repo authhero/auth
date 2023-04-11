@@ -1,13 +1,39 @@
 import { Context } from "cloudworker-router";
-import { Env } from "../types/Env";
+import { base64ToHex } from "../utils/base64";
+import { State } from "../models";
 import {
+  Env,
+  AuthParams,
   AuthorizationCodeGrantTypeParams,
+  PKCEAuthorizationCodeGrantTypeParams,
   TokenResponse,
-} from "../types/Token";
+} from "../types";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
+import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
+import { Controller } from "tsoa";
+import { headers } from "../constants";
 
 export async function authorizationCodeGrant(
   ctx: Context<Env>,
-  params: AuthorizationCodeGrantTypeParams
+  controller: Controller,
+  params:
+    | AuthorizationCodeGrantTypeParams
+    | PKCEAuthorizationCodeGrantTypeParams
 ): Promise<TokenResponse | null> {
-  throw new Error("Not implemented");
+  const stateInstance = State.getInstanceById(
+    ctx.env.STATE,
+    base64ToHex(params.code)
+  );
+  const stateString = await stateInstance.getState.query();
+  const state: { userId: string; authParams: AuthParams } =
+    JSON.parse(stateString);
+
+  await setSilentAuthCookies(
+    ctx,
+    controller,
+    state.userId,
+    state.authParams.scope!
+  );
+
+  return generateAuthResponse({ ctx, ...state });
 }

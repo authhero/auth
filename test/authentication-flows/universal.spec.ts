@@ -9,9 +9,9 @@ import { mockedContext, mockedController } from "../helpers";
 import { universalAuth } from "../../src/authentication-flows";
 import { headers } from "../../src/constants";
 
-describe("login", () => {
+describe("universalAuth", () => {
   it("should redirect to login using and packing the authParams in the state", async () => {
-    // https://auth.sesamy.dev/authorize?
+    // https://example.com/authorize?
     //   client_id=0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW&
     //   scope=openid+profile+email&
     //   redirect_uri=http%3A%2F%2Flocalhost%3A3000&

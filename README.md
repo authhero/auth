@@ -16,15 +16,15 @@ It's based on the following tech stack
 - Cloudflare workers (with tsoa)
 - Durable objects (with trpc) for login logic and storage
 - Cloudflare queues for events
-- D1 sqlite database for admin api
+- D1 sqlite database for admin API
 - KV storage for logs
-- Mailchannels for passoword reset and code/magic links
+- Mailchannels for password reset and code/magic links
 
 It contains a hosted UI for the login forms that can be easily styled or modified using liquid templates. Or you can roll your own UI and just use the the API.
 
 ## Auth0 compability
 
-The goal is to keep the API compatible with the auth0 api so that all the client libraries from auth0 works. This way there's no need to maintain a separate set of client libraries and it makes the migration from auth0 very easy.
+The goal is to keep the API compatible with the auth0 API so that all the client libraries from auth0 work. This way there's no need to maintain a separate set of client libraries and it makes the migration from auth0 very easy.
 
 ## Tokens
 
