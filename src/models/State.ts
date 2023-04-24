@@ -1,7 +1,6 @@
-import { createProxy } from "trpc-durable-objects";
+import { createProxy, Context } from "trpc-durable-objects";
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
-import { Context } from "trpc-durable-objects";
 
 const t = initTRPC.context<Context>().create();
 

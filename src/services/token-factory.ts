@@ -103,6 +103,7 @@ export class TokenFactory {
     iss,
   }: CreateIDTokenParams): Promise<string | null> {
     const payload: IDTokenPayload = {
+      // The audience for an id token is the client id
       aud: clientId,
       sub: userId,
       kid: this.keyId,

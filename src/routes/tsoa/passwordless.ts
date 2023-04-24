@@ -17,7 +17,7 @@ import { contentTypes, headers } from "../../constants";
 import { AuthenticationCodeExpiredError, InvalidCodeError } from "../../errors";
 import { State, createState } from "../../models";
 import randomString from "../../utils/random-string";
-import { hexToBase64 } from "../../utils/base64";
+import { base64ToHex, hexToBase64 } from "../../utils/base64";
 import { AuthParams } from "../../types/AuthParams";
 
 export interface PasssworlessOptions {
@@ -52,23 +52,23 @@ export class PasswordlessController extends Controller {
     const { ctx } = request;
     this.setStatus(200);
 
-    // Debug stuff...
-    // if (username) {
-    //   const user = User.getInstanceByName(ctx.env.USER, username);
-    //   this.setHeader(headers.contentType, contentTypes.json);
-    //   return user.test.query();
-    // }
+    // TODO: Debug stuff...
+    if (username) {
+      const user = User.getInstanceByName(ctx.env.USER, username);
+      this.setHeader(headers.contentType, contentTypes.json);
+      return user.test.query();
+    }
 
-    // if (state) {
-    //   const stateJson = State.getInstanceById(
-    //     ctx.env.STATE,
-    //     base64ToHex(state)
-    //   );
-    //   this.setHeader(headers.contentType, contentTypes.json);
-    //   const value = await stateJson.getState.query();
+    if (state) {
+      const stateJson = State.getInstanceById(
+        ctx.env.STATE,
+        base64ToHex(state)
+      );
+      this.setHeader(headers.contentType, contentTypes.json);
+      const value = await stateJson.getState.query();
 
-    //   return value || "no value";
-    // }
+      return value || "no value";
+    }
 
     return "Hello";
   }

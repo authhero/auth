@@ -11,7 +11,6 @@ import {
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { Controller } from "tsoa";
-import { headers } from "../constants";
 
 export async function authorizationCodeGrant(
   ctx: Context<Env>,
@@ -28,12 +27,7 @@ export async function authorizationCodeGrant(
   const state: { userId: string; authParams: AuthParams } =
     JSON.parse(stateString);
 
-  await setSilentAuthCookies(
-    ctx,
-    controller,
-    state.userId,
-    state.authParams.scope!
-  );
+  await setSilentAuthCookies(ctx, controller, state.userId, state.authParams);
 
   return generateAuthResponse({ ctx, ...state });
 }

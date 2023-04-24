@@ -3,7 +3,11 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../src/types";
-import { mockedContext, mockedController, mockedNamespace } from "../helpers";
+import {
+  mockedContext,
+  mockedController,
+  mockedNamespace,
+} from "../test-helpers";
 
 import { silentAuth } from "../../src/authentication-flows";
 import { State } from "../../src/models";

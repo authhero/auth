@@ -1,17 +1,17 @@
-interface TokenResponse {
+export interface TokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
   refresh_token: string;
 }
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   email: string;
   name: string;
 }
 
-export interface OauthProviderParams {
+export interface OAuthProviderParams {
   clientId: string;
   clientSecret: string;
   authorizationEndpoint: string;
@@ -19,13 +19,35 @@ export interface OauthProviderParams {
   profileEndpoint?: string;
 }
 
-export class OAuth2Client {
-  private readonly params: OauthProviderParams;
+export interface IOAuth2ClientFactory {
+  create(
+    params: OAuthProviderParams,
+    rediectUri: string,
+    scopes?: string[]
+  ): IOAuth2Client;
+}
+
+export function oAuth2ClientFactory(
+  params: OAuthProviderParams,
+  redirectUri: string,
+  scopes?: string[]
+): IOAuth2Client {
+  return new OAuth2Client(params, redirectUri, scopes);
+}
+
+export interface IOAuth2Client {
+  getAuthorizationUrl(state: string): Promise<string>;
+  exchangeCodeForToken(code: string): Promise<TokenResponse>;
+  getUserProfile(accessToken: string): Promise<UserProfile>;
+}
+
+export class OAuth2Client implements IOAuth2Client {
+  private readonly params: OAuthProviderParams;
   private readonly scopes: string[];
   private readonly redirectUri: string;
 
   constructor(
-    params: OauthProviderParams,
+    params: OAuthProviderParams,
     rediectUri: string,
     scopes: string[] = []
   ) {

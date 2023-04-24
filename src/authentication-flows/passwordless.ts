@@ -34,10 +34,11 @@ export async function passwordlessAuth(
   const tokenResponse = await generateAuthResponse({
     ctx,
     userId,
+    state,
     authParams,
   });
 
-  await setSilentAuthCookies(ctx, controller, userId, authParams.scope!);
+  await setSilentAuthCookies(ctx, controller, userId, authParams);
 
   const redirectURL = new URL(redirectUri);
 

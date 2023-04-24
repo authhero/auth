@@ -3,20 +3,18 @@ import { serializeStateInCookie } from "../services/cookies";
 import { Controller } from "tsoa";
 import { BEARER, headers, MONTH_IN_SECONDS } from "../constants";
 import { createState } from "../models";
-import { Env } from "../types";
+import { AuthParams, Env } from "../types";
 import { hexToBase64 } from "../utils/base64";
 
 export async function setSilentAuthCookies(
   ctx: Context<Env>,
   controller: Controller,
   userId: string,
-  scope?: string
+  authParams: AuthParams
 ) {
   const payload = {
     userId,
-    scope,
-    expires_in: 28800,
-    token_type: BEARER,
+    authParams,
   };
 
   const { id: stateId } = await createState(

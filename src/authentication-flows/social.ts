@@ -4,7 +4,6 @@ import { contentTypes, headers } from "../constants";
 import { encode, hexToBase64 } from "../utils/base64";
 import { Context } from "cloudworker-router";
 import { getClient } from "../services/clients";
-import { OAuth2Client } from "../services/oauth2-client";
 import { createState, getId, User } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 
@@ -57,7 +56,12 @@ export interface socialAuthCallbackParams {
   code: string;
 }
 
-export async function socialAuthCallback({ ctx, controller, state, code }) {
+export async function socialAuthCallback({
+  ctx,
+  controller,
+  state,
+  code,
+}: socialAuthCallbackParams) {
   const client = await getClient(ctx, state.authParams.clientId);
   if (!client) {
     throw new Error("Client not found");
@@ -72,7 +76,7 @@ export async function socialAuthCallback({ ctx, controller, state, code }) {
     throw new Error("Connection not found");
   }
 
-  const oauth2Client = new OAuth2Client(
+  const oauth2Client = ctx.env.OAUTH2_CLIENT_FACTORY.create(
     oauthProvider,
     `${client.loginBaseUrl}callback`,
     state.authParams.scope?.split(" ") || []
@@ -90,7 +94,7 @@ export async function socialAuthCallback({ ctx, controller, state, code }) {
     profile,
   });
 
-  await setSilentAuthCookies(ctx, controller, userId, state.authParams.scope);
+  await setSilentAuthCookies(ctx, controller, userId, state.authParams);
 
   // TODO: This is quick and dirty.. we should validate the values.
   const redirectUri = new URL(state.authParams.redirectUri);

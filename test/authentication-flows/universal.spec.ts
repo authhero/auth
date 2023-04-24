@@ -4,7 +4,7 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../src/types";
-import { mockedContext, mockedController } from "../helpers";
+import { mockedContext, mockedController } from "../test-helpers";
 
 import { universalAuth } from "../../src/authentication-flows";
 import { headers } from "../../src/constants";

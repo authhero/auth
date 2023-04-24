@@ -28,8 +28,9 @@ export class MockedNamespaceStub implements DurableObjectStub {
 
 export function mockedNamespace<T>(instance: any) {
   return {
-    getInstanceById: () => {
-      return instance;
-    },
+    newUniqueId: () => instance,
+    getInstance: () => instance,
+    getInstanceById: () => instance,
+    getInstanceByName: () => instance,
   } as T;
 }

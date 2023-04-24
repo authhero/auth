@@ -10,12 +10,16 @@ import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 export interface GenerateAuthResponseParams {
   ctx: Context<Env>;
   userId: string;
+  state?: string;
+  nonce?: string;
   authParams: AuthParams;
 }
 
 export async function generateAuthResponse({
   ctx,
   userId,
+  state,
+  nonce,
   authParams,
 }: GenerateAuthResponseParams) {
   const certificate = await getCertificate(ctx);
@@ -23,6 +27,10 @@ export async function generateAuthResponse({
     certificate.privateKey,
     certificate.kid
   );
+
+  // if (!authParams.scope) {
+  //   throw new Error("Scope is required");
+  // }
 
   const accessToken = await tokenFactory.createAccessToken({
     scopes: authParams.scope?.split(" ") || [],
@@ -38,7 +46,7 @@ export async function generateAuthResponse({
     nickname: "nick",
     name: "name",
     iss: ctx.env.AUTH_DOMAIN_URL,
-    nonce: authParams.nonce,
+    nonce,
   });
 
   if (!accessToken || !idToken) {
@@ -49,6 +57,7 @@ export async function generateAuthResponse({
     access_token: accessToken,
     id_token: idToken,
     token_type: "Bearer",
+    state,
     scope: authParams.scope,
     expires_in: ACCESS_TOKEN_EXPIRE_IN_SECONDS,
   };

@@ -1,6 +1,6 @@
-import { OauthProviderParams } from "../services/oauth2-client";
+import { OAuthProviderParams } from "../services/oauth2-client";
 
-export interface OauthProvider extends OauthProviderParams {
+export interface OauthProvider extends OAuthProviderParams {
   name: string;
 }
 
