@@ -1,7 +1,7 @@
 import { Context } from "cloudworker-router";
 import { CamelCasePlugin, Kysely } from "kysely";
 import { D1Dialect } from "kysely-d1";
-import { Database } from "../types/db";
+import { Database } from "../types/sql/db";
 import { Env } from "../types/Env";
 
 let _db: Kysely<Database>;

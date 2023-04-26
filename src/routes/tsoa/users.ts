@@ -8,7 +8,7 @@ import {
   Body,
   Path,
 } from "@tsoa/runtime";
-import { User } from "../../types/UserMetadata";
+import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 
@@ -35,7 +35,7 @@ export class UsersController extends Controller {
   public async updateUser(
     @Request() request: RequestWithContext,
     @Body() updateUserParams: UpdateUserParams,
-    @Path("userId") userId: number
+    @Path("userId") userId: string
   ): Promise<number> {
     const db = getDb(request.ctx);
     const result = await db

@@ -1,6 +1,6 @@
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
-import { User } from "../types/UserMetadata";
+import { User } from "../types/sql/User";
 
 export enum UserEvent {
   loginSuccess = "LOGIN_SUCCESS",
