@@ -18,9 +18,7 @@ export async function socialAuth(
   connection: string,
   authParams: AuthParams
 ) {
-  const oauthProvider = client.oauthProviders.find(
-    (p) => p.name === connection
-  );
+  const oauthProvider = client.authProviders.find((p) => p.name === connection);
   if (!oauthProvider) {
     throw new Error("Connection not found");
   }
@@ -67,7 +65,7 @@ export async function socialAuthCallback({
     throw new Error("Client not found");
   }
 
-  const oauthProvider = client.oauthProviders.find(
+  const oauthProvider = client.authProviders.find(
     (p) => p.name === state.connection
   );
 

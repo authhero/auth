@@ -14,36 +14,42 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute();
 
   await db.schema
-    .createTable("organizations")
-    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
-    .addColumn("name", "varchar")
-    .addColumn("created_at", "varchar")
-    .addColumn("modified_at", "varchar")
-    .execute();
-
-  await db.schema
-    .createTable("users_organizations")
+    .createTable("users_tenants")
     .addColumn("user_id", "varchar", (col) =>
       col.references("users.id").onDelete("cascade").notNull()
     )
-    .addColumn("organization_id", "varchar", (col) =>
-      col.references("organizations.id").onDelete("cascade").notNull()
+    .addColumn("tenants_id", "varchar", (col) =>
+      col.references("tenants.id").onDelete("cascade").notNull()
     )
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
-    .addPrimaryKeyConstraint("users_organizations", [
-      "user_id",
-      "organization_id",
-    ])
+    .addPrimaryKeyConstraint("users_tenants", ["user_id", "tenants_id"])
     .execute();
 
   await db.schema
     .createTable("tenants")
     .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
-    .addColumn("organization_id", "varchar", (col) =>
-      col.references("organizations.id").onDelete("cascade").notNull()
-    )
     .addColumn("name", "varchar")
+    .addColumn("audience", "varchar")
+    .addColumn("issuer", "varchar")
+    .addColumn("sender_email", "varchar")
+    .addColumn("sender_name", "varchar")
+    .addColumn("created_at", "varchar")
+    .addColumn("modified_at", "varchar")
+    .execute();
+
+  await db.schema
+    .createTable("auth_providers")
+    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
+    .addColumn("tenant_id", "varchar", (col) =>
+      col.references("tenants.id").onDelete("cascade").notNull()
+    )
+    .addColumn("name", "varchar", (col) => col.notNull())
+    .addColumn("client_id", "varchar")
+    .addColumn("client_secret", "varchar")
+    .addColumn("authorization_endpoint", "varchar")
+    .addColumn("token_endpoint", "varchar")
+    .addColumn("profile_endpoint", "varchar")
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
     .execute();
@@ -68,9 +74,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  // await db.schema.dropTable("users_organizations").execute();
-  // await db.schema.dropTable("users").execute();
-  // await db.schema.dropTable("applications").execute();
-  // await db.schema.dropTable("tenants").execute();
-  await db.schema.dropTable("organizations").execute();
+  await db.schema.dropTable("users_tenants").execute();
+  await db.schema.dropTable("users").execute();
+  await db.schema.dropTable("auth_providers").execute();
+  await db.schema.dropTable("applications").execute();
+  await db.schema.dropTable("tenants").execute();
 }

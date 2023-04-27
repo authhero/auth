@@ -1,5 +1,8 @@
 export interface Tenant {
   id: string;
   name: string;
-  organizationId: string;
+  audience: string;
+  issuer: string;
+  senderEmail: string;
+  senderName: string;
 }

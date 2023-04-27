@@ -1,5 +1,5 @@
 export * from "./Applications";
-export * from "./Organization";
 export * from "./Tenant";
 export * from "./User";
+export * from "./AuthProvider";
 export * from "./db";
