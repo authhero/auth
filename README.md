@@ -70,9 +70,16 @@ A client is for now a completely separate authentication service, similar to the
 
 Each user object is connected to one email, so for instance, there would be one common user object for a user that logged in with email/password, code and google. The user object will keep an array of the login methods and store separate profiles for syncing purposes.
 
-# Limitations
+# Client libraries
 
-- Currently, there is only support for one client
+## @auth0/auth0-react
+
+The auth0-react uses the universal login with PKCE flow:
+- When the user logs in the client passes a state, a nonce and a code challenge to the /authorize endpoint using a CodeGrant flow.
+- Once the user logged in it is redirected to the callback endpoint with the state and the code.
+- The client validates that the state matches the one passed in the query string.
+- The code is resolved to an access token and an id token using the /token endpoint
+- The id token is validated using the JWKS keys and the nonce is validated.
 
 # TODO-list
 

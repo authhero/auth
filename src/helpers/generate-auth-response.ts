@@ -28,10 +28,6 @@ export async function generateAuthResponse({
     certificate.kid
   );
 
-  // if (!authParams.scope) {
-  //   throw new Error("Scope is required");
-  // }
-
   const accessToken = await tokenFactory.createAccessToken({
     scopes: authParams.scope?.split(" ") || [],
     userId,
@@ -46,7 +42,7 @@ export async function generateAuthResponse({
     nickname: "nick",
     name: "name",
     iss: ctx.env.AUTH_DOMAIN_URL,
-    nonce,
+    nonce: nonce || authParams.nonce,
   });
 
   if (!accessToken || !idToken) {
