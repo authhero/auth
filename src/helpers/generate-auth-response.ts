@@ -2,7 +2,7 @@
 
 import { Context } from "cloudworker-router";
 import { TokenFactory } from "../services/token-factory";
-import { getCertificate } from "../models";
+import { getCertificate, User } from "../models";
 import { Env, AuthParams } from "../types";
 import { TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
@@ -28,6 +28,9 @@ export async function generateAuthResponse({
     certificate.kid
   );
 
+  const userInstance = await User.getInstanceByName(ctx.env.USER, userId);
+  const profile = await userInstance.getProfile.query();
+
   const accessToken = await tokenFactory.createAccessToken({
     scopes: authParams.scope?.split(" ") || [],
     userId,
@@ -37,10 +40,10 @@ export async function generateAuthResponse({
   const idToken = await tokenFactory.createIDToken({
     clientId: authParams.clientId,
     userId: userId,
-    given_name: "given",
-    family_name: "familiy",
-    nickname: "nick",
-    name: "name",
+    given_name: profile.given_name,
+    family_name: profile.family_name,
+    nickname: profile.nickname,
+    name: profile.name,
     iss: ctx.env.AUTH_DOMAIN_URL,
     nonce: nonce || authParams.nonce,
   });

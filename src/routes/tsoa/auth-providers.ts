@@ -58,7 +58,6 @@ export class AuthProvidersController extends Controller {
   }
 
   @Patch("{id}")
-  @SuccessResponse(201, "Created")
   public async patchAuthProvider(
     @Request() request: RequestWithContext,
     @Path("id") id: string,

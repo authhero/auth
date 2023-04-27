@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Path,
   Request,
   Route,
   Tags,
@@ -12,6 +14,7 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
 import { Application } from "../../types/sql";
+import { UpdateResult } from "kysely";
 
 @Route("applications")
 @Tags("applications")
@@ -29,11 +32,36 @@ export class ApplicationsController extends Controller {
     return applications;
   }
 
+  @Patch("{id}")
+  public async patchApplication(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+    @Body()
+    body: Partial<
+      Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">
+    >
+  ): Promise<UpdateResult[]> {
+    const db = getDb(request.ctx);
+    const application = {
+      ...body,
+      modifiedAt: new Date().toISOString(),
+    };
+
+    const results = await db
+      .updateTable("applications")
+      .set(application)
+      .where("id", "=", id)
+      .execute();
+
+    return results;
+  }
+
   @Post("")
   @SuccessResponse(201, "Created")
   public async postApplications(
     @Request() request: RequestWithContext,
-    @Body() body: Omit<Application, "id">
+    @Body()
+    body: Omit<Application, "id" | "createdAt" | "modifiedAt">
   ): Promise<Application> {
     const db = getDb(request.ctx);
     const application = {

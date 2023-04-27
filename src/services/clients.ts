@@ -12,6 +12,9 @@ export async function getClient(ctx: Context<Env>, clientId: string) {
       "applications.id",
       "applications.name",
       "applications.tenantId",
+      "applications.allowedWebOrigins",
+      "applications.allowedCallbackUrls",
+      "applications.allowedLogoutUrls",
       "tenants.senderEmail",
       "tenants.senderName",
       "tenants.audience",
@@ -22,32 +25,30 @@ export async function getClient(ctx: Context<Env>, clientId: string) {
 
   const application = applications[0];
 
+  if (!application) {
+    throw new Error("Client not found");
+  }
+
   const authProviders = await db
     .selectFrom("authProviders")
     .where("tenantId", "=", application.tenantId)
     .selectAll()
     .execute();
 
-  // TODO: a hardcoded clients list. Should be stored in KV-storage
-  const clients: Client[] = [
-    {
-      id: application.id,
-      name: application.name,
-      audience: application.audience,
-      issuer: application.issuer,
-      senderEmail: application.senderEmail,
-      senderName: application.senderName,
-      loginBaseUrl: ctx.env.AUTH_DOMAIN_URL,
-      authProviders,
-    },
-  ];
+  // TODO: fetch straight from sql. Should be stored in KV-storage
+  const client: Client = {
+    id: application.id,
+    name: application.name,
+    audience: application.audience,
+    issuer: application.issuer,
+    senderEmail: application.senderEmail,
+    senderName: application.senderName,
+    loginBaseUrl: ctx.env.AUTH_DOMAIN_URL,
+    allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
+    allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
+    allowedWebOrigins: application.allowedWebOrigins?.split(",") || [],
+    authProviders,
+  };
 
-  // Return the first client in the list for now..
-  // const client = clients.find((c) => c.id === id);
-  const client = clients[0];
-
-  if (!client) {
-    throw new Error("Client not found");
-  }
   return client;
 }

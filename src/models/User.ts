@@ -109,11 +109,14 @@ export const userRouter = router({
 
       return result;
     }),
+  getProfile: publicProcedure.query(async ({ ctx }) => {
+    const profilesString = await ctx.state.storage.get<string>(
+      StorageKeys.profile
+    );
+    return profilesString ? JSON.parse(profilesString) : {};
+  }),
   isEmailValidated: publicProcedure.query(async ({ ctx }) => {
     return ctx.state.storage.get<boolean>(StorageKeys.emailValidated);
-  }),
-  test: publicProcedure.query(async ({ ctx }) => {
-    return ctx.state.storage.get(StorageKeys.authenticationCode);
   }),
   registerPassword: publicProcedure
     .input(z.string())
@@ -140,14 +143,29 @@ export const userRouter = router({
     .input(
       z.object({
         connection: z.string(),
-        profile: z.object({}),
+        profile: z.any(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const existingProfiles =
-        (await ctx.state.storage.get<Profiles>(StorageKeys.profile)) || {};
-      existingProfiles.connection = input.profile;
-      await ctx.state.storage.put(StorageKeys.profile, existingProfiles);
+      const existingProfileString = await ctx.state.storage.get<string>(
+        StorageKeys.profile
+      );
+      const existingProfile = existingProfileString
+        ? JSON.parse(existingProfileString)
+        : { connection: {} };
+
+      // Set standard fields if not defined
+      ["name", "given_name", "family_name", "nickname", "picture", "locale"]
+        .filter((key) => !existingProfile[key])
+        .forEach((key) => {
+          existingProfile[key] = input.profile[key];
+        });
+
+      existingProfile.connection[input.connection] = input.profile;
+      await ctx.state.storage.put(
+        StorageKeys.profile,
+        JSON.stringify(existingProfile)
+      );
     }),
   validateAuthenticationCode: publicProcedure
     .input(z.string())

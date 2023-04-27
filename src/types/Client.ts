@@ -12,5 +12,8 @@ export interface Client {
   senderEmail: string;
   senderName: string;
   loginBaseUrl: string;
+  allowedCallbackUrls: string[];
+  allowedLogoutUrls: string[];
+  allowedWebOrigins: string[];
   authProviders: AuthProvider[];
 }

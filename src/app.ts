@@ -10,6 +10,7 @@ import { serve } from "./routes/login";
 import { migrateDown, migrateToLatest } from "./migrate";
 import errorHandler from "./middlewares/errorHandler";
 import corsMiddleware from "./middlewares/cors";
+import { getDb } from "./services/db";
 
 export const app = new Router<Env>();
 
@@ -73,12 +74,17 @@ app.post("/migrate-down", async (ctx: Context<Env>) => {
 
 app.get("/static/:file*", serve);
 
-app.get("/test", async () => {
+app.get("/test", async (ctx: Context<Env>) => {
+  const db = getDb(ctx);
+  const application = await db
+    .selectFrom("applications")
+    .selectAll()
+    .executeTakeFirst();
+
   return new Response("Test redirect", {
     status: 302,
     headers: {
-      location:
-        "/authorize?client_id=default&redirect_uri=https://auth2.sesamy.dev/u/info&scope=profile%20email%20openid&state=1234&response_type=implicit",
+      location: `/authorize?client_id=${application?.id}&redirect_uri=${ctx.protocol}//${ctx.host}/u/info&scope=profile%20email%20openid&state=1234&response_type=code`,
     },
   });
 });

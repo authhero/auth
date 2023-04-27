@@ -13,7 +13,7 @@ import sendEmail from "../../services/email";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId, User } from "../../models/User";
 import { LoginState } from "../../types/LoginState";
-import { decode, encode } from "../../utils/base64";
+import { base64ToHex, decode, encode } from "../../utils/base64";
 import { getClient } from "../../services/clients";
 import {
   renderMessage,
@@ -22,6 +22,8 @@ import {
   renderSignup,
   renderLogin,
 } from "../../templates/render";
+import { State } from "../../models";
+import { AuthParams } from "../../types";
 
 export interface LoginParams {
   username: string;
@@ -274,12 +276,29 @@ export class LoginController extends Controller {
    * @param request
    */
   @Get("info")
-  public async info(@Request() request: RequestWithContext): Promise<string> {
+  public async info(
+    @Request() request: RequestWithContext,
+    @Query("state") state: string,
+    @Query("code") code: string
+  ): Promise<string> {
     const { ctx } = request;
+
+    const stateInstance = State.getInstanceById(
+      ctx.env.STATE,
+      base64ToHex(code)
+    );
+
+    const stateString = await stateInstance.getState.query();
+
+    const stateObj: { userId: string; authParams: AuthParams } =
+      JSON.parse(stateString);
+
+    const userInstance = User.getInstanceByName(ctx.env.USER, stateObj.userId);
+    const userProfile = await userInstance.getProfile.query();
 
     return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
       page_title: "User info",
-      message: "This is the user info page",
+      message: `Welcome ${userProfile.name}`,
     });
   }
 }

@@ -117,16 +117,34 @@ export class AuthorizeController extends Controller {
   @Get("v2/logout")
   @SuccessResponse("302", "Redirect")
   public async logout(
+    @Request() request: RequestWithContext,
     @Query("client_id") clientId: string,
-    @Query("returnTo") returnTo: string
+    @Query("returnTo") returnTo?: string
   ): Promise<string> {
-    // TODO: validate that the return to is valid for the current client
+    const client = await getClient(request.ctx, clientId);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+
+    const redirectUri = returnTo || request.ctx.headers.get("referer");
+    if (!redirectUri) {
+      throw new Error("No return to url found");
+    }
+
+    if (
+      client.allowedCallbackUrls.some((callbackUrl) => {
+        const regex = new RegExp(callbackUrl, "i");
+        return regex.test(redirectUri);
+      })
+    ) {
+      throw new Error("Invalid return to url");
+    }
+
     this.setStatus(302);
     serializeClearCookie().forEach((cookie) => {
       this.setHeader(headers.setCookie, cookie);
     });
-    this.setHeader(headers.location, returnTo);
-    this.setHeader(headers.contentType, contentTypes.text);
+    this.setHeader(headers.location, redirectUri);
 
     return "Redirecting";
   }
