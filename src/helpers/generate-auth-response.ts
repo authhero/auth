@@ -31,6 +31,10 @@ export async function generateAuthResponse({
   const userInstance = await User.getInstanceByName(ctx.env.USER, userId);
   const profile = await userInstance.getProfile.query();
 
+  if (!profile) {
+    throw new Error("No profile found for user");
+  }
+
   const accessToken = await tokenFactory.createAccessToken({
     scopes: authParams.scope?.split(" ") || [],
     userId,

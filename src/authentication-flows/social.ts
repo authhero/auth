@@ -6,6 +6,7 @@ import { Context } from "cloudworker-router";
 import { getClient } from "../services/clients";
 import { createState, getId, User } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
+import { sendUserEvent, UserEvent } from "../services/events";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -60,7 +61,7 @@ export async function socialAuthCallback({
   state,
   code,
 }: socialAuthCallbackParams) {
-  const client = await getClient(ctx, state.authParams.clientId);
+  const client = await getClient(ctx.env, state.authParams.clientId);
   if (!client) {
     throw new Error("Client not found");
   }
@@ -82,15 +83,24 @@ export async function socialAuthCallback({
 
   const token = await oauth2Client.exchangeCodeForToken(code);
 
-  const profile = await oauth2Client.getUserProfile(token.access_token);
+  const oauth2Profile = await oauth2Client.getUserProfile(token.access_token);
 
-  const userId = getId(state.authParams.clientId, profile.email);
+  const userId = getId(client.tenantId, oauth2Profile.email);
   const user = User.getInstanceByName(ctx.env.USER, userId);
 
-  await user.patchProfile.mutate({
+  const profile = await user.patchProfile.mutate({
     connection: oauthProvider.name,
-    profile,
+    profile: oauth2Profile,
   });
+
+  console.log("profile", profile);
+
+  await sendUserEvent(
+    ctx,
+    client.tenantId,
+    oauth2Profile.email,
+    UserEvent.userUpdate
+  );
 
   await setSilentAuthCookies(ctx, controller, userId, state.authParams);
 

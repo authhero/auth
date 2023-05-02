@@ -147,7 +147,7 @@ export class LoginController extends Controller {
     const loginState: LoginState = JSON.parse(decode(state));
     const { clientId } = loginState.authParams;
 
-    const client = await getClient(ctx, clientId);
+    const client = await getClient(ctx.env, clientId);
     if (!client) {
       throw new Error("Client not found");
     }
@@ -298,7 +298,7 @@ export class LoginController extends Controller {
 
     return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
       page_title: "User info",
-      message: `Welcome ${userProfile.name}`,
+      message: `Welcome ${userProfile?.name}`,
     });
   }
 }

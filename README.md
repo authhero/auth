@@ -40,8 +40,10 @@ The tokens are exposed at: `/.well-known/jwks.json`
 
 ## Open login form
 
+The test endpoint will initiate a login flow and redirect to the login form. This endpoint is only for demo purposes and should be removed in production.
+
 ```
-https://cloudworker-auth.sesamy-dev.workers.dev/authorize?client_id=default&redirect_uri=https://cloudworker-auth.sesamy-dev.workers.dev/info&scope=profile%20email%20openid&state=1234&response_type=implicit&username=test@example.com
+https://cloudworker-auth.sesamy-dev.workers.dev/test
 ```
 
 # Login methods
@@ -62,9 +64,55 @@ When an oauth2 flow is initiated a state is passed from the client. Once the use
 
 The access token is used to query the profile endpoint and sync the user profile information.
 
-# Clients
+# Data storage
 
-A client is for now a completely separate authentication service, similar to the tenants in auth0.
+Cloudflare provides different storage options that have different tradeoffs.
+
+For real-time requests such as user authentication, it's important to have low latency and high throughput which makes KV storage and durable objects a good fit. KV storage has global replication and is eventually consistent which makes it a good fit for storing data that doesn't need to be consistent in real-time, such as encryption keys and other configurations. We for instance use KV storage to store the client configurations that are fetched on almost every request.
+
+Durable objects are a good fit for storing user data and other data that needs to be consistent, which makes them a great fit for storing user data. They can also provide a small, readable wrapper around sensitive data making sure that there's no way to access the data without going through the API. We use durable objects to store user data and session state.
+
+SQLite provides a way of querying data for the admin API. It's currently not replicated and doesn't scale the same way as KV storage and durable objects, but it's a good fit for the admin API.
+
+# Entities
+
+## SQL Entities
+
+### Tenant
+
+The tenant is the root entity that contains all the other entities. It contains all common information such as the name, the logo, the email templates and the client configurations.
+
+### Auth Providers
+
+The auth providers define the available ways of logging in to the tenant, such as Google or Facebook. They contain the configuration for the different login methods such as the client id and the client secret.
+
+### Applications
+
+The applications are the clients that can use the API. They contain the client id and the client secret that is used to authenticate the client. The applications are stored as snapshots in KV storage together with data from tenants as the `Client` entity.
+
+### Users
+
+The users contain a limited set of information such as the user id and email. The purpose of this entity is to provide a way for administrators to query users, but any real-time requests should use the durable objects entity.
+
+### User Tenants
+
+This entity is used to specify any permissions that a user has on a tenant.
+
+## KV Entities
+
+### Certificates
+
+The certificates are stored in KV storage and are used to sign the tokens. They are rotated once per day and the last two certificates are kept in storage.
+
+### Clients
+
+The clients are stored in KV storage and contain the client id and the client secret. They are stored as snapshots together with the tenant data.
+
+## Durable Objects Entities
+
+### Users
+
+The users are stored in durable objects and contain the user profile and the login methods. When a user is updated it sends a message to the user queue to sync the user data to the SQLite database.
 
 # Linking accounts
 
@@ -75,40 +123,15 @@ Each user object is connected to one email, so for instance, there would be one 
 ## @auth0/auth0-react
 
 The auth0-react uses the universal login with PKCE flow:
+
 - When the user logs in the client passes a state, a nonce and a code challenge to the /authorize endpoint using a CodeGrant flow.
 - Once the user logged in it is redirected to the callback endpoint with the state and the code.
 - The client validates that the state matches the one passed in the query string.
 - The code is resolved to an access token and an id token using the /token endpoint
 - The id token is validated using the JWKS keys and the nonce is validated.
 
-# TODO-list
+# Leftovers
 
-– [x] Exposing JWKS-keys
-
-– [x] Register / Login with email and password
-
-– [x] Using bcrypt for password
-
-– [x] Support passwordless with email (code)
-
-– [ ] Password reset flows
-
-– [x] Sync users to D1 database for queries
-
-– [ ] Logs per user
-
-– [ ] Rate-limits
-
-– [x] Social logins
-
-– [ ] Support passwordless with email (magic link)
-
-– [ ] 2-factor auth
-
-– [ ] Refresh tokens flow
-
-– [ ] Client Credentials flow
-
-– [ ] PKCE
-
-- [ ] Silent authentication
+- Add inversify
+- Trigger events from durable objects
+- Should the userId be the durable object ID as base64?

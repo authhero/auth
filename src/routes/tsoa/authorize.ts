@@ -49,7 +49,7 @@ export class AuthorizeController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const client = await getClient(request.ctx, clientId);
+    const client = await getClient(request.ctx.env, clientId);
     if (!client) {
       throw new Error("Client not found");
     }
@@ -121,7 +121,7 @@ export class AuthorizeController extends Controller {
     @Query("client_id") clientId: string,
     @Query("returnTo") returnTo?: string
   ): Promise<string> {
-    const client = await getClient(request.ctx, clientId);
+    const client = await getClient(request.ctx.env, clientId);
     if (!client) {
       throw new Error("Client not found");
     }

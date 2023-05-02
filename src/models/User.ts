@@ -13,16 +13,13 @@ import {
   AuthenticationCodeExpiredError,
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
+import { nanoid } from "nanoid";
 
 interface Code {
   authParams?: AuthParams;
   code: string;
   expireAt?: number;
   password?: string;
-}
-
-interface Profiles {
-  [key: string]: any;
 }
 
 const t = initTRPC.context<Context>().create();
@@ -41,24 +38,54 @@ enum StorageKeys {
   socialConnections = "social-connections",
 }
 
-interface SocialConnection {
-  type: string;
+interface Profile {
   userId: string;
-  profile: any;
+  email?: string;
+  name?: string;
+  given_name?: string;
+  family_name?: string;
+  nickname?: string;
+  picture?: string;
+  locale?: string;
+  connections: {
+    name: string;
+    [key: string]: any;
+  }[];
+  createdAt: string;
+  modifiedAt: string;
+}
+
+async function getProfile(
+  storage: DurableObjectStorage
+): Promise<Profile | null> {
+  const profilesString = await storage.get<string>(StorageKeys.profile);
+  if (!profilesString) {
+    return null;
+  }
+
+  return JSON.parse(profilesString);
+}
+
+// Stores information about the current operation and ensures that the user has an id.
+async function updateUser(storage: DurableObjectStorage) {
+  let profile = await getProfile(storage);
+
+  if (!profile || !profile.userId) {
+    profile = {
+      userId: nanoid(),
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+      connections: [],
+    };
+    await storage.put(StorageKeys.profile, JSON.stringify(profile));
+  } else {
+    profile.modifiedAt = new Date().toISOString();
+  }
+
+  return profile;
 }
 
 export const userRouter = router({
-  connectWithSocial: publicProcedure
-    .input(z.string().describe("connection name"))
-    .mutation(async ({ input, ctx }) => {
-      const socialConnections = await ctx.state.storage.get<SocialConnection[]>(
-        StorageKeys.socialConnections
-      );
-
-      const connection = socialConnections?.find((sc) => sc.type === input);
-
-      throw new Error("Not implemented");
-    }),
   createAuthenticationCode: publicProcedure
     .input(
       z.object({
@@ -109,12 +136,9 @@ export const userRouter = router({
 
       return result;
     }),
-  getProfile: publicProcedure.query(async ({ ctx }) => {
-    const profilesString = await ctx.state.storage.get<string>(
-      StorageKeys.profile
-    );
-    return profilesString ? JSON.parse(profilesString) : {};
-  }),
+  getProfile: publicProcedure.query(async ({ ctx }) =>
+    getProfile(ctx.state.storage)
+  ),
   isEmailValidated: publicProcedure.query(async ({ ctx }) => {
     return ctx.state.storage.get<boolean>(StorageKeys.emailValidated);
   }),
@@ -147,25 +171,31 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const existingProfileString = await ctx.state.storage.get<string>(
-        StorageKeys.profile
-      );
-      const existingProfile = existingProfileString
-        ? JSON.parse(existingProfileString)
-        : { connection: {} };
+      const profile = await updateUser(ctx.state.storage);
 
       // Set standard fields if not defined
-      ["name", "given_name", "family_name", "nickname", "picture", "locale"]
-        .filter((key) => !existingProfile[key])
+      [
+        "name",
+        "email",
+        "given_name",
+        "family_name",
+        "nickname",
+        "picture",
+        "locale",
+      ]
+        .filter((key) => !profile[key])
         .forEach((key) => {
-          existingProfile[key] = input.profile[key];
+          profile[key] = input.profile[key];
         });
 
-      existingProfile.connection[input.connection] = input.profile;
-      await ctx.state.storage.put(
-        StorageKeys.profile,
-        JSON.stringify(existingProfile)
+      profile.connections = profile.connections.filter(
+        (c) => c.name !== input.connection
       );
+
+      profile.connections.push({ ...input.profile, name: input.connection });
+      await ctx.state.storage.put(StorageKeys.profile, JSON.stringify(profile));
+
+      return profile;
     }),
   validateAuthenticationCode: publicProcedure
     .input(z.string())
@@ -257,8 +287,8 @@ export const userRouter = router({
 
 type UserRouter = typeof userRouter;
 
-export function getId(clientId: string, email: string) {
-  return `${clientId}|auth|${email}`;
+export function getId(tenantId: string, email: string) {
+  return `${tenantId}|${email}`;
 }
 
 export const User = createProxy<UserRouter>(userRouter);

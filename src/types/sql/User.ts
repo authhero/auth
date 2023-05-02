@@ -1,9 +1,13 @@
 export interface User {
   id: string;
   email: string;
-  clientId: string;
+  tenantId: string;
   createdAt: string;
   modifiedAt: string;
-  firstName?: string;
-  lastName?: string;
+  givenName?: string;
+  familyName?: string;
+  nickname?: string;
+  name?: string;
+  picture?: string;
+  locale?: string;
 }

@@ -52,6 +52,8 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
+    const client = await getClient(ctx.env, clientId);
+
     const user = User.getInstanceByName(
       ctx.env.USER,
       getId(clientId, body.email)
@@ -61,14 +63,14 @@ export class DbConnectionController extends Controller {
 
     const dbUser: DbUser = {
       email: body.email,
-      clientId,
+      tenantId: client.tenantId,
       // TODO: this id should be generated in the durable object
       id: nanoid(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
 
-    const db = getDb(ctx);
+    const db = getDb(ctx.env);
     await db
       .insertInto("users")
       .values(dbUser)
@@ -92,7 +94,7 @@ export class DbConnectionController extends Controller {
     );
     const { code } = await user.createPasswordResetCode.mutate();
 
-    const client = await getClient(ctx, clientId);
+    const client = await getClient(ctx.env, clientId);
 
     const message = `Click this link to reset your password: ${client.loginBaseUrl}/reset-password?email=${body.email}&code=${code}`;
     await sendEmail({

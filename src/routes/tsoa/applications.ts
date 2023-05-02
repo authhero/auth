@@ -23,7 +23,7 @@ export class ApplicationsController extends Controller {
   public async listApplications(
     @Request() request: RequestWithContext
   ): Promise<Application[]> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const applications = await db
       .selectFrom("applications")
       .selectAll()
@@ -41,7 +41,7 @@ export class ApplicationsController extends Controller {
       Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">
     >
   ): Promise<UpdateResult[]> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const application = {
       ...body,
       modifiedAt: new Date().toISOString(),
@@ -63,7 +63,7 @@ export class ApplicationsController extends Controller {
     @Body()
     body: Omit<Application, "id" | "createdAt" | "modifiedAt">
   ): Promise<Application> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const application = {
       ...body,
       id: nanoid(),

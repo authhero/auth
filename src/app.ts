@@ -75,7 +75,7 @@ app.post("/migrate-down", async (ctx: Context<Env>) => {
 app.get("/static/:file*", serve);
 
 app.get("/test", async (ctx: Context<Env>) => {
-  const db = getDb(ctx);
+  const db = getDb(ctx.env);
   const application = await db
     .selectFrom("applications")
     .selectAll()

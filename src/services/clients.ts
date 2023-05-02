@@ -1,10 +1,9 @@
-import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
 import { Client } from "../types/Client";
 import { getDb } from "./db";
 
-export async function getClient(ctx: Context<Env>, clientId: string) {
-  const db = getDb(ctx);
+export async function getClient(env: Env, clientId: string) {
+  const db = getDb(env);
   const applications = await db
     .selectFrom("applications")
     .innerJoin("tenants", "applications.tenantId", "tenants.id")
@@ -43,7 +42,8 @@ export async function getClient(ctx: Context<Env>, clientId: string) {
     issuer: application.issuer,
     senderEmail: application.senderEmail,
     senderName: application.senderName,
-    loginBaseUrl: ctx.env.AUTH_DOMAIN_URL,
+    loginBaseUrl: env.AUTH_DOMAIN_URL,
+    tenantId: application.tenantId,
     allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
     allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
     allowedWebOrigins: application.allowedWebOrigins?.split(",") || [],

@@ -9,6 +9,7 @@ kv_namespaces = [
     { binding = "CERTIFICATES", id = "2a5901d369d441bba149bb236af71c27", preview_id = "2a5901d369d441bba149bb236af71c27" }
 ]
 route = "auth2.sesamy.dev/*"
+logpush = true
 
 [vars]
 AUTH_DOMAIN_URL = "https://auth2.sesamy.dev/"
@@ -26,6 +27,17 @@ preview_database_id = "3a755926-9eed-47a6-843e-9db66dd1fe16"
 
 [durable_objects]
 bindings = [{name = "USER", class_name = "User"}, {name = "STATE", class_name = "State"}]
+
+[[queues.producers]]
+queue = "users"
+binding = "USERS_QUEUE"
+
+[[queues.consumers]]
+queue = "users"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "users-dlq"
 
 [[migrations]]
 tag = "v1"

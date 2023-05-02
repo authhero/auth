@@ -1,30 +1,33 @@
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
-import { User } from "../types/sql/User";
 
 export enum UserEvent {
   loginSuccess = "LOGIN_SUCCESS",
   loginFail = "LOGIN_FAIL",
   userCreate = "USER_CREATE",
+  userUpdate = "USER_UPDATE",
 }
 
-export interface UserMessage extends User {
+export interface UserMessage {
   queueName: "users";
+  userId: string;
   event: UserEvent;
 }
 
-export type QueueMessage = UserMessage;
+export type QueueMessage = { tenantId: string } & UserMessage;
 
-export async function userEvent(
+export async function sendUserEvent(
   ctx: Context<Env>,
-  user: User,
+  tenantId: string,
+  userId: string,
   event: UserEvent
 ) {
   const message: QueueMessage = {
-    ...user,
+    userId,
+    tenantId,
     queueName: "users",
     event,
   };
 
-  await ctx.env.USER_QUEUE.send(message);
+  await ctx.env.USERS_QUEUE.send(message);
 }

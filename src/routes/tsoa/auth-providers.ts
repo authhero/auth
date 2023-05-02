@@ -23,7 +23,7 @@ export class AuthProvidersController extends Controller {
   public async listAuthProvides(
     @Request() request: RequestWithContext
   ): Promise<AuthProvider[]> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const authProviders = await db
       .selectFrom("authProviders")
       .selectAll()
@@ -43,7 +43,7 @@ export class AuthProvidersController extends Controller {
     @Request() request: RequestWithContext,
     @Body() body: Omit<AuthProvider, "id" | "createdAt" | "modifiedAt">
   ): Promise<AuthProvider> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const authProvider = {
       ...body,
       id: nanoid(),
@@ -63,7 +63,7 @@ export class AuthProvidersController extends Controller {
     @Path("id") id: string,
     @Body() body: Partial<Omit<AuthProvider, "id" | "createdAt" | "modifiedAt">>
   ): Promise<UpdateResult[]> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const authProvider = {
       ...body,
       modifiedAt: new Date().toISOString(),

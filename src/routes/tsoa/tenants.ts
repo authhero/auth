@@ -20,31 +20,10 @@ export class TenantsController extends Controller {
   public async listTenants(
     @Request() request: RequestWithContext
   ): Promise<Tenant[]> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const tenants = await db.selectFrom("tenants").selectAll().execute();
 
     return tenants;
-  }
-
-  @Get("test")
-  public async testTenants(
-    @Request() request: RequestWithContext
-  ): Promise<any[]> {
-    const db = getDb(request.ctx);
-    const applications = await db
-      .selectFrom("applications")
-      .innerJoin("tenants", "applications.tenantId", "tenants.id")
-      .leftJoin("authProviders", "authProviders.tenantId", "tenants.id")
-      .selectAll()
-      // .select([
-      //   "applications.id",
-      //   "applications.name",
-      //   "tenants.audience",
-      //   "tenants.id as tenantId",
-      // ])
-      .execute();
-
-    return applications;
   }
 
   @Post("")
@@ -53,7 +32,7 @@ export class TenantsController extends Controller {
     @Request() request: RequestWithContext,
     @Body() body: Omit<Tenant, "id">
   ): Promise<Tenant> {
-    const db = getDb(request.ctx);
+    const db = getDb(request.ctx.env);
     const tenant = {
       ...body,
       id: nanoid(),
