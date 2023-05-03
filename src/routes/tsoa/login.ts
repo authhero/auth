@@ -289,6 +289,9 @@ export class LoginController extends Controller {
     );
 
     const stateString = await stateInstance.getState.query();
+    if (!stateString) {
+      throw new Error("State not found");
+    }
 
     const stateObj: { userId: string; authParams: AuthParams } =
       JSON.parse(stateString);

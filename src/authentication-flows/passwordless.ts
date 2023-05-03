@@ -26,6 +26,11 @@ export async function passwordlessAuth(
     base64ToHex(ticket)
   );
   const passwordlessStateString = await ticketInstance.getState.query();
+
+  if (!passwordlessStateString) {
+    throw new Error("Ticket not found");
+  }
+
   const passwordlessState: PasswordlessState = JSON.parse(
     passwordlessStateString
   );

@@ -3,7 +3,7 @@ import { Kysely } from "kysely";
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("users")
-    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
+    .addColumn("id", "varchar", (col) => col.notNull())
     .addColumn("tenant_id", "varchar", (col) => col.notNull())
     .addColumn("email", "varchar", (col) => col.notNull())
     .addColumn("linked_to", "varchar")
@@ -14,6 +14,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("picture", "varchar")
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
+    .addPrimaryKeyConstraint("users_tenants", ["id", "tenant_id"])
     .execute();
 
   await db.schema
@@ -21,12 +22,12 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("user_id", "varchar", (col) =>
       col.references("users.id").onDelete("cascade").notNull()
     )
-    .addColumn("tenants_id", "varchar", (col) =>
+    .addColumn("tenant_id", "varchar", (col) =>
       col.references("tenants.id").onDelete("cascade").notNull()
     )
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
-    .addPrimaryKeyConstraint("users_tenants", ["user_id", "tenants_id"])
+    .addPrimaryKeyConstraint("users_tenants", ["user_id", "tenant_id"])
     .execute();
 
   await db.schema

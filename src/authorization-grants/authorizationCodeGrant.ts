@@ -24,6 +24,9 @@ export async function authorizationCodeGrant(
     base64ToHex(params.code)
   );
   const stateString = await stateInstance.getState.query();
+  if (!stateString) {
+    return null;
+  }
   const state: { userId: string; authParams: AuthParams } =
     JSON.parse(stateString);
 

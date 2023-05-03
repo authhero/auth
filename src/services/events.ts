@@ -1,11 +1,10 @@
-import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
 
 export enum UserEvent {
   loginSuccess = "LOGIN_SUCCESS",
-  loginFail = "LOGIN_FAIL",
-  userCreate = "USER_CREATE",
-  userUpdate = "USER_UPDATE",
+  loginFailed = "LOGIN_FAILED",
+  userCreated = "USER_CREATED",
+  userUpdated = "USER_UPDATED",
 }
 
 export interface UserMessage {
@@ -17,11 +16,12 @@ export interface UserMessage {
 export type QueueMessage = { tenantId: string } & UserMessage;
 
 export async function sendUserEvent(
-  ctx: Context<Env>,
-  tenantId: string,
-  userId: string,
+  queue: Queue,
+  doId: string,
   event: UserEvent
 ) {
+  const [tenantId, userId] = doId.split("|");
+
   const message: QueueMessage = {
     userId,
     tenantId,
@@ -29,5 +29,5 @@ export async function sendUserEvent(
     event,
   };
 
-  await ctx.env.USERS_QUEUE.send(message);
+  await queue.send(message);
 }

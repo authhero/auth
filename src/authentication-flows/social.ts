@@ -6,7 +6,6 @@ import { Context } from "cloudworker-router";
 import { getClient } from "../services/clients";
 import { createState, getId, User } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
-import { sendUserEvent, UserEvent } from "../services/events";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -85,24 +84,16 @@ export async function socialAuthCallback({
 
   const oauth2Profile = await oauth2Client.getUserProfile(token.access_token);
 
-  const userId = getId(client.tenantId, oauth2Profile.email);
-  const user = User.getInstanceByName(ctx.env.USER, userId);
+  const doId = getId(client.tenantId, oauth2Profile.email);
+  const user = User.getInstanceByName(ctx.env.USER, doId);
 
-  const profile = await user.patchProfile.mutate({
+  await user.patchProfile.mutate({
     connection: oauthProvider.name,
+    doId,
     profile: oauth2Profile,
   });
 
-  console.log("profile", profile);
-
-  await sendUserEvent(
-    ctx,
-    client.tenantId,
-    oauth2Profile.email,
-    UserEvent.userUpdate
-  );
-
-  await setSilentAuthCookies(ctx, controller, userId, state.authParams);
+  await setSilentAuthCookies(ctx, controller, doId, state.authParams);
 
   // TODO: This is quick and dirty.. we should validate the values.
   const redirectUri = new URL(state.authParams.redirectUri);
@@ -110,7 +101,7 @@ export async function socialAuthCallback({
   switch (state.authParams.responseType) {
     case AuthorizationResponseType.CODE:
       const { id: stateId } = await createState(ctx.env.STATE, {
-        userId,
+        userId: doId,
         authParams: state.authParams,
       });
       redirectUri.searchParams.set("code", hexToBase64(stateId));

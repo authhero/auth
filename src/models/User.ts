@@ -14,6 +14,8 @@ import {
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
 import { nanoid } from "nanoid";
+import { Env } from "../types";
+import { sendUserEvent, UserEvent } from "../services/events";
 
 interface Code {
   authParams?: AuthParams;
@@ -67,20 +69,36 @@ async function getProfile(
 }
 
 // Stores information about the current operation and ensures that the user has an id.
-async function updateUser(storage: DurableObjectStorage) {
-  let profile = await getProfile(storage);
+async function updateUser(
+  storage: DurableObjectStorage,
+  queue: Queue,
+  doId: string,
+  profile: Partial<Profile>
+) {
+  let existingProfile = await getProfile(storage);
 
-  if (!profile || !profile.userId) {
-    profile = {
+  if (!existingProfile) {
+    existingProfile = {
       userId: nanoid(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
       connections: [],
     };
-    await storage.put(StorageKeys.profile, JSON.stringify(profile));
-  } else {
-    profile.modifiedAt = new Date().toISOString();
   }
+
+  const updatedProfile = {
+    ...existingProfile,
+    ...profile,
+    modifiedAt: new Date().toISOString(),
+  };
+
+  await storage.put(StorageKeys.profile, JSON.stringify(updatedProfile));
+
+  await sendUserEvent(
+    queue,
+    doId,
+    existingProfile ? UserEvent.userUpdated : UserEvent.userCreated
+  );
 
   return profile;
 }
@@ -167,11 +185,17 @@ export const userRouter = router({
     .input(
       z.object({
         connection: z.string(),
+        doId: z.string(),
         profile: z.any(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const profile = await updateUser(ctx.state.storage);
+      const profile = await updateUser(
+        ctx.state.storage,
+        ctx.env.USERS_QUEUE,
+        input.doId,
+        input.profile
+      );
 
       // Set standard fields if not defined
       [
@@ -187,13 +211,6 @@ export const userRouter = router({
         .forEach((key) => {
           profile[key] = input.profile[key];
         });
-
-      profile.connections = profile.connections.filter(
-        (c) => c.name !== input.connection
-      );
-
-      profile.connections.push({ ...input.profile, name: input.connection });
-      await ctx.state.storage.put(StorageKeys.profile, JSON.stringify(profile));
 
       return profile;
     }),
@@ -291,4 +308,4 @@ export function getId(tenantId: string, email: string) {
   return `${tenantId}|${email}`;
 }
 
-export const User = createProxy<UserRouter>(userRouter);
+export const User = createProxy<UserRouter, Env>(userRouter);

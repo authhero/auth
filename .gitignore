@@ -7,4 +7,5 @@ worker/
 node_modules/
 build/
 lib/
+data/
 .dev.vars

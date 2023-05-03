@@ -16,35 +16,18 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { InsertResult } from "kysely";
 
-@Route("users")
+@Route("tenants/{tenantId}/users")
 @Tags("users")
 export class UsersController extends Controller {
   @Get("")
   public async listUsers(
     @Request() request: RequestWithContext,
-    @Query("tenantId") tenantId?: string
+    @Path("tenantId") tenantId: string
   ): Promise<User[]> {
     const db = getDb(request.ctx.env);
     const query = db.selectFrom("users").selectAll();
-    if (tenantId) {
-      query.where("users.tenantId", "=", tenantId);
-    }
+    query.where("users.tenantId", "=", tenantId);
     const users = await query.execute();
-
-    return users;
-  }
-
-  @Get("test")
-  public async testUsers(
-    @Request() request: RequestWithContext
-  ): Promise<User[]> {
-    const db = getDb(request.ctx.env);
-    const users = await db
-      .selectFrom("users")
-      .where("email", "=", "markus@sesamy.com")
-      .where("tenantId", "=", "FFzaaq3dnGdkxEv0QnK-m")
-      .selectAll()
-      .execute();
 
     return users;
   }
@@ -54,13 +37,15 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Body()
     updateUserParams: Partial<Omit<User, "id" | "createdAt" | "modifiedAt">>,
-    @Path("userId") userId: string
+    @Path("userId") userId: string,
+    @Path("tenantId") tenantId: string
   ): Promise<number> {
     const db = getDb(request.ctx.env);
     const result = await db
       .updateTable("users")
       .set(updateUserParams)
       .where("users.id", "=", userId)
+      .where("users.tenantId", "=", tenantId)
       .execute();
 
     return result.length;
@@ -70,12 +55,14 @@ export class UsersController extends Controller {
   @SuccessResponse(201, "Created")
   public async postUser(
     @Request() request: RequestWithContext,
-    @Body() user: Omit<User, "createdAt" | "modifiedAt">
+    @Path("tenantId") tenantId: string,
+    @Body() user: Omit<User, "createdAt" | "modifiedAt" | "tenantId">
   ): Promise<InsertResult[]> {
     const db = getDb(request.ctx.env);
 
     const value = {
       ...user,
+      tenantId,
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
