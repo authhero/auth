@@ -43,7 +43,7 @@ export class TokenRoutes extends Controller {
         tokenResponse = await passwordGrant(ctx, body);
         break;
       case GrantType.Passwordless:
-        tokenResponse = await passwordlessGrant(ctx, body);
+        tokenResponse = await passwordlessGrant(ctx.env, body);
         break;
     }
 

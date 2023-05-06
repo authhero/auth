@@ -3,8 +3,10 @@ import { app } from "./app";
 import rotateKeys from "./routes/rotate-keys";
 import { User, State } from "./models";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
-import { QueueMessage, UserEvent } from "./services/events";
+import { QueueMessage } from "./services/events";
 import { updateUser } from "./handlers/update-user";
+import { getToken } from "@sagi.io/workers-jwt";
+import { createTokenFactory } from "./services/token-factory";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -23,6 +25,8 @@ export default {
         ...env,
         OAUTH2_CLIENT_FACTORY: { create: oAuth2ClientFactory },
         stateFactory: State.getFactory(env.STATE, env),
+        userFactory: User.getFactory(env.USER, env),
+        TokenFactory: createTokenFactory(getToken),
       },
       ctx
     );

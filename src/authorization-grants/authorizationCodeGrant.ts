@@ -32,5 +32,5 @@ export async function authorizationCodeGrant(
 
   await setSilentAuthCookies(ctx, controller, state.userId, state.authParams);
 
-  return generateAuthResponse({ ctx, ...state });
+  return generateAuthResponse({ env: ctx.env, ...state });
 }

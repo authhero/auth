@@ -1,5 +1,3 @@
-import randomString from "../../src/utils/random-string";
-
 export class MockedDurabableObjectId implements DurableObjectId {
   id: string;
 

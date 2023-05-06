@@ -3,14 +3,10 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../src/types";
-import {
-  mockedContext,
-  mockedController,
-  mockedNamespace,
-} from "../test-helpers";
+import { mockedContext, mockedController } from "../test-helpers";
 
 import { silentAuth } from "../../src/authentication-flows";
-import { State } from "../../src/models";
+import { base64ToHex } from "../../src/utils/base64";
 
 describe("silentAuth", () => {
   it('should render an iframe with "login required" as error if the user is not authenticated', async () => {
@@ -42,7 +38,15 @@ describe("silentAuth", () => {
     //   code_challenge_method=S256&
     //   auth0Client=eyJuYW1lIjoiYXV0aDAtcmVhY3QiLCJ2ZXJzaW9uIjoiMi4wLjEifQ%3D%3D' \
 
-    const ctx = mockedContext();
+    const stateInstanceId = base64ToHex("token-state");
+
+    const ctx = mockedContext({
+      stateData: {
+        [stateInstanceId]: JSON.stringify({
+          foo: "bar",
+        }),
+      },
+    });
     const controller = mockedController();
 
     const actual = await silentAuth({
@@ -55,15 +59,6 @@ describe("silentAuth", () => {
       nonce: "nonce",
       codeChallengeMethod: CodeChallengeMethod.S265,
       codeChallenge: "48-0wuTLqfWbYToVwavCU9afSDV5iVB1NZccOOjjeY",
-      State: mockedNamespace<typeof State>({
-        getState: {
-          query: async () => {
-            return JSON.stringify({
-              foo: "bar",
-            });
-          },
-        },
-      }),
     });
 
     expect(

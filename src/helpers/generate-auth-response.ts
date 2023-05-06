@@ -1,14 +1,11 @@
 // This should probably live somewhere else.
-
-import { Context } from "cloudworker-router";
-import { TokenFactory } from "../services/token-factory";
-import { getCertificate, User } from "../models";
+import { getCertificate } from "../models";
 import { Env, AuthParams } from "../types";
 import { TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 
 export interface GenerateAuthResponseParams {
-  ctx: Context<Env>;
+  env: Env;
   userId: string;
   state?: string;
   nonce?: string;
@@ -16,19 +13,19 @@ export interface GenerateAuthResponseParams {
 }
 
 export async function generateAuthResponse({
-  ctx,
+  env,
   userId,
   state,
   nonce,
   authParams,
 }: GenerateAuthResponseParams) {
-  const certificate = await getCertificate(ctx);
-  const tokenFactory = new TokenFactory(
+  const certificate = await getCertificate(env);
+  const tokenFactory = new env.TokenFactory(
     certificate.privateKey,
     certificate.kid
   );
 
-  const userInstance = await User.getInstanceByName(ctx.env.USER, userId);
+  const userInstance = await env.userFactory.getInstanceByName(userId);
   const profile = await userInstance.getProfile.query();
 
   if (!profile) {
@@ -38,7 +35,7 @@ export async function generateAuthResponse({
   const accessToken = await tokenFactory.createAccessToken({
     scopes: authParams.scope?.split(" ") || [],
     userId,
-    iss: ctx.env.AUTH_DOMAIN_URL,
+    iss: env.AUTH_DOMAIN_URL,
   });
 
   const idToken = await tokenFactory.createIDToken({
@@ -48,7 +45,7 @@ export async function generateAuthResponse({
     family_name: profile.family_name,
     nickname: profile.nickname,
     name: profile.name,
-    iss: ctx.env.AUTH_DOMAIN_URL,
+    iss: env.AUTH_DOMAIN_URL,
     nonce: nonce || authParams.nonce,
   });
 

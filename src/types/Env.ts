@@ -1,6 +1,7 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { StateClient, UserClient } from "../models";
 import { QueueMessage } from "../services/events";
+import { createTokenFactory } from "../services/token-factory";
 
 export interface StateRouterFactory {
   (name: string): StateClient;
@@ -23,4 +24,5 @@ export interface Env {
   OAUTH2_CLIENT_FACTORY: IOAuth2ClientFactory;
   stateFactory: ClientFactory<StateClient>;
   userFactory: ClientFactory<UserClient>;
+  TokenFactory: ReturnType<typeof createTokenFactory>;
 }

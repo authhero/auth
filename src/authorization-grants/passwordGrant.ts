@@ -1,15 +1,13 @@
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
-import { User } from "../models/User";
 import { PasswordGrantTypeParams, TokenResponse } from "../types/Token";
-import { TokenFactory } from "../services/token-factory";
 import { getCertificate } from "../models/Certificate";
 
 export async function passwordGrant(
   ctx: Context<Env>,
   params: PasswordGrantTypeParams
 ): Promise<TokenResponse | null> {
-  const user = User.getInstanceByName(ctx.env.USER, params.username);
+  const user = ctx.env.userFactory.getInstanceByName(params.username);
 
   const validatePassword = await user.validatePassword.query(params.password);
 
@@ -18,8 +16,8 @@ export async function passwordGrant(
   }
 
   // TODO: clean this up and use the genrate-auth-response function
-  const certificate = await getCertificate(ctx);
-  const tokenFactory = new TokenFactory(
+  const certificate = await getCertificate(ctx.env);
+  const tokenFactory = new ctx.env.TokenFactory(
     certificate.privateKey,
     certificate.kid
   );
