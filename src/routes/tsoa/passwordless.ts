@@ -6,7 +6,6 @@ import { getId, User } from "../../models/User";
 import { getClient } from "../../services/clients";
 import { contentTypes, headers } from "../../constants";
 import { AuthenticationCodeExpiredError, InvalidCodeError } from "../../errors";
-import { createState } from "../../models";
 import randomString from "../../utils/random-string";
 import { hexToBase64 } from "../../utils/base64";
 import { AuthParams } from "../../types/AuthParams";
@@ -41,7 +40,7 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const user = User.getInstanceByName(ctx.env.USER, body.email);
+    const user = ctx.env.userFactory.getInstanceByName(body.email);
     const { code } = await user.createAuthenticationCode.mutate({
       authParams: body.authParams!,
     });
@@ -87,23 +86,26 @@ export class PasswordlessController extends Controller {
   ): Promise<LoginTicket | LoginError> {
     const { ctx } = request;
 
-    const user = User.getInstanceByName(ctx.env.USER, body.username);
+    const user = ctx.env.userFactory.getInstanceByName(body.username);
     try {
       const authParams = await user.validateAuthenticationCode.mutate(body.otp);
 
       const coVerifier = randomString(32);
       const coID = randomString(12);
 
-      const { id: stateId } = await createState(
-        ctx.env.STATE,
-        JSON.stringify({
-          coVerifier,
-          coID,
-          username: body.username,
-          userId: getId(body.client_id, body.username),
-          authParams,
-        })
-      );
+      const payload = {
+        coVerifier,
+        coID,
+        username: body.username,
+        userId: getId(body.client_id, body.username),
+        authParams,
+      };
+
+      const stateId = ctx.env.STATE.newUniqueId().toString();
+      const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);
+      stateInstance.createState.mutate({
+        state: JSON.stringify(payload),
+      });
 
       this.setHeader(headers.contentType, contentTypes.json);
       return {
