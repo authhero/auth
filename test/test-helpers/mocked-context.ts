@@ -7,9 +7,7 @@ import { mockedR2Bucket } from "./mocked-r2-bucket";
 export function mockedContext(): Context<Env> {
   return {
     env: {
-      AUTH_TEMPLATES: mockedR2Bucket(
-        "/Users/markusahlstrand/Projects/cloudworker-auth/src"
-      ),
+      AUTH_TEMPLATES: mockedR2Bucket(),
       AUTH_DOMAIN_URL: "https://auth.example.com",
       GOOGLE_CLIENT_ID: "123",
       GOOGLE_CLIENT_SECRET: "123",
