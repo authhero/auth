@@ -1,8 +1,7 @@
 import { Context } from "cloudworker-router";
 import { serializeStateInCookie } from "../services/cookies";
 import { Controller } from "tsoa";
-import { BEARER, headers, MONTH_IN_SECONDS } from "../constants";
-import { createState } from "../models";
+import { headers, MONTH_IN_SECONDS } from "../constants";
 import { AuthParams, Env } from "../types";
 import { hexToBase64 } from "../utils/base64";
 
@@ -17,11 +16,12 @@ export async function setSilentAuthCookies(
     authParams,
   };
 
-  const { id: stateId } = await createState(
-    ctx.env.STATE,
-    JSON.stringify(payload),
-    MONTH_IN_SECONDS
-  );
+  const stateId = ctx.env.STATE.newUniqueId().toString();
+  const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);
+  stateInstance.createState.mutate({
+    state: JSON.stringify(payload),
+    ttl: MONTH_IN_SECONDS,
+  });
 
   serializeStateInCookie(hexToBase64(stateId)).forEach((cookie) => {
     controller.setHeader(headers.setCookie, cookie);
