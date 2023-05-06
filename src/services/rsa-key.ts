@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 import { Certificate } from "../models/Certificate";
 
 export interface KeyPair {
@@ -19,7 +19,7 @@ export async function create(): Promise<Certificate> {
     ["encrypt", "decrypt"]
   )) as CryptoKeyPair;
 
-  const kid = nanoid();
+  const kid = uuidv4();
 
   const privateKey = await toPrivatePEM(keyPair.privateKey, kid);
   const publicJWKS = await toJWKS(keyPair.publicKey);

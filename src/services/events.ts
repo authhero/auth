@@ -16,7 +16,7 @@ export interface UserMessage {
 export type QueueMessage = { tenantId: string } & UserMessage;
 
 export async function sendUserEvent(
-  queue: Queue,
+  queue: Queue<QueueMessage>,
   doId: string,
   event: UserEvent
 ) {

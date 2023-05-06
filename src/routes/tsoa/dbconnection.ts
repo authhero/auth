@@ -13,7 +13,7 @@ import { getId, User } from "../../models/User";
 import sendEmail from "../../services/email";
 import { getDb } from "../../services/db";
 import { getClient } from "../../services/clients";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 import { User as DbUser } from "../../types/sql";
 
 export interface RegisterUserParams {
@@ -65,7 +65,7 @@ export class DbConnectionController extends Controller {
       email: body.email,
       tenantId: client.tenantId,
       // TODO: this id should be generated in the durable object
-      id: nanoid(),
+      id: uuidv4(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };

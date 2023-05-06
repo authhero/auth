@@ -1,6 +1,5 @@
 import { createProxy, Context } from "trpc-durable-objects";
 import { initTRPC } from "@trpc/server";
-import { RouterLike, UtilsLike } from "@trpc/react-query/shared";
 import { z } from "zod";
 
 const t = initTRPC.context<Context>().create();
