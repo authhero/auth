@@ -1,12 +1,12 @@
 import {
   IOAuth2Client,
-  AuthProviderParams,
+  OAuthProviderParams,
   TokenResponse,
   UserProfile,
 } from "../../src/services/oauth2-client";
 
 export function oAuth2ClientFactory(
-  params: AuthProviderParams,
+  params: OAuthProviderParams,
   redirectUri: string,
   scopes?: string[]
 ): IOAuth2Client {
@@ -14,12 +14,12 @@ export function oAuth2ClientFactory(
 }
 
 export class MockedOAuth2Client implements IOAuth2Client {
-  private readonly params: AuthProviderParams;
+  private readonly params: OAuthProviderParams;
   private readonly scopes: string[];
   private readonly redirectUri: string;
 
   constructor(
-    params: AuthProviderParams,
+    params: OAuthProviderParams,
     redirectUri: string,
     scopes: string[] = []
   ) {

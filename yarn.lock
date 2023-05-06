@@ -921,6 +921,11 @@
   resolved "https://registry.yarnpkg.com/@trpc/client/-/client-10.23.0.tgz#cf1549d4c198038ae711cd1552c1d68f690d1d28"
   integrity sha512-7hTh9OjVIx4Co3kUyIu94SjbUIuS2WKl3E5BMseYbNOHfeY5rqwkCsw0N5EHWszhIVttUMDE0oCf10tNhYEq1A==
 
+"@trpc/react-query@^10.25.0":
+  version "10.25.0"
+  resolved "https://registry.yarnpkg.com/@trpc/react-query/-/react-query-10.25.0.tgz#765703c39380dff94056ef327868268356599eb7"
+  integrity sha512-6+gHPjEo4ocTwgij5fLqEwTP6ud1ZW48Kt/STM8Kgz8/Vj7QhBSbGVEmUL++/8MD3Ro1SEBV63DTc1t7vMEZ/Q==
+
 "@trpc/server@^10.23.0":
   version "10.23.0"
   resolved "https://registry.yarnpkg.com/@trpc/server/-/server-10.23.0.tgz#b73c648f592a5bc88b9a2a64594ce8e952a10380"
@@ -4498,15 +4503,15 @@ nan@^2.12.1:
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.17.0.tgz#c0150a2368a182f033e9aa5195ec76ea41a199cb"
   integrity sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==
 
+nanoid@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.0.0.tgz#760f6d7e076935d086aa3c790e0272cab41abbcb"
+  integrity sha512-5lU+F2QpTW1JLwlXxnu2/jkpTipIuYZL3Za6TQzM16HYDzZQqlthbXYSW0H2KzZu1UQPGHDPbCl1TS3xOKfqEQ==
+
 nanoid@^3.3.3:
   version "3.3.4"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.4.tgz#730b67e3cd09e2deacf03c027c81c9d9dbc5e8ab"
   integrity sha512-MqBkQh/OHTS2egovRtLk45wEyNXwF+cokD+1YPf9u5VfJiRdAiRwB2froX5Co9Rh20xs4siNPm8naNotSD6RBw==
-
-nanoid@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-4.0.2.tgz#140b3c5003959adbebf521c170f282c5e7f9fb9e"
-  integrity sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==
 
 nanomatch@^1.2.9:
   version "1.2.13"

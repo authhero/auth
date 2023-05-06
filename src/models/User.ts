@@ -309,3 +309,5 @@ export function getId(tenantId: string, email: string) {
 }
 
 export const User = createProxy<UserRouter, Env>(userRouter);
+
+export type UserClient = ReturnType<typeof User.getInstance>;

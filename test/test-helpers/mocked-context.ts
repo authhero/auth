@@ -16,6 +16,15 @@ export function mockedContext(): Context<Env> {
       OAUTH2_CLIENT_FACTORY: {
         create: oAuth2ClientFactory,
       },
+      stateFactory: {
+        getInstanceById: () => ({
+          getState: {
+            query: async () => {
+              return "123";
+            },
+          },
+        }),
+      },
       STATE: mockedNamespace({}),
       User: {
         getInstanceByName: () => ({

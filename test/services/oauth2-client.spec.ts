@@ -1,9 +1,9 @@
 import {
   OAuth2Client,
-  AuthProviderParams,
+  OAuthProviderParams,
 } from "../../src/services/oauth2-client";
 
-const oauth2ClientParams: AuthProviderParams = {
+const oauth2ClientParams: OAuthProviderParams = {
   authorizationEndpoint: "https://example.com/oauth2/authorize",
   tokenEndpoint: "https://example.com/oauth2/token",
   clientId: "your_client_id",

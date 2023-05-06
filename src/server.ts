@@ -22,6 +22,7 @@ export default {
       {
         ...env,
         OAUTH2_CLIENT_FACTORY: { create: oAuth2ClientFactory },
+        stateFactory: State.getFactory(env.STATE, env),
       },
       ctx
     );
