@@ -12,7 +12,7 @@ import {
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 import { Application } from "../../types/sql";
 import { UpdateResult } from "kysely";
 
@@ -66,7 +66,7 @@ export class ApplicationsController extends Controller {
     const db = getDb(request.ctx.env);
     const application = {
       ...body,
-      id: nanoid(),
+      id: uuidv4(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };

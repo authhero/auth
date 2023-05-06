@@ -15,6 +15,7 @@ describe("User", () => {
           .createCaller({
             req: new Request("http://localhost:8787"),
             resHeaders: new Headers(),
+            env: {},
             state: {
               storage: {
                 get: async () => {
@@ -38,6 +39,7 @@ describe("User", () => {
         .createCaller({
           req: new Request("http://localhost:8787"),
           resHeaders: new Headers(),
+          env: {},
           state: {
             storage: {
               get: async () => {

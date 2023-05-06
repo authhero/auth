@@ -12,7 +12,7 @@ import {
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 import { AuthProvider } from "../../types/sql";
 import { UpdateResult } from "kysely";
 
@@ -46,7 +46,7 @@ export class AuthProvidersController extends Controller {
     const db = getDb(request.ctx.env);
     const authProvider = {
       ...body,
-      id: nanoid(),
+      id: uuidv4(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };

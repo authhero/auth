@@ -11,7 +11,7 @@ import {
 import sendEmail from "../../services/email";
 
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getId, User } from "../../models/User";
+import { getId } from "../../models/User";
 import { LoginState } from "../../types/LoginState";
 import { base64ToHex, decode, encode } from "../../utils/base64";
 import { getClient } from "../../services/clients";
@@ -22,7 +22,6 @@ import {
   renderSignup,
   renderLogin,
 } from "../../templates/render";
-import { State } from "../../models";
 import { AuthParams } from "../../types";
 
 export interface LoginParams {
@@ -85,9 +84,9 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
-    const user = User.getInstanceByName(
-      request.ctx.env.USER,
-      getId(loginState.authParams.clientId, loginParams.username)
+    const client = await getClient(ctx.env, loginState.authParams.clientId);
+    const user = ctx.env.userFactory.getInstanceByName(
+      getId(client.tenantId, loginParams.username)
     );
 
     try {
@@ -147,14 +146,9 @@ export class LoginController extends Controller {
     const loginState: LoginState = JSON.parse(decode(state));
     const { clientId } = loginState.authParams;
 
-    const client = await getClient(ctx.env, clientId);
-    if (!client) {
-      throw new Error("Client not found");
-    }
-
-    const user = User.getInstanceByName(
-      ctx.env.USER,
-      getId(clientId, params.username)
+    const client = await getClient(ctx.env, loginState.authParams.clientId);
+    const user = ctx.env.userFactory.getInstanceByName(
+      getId(client.tenantId, params.username)
     );
     const { code } = await user.createPasswordResetCode.mutate();
 
@@ -219,8 +213,7 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const resetPasswordState: ResetPasswordState = JSON.parse(decode(state));
 
-    const user = User.getInstanceByName(
-      request.ctx.env.USER,
+    const user = ctx.env.userFactory.getInstanceByName(
       getId(resetPasswordState.clientId, resetPasswordState.username)
     );
 
@@ -249,11 +242,10 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
-    const user = User.getInstanceByName(
-      request.ctx.env.USER,
-      getId(loginState.authParams.clientId, loginParams.username)
+    const client = await getClient(ctx.env, loginState.authParams.clientId);
+    const user = ctx.env.userFactory.getInstanceByName(
+      getId(client.tenantId, loginParams.username)
     );
-    ("");
 
     try {
       await user.validatePassword.query(loginParams.password);
@@ -283,8 +275,7 @@ export class LoginController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const stateInstance = State.getInstanceById(
-      ctx.env.STATE,
+    const stateInstance = ctx.env.stateFactory.getInstanceById(
       base64ToHex(code)
     );
 
@@ -296,7 +287,7 @@ export class LoginController extends Controller {
     const stateObj: { userId: string; authParams: AuthParams } =
       JSON.parse(stateString);
 
-    const userInstance = User.getInstanceByName(ctx.env.USER, stateObj.userId);
+    const userInstance = ctx.env.userFactory.getInstanceByName(stateObj.userId);
     const userProfile = await userInstance.getProfile.query();
 
     return renderMessage(ctx.env.AUTH_TEMPLATES, this, {

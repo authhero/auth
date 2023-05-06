@@ -11,6 +11,7 @@ import {
 import { renderAuthIframe } from "../templates/render";
 import { base64ToHex } from "../utils/base64";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
+import { env } from "process";
 
 export interface SilentAuthParams {
   ctx: Context<Env>;
@@ -43,10 +44,14 @@ export async function silentAuth({
   const redirectURL = new URL(redirectUri);
 
   if (tokenState) {
-    const stateInstance = State.getInstanceById(
-      ctx.env.STATE,
+    const stateInstance = ctx.env.stateFactory.getInstanceById(
       base64ToHex(tokenState)
     );
+    // const stateInstance = State.getInstanceById(
+    //   ctx.env.STATE,
+    //   base64ToHex(tokenState)
+    // );
+
     const superStateString = await stateInstance.getState.query();
 
     if (superStateString) {

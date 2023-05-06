@@ -13,9 +13,9 @@ import {
   AuthenticationCodeExpiredError,
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 import { Env } from "../types";
-import { sendUserEvent, UserEvent } from "../services/events";
+import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
 
 interface Code {
   authParams?: AuthParams;
@@ -71,7 +71,7 @@ async function getProfile(
 // Stores information about the current operation and ensures that the user has an id.
 async function updateUser(
   storage: DurableObjectStorage,
-  queue: Queue,
+  queue: Queue<QueueMessage>,
   doId: string,
   profile: Partial<Profile>
 ) {
@@ -79,7 +79,7 @@ async function updateUser(
 
   if (!existingProfile) {
     existingProfile = {
-      userId: nanoid(),
+      userId: uuidv4(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
       connections: [],
@@ -309,3 +309,5 @@ export function getId(tenantId: string, email: string) {
 }
 
 export const User = createProxy<UserRouter, Env>(userRouter);
+
+export type UserClient = ReturnType<typeof User.getInstance>;

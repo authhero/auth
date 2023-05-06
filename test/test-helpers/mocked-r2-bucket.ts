@@ -1,9 +1,10 @@
 import { readFileSync } from "fs";
+import { join } from "path";
 
-export function mockedR2Bucket(sourcePath: string) {
+export function mockedR2Bucket() {
   return {
     get: async (path: string) => {
-      const file = readFileSync(`${sourcePath}/${path}`);
+      const file = readFileSync(join(__dirname, "../../src", path));
 
       return {
         text: async () => {

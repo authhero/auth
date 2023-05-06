@@ -11,7 +11,7 @@ import {
 import { Tenant } from "../../types/sql/Tenant";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from "uuid";
 
 @Route("tenants")
 @Tags("tenants")
@@ -35,7 +35,7 @@ export class TenantsController extends Controller {
     const db = getDb(request.ctx.env);
     const tenant = {
       ...body,
-      id: nanoid(),
+      id: uuidv4(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };

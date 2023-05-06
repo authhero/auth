@@ -6,11 +6,9 @@ const t = initTRPC.context<Context>().create();
 
 const publicProcedure = t.procedure;
 
-const router = t.router;
-
 const STATE = "state";
 
-export const stateRouter = router({
+export const stateRouter = t.router({
   createState: publicProcedure
     .input(
       z.object({
@@ -58,3 +56,5 @@ export async function createState(
     id: durableObjectId.toString(),
   };
 }
+
+export type StateClient = ReturnType<typeof State.getInstance>;
