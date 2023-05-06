@@ -12,5 +12,6 @@ export function mockedController(): Controller {
     setStatus: (status: number) => {
       _status = status;
     },
+    getStatus: () => _status,
   } as unknown as Controller;
 }

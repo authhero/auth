@@ -11,7 +11,6 @@ import {
 import { renderAuthIframe } from "../templates/render";
 import { base64ToHex } from "../utils/base64";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
-import { env } from "process";
 
 export interface SilentAuthParams {
   ctx: Context<Env>;
@@ -47,10 +46,6 @@ export async function silentAuth({
     const stateInstance = ctx.env.stateFactory.getInstanceById(
       base64ToHex(tokenState)
     );
-    // const stateInstance = State.getInstanceById(
-    //   ctx.env.STATE,
-    //   base64ToHex(tokenState)
-    // );
 
     const superStateString = await stateInstance.getState.query();
 
@@ -72,7 +67,7 @@ export async function silentAuth({
           case AuthorizationResponseType.IMPLICIT:
           case AuthorizationResponseType.TOKEN_ID_TOKEN:
             const tokenResponse = await generateAuthResponse({
-              ctx,
+              env: ctx.env,
               userId: superState.userId,
               state,
               nonce,

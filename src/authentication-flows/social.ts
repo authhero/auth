@@ -4,7 +4,7 @@ import { contentTypes, headers } from "../constants";
 import { encode, hexToBase64 } from "../utils/base64";
 import { Context } from "cloudworker-router";
 import { getClient } from "../services/clients";
-import { createState, getId, User } from "../models";
+import { getId, User } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 
 export interface SocialAuthState {
@@ -100,9 +100,13 @@ export async function socialAuthCallback({
 
   switch (state.authParams.responseType) {
     case AuthorizationResponseType.CODE:
-      const { id: stateId } = await createState(ctx.env.STATE, {
-        userId: doId,
-        authParams: state.authParams,
+      const stateId = ctx.env.STATE.newUniqueId().toString();
+      const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);
+      stateInstance.createState.mutate({
+        state: JSON.stringify({
+          userId: doId,
+          authParams: state.authParams,
+        }),
       });
       redirectUri.searchParams.set("code", hexToBase64(stateId));
       if (state.authParams.state) {

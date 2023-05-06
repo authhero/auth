@@ -21,8 +21,7 @@ export async function passwordlessAuth(
   state: string,
   redirectUri: string
 ) {
-  const ticketInstance = State.getInstanceById(
-    ctx.env.STATE,
+  const ticketInstance = ctx.env.stateFactory.getInstanceById(
     base64ToHex(ticket)
   );
   const passwordlessStateString = await ticketInstance.getState.query();
@@ -37,7 +36,7 @@ export async function passwordlessAuth(
   const { userId, authParams } = passwordlessState;
 
   const tokenResponse = await generateAuthResponse({
-    ctx,
+    env: ctx.env,
     userId,
     state,
     authParams,

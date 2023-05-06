@@ -1,15 +1,12 @@
-import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
-import { User } from "../models/User";
 import { PasswordlessGrantTypeParams, TokenResponse } from "../types/Token";
-import { TokenFactory } from "../services/token-factory";
 import { getCertificate } from "../models/Certificate";
 
 export async function passwordlessGrant(
-  ctx: Context<Env>,
+  env: Env,
   params: PasswordlessGrantTypeParams
 ): Promise<TokenResponse | null> {
-  const user = User.getInstanceByName(ctx.env.USER, params.username);
+  const user = env.userFactory.getInstanceByName(params.username);
 
   const validCode = await user.validateAuthenticationCode.mutate(params.otp);
 
@@ -17,8 +14,8 @@ export async function passwordlessGrant(
     throw new Error("Invalid code");
   }
 
-  const certificate = await getCertificate(ctx);
-  const tokenFactory = new TokenFactory(
+  const certificate = await getCertificate(env);
+  const tokenFactory = new env.TokenFactory(
     certificate.privateKey,
     certificate.kid
   );
@@ -26,7 +23,7 @@ export async function passwordlessGrant(
   const token = await tokenFactory.createAccessToken({
     scopes: params.scope?.split(" ") ?? [],
     userId: params.username,
-    iss: ctx.env.AUTH_DOMAIN_URL,
+    iss: env.AUTH_DOMAIN_URL,
   });
 
   if (!token) {
