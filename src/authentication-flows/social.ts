@@ -102,7 +102,7 @@ export async function socialAuthCallback({
     case AuthorizationResponseType.CODE:
       const stateId = ctx.env.STATE.newUniqueId().toString();
       const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);
-      stateInstance.createState.mutate({
+      await stateInstance.createState.mutate({
         state: JSON.stringify({
           userId: doId,
           authParams: state.authParams,
