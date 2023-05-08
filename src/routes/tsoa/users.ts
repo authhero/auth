@@ -25,9 +25,11 @@ export class UsersController extends Controller {
     @Path("tenantId") tenantId: string
   ): Promise<User[]> {
     const db = getDb(request.ctx.env);
-    const query = db.selectFrom("users").selectAll();
-    query.where("users.tenantId", "=", tenantId);
-    const users = await query.execute();
+    const users = db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .selectAll()
+      .execute();
 
     return users;
   }
