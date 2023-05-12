@@ -91,6 +91,8 @@ export async function socialAuthCallback({
 
   await setSilentAuthCookies(ctx, controller, doId, state.authParams);
 
+  console.log(state.authParams);
+
   // TODO: This is quick and dirty.. we should validate the values.
   const redirectUri = new URL(state.authParams.redirect_uri);
 

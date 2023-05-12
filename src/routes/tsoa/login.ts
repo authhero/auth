@@ -8,7 +8,6 @@ import {
   Body,
   Query,
 } from "@tsoa/runtime";
-import sendEmail from "../../services/email";
 
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId } from "../../models/User";
@@ -36,7 +35,7 @@ export interface PasswordResetParams {
 export interface ResetPasswordState {
   username: string;
   code: string;
-  clientId: string;
+  client_id: string;
 }
 
 @Route("u")
@@ -70,7 +69,7 @@ export class LoginController extends Controller {
     const loginState: LoginState = JSON.parse(decode(state));
 
     return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
-      clientId: loginState.authParams.client_id,
+      client_id: loginState.authParams.client_id,
       state,
     });
   }
@@ -100,7 +99,7 @@ export class LoginController extends Controller {
       );
 
       return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
-        clientId: loginState.authParams.client_id,
+        client_id: loginState.authParams.client_id,
         username: loginParams.username,
         errorMessage: err.message,
         state: signupState,
@@ -218,7 +217,7 @@ export class LoginController extends Controller {
     const resetPasswordState: ResetPasswordState = JSON.parse(decode(state));
 
     const user = ctx.env.userFactory.getInstanceByName(
-      getId(resetPasswordState.clientId, resetPasswordState.username)
+      getId(resetPasswordState.client_id, resetPasswordState.username)
     );
 
     if (
