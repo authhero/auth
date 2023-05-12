@@ -18,7 +18,7 @@ export async function setSilentAuthCookies(
 
   const stateId = ctx.env.STATE.newUniqueId().toString();
   const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);
-  stateInstance.createState.mutate({
+  await stateInstance.createState.mutate({
     state: JSON.stringify(payload),
     ttl: MONTH_IN_SECONDS,
   });

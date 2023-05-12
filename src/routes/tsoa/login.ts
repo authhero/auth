@@ -278,10 +278,9 @@ export class LoginController extends Controller {
     const stateInstance = ctx.env.stateFactory.getInstanceById(
       base64ToHex(code)
     );
-
     const stateString = await stateInstance.getState.query();
     if (!stateString) {
-      throw new Error("State not found");
+      throw new Error("Code not found");
     }
 
     const stateObj: { userId: string; authParams: AuthParams } =

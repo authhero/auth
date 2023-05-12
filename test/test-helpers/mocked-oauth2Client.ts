@@ -2,7 +2,6 @@ import {
   IOAuth2Client,
   OAuthProviderParams,
   TokenResponse,
-  UserProfile,
 } from "../../src/services/oauth2-client";
 
 export function oAuth2ClientFactory(
@@ -41,7 +40,9 @@ export class MockedOAuth2Client implements IOAuth2Client {
     };
   }
 
-  async getUserProfile(accessToken: string): Promise<UserProfile> {
+  async getUserProfile(
+    accessToken: string
+  ): Promise<{ [key: string]: string }> {
     return {
       id: "id",
       email: "email",

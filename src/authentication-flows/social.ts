@@ -88,9 +88,9 @@ export async function socialAuthCallback({
   const user = User.getInstanceByName(ctx.env.USER, doId);
 
   await user.patchProfile.mutate({
-    connection: oauthProvider.name,
-    doId,
-    profile: oauth2Profile,
+    email: oauth2Profile.email,
+    tenantId: client.tenantId,
+    connections: [{ name: oauthProvider.name, profile: oauth2Profile }],
   });
 
   await setSilentAuthCookies(ctx, controller, doId, state.authParams);
@@ -102,7 +102,7 @@ export async function socialAuthCallback({
     case AuthorizationResponseType.CODE:
       const stateId = ctx.env.STATE.newUniqueId().toString();
       const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);
-      stateInstance.createState.mutate({
+      await stateInstance.createState.mutate({
         state: JSON.stringify({
           userId: doId,
           authParams: state.authParams,

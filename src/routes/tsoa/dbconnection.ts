@@ -56,26 +56,10 @@ export class DbConnectionController extends Controller {
 
     const user = User.getInstanceByName(
       ctx.env.USER,
-      getId(clientId, body.email)
+      getId(client.tenantId, body.email)
     );
     // This throws if if fails
     await user.registerPassword.mutate(body.password);
-
-    const dbUser: DbUser = {
-      email: body.email,
-      tenantId: client.tenantId,
-      // TODO: this id should be generated in the durable object
-      id: uuidv4(),
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
-    };
-
-    const db = getDb(ctx.env);
-    await db
-      .insertInto("users")
-      .values(dbUser)
-      .returning("id")
-      .executeTakeFirstOrThrow();
 
     return "OK";
   }

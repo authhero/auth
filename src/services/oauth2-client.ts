@@ -5,12 +5,6 @@ export interface TokenResponse {
   refresh_token: string;
 }
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-}
-
 export interface OAuthProviderParams {
   clientId: string;
   clientSecret: string;
@@ -38,7 +32,7 @@ export function oAuth2ClientFactory(
 export interface IOAuth2Client {
   getAuthorizationUrl(state: string): Promise<string>;
   exchangeCodeForToken(code: string): Promise<TokenResponse>;
-  getUserProfile(accessToken: string): Promise<UserProfile>;
+  getUserProfile(accessToken: string): Promise<{ [key: string]: string }>;
 }
 
 export class OAuth2Client implements IOAuth2Client {
@@ -94,7 +88,9 @@ export class OAuth2Client implements IOAuth2Client {
     return response.json();
   }
 
-  async getUserProfile(accessToken: string): Promise<UserProfile> {
+  async getUserProfile(
+    accessToken: string
+  ): Promise<{ [key: string]: string }> {
     if (!this.params.profileEndpoint) {
       throw new Error("No profile endpoint configured");
     }

@@ -16,6 +16,7 @@ import { AuthParams } from "../types/AuthParams";
 import { v4 as uuidv4 } from "uuid";
 import { Env } from "../types";
 import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
+import { User as Profile } from "../types/sql";
 
 interface Code {
   authParams?: AuthParams;
@@ -40,22 +41,26 @@ enum StorageKeys {
   socialConnections = "social-connections",
 }
 
-interface Profile {
-  userId: string;
-  email?: string;
-  name?: string;
-  given_name?: string;
-  family_name?: string;
-  nickname?: string;
-  picture?: string;
-  locale?: string;
-  connections: {
-    name: string;
-    [key: string]: any;
-  }[];
-  createdAt: string;
-  modifiedAt: string;
-}
+const PROFILE_FIELDS = [
+  "name",
+  "email",
+  "givenName",
+  "familyName",
+  "nickname",
+  "picture",
+  "locale",
+];
+
+// This might be different for different providers
+const PROFILE_MAPPING = {
+  name: "name",
+  email: "email",
+  given_name: "givenName",
+  family_name: "familyName",
+  nickname: "nickname",
+  picture: "picture",
+  locale: "locale",
+};
 
 async function getProfile(
   storage: DurableObjectStorage
@@ -72,35 +77,55 @@ async function getProfile(
 async function updateUser(
   storage: DurableObjectStorage,
   queue: Queue<QueueMessage>,
-  doId: string,
-  profile: Partial<Profile>
+  profile: Partial<Profile> & Pick<Profile, "tenantId" | "email">
 ) {
   let existingProfile = await getProfile(storage);
 
-  if (!existingProfile) {
+  if (!existingProfile || !existingProfile.id) {
     existingProfile = {
-      userId: uuidv4(),
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      id: uuidv4(),
+      modifiedAt: "",
       connections: [],
+      createdAt: new Date().toISOString(),
+      ...profile,
     };
   }
 
-  const updatedProfile = {
+  const updatedProfile: Profile = {
     ...existingProfile,
-    ...profile,
     modifiedAt: new Date().toISOString(),
   };
+
+  profile.connections?.forEach((connection) => {
+    // remove any existing connections with the same name
+    updatedProfile.connections = updatedProfile.connections?.filter(
+      (c) => c.name !== connection.name
+    );
+
+    updatedProfile.connections?.push(connection);
+
+    // Set standard fields if allready defined in profile
+    Object.keys(PROFILE_MAPPING)
+      .filter((key) => !updatedProfile[PROFILE_MAPPING[key]])
+      .forEach((key) => {
+        updatedProfile[PROFILE_MAPPING[key]] = connection.profile?.[key];
+      });
+  });
+
+  // Set standard fields if specified in profile
+  PROFILE_FIELDS.filter((key) => profile[key]).forEach((key) => {
+    updatedProfile[key] = profile[key];
+  });
 
   await storage.put(StorageKeys.profile, JSON.stringify(updatedProfile));
 
   await sendUserEvent(
     queue,
-    doId,
+    `${profile.tenantId}|${profile.email}`,
     existingProfile ? UserEvent.userUpdated : UserEvent.userCreated
   );
 
-  return profile;
+  return updatedProfile;
 }
 
 export const userRouter = router({
@@ -184,33 +209,33 @@ export const userRouter = router({
   patchProfile: publicProcedure
     .input(
       z.object({
-        connection: z.string(),
-        doId: z.string(),
-        profile: z.any(),
+        email: z.string(),
+        tenantId: z.string(),
+        id: z.string().optional(),
+        createdAt: z.string().optional(),
+        modifiedAt: z.string().optional(),
+        givenName: z.string().optional(),
+        familyName: z.string().optional(),
+        nickname: z.string().optional(),
+        name: z.string().optional(),
+        picture: z.string().optional(),
+        locale: z.string().optional(),
+        connections: z
+          .array(
+            z.object({
+              name: z.string(),
+              profile: z.record(z.union([z.string(), z.boolean()])).optional(),
+            })
+          )
+          .optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const profile = await updateUser(
         ctx.state.storage,
         ctx.env.USERS_QUEUE,
-        input.doId,
-        input.profile
+        input
       );
-
-      // Set standard fields if not defined
-      [
-        "name",
-        "email",
-        "given_name",
-        "family_name",
-        "nickname",
-        "picture",
-        "locale",
-      ]
-        .filter((key) => !profile[key])
-        .forEach((key) => {
-          profile[key] = input.profile[key];
-        });
 
       return profile;
     }),
