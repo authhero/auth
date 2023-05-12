@@ -41,8 +41,8 @@ export async function generateAuthResponse({
   const idToken = await tokenFactory.createIDToken({
     clientId: authParams.clientId,
     userId: userId,
-    given_name: profile.given_name,
-    family_name: profile.family_name,
+    given_name: profile.givenName,
+    family_name: profile.familyName,
     nickname: profile.nickname,
     name: profile.name,
     iss: env.AUTH_DOMAIN_URL,
