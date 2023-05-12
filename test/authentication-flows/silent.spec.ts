@@ -16,10 +16,10 @@ describe("silentAuth", () => {
     const actual = await silentAuth({
       ctx,
       controller,
-      cookieHeader: null,
-      redirectUri: "https://example.com",
+      cookie_header: null,
+      redirect_uri: "https://example.com",
       state: "",
-      responseType: AuthorizationResponseType.CODE,
+      response_type: AuthorizationResponseType.CODE,
     });
 
     expect(actual.includes("login_required")).toBe(true);
@@ -52,13 +52,13 @@ describe("silentAuth", () => {
     const actual = await silentAuth({
       ctx,
       controller,
-      cookieHeader: "auth-token=token-state",
-      redirectUri: "https://example.com",
+      cookie_header: "auth-token=token-state",
+      redirect_uri: "https://example.com",
       state: "RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ==",
-      responseType: AuthorizationResponseType.CODE,
+      response_type: AuthorizationResponseType.CODE,
       nonce: "nonce",
-      codeChallengeMethod: CodeChallengeMethod.S265,
-      codeChallenge: "48-0wuTLqfWbYToVwavCU9afSDV5iVB1NZccOOjjeY",
+      code_challenge_method: CodeChallengeMethod.S265,
+      code_challenge: "48-0wuTLqfWbYToVwavCU9afSDV5iVB1NZccOOjjeY",
     });
 
     expect(

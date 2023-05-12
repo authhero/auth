@@ -35,7 +35,7 @@ export async function renderForgotPassword(
   controller: Controller,
   context: {
     username?: string;
-    clientId: string;
+    client_id: string;
     state: string;
   }
 ) {
@@ -86,7 +86,7 @@ export async function renderLogin(
 
 export interface RenderSignupContext {
   username?: string;
-  clientId: string;
+  client_id: string;
   state: string;
   errorMessage?: string;
 }
@@ -138,7 +138,7 @@ export interface RenderResetPasswordContext {
   username: string;
   code: string;
   state: string;
-  clientId: string;
+  client_id: string;
   errorMessage?: string;
 }
 

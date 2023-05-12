@@ -7,6 +7,7 @@ import { QueueMessage } from "./services/events";
 import { updateUser } from "./handlers/update-user";
 import { getToken } from "@sagi.io/workers-jwt";
 import { createTokenFactory } from "./services/token-factory";
+import sendEmail from "./services/email";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -23,7 +24,8 @@ export default {
       // Add dependencies to the environment
       {
         ...env,
-        OAUTH2_CLIENT_FACTORY: { create: oAuth2ClientFactory },
+        oauth2ClientFactory: { create: oAuth2ClientFactory },
+        sendEmail,
         stateFactory: State.getFactory(env.STATE, env),
         userFactory: User.getFactory(env.USER, env),
         TokenFactory: createTokenFactory(getToken),

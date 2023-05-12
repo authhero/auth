@@ -28,19 +28,19 @@ describe("universalAuth", () => {
     await universalAuth({
       controller,
       authParams: {
-        redirectUri: "http://localhost:3000",
-        clientId: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        redirect_uri: "http://localhost:3000",
+        client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
         nonce: "Ykk2M0JNa2E1WnM5TUZwX2UxUjJtV2VITTlvbktGNnhCb1NmZG1idEJBdA==&",
-        responseType: AuthorizationResponseType.CODE,
-        responseMode: AuthorizationResponseMode.QUERY,
+        response_type: AuthorizationResponseType.CODE,
+        response_mode: AuthorizationResponseMode.QUERY,
         scope: "openid profile email",
-        codeChallengeMethod: CodeChallengeMethod.S265,
-        codeChallenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
+        code_challenge_method: CodeChallengeMethod.S265,
+        code_challenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
       },
     });
 
     expect(controller.getHeader(headers.location)).toBe(
-      "/u/login?state=eyJhdXRoUGFyYW1zIjp7InJlZGlyZWN0VXJpIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiY2xpZW50SWQiOiIwTjB3VUhYRmwwVE1UWTJMOWFESll2d1g3WHk4NEhrVyIsIm5vbmNlIjoiWWtrMk0wSk5hMkUxV25NNVRVWndYMlV4VWpKdFYyVklUVGx2Ymt0R05uaENiMU5tWkcxaWRFSkJkQT09JiIsInJlc3BvbnNlVHlwZSI6ImNvZGUiLCJyZXNwb25zZU1vZGUiOiJxdWVyeSIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJjb2RlQ2hhbGxlbmdlTWV0aG9kIjoiUzI1NiIsImNvZGVDaGFsbGVuZ2UiOiI0T1I3eERsZ2dDZ1p3cHMzWE8yQVZhVVhFQjgyTzZ4UFFCa0pJR3prdnd3In19"
+      "/u/login?state=eyJhdXRoUGFyYW1zIjp7InJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCIsImNsaWVudF9pZCI6IjBOMHdVSFhGbDBUTVRZMkw5YURKWXZ3WDdYeTg0SGtXIiwibm9uY2UiOiJZa2syTTBKTmEyRTFXbk01VFVad1gyVXhVakp0VjJWSVRUbHZia3RHTm5oQ2IxTm1aRzFpZEVKQmRBPT0mIiwicmVzcG9uc2VfdHlwZSI6ImNvZGUiLCJyZXNwb25zZV9tb2RlIjoicXVlcnkiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiY29kZV9jaGFsbGVuZ2VfbWV0aG9kIjoiUzI1NiIsImNvZGVfY2hhbGxlbmdlIjoiNE9SN3hEbGdnQ2dad3BzM1hPMkFWYVVYRUI4Mk82eFBRQmtKSUd6a3Z3dyJ9fQ"
     );
   });
 });

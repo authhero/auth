@@ -60,11 +60,7 @@ export async function socialAuthCallback({
   state,
   code,
 }: socialAuthCallbackParams) {
-  const client = await getClient(ctx.env, state.authParams.clientId);
-  if (!client) {
-    throw new Error("Client not found");
-  }
-
+  const client = await getClient(ctx.env, state.authParams.client_id);
   const oauthProvider = client.authProviders.find(
     (p) => p.name === state.connection
   );
@@ -74,7 +70,7 @@ export async function socialAuthCallback({
     throw new Error("Connection not found");
   }
 
-  const oauth2Client = ctx.env.OAUTH2_CLIENT_FACTORY.create(
+  const oauth2Client = ctx.env.oauth2ClientFactory.create(
     oauthProvider,
     `${client.loginBaseUrl}callback`,
     state.authParams.scope?.split(" ") || []
@@ -95,10 +91,12 @@ export async function socialAuthCallback({
 
   await setSilentAuthCookies(ctx, controller, doId, state.authParams);
 
-  // TODO: This is quick and dirty.. we should validate the values.
-  const redirectUri = new URL(state.authParams.redirectUri);
+  console.log(state.authParams);
 
-  switch (state.authParams.responseType) {
+  // TODO: This is quick and dirty.. we should validate the values.
+  const redirectUri = new URL(state.authParams.redirect_uri);
+
+  switch (state.authParams.response_type) {
     case AuthorizationResponseType.CODE:
       const stateId = ctx.env.STATE.newUniqueId().toString();
       const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);

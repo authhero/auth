@@ -1,5 +1,4 @@
 import { Controller } from "@tsoa/runtime";
-import { State } from "../models";
 import { Context } from "cloudworker-router";
 import { Env, AuthParams } from "../types";
 import { headers } from "../constants";
