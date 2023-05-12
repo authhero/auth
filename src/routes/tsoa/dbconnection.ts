@@ -70,18 +70,18 @@ export class DbConnectionController extends Controller {
     @Request() request: RequestWithContext,
     @Path("clientId") clientId: string
   ): Promise<string> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const user = User.getInstanceByName(
-      ctx.env.USER,
-      getId(clientId, body.email)
-    );
+    const user = User.getInstanceByName(env.USER, getId(clientId, body.email));
     const { code } = await user.createPasswordResetCode.mutate();
 
-    const client = await getClient(ctx.env, clientId);
+    const client = await getClient(env, clientId);
+    if (!client) {
+      throw new Error("Client not found");
+    }
 
     const message = `Click this link to reset your password: ${client.loginBaseUrl}/reset-password?email=${body.email}&code=${code}`;
-    await sendEmail({
+    await env.sendEmail({
       to: [{ email: body.email, name: "" }],
       from: {
         email: client.senderEmail,

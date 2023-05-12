@@ -6,7 +6,8 @@ compatibility_date = "2022-07-06"
 account_id = "0c8c22bdcd98c3dc6a35190650ef7906"
 
 kv_namespaces = [
-    { binding = "CERTIFICATES", id = "2a5901d369d441bba149bb236af71c27", preview_id = "2a5901d369d441bba149bb236af71c27" }
+    { binding = "CERTIFICATES", id = "2a5901d369d441bba149bb236af71c27", preview_id = "2a5901d369d441bba149bb236af71c27" },
+    { binding = "CLIENTS", id = "7e3153d8585547fdb67ee342c8592de0", preview_id = "7e3153d8585547fdb67ee342c8592de0" }    
 ]
 route = "auth2.sesamy.dev/*"
 logpush = true

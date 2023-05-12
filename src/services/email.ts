@@ -13,6 +13,10 @@ export interface EmailOptions {
   }[];
 }
 
+export interface SendEmail {
+  (emailOptions: EmailOptions): Promise<void>;
+}
+
 export default async function send(emailOptions: EmailOptions) {
   await fetch("https://api.mailchannels.net/tx/v1/send", {
     method: "POST",

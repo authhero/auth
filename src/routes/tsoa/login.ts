@@ -70,7 +70,7 @@ export class LoginController extends Controller {
     const loginState: LoginState = JSON.parse(decode(state));
 
     return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
-      clientId: loginState.authParams.clientId,
+      clientId: loginState.authParams.client_id,
       state,
     });
   }
@@ -84,7 +84,7 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
-    const client = await getClient(ctx.env, loginState.authParams.clientId);
+    const client = await getClient(ctx.env, loginState.authParams.client_id);
     const user = ctx.env.userFactory.getInstanceByName(
       getId(client.tenantId, loginParams.username)
     );
@@ -95,12 +95,12 @@ export class LoginController extends Controller {
       const signupState = encode(
         JSON.stringify({
           username: loginParams.username,
-          clientId: loginState.authParams.clientId,
+          clientId: loginState.authParams.client_id,
         })
       );
 
       return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
-        clientId: loginState.authParams.clientId,
+        clientId: loginState.authParams.client_id,
         username: loginParams.username,
         errorMessage: err.message,
         state: signupState,
@@ -141,13 +141,17 @@ export class LoginController extends Controller {
     @Body() params: PasswordResetParams,
     @Query("state") state: string
   ): Promise<string> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
     const loginState: LoginState = JSON.parse(decode(state));
-    const { clientId } = loginState.authParams;
+    const { client_id } = loginState.authParams;
 
-    const client = await getClient(ctx.env, loginState.authParams.clientId);
-    const user = ctx.env.userFactory.getInstanceByName(
+    const client = await getClient(env, client_id);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+
+    const user = env.userFactory.getInstanceByName(
       getId(client.tenantId, params.username)
     );
     const { code } = await user.createPasswordResetCode.mutate();
@@ -155,13 +159,13 @@ export class LoginController extends Controller {
     const passwordResetState = encode(
       JSON.stringify({
         username: params.username,
-        clientId,
+        client_id,
         code,
       })
     );
 
-    const message = `Click this link to reset your password: ${ctx.env.AUTH_DOMAIN_URL}u/reset-password?state=${passwordResetState}`;
-    await sendEmail({
+    const message = `Click this link to reset your password: ${env.AUTH_DOMAIN_URL}u/reset-password?state=${passwordResetState}`;
+    await env.sendEmail({
       to: [{ email: params.username, name: "" }],
       from: {
         email: client.senderEmail,
@@ -176,7 +180,7 @@ export class LoginController extends Controller {
       subject: "Reset password",
     });
 
-    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+    return renderMessage(env.AUTH_TEMPLATES, this, {
       page_title: "Password reset",
       message: "A code has been sent to your email address",
     });
@@ -242,7 +246,8 @@ export class LoginController extends Controller {
     const { ctx } = request;
     const loginState: LoginState = JSON.parse(decode(state));
 
-    const client = await getClient(ctx.env, loginState.authParams.clientId);
+    const client = await getClient(ctx.env, loginState.authParams.client_id);
+
     const user = ctx.env.userFactory.getInstanceByName(
       getId(client.tenantId, loginParams.username)
     );

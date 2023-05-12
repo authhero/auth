@@ -33,9 +33,9 @@ export class AuthorizeController extends Controller {
   @SuccessResponse(302, "Redirect")
   public async authorize(
     @Request() request: RequestWithContext,
-    @Query("client_id") clientId: string,
-    @Query("response_type") responseType: AuthorizationResponseType,
-    @Query("redirect_uri") redirectUri: string,
+    @Query("client_id") client_id: string,
+    @Query("response_type") response_type: AuthorizationResponseType,
+    @Query("redirect_uri") redirect_uri: string,
     @Query("scope") scope: string = "openid email profile",
     @Query("state") state: string,
     @Query("prompt") prompt?: string,
@@ -44,24 +44,21 @@ export class AuthorizeController extends Controller {
     @Query("username") username?: string,
     @Query("nonce") nonce?: string,
     @Query("login_ticket") loginTicket?: string,
-    @Query("code_challenge_method") codeChallengeMethod?: CodeChallengeMethod,
-    @Query("code_challenge") codeChallenge?: string
+    @Query("code_challenge_method") code_challenge_method?: CodeChallengeMethod,
+    @Query("code_challenge") code_challenge?: string
   ): Promise<string> {
     const { ctx } = request;
+    const { env } = ctx;
 
-    const client = await getClient(request.ctx.env, clientId);
-    if (!client) {
-      throw new Error("Client not found");
-    }
-
+    const client = await getClient(env, client_id);
     const authParams: AuthParams = {
-      redirectUri,
+      redirect_uri,
       scope,
       state,
-      clientId,
+      client_id,
       audience,
       nonce,
-      responseType,
+      response_type,
     };
 
     // Silent authentication
@@ -70,12 +67,12 @@ export class AuthorizeController extends Controller {
         ctx,
         controller: this,
         cookieHeader: request.ctx.headers.get("cookie"),
-        redirectUri,
+        redirectUri: redirect_uri,
         state,
-        responseType,
+        response_type,
         nonce,
-        codeChallengeMethod,
-        codeChallenge,
+        code_challenge_method,
+        code_challenge,
       });
     }
 
@@ -83,7 +80,7 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(this, client, connection, authParams);
     } else if (loginTicket) {
-      return passwordlessAuth(ctx, this, loginTicket, state, redirectUri);
+      return passwordlessAuth(ctx, this, loginTicket, state, redirect_uri);
     }
 
     return universalAuth({ controller: this, authParams });

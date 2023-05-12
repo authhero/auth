@@ -13,10 +13,10 @@ import { AuthParams } from "../../types/AuthParams";
 export interface PasssworlessOptions {
   client_id: string;
   client_secret?: string;
-  connection: "email";
+  connection: string;
   email: string;
-  send?: "link" | "code";
-  authParams?: AuthParams;
+  send: string;
+  authParams: Omit<AuthParams, "client_id">;
 }
 
 export interface LoginTicket {
@@ -38,17 +38,23 @@ export class PasswordlessController extends Controller {
     @Body() body: PasssworlessOptions,
     @Request() request: RequestWithContext
   ): Promise<string> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const user = ctx.env.userFactory.getInstanceByName(body.email);
+    const user = env.userFactory.getInstanceByName(body.email);
     const { code } = await user.createAuthenticationCode.mutate({
-      authParams: body.authParams!,
+      authParams: {
+        ...body.authParams,
+        client_id: body.client_id,
+      },
     });
 
-    const client = await getClient(ctx.env, body.client_id);
+    const client = await getClient(env, body.client_id);
+    if (!client) {
+      throw new Error("Client not found");
+    }
 
     const message = `Here's your login code: ${code}`;
-    await sendEmail({
+    await env.sendEmail({
       to: [{ email: body.email, name: "" }],
       from: {
         email: client.senderEmail,

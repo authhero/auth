@@ -14,14 +14,14 @@ export enum CodeChallengeMethod {
 }
 
 export interface AuthParams {
-  clientId: string;
-  responseType?: AuthorizationResponseType;
-  responseMode?: AuthorizationResponseMode;
-  redirectUri: string;
+  client_id: string;
+  response_type?: AuthorizationResponseType;
+  response_mode?: AuthorizationResponseMode;
+  redirect_uri: string;
   audience?: string;
   state?: string;
   nonce?: string;
   scope?: string;
-  codeChallengeMethod?: CodeChallengeMethod;
-  codeChallenge?: string;
+  code_challenge_method?: CodeChallengeMethod;
+  code_challenge?: string;
 }

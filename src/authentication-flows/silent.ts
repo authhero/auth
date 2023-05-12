@@ -1,6 +1,6 @@
 import { Controller } from "@tsoa/runtime";
 import { getStateFromCookie } from "../services/cookies";
-import { State, State as StateModel } from "../models";
+import { State as StateModel } from "../models";
 import { Context } from "cloudworker-router";
 import {
   AuthorizationResponseType,
@@ -15,13 +15,13 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 export interface SilentAuthParams {
   ctx: Context<Env>;
   controller: Controller;
-  cookieHeader: string | null;
-  redirectUri: string;
+  cookie_header: string | null;
+  redirect_uri: string;
   state: string;
-  responseType: AuthorizationResponseType;
+  response_type: AuthorizationResponseType;
   nonce?: string;
-  codeChallengeMethod?: CodeChallengeMethod;
-  codeChallenge?: string;
+  code_challenge_method?: CodeChallengeMethod;
+  code_challenge?: string;
   State?: typeof StateModel;
 }
 
@@ -33,14 +33,14 @@ interface SuperState {
 export async function silentAuth({
   ctx,
   controller,
-  cookieHeader,
-  redirectUri,
+  cookie_header,
+  redirect_uri,
   state,
   nonce,
-  responseType,
+  response_type,
 }: SilentAuthParams) {
-  const tokenState = getStateFromCookie(cookieHeader);
-  const redirectURL = new URL(redirectUri);
+  const tokenState = getStateFromCookie(cookie_header);
+  const redirectURL = new URL(redirect_uri);
 
   if (tokenState) {
     const stateInstance = ctx.env.stateFactory.getInstanceById(
@@ -55,7 +55,7 @@ export async function silentAuth({
       // TODO: validate the codeChallenge
 
       try {
-        switch (responseType) {
+        switch (response_type) {
           case AuthorizationResponseType.CODE:
             return renderAuthIframe(ctx.env.AUTH_TEMPLATES, controller, {
               targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,

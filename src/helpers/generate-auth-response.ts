@@ -39,7 +39,7 @@ export async function generateAuthResponse({
   });
 
   const idToken = await tokenFactory.createIDToken({
-    clientId: authParams.clientId,
+    clientId: authParams.client_id,
     userId: userId,
     given_name: profile.givenName,
     family_name: profile.familyName,

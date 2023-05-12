@@ -4,21 +4,25 @@ import { oAuth2ClientFactory } from "./mocked-oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { mockedKVStorage } from "./mocked-kv-storage";
 import { MockedTokenFactory } from "./mocked-token-factory";
-import { mockedNamespace, MockedNamespaceStub } from "./mocked-namespace";
+import { EmailOptions } from "../../src/services/email";
 
 export interface MockedContextParams {
   stateData: { [key: string]: string };
+  logs?: any[];
 }
 
 export function mockedContext(params?: MockedContextParams): Context<Env> {
-  const { stateData = {} } = params || {};
+  const { stateData = {}, logs = [] } = params || {};
 
   return {
     env: {
       AUTH_TEMPLATES: mockedR2Bucket(),
       AUTH_DOMAIN_URL: "https://auth.example.com",
-      OAUTH2_CLIENT_FACTORY: {
+      oauth2ClientFactory: {
         create: oAuth2ClientFactory,
+      },
+      sendEmail: async (emailOptions: EmailOptions) => {
+        logs.push(emailOptions);
       },
       stateFactory: {
         getInstanceById: (id: string) => ({
@@ -39,6 +43,9 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
               return "123";
             },
           },
+          createAuthenticationCode: {
+            mutate: async () => ({ code: "123456" }),
+          },
         }),
       },
       TokenFactory: MockedTokenFactory,
@@ -47,6 +54,13 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
       },
       CERTIFICATES: mockedKVStorage({
         default: certificate,
+      }),
+      CLIENTS: mockedKVStorage({
+        clientId: JSON.stringify({
+          tenantId: "tenantId",
+          senderEmail: "senderEmail",
+          senderName: "senderName",
+        }),
       }),
     },
   } as unknown as Context<Env>;
