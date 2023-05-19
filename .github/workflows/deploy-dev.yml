@@ -13,10 +13,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          cache: 'yarn'
-          node-version: '18.x'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@sesamyab'
+          cache: "yarn"
+          node-version: "18.x"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@sesamyab"
       - name: Install dependencies
         run: yarn install --ignore-scripts
         env:
@@ -25,6 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: yarn semantic-release
+      - run: yarn build
       - name: Publish
         uses: cloudflare/wrangler-action@2.0.0
         with:
