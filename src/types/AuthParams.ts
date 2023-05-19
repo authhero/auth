@@ -17,7 +17,7 @@ export interface AuthParams {
   client_id: string;
   response_type?: AuthorizationResponseType;
   response_mode?: AuthorizationResponseMode;
-  redirect_uri: string;
+  redirect_uri?: string;
   audience?: string;
   state?: string;
   nonce?: string;

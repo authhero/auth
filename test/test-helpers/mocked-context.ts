@@ -5,14 +5,16 @@ import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { mockedKVStorage } from "./mocked-kv-storage";
 import { MockedTokenFactory } from "./mocked-token-factory";
 import { EmailOptions } from "../../src/services/email";
+import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
 
 export interface MockedContextParams {
   stateData: { [key: string]: string };
+  userData?: { [key: string]: string | boolean };
   logs?: any[];
 }
 
 export function mockedContext(params?: MockedContextParams): Context<Env> {
-  const { stateData = {}, logs = [] } = params || {};
+  const { stateData = {}, userData = {}, logs = [] } = params || {};
 
   return {
     env: {
@@ -32,7 +34,7 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
             },
           },
           createState: {
-            mutate: async () => {},
+            mutate: async () => { },
           },
         }),
       },
@@ -46,6 +48,26 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
           createAuthenticationCode: {
             mutate: async () => ({ code: "123456" }),
           },
+          validatePassword: {
+            mutate: async () => {
+              if (userData.validatePassword === 'UnauthenticatedError') {
+                throw new UnauthenticatedError();
+              }
+
+              return true;
+            },
+          },
+          validateAuthenticationCode: {
+            mutate: async (code) => {
+              if (code === '000000') {
+                throw new InvalidCodeError();
+              }
+
+              return {
+                client_id: 'clientId'
+              };
+            }
+          }
         }),
       },
       TokenFactory: MockedTokenFactory,

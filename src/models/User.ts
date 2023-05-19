@@ -312,7 +312,7 @@ export const userRouter = router({
     }),
   validatePassword: publicProcedure
     .input(z.string())
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const passwordHash = await ctx.state.storage.get<string>(
         StorageKeys.passwordHash
       );

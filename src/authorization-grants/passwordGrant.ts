@@ -9,7 +9,7 @@ export async function passwordGrant(
 ): Promise<TokenResponse | null> {
   const user = ctx.env.userFactory.getInstanceByName(params.username);
 
-  const validatePassword = await user.validatePassword.query(params.password);
+  const validatePassword = await user.validatePassword.mutate(params.password);
 
   if (!validatePassword) {
     throw new Error("Incorrect password");
