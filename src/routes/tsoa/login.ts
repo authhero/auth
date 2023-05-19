@@ -252,7 +252,7 @@ export class LoginController extends Controller {
     );
 
     try {
-      await user.validatePassword.query(loginParams.password);
+      await user.validatePassword.mutate(loginParams.password);
 
       return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
         page_title: "Logged in",
