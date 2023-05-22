@@ -11,6 +11,7 @@ import {
   UserConflictError,
   InvalidCodeError,
   AuthenticationCodeExpiredError,
+  NoCodeError,
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
 import { v4 as uuidv4 } from "uuid";
@@ -149,7 +150,7 @@ export const userRouter = router({
 
       return result;
     }),
-  createEmailValidationCode: publicProcedure
+  createValidationCode: publicProcedure
     .input(z.string().nullish())
     .query(async ({ input, ctx }) => {
       const result: Code = {
@@ -179,9 +180,14 @@ export const userRouter = router({
 
       return result;
     }),
-  getProfile: publicProcedure.query(async ({ ctx }) =>
-    getProfile(ctx.state.storage)
-  ),
+  getProfile: publicProcedure.query(async ({ ctx }) => {
+    const profile = await getProfile(ctx.state.storage);
+    if (!profile) {
+      throw new Error();
+    }
+
+    return profile;
+  }),
   isEmailValidated: publicProcedure.query(async ({ ctx }) => {
     return ctx.state.storage.get<boolean>(StorageKeys.emailValidated);
   }),
@@ -203,8 +209,16 @@ export const userRouter = router({
     }),
   setEmailValidated: publicProcedure
     .input(z.boolean())
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       await ctx.state.storage.put(StorageKeys.emailValidated, input);
+    }),
+  setPassword: publicProcedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      await ctx.state.storage.put(
+        StorageKeys.passwordHash,
+        bcrypt.hashSync(input, 10)
+      );
     }),
   patchProfile: publicProcedure
     .input(
@@ -240,25 +254,41 @@ export const userRouter = router({
       return profile;
     }),
   validateAuthenticationCode: publicProcedure
-    .input(z.string())
+    .input(z.object({
+      email: z.string(),
+      tenantId: z.string(),
+      code: z.string()
+    }))
     .mutation(async ({ input, ctx }) => {
       const codeString = await ctx.state.storage.get<string>(
         StorageKeys.authenticationCode
       );
 
       if (!codeString) {
-        throw new UnauthenticatedError();
+        throw new NoCodeError();
       }
 
       const code: Code = JSON.parse(codeString);
 
-      if (input !== code.code) {
+      if (input.code !== code.code) {
         throw new InvalidCodeError();
       }
 
       if (!code.expireAt || Date.now() > code.expireAt) {
         throw new AuthenticationCodeExpiredError();
       }
+
+      await updateUser(
+        ctx.state.storage,
+        ctx.env.USERS_QUEUE,
+        {
+          email: input.email,
+          tenantId: input.tenantId,
+          connections: [{
+            name: 'email'
+          }]
+        }
+      );
 
       // Remove once used
       await ctx.state.storage.put(StorageKeys.authenticationCode, "");

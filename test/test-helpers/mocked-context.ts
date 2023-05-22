@@ -58,7 +58,7 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
             },
           },
           validateAuthenticationCode: {
-            mutate: async (code) => {
+            mutate: async ({ code, email, tenantId }: { code: string, email: string, tenantId: string }) => {
               if (code === '000000') {
                 throw new InvalidCodeError();
               }

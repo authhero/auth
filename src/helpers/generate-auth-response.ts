@@ -28,10 +28,6 @@ export async function generateAuthResponse({
   const userInstance = await env.userFactory.getInstanceByName(userId);
   const profile = await userInstance.getProfile.query();
 
-  if (!profile) {
-    throw new Error("No profile found for user");
-  }
-
   const accessToken = await tokenFactory.createAccessToken({
     scopes: authParams.scope?.split(" ") || [],
     userId,

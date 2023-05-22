@@ -5,14 +5,12 @@ import { QueueMessage } from "../../src/services/events";
 import { userRouter } from "../../src/models/User";
 
 function createCaller(storage: any) {
-  let profile: any = {};
-
   return userRouter.createCaller({
     req: new Request("http://localhost:8787"),
     resHeaders: new Headers(),
     env: {
       USERS_QUEUE: {
-        send: async () => {},
+        send: async () => { },
       } as unknown as Queue<QueueMessage>,
     },
     state: {
@@ -178,6 +176,96 @@ describe("User", () => {
       expect(profile.familyName).toBe("family_name");
       expect(profile.id).toBe("id");
       expect(profile.connections[0].name).toBe("google-oauth2");
+    });
+  });
+
+  describe("validate authenctication code", () => {
+    it("should throw a NoCodeError if a user tries to validate a code but no code is stored", async () => {
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return null;
+          }
+        },
+      });
+
+      try {
+        await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
+        throw new Error('Should throw')
+      } catch (err: any) {
+        if (err.message !== 'No code found') {
+          throw new Error('Should throw NoCodeError')
+        }
+      }
+    });
+
+    it("should throw a InvalidCodeError if a user tries to validate an incorrect code", async () => {
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return JSON.stringify({ code: "000000" });
+          }
+        },
+      });
+
+      try {
+        await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
+        throw new Error('Should throw')
+      } catch (err: any) {
+        if (err.message !== 'Invalid code') {
+          throw new Error('Should throw InvalidCode')
+        }
+      }
+    });
+
+    it("should throw a AuthenticationCodeExpiredError if a user tries to validate an incorrect code", async () => {
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return JSON.stringify({ code: "123456", expireAt: 1684757783145 });
+          }
+        },
+      });
+
+      try {
+        await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
+        throw new Error('Should throw')
+      } catch (err: any) {
+        if (err.message !== 'Authentication code expired') {
+          throw new Error('Should throw AuthenticationCodeExpiredError')
+        }
+      }
+    });
+
+    it("should add a new connection to the profile if it does not exist", async () => {
+      const storage: { [key: string]: string } = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "profile":
+              return null;
+            case "authentication-code":
+              return JSON.stringify({
+                code: "123456", expireAt: 1784757783145, authParams: {
+                  client_id: "clientId"
+                }
+              });
+          }
+        },
+        put: async (key: string, value: string) => {
+          storage[key] = value;
+        }
+      });
+
+      await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
+
+      const profile = JSON.parse(storage.profile)
+
+      expect(profile.email).toBe("test@example.com")
     });
   });
 });

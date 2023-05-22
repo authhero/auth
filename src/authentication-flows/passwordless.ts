@@ -23,8 +23,8 @@ export async function passwordlessAuth(
   const ticketInstance = ctx.env.stateFactory.getInstanceById(
     base64ToHex(ticket)
   );
-  const passwordlessStateString = await ticketInstance.getState.query();
 
+  const passwordlessStateString = await ticketInstance.getState.query();
   if (!passwordlessStateString) {
     throw new Error("Ticket not found");
   }
@@ -33,6 +33,8 @@ export async function passwordlessAuth(
     passwordlessStateString
   );
   const { userId, authParams } = passwordlessState;
+
+  console.log('Passwordless state: ' + JSON.stringify(passwordlessState))
 
   const tokenResponse = await generateAuthResponse({
     env: ctx.env,
