@@ -18,7 +18,7 @@ import { contentTypes, headers } from "../../constants";
 import { serializeClearCookie } from "../../services/cookies";
 import {
   silentAuth,
-  passwordlessAuth,
+  ticketAuth,
   socialAuth,
   universalAuth,
   socialAuthCallback,
@@ -80,7 +80,7 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(this, client, connection, authParams);
     } else if (loginTicket) {
-      return passwordlessAuth(ctx, this, loginTicket, state, redirect_uri);
+      return ticketAuth(ctx, this, loginTicket, state, redirect_uri);
     }
 
     return universalAuth({ controller: this, authParams });
