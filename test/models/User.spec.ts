@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import "isomorphic-fetch";
 import { QueueMessage } from "../../src/services/events";
 import { userRouter } from "../../src/models/User";
-import { NoCodeError, InvalidCodeError } from "../../src/errors";
 
 function createCaller(storage: any) {
   return userRouter.createCaller({
@@ -29,20 +28,12 @@ describe("User", () => {
   describe("validate password", () => {
     it("should throw an invalid password error if a user has no password", async () => {
       try {
-        await userRouter
-          .createCaller({
-            req: new Request("http://localhost:8787"),
-            resHeaders: new Headers(),
-            env: {},
-            state: {
-              storage: {
-                get: async () => {
-                  return bcrypt.hashSync("another password");
-                },
-              } as unknown as DurableObjectStorage,
-            } as DurableObjectState,
-          })
-          .validatePassword("password");
+        await createCaller({
+          get: async () => {
+            return bcrypt.hashSync("another password");
+          },
+        })
+          .validatePassword({ password: "password", email: "test@example.com", tenantId: "tenantId" });
 
         throw new Error("Should throw");
       } catch (err: any) {
@@ -53,20 +44,23 @@ describe("User", () => {
     });
 
     it("should return true if the passwords match", async () => {
-      await userRouter
-        .createCaller({
-          req: new Request("http://localhost:8787"),
-          resHeaders: new Headers(),
-          env: {},
-          state: {
-            storage: {
-              get: async () => {
-                return bcrypt.hashSync("password");
-              },
-            } as unknown as DurableObjectStorage,
-          } as DurableObjectState,
-        })
-        .validatePassword("password");
+      let profile: any = {};
+
+      await createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "profile":
+              return null;
+            case "password-hash":
+              return bcrypt.hashSync("password");
+          }
+        },
+        put: async (key: string, value: string) => {
+          profile = JSON.parse(value);
+          return;
+        },
+      })
+        .validatePassword({ password: "password", email: "test@example.com", tenantId: "tenantId" });
     });
   });
 

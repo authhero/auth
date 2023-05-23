@@ -1,7 +1,6 @@
 // src/users/usersController.ts
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getId } from "../../models/User";
 import { getClient } from "../../services/clients";
 import { contentTypes, headers } from "../../constants";
 import { AuthenticationCodeExpiredError, InvalidCodeError, UnauthenticatedError } from "../../errors";
@@ -71,7 +70,7 @@ export class AuthenticateController extends Controller {
           authParams = await user.validateAuthenticationCode.mutate({ code: body.otp, email: body.username, tenantId: client.tenantId });
           break;
         case "Username-Password-Authentication":
-          await user.validatePassword.mutate(body.password);
+          await user.validatePassword.mutate({ password: body.password, email: body.username, tenantId: client.tenantId });
           break;
         default:
           throw new Error("Unsupported realm")
