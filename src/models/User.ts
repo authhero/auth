@@ -341,7 +341,11 @@ export const userRouter = router({
       );
     }),
   validatePassword: publicProcedure
-    .input(z.string())
+    .input(z.object({
+      email: z.string(),
+      tenantId: z.string(),
+      password: z.string()
+    }))
     .mutation(async ({ input, ctx }) => {
       const passwordHash = await ctx.state.storage.get<string>(
         StorageKeys.passwordHash
@@ -351,9 +355,21 @@ export const userRouter = router({
         throw new NoUserFoundError();
       }
 
-      if (!bcrypt.compareSync(input, passwordHash)) {
+      if (!bcrypt.compareSync(input.password, passwordHash)) {
         throw new UnauthenticatedError();
       }
+
+      return updateUser(
+        ctx.state.storage,
+        ctx.env.USERS_QUEUE,
+        {
+          email: input.email,
+          tenantId: input.tenantId,
+          connections: [{
+            name: 'auth'
+          }]
+        }
+      );
     }),
 });
 
