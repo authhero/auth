@@ -8,4 +8,5 @@ node_modules/
 build/
 lib/
 data/
+coverage/
 .dev.vars
