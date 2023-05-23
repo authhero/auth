@@ -8,6 +8,7 @@
     "dev": "node tsoa.mjs && wrangler dev",
     "mf": "node tsoa.mjs && tsc & miniflare",
     "test": "jest --config jest.config.js --verbose",
+    "test-with-coverage": "jest --config jest.config.js --coverage",
     "semantic-release": "semantic-release",
     "initialize-repo": "husky install"
   },

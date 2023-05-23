@@ -7,7 +7,7 @@ import {
 } from "../../constants";
 import { JwksKeys } from "../../types/jwks";
 
-export interface OpenIDCongiruration {
+export interface OpenIDConfiguration {
   issuer: string;
   authorization_endpoint: string;
   token_endpoint: string;
@@ -66,7 +66,7 @@ export class JWKSRoutes extends Controller {
    */
   public async getOpenIDConfigration(
     @Request() request: RequestWithContext
-  ): Promise<OpenIDCongiruration> {
+  ): Promise<OpenIDConfiguration> {
     const baseUrl = `${request.ctx.protocol}//${request.ctx.hostname}`;
 
     return {

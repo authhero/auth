@@ -183,7 +183,7 @@ export const userRouter = router({
   getProfile: publicProcedure.query(async ({ ctx }) => {
     const profile = await getProfile(ctx.state.storage);
     if (!profile) {
-      throw new Error();
+      throw new NoUserFoundError();
     }
 
     return profile;

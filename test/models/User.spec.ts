@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import "isomorphic-fetch";
 import { QueueMessage } from "../../src/services/events";
 import { userRouter } from "../../src/models/User";
+import { NoCodeError, InvalidCodeError } from "../../src/errors";
 
 function createCaller(storage: any) {
   return userRouter.createCaller({
@@ -179,7 +180,7 @@ describe("User", () => {
     });
   });
 
-  describe("validate authenctication code", () => {
+  describe("validate authentication code", () => {
     it("should throw a NoCodeError if a user tries to validate a code but no code is stored", async () => {
       const caller = createCaller({
         get: async (key: string) => {
@@ -190,14 +191,7 @@ describe("User", () => {
         },
       });
 
-      try {
-        await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
-        throw new Error('Should throw')
-      } catch (err: any) {
-        if (err.message !== 'No code found') {
-          throw new Error('Should throw NoCodeError')
-        }
-      }
+      await expect(caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' })).rejects.toThrow('No code found')
     });
 
     it("should throw a InvalidCodeError if a user tries to validate an incorrect code", async () => {
@@ -210,14 +204,7 @@ describe("User", () => {
         },
       });
 
-      try {
-        await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
-        throw new Error('Should throw')
-      } catch (err: any) {
-        if (err.message !== 'Invalid code') {
-          throw new Error('Should throw InvalidCode')
-        }
-      }
+      await expect(caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' })).rejects.toThrow('Invalid code')
     });
 
     it("should throw a AuthenticationCodeExpiredError if a user tries to validate an incorrect code", async () => {
@@ -230,14 +217,8 @@ describe("User", () => {
         },
       });
 
-      try {
-        await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
-        throw new Error('Should throw')
-      } catch (err: any) {
-        if (err.message !== 'Authentication code expired') {
-          throw new Error('Should throw AuthenticationCodeExpiredError')
-        }
-      }
+
+      await expect(caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' })).rejects.toThrow('Authentication code expired');
     });
 
     it("should add a new connection to the profile if it does not exist", async () => {
