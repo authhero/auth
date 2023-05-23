@@ -28,10 +28,20 @@ export class InvalidCodeError extends Error {
   }
 }
 
+export class NoCodeError extends Error {
+  status = 401;
+
+  constructor(message = "No code found") {
+    super();
+
+    this.message = message;
+  }
+}
+
 export class NoUserFoundError extends Error {
   status = 404;
 
-  constructor(message = "No User Found") {
+  constructor(message = "No user found") {
     super();
 
     this.message = message;

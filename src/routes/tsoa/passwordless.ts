@@ -34,18 +34,18 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const user = env.userFactory.getInstanceByName(body.email);
+    const client = await getClient(env, body.client_id);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+
+    const user = env.userFactory.getInstanceByName(`${client.tenantId}|${body.email}`);
     const { code } = await user.createAuthenticationCode.mutate({
       authParams: {
         ...body.authParams,
         client_id: body.client_id,
       },
     });
-
-    const client = await getClient(env, body.client_id);
-    if (!client) {
-      throw new Error("Client not found");
-    }
 
     const message = `Here's your login code: ${code}`;
     await env.sendEmail({

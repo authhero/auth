@@ -68,7 +68,7 @@ export class AuthenticateController extends Controller {
     try {
       switch (body.realm) {
         case "email":
-          authParams = await user.validateAuthenticationCode.mutate(body.otp);
+          authParams = await user.validateAuthenticationCode.mutate({ code: body.otp, email: body.username, tenantId: client.tenantId });
           break;
         case "Username-Password-Authentication":
           await user.validatePassword.mutate(body.password);
@@ -84,7 +84,7 @@ export class AuthenticateController extends Controller {
         coVerifier,
         coID,
         username: body.username,
-        userId: getId(body.client_id, body.username),
+        userId: `${client.tenantId}|${body.username}`,
         authParams,
       };
 

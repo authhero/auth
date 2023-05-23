@@ -13,6 +13,7 @@ import {
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
+import { NoUserFoundError } from "../../errors";
 
 @Route("tenants/{tenantId}/users")
 @Tags("users")
@@ -35,20 +36,32 @@ export class UsersController extends Controller {
   @Patch("{userId}")
   public async updateUser(
     @Request() request: RequestWithContext,
-    @Body()
-    updateUserParams: Partial<Omit<User, "id" | "createdAt" | "modifiedAt">>,
+    @Body() body: Partial<Omit<User, "id" | "createdAt" | "modifiedAt">> & { password?: string },
     @Path("userId") userId: string,
     @Path("tenantId") tenantId: string
-  ): Promise<number> {
-    const db = getDb(request.ctx.env);
-    const result = await db
-      .updateTable("users")
-      .set(updateUserParams)
-      .where("users.id", "=", userId)
-      .where("users.tenantId", "=", tenantId)
-      .execute();
+  ): Promise<User> {
+    const { env } = request.ctx;
 
-    return result.length;
+
+    const db = getDb(request.ctx.env);
+    const user = await db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .select('email')
+      .executeTakeFirst();
+
+    if (!user) {
+      throw new NoUserFoundError();
+    }
+
+    const doId = `${tenantId}|${user.email}`;
+    const userInstance = env.userFactory.getInstanceByName(doId);
+
+    if (body.password) {
+      await userInstance.setPassword.mutate(body.password);
+    }
+
+    return userInstance.getProfile.query();
   }
 
   @Post("")

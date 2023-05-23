@@ -130,6 +130,17 @@ The auth0-react uses the universal login with PKCE flow:
 - The code is resolved to an access token and an id token using the /token endpoint
 - The id token is validated using the JWKS keys and the nonce is validated.
 
+## @auth0/auth0-nextjs
+
+This library currently doesn't work due to a missing state cookie
+
+The auth0-nextjs library uses the universal login with a Code Grant Flow.
+
+- The client queries the open ID configuration endpoint (/.well-known/openid-configuration) to get information about the available endpoints.
+- The browser is redirected to the universal auth login with a Code flow
+- After a successful authentication the browser is redirected back to the nextjs callback url (/api/auth/callback)
+- The nextjs api route calls the token endpoint (/token) to get a set of tokens. Nextjs generates a session cookie that is passed back to the client
+
 # Leftovers
 
 - Add inversify

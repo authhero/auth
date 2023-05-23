@@ -13,7 +13,7 @@ interface PasswordlessState {
   authParams: AuthParams;
 }
 
-export async function passwordlessAuth(
+export async function ticketAuth(
   ctx: Context<Env>,
   controller: Controller,
   ticket: string,
@@ -23,16 +23,16 @@ export async function passwordlessAuth(
   const ticketInstance = ctx.env.stateFactory.getInstanceById(
     base64ToHex(ticket)
   );
-  const passwordlessStateString = await ticketInstance.getState.query();
 
-  if (!passwordlessStateString) {
+  const ticketString = await ticketInstance.getState.query();
+  if (!ticketString) {
     throw new Error("Ticket not found");
   }
 
-  const passwordlessState: PasswordlessState = JSON.parse(
-    passwordlessStateString
+  const ticketJson: PasswordlessState = JSON.parse(
+    ticketString
   );
-  const { userId, authParams } = passwordlessState;
+  const { userId, authParams } = ticketJson;
 
   const tokenResponse = await generateAuthResponse({
     env: ctx.env,

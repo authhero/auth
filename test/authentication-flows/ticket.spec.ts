@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { mockedContext, mockedController } from "../test-helpers";
 
-import { passwordlessAuth } from "../../src/authentication-flows";
+import { ticketAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
 
 describe("passwordlessAuth", () => {
@@ -22,7 +22,7 @@ describe("passwordlessAuth", () => {
     const state = "state";
     const redirectUri = "https://example.com";
 
-    const response = await passwordlessAuth(
+    const response = await ticketAuth(
       ctx,
       controller,
       ticket,
