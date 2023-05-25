@@ -26,6 +26,8 @@ export async function generateCode({
     state: JSON.stringify({
       userId,
       authParams,
+      nonce,
+      state,
     }),
   });
 

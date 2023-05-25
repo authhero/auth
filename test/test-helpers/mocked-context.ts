@@ -51,7 +51,9 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
             },
           },
           createState: {
-            mutate: async () => { },
+            mutate: async (value: string) => {
+              stateData[id] = value;
+            },
           },
         }),
       },

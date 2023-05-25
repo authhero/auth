@@ -57,7 +57,7 @@ export async function silentAuth({
       try {
         switch (response_type) {
           case AuthorizationResponseType.CODE:
-            const code = await generateCode({ env, state, nonce, ...superState })
+            const code = await generateCode({ env, state, nonce, userId: superState.userId, authParams: superState.authParams })
 
             return renderAuthIframe(env.AUTH_TEMPLATES, controller, {
               targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,

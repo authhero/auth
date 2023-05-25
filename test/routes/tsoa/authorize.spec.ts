@@ -22,22 +22,23 @@ describe("authorize", () => {
             const controller = new AuthorizeController();
 
             const logs = [];
+            const stateData = {
+                // This id corresponds to the base64 token below
+                'c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217': JSON.stringify({
+                    "userId": "tenantId|test@example.com", "authParams":
+                    {
+                        "redirect_uri": "http://localhost:3000",
+                        "scope": "openid profile email",
+                        "state": "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
+                        "client_id": "clientId",
+                        "nonce": "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+                        "response_type": "code"
+                    }
+                })
+            }
 
             const ctx = mockedContext({
-                stateData: {
-                    // This id corresponds to the base64 token below
-                    'c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217': JSON.stringify({
-                        "userId": "tenantId|test@example.com", "authParams":
-                        {
-                            "redirect_uri": "http://localhost:3000",
-                            "scope": "openid profile email",
-                            "state": "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
-                            "client_id": "clientId",
-                            "nonce": "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-                            "response_type": "code"
-                        }
-                    })
-                },
+                stateData,
                 logs,
             });
 
@@ -54,6 +55,10 @@ describe("authorize", () => {
                 'state',
                 'none',
                 'web_message',
+                'audience',
+                undefined,
+                undefined,
+                'nonce'
             );
 
             // Should return something containing this
@@ -61,6 +66,17 @@ describe("authorize", () => {
             // response: {"code":"-o5wLPh_YNZjbEV8vGM3VWcqdoFW34p30l5xI0Zm5JUd1","state":"a2sucn51bzd5emhiZVFWWGVjRlRqWFRFNk44LkhOfjZZbzFwa2k2WXdtNg=="}
 
             expect(actual).toContain('response: {"code":"Eg","state":"state"');
+            // This is what should be persisted in the state for the code                 
+            expect(stateData[123].state).toBe(JSON.stringify({
+                userId: "tenantId|test@example.com",
+                authParams: {
+                    redirect_uri: "http://localhost:3000",
+                    scope: "openid profile email",
+                    state: "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==", "client_id": "clientId", "nonce": "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==", "response_type": "code"
+                },
+                nonce: "nonce",
+                state: "state"
+            }))
         });
     });
 });
