@@ -10,10 +10,10 @@ import {
 } from "../types";
 import { renderAuthIframe } from "../templates/render";
 import { base64ToHex } from "../utils/base64";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
+import { generateAuthResponse, generateCode } from "../helpers/generate-auth-response";
 
 export interface SilentAuthParams {
-  ctx: Context<Env>;
+  env: Env;
   controller: Controller;
   cookie_header: string | null;
   redirect_uri: string;
@@ -31,7 +31,7 @@ interface SuperState {
 }
 
 export async function silentAuth({
-  ctx,
+  env,
   controller,
   cookie_header,
   redirect_uri,
@@ -43,7 +43,7 @@ export async function silentAuth({
   const redirectURL = new URL(redirect_uri);
 
   if (tokenState) {
-    const stateInstance = ctx.env.stateFactory.getInstanceById(
+    const stateInstance = env.stateFactory.getInstanceById(
       base64ToHex(tokenState)
     );
 
@@ -57,24 +57,26 @@ export async function silentAuth({
       try {
         switch (response_type) {
           case AuthorizationResponseType.CODE:
-            return renderAuthIframe(ctx.env.AUTH_TEMPLATES, controller, {
+            const code = await generateCode({ env, state, nonce, ...superState })
+
+            return renderAuthIframe(env.AUTH_TEMPLATES, controller, {
               targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
               response: JSON.stringify({
-                code: "-o5wLPh_YNZjbEV8vGM3VWcqdoFW34p30l5xI0Zm5JUd1",
+                code,
                 state,
               }),
             });
           case AuthorizationResponseType.IMPLICIT:
           case AuthorizationResponseType.TOKEN_ID_TOKEN:
             const tokenResponse = await generateAuthResponse({
-              env: ctx.env,
+              env,
               userId: superState.userId,
               state,
               nonce,
               authParams: superState.authParams,
             });
 
-            return renderAuthIframe(ctx.env.AUTH_TEMPLATES, controller, {
+            return renderAuthIframe(env.AUTH_TEMPLATES, controller, {
               targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
               response: JSON.stringify(tokenResponse),
             });
@@ -87,7 +89,7 @@ export async function silentAuth({
     }
   }
 
-  return renderAuthIframe(ctx.env.AUTH_TEMPLATES, controller, {
+  return renderAuthIframe(env.AUTH_TEMPLATES, controller, {
     targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
     response: JSON.stringify({
       error: "login_required",

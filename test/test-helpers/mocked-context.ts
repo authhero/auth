@@ -33,6 +33,7 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
   const { stateData = {}, userData = {}, logs = [] } = params || {};
 
   return {
+    headers: new URLSearchParams(),
     env: {
       AUTH_TEMPLATES: mockedR2Bucket(),
       AUTH_DOMAIN_URL: "https://auth.example.com",

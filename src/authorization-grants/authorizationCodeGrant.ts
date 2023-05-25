@@ -1,4 +1,3 @@
-import { Context } from "cloudworker-router";
 import { base64ToHex } from "../utils/base64";
 import { State } from "../models";
 import {
@@ -13,14 +12,14 @@ import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { Controller } from "tsoa";
 
 export async function authorizationCodeGrant(
-  ctx: Context<Env>,
+  env: Env,
   controller: Controller,
   params:
     | AuthorizationCodeGrantTypeParams
     | PKCEAuthorizationCodeGrantTypeParams
 ): Promise<TokenResponse | null> {
   const stateInstance = State.getInstanceById(
-    ctx.env.STATE,
+    env.STATE,
     base64ToHex(params.code)
   );
   const stateString = await stateInstance.getState.query();
@@ -30,7 +29,7 @@ export async function authorizationCodeGrant(
   const state: { userId: string; authParams: AuthParams } =
     JSON.parse(stateString);
 
-  await setSilentAuthCookies(ctx, controller, state.userId, state.authParams);
+  await setSilentAuthCookies(env, controller, state.userId, state.authParams);
 
-  return generateAuthResponse({ env: ctx.env, ...state });
+  return generateAuthResponse({ env, ...state });
 }

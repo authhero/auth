@@ -14,7 +14,7 @@ describe("silentAuth", () => {
     const controller = mockedController();
 
     const actual = await silentAuth({
-      ctx,
+      env: ctx.env,
       controller,
       cookie_header: null,
       redirect_uri: "https://example.com",
@@ -50,7 +50,7 @@ describe("silentAuth", () => {
     const controller = mockedController();
 
     const actual = await silentAuth({
-      ctx,
+      env: ctx.env,
       controller,
       cookie_header: "auth-token=token-state",
       redirect_uri: "https://example.com",
@@ -63,7 +63,7 @@ describe("silentAuth", () => {
 
     expect(
       actual.includes(
-        '{"code":"-o5wLPh_YNZjbEV8vGM3VWcqdoFW34p30l5xI0Zm5JUd1","state":"RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ=="}'
+        '{"code":"Eg","state":"RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ=="}'
       )
     ).toBe(true);
   });
