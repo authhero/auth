@@ -1,7 +1,7 @@
-import { RequestWithContext } from "../../../src/types/RequestWithContext";
-import { mockedContext } from "../../test-helpers";
+import { contextFixture } from "../../fixtures";
 import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
 import { AuthorizationResponseType } from "../../../src/types";
+import { requestWithContext } from "../../fixtures/requestWithContext";
 
 describe("Passwordless", () => {
   describe("start", () => {
@@ -25,14 +25,12 @@ describe("Passwordless", () => {
 
       const logs = [];
 
-      const ctx = mockedContext({
+      const ctx = contextFixture({
         stateData: {},
         logs,
       });
 
-      controller.startPasswordless(body, {
-        ctx,
-      } as RequestWithContext);
+      controller.startPasswordless(body, requestWithContext(ctx));
     });
   });
 });

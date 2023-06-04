@@ -3,6 +3,7 @@ import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import { AuthParams } from "../../types/AuthParams";
+import { Env } from "../../types";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -30,7 +31,7 @@ export class PasswordlessController extends Controller {
   @Post("start")
   public async startPasswordless(
     @Body() body: PasswordlessOptions,
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext<Env>
   ): Promise<string> {
     const { env } = request.ctx;
 

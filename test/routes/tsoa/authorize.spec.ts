@@ -1,7 +1,8 @@
 import { RequestWithContext } from "../../../src/types/RequestWithContext";
-import { mockedContext } from "../../test-helpers";
+import { contextFixture } from "../../fixtures";
 import { AuthorizeController } from "../../../src/routes/tsoa/authorize";
 import { AuthorizationResponseType } from "../../../src/types";
+import { requestWithContext } from "../../fixtures/requestWithContext";
 
 describe("authorize", () => {
     describe("silent authentication", () => {
@@ -37,7 +38,7 @@ describe("authorize", () => {
                 })
             }
 
-            const ctx = mockedContext({
+            const ctx = contextFixture({
                 stateData,
                 logs,
             });
@@ -45,9 +46,7 @@ describe("authorize", () => {
             ctx.headers.set('cookie', 'auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc')
 
             const actual = await controller.authorize(
-                {
-                    ctx,
-                } as RequestWithContext,
+                requestWithContext(ctx),
                 'clientId',
                 AuthorizationResponseType.CODE,
                 'http://localhost:3000',

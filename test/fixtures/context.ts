@@ -1,7 +1,7 @@
 import { Context } from "cloudworker-router";
 // This is to make Request and other browser stuff work
 import "isomorphic-fetch";
-import { Env } from "../../src/types";
+import { Env, RequestWithContext } from "../../src/types";
 import { oAuth2ClientFactory } from "./mocked-oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { mockedKVStorage } from "./mocked-kv-storage";
@@ -9,8 +9,6 @@ import { MockedTokenFactory } from "./mocked-token-factory";
 import { EmailOptions } from "../../src/services/email";
 import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
 import { userRouter } from "../../src/models/User";
-
-
 
 const caller = userRouter
   .createCaller({
@@ -29,7 +27,7 @@ export interface MockedContextParams {
   logs?: any[];
 }
 
-export function mockedContext(params?: MockedContextParams): Context<Env> {
+export function contextFixture(params?: MockedContextParams): Context<Env> {
   const { stateData = {}, userData = {}, logs = [] } = params || {};
 
   return {
@@ -104,6 +102,7 @@ export function mockedContext(params?: MockedContextParams): Context<Env> {
           tenantId: "tenantId",
           senderEmail: "senderEmail",
           senderName: "senderName",
+          allowedCallbackUrls: ['http://localhost:3000']
         }),
       }),
     },

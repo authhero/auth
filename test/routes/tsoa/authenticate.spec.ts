@@ -1,6 +1,7 @@
 import { RequestWithContext } from "../../../src/types/RequestWithContext";
-import { mockedContext } from "../../test-helpers";
+import { contextFixture } from "../../fixtures";
 import { AuthenticateController, CodeAuthenticateParams, PasswordAuthenticateParams } from "../../../src/routes/tsoa/authenticate";
+import { Env } from "../../../src/types";
 
 describe("Authenticated", () => {
     describe("password", () => {
@@ -17,14 +18,14 @@ describe("Authenticated", () => {
 
             const logs = [];
 
-            const ctx = mockedContext({
+            const ctx = contextFixture({
                 stateData: {},
                 logs,
             });
 
             const actual = await controller.authenticate(body, {
                 ctx,
-            } as RequestWithContext);
+            } as RequestWithContext<Env>);
 
             // Should return something like this
             // {"login_ticket":"uvfFxiqrv_DxNck4t3W8CtBxzMazNGUu","co_verifier":"fuwh_mhhncJyd3oCPcUs7psX5XIhBgZd","co_id":"oe5nra2nOLZy"}
@@ -49,7 +50,7 @@ describe("Authenticated", () => {
 
             const logs = [];
 
-            const ctx = mockedContext({
+            const ctx = contextFixture({
                 stateData: {},
                 userData: {
                     validatePassword: 'UnauthenticatedError'
@@ -59,7 +60,7 @@ describe("Authenticated", () => {
 
             const actual = await controller.authenticate(body, {
                 ctx,
-            } as RequestWithContext);
+            } as RequestWithContext<Env>);
 
             if (!('error' in actual)) {
                 throw new Error('should return error')
@@ -84,14 +85,14 @@ describe("Authenticated", () => {
 
             const logs = [];
 
-            const ctx = mockedContext({
+            const ctx = contextFixture({
                 stateData: {},
                 logs,
             });
 
             const actual = await controller.authenticate(body, {
                 ctx,
-            } as RequestWithContext);
+            } as RequestWithContext<Env>);
 
             // Should return something like this
             // {"login_ticket":"uvfFxiqrv_DxNck4t3W8CtBxzMazNGUu","co_verifier":"fuwh_mhhncJyd3oCPcUs7psX5XIhBgZd","co_id":"oe5nra2nOLZy"}
@@ -116,7 +117,7 @@ describe("Authenticated", () => {
 
             const logs = [];
 
-            const ctx = mockedContext({
+            const ctx = contextFixture({
                 stateData: {},
                 userData: {
                     validatePassword: 'UnauthenticatedError'
@@ -126,7 +127,7 @@ describe("Authenticated", () => {
 
             const actual = await controller.authenticate(body, {
                 ctx,
-            } as RequestWithContext);
+            } as RequestWithContext<Env>);
 
             if (!('error' in actual)) {
                 throw new Error('should return error')
