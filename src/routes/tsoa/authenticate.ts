@@ -6,7 +6,7 @@ import { contentTypes, headers } from "../../constants";
 import { AuthenticationCodeExpiredError, InvalidCodeError, UnauthenticatedError } from "../../errors";
 import randomString from "../../utils/random-string";
 import { hexToBase64 } from "../../utils/base64";
-import { AuthParams } from "../../types";
+import { AuthParams, Env } from "../../types";
 
 
 export interface LoginError {
@@ -49,7 +49,7 @@ export class AuthenticateController extends Controller {
   @Post("authenticate")
   public async authenticate(
     @Body() body: CodeAuthenticateParams | PasswordAuthenticateParams,
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext<Env>
   ): Promise<LoginTicket | LoginError> {
     const { env } = request.ctx
 

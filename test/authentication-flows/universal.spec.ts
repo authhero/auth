@@ -4,7 +4,7 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../src/types";
-import { mockedContext, mockedController } from "../test-helpers";
+import { contextFixture, mockedController } from "../fixtures";
 
 import { universalAuth } from "../../src/authentication-flows";
 import { headers } from "../../src/constants";
@@ -22,7 +22,7 @@ describe("universalAuth", () => {
     //   code_challenge=4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww&
     //   code_challenge_method=S256&
     //   auth0Client=eyJuYW1lIjoiYXV0aDAtcmVhY3QiLCJ2ZXJzaW9uIjoiMi4wLjEifQ%3D%3D
-    const ctx = mockedContext();
+    const ctx = contextFixture();
     const controller = mockedController();
 
     await universalAuth({

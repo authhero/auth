@@ -89,6 +89,27 @@ export class ApplicationsController extends Controller {
     return applications;
   }
 
+  @Get("{id}")
+  public async getApplication(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+    @Path("tenantId") tenantId: string,
+  ): Promise<Application | string> {
+    const db = getDb(request.ctx.env);
+    const application = await db
+      .selectFrom("applications")
+      .where("applications.tenantId", "=", tenantId)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!application) {
+      this.setStatus(404);
+      return 'Not found'
+    }
+
+    return application;
+  }
+
   @Patch("{id}")
   public async patchApplication(
     @Request() request: RequestWithContext,

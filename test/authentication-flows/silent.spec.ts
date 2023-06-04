@@ -3,14 +3,14 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../src/types";
-import { mockedContext, mockedController } from "../test-helpers";
+import { contextFixture, mockedController } from "../fixtures";
 
 import { silentAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
 
 describe("silentAuth", () => {
   it('should render an iframe with "login required" as error if the user is not authenticated', async () => {
-    const ctx = mockedContext();
+    const ctx = contextFixture();
     const controller = mockedController();
 
     const actual = await silentAuth({
@@ -40,7 +40,7 @@ describe("silentAuth", () => {
 
     const stateInstanceId = base64ToHex("token-state");
 
-    const ctx = mockedContext({
+    const ctx = contextFixture({
       stateData: {
         [stateInstanceId]: JSON.stringify({
           foo: "bar",

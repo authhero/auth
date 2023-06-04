@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { mockedContext, mockedController } from "../test-helpers";
+import { contextFixture, mockedController } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
@@ -8,7 +8,7 @@ describe("passwordlessAuth", () => {
   it("should redirect with implicit flow as anchor links", async () => {
     const ticketInstanceId = base64ToHex("ticket");
 
-    const ctx = mockedContext({
+    const ctx = contextFixture({
       stateData: {
         [ticketInstanceId]: JSON.stringify({
           authParams: {

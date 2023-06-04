@@ -11,11 +11,10 @@ import {
   AuthorizationResponseType,
   AuthParams,
   CodeChallengeMethod,
+  Env,
 } from "../../types";
 import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { headers } from "../../constants";
-import { serializeClearCookie } from "../../services/cookies";
 import {
   silentAuth,
   ticketAuth,
@@ -32,7 +31,7 @@ export class AuthorizeController extends Controller {
   @Get("authorize")
   @SuccessResponse(302, "Redirect")
   public async authorize(
-    @Request() request: RequestWithContext,
+    @Request() request: RequestWithContext<Env>,
     /**
      * This is a required parameter. It is the public identifier for the client (third-party application).
      */
@@ -121,7 +120,7 @@ export class AuthorizeController extends Controller {
   @Get("callback")
   @SuccessResponse("302", "Redirect")
   public async callback(
-    @Request() request: RequestWithContext,
+    @Request() request: RequestWithContext<Env>,
     @Query("state") state: string,
     @Query("scope") scope: string,
     @Query("code") code: string,
@@ -138,40 +137,5 @@ export class AuthorizeController extends Controller {
       state: socialAuthState,
       code,
     });
-  }
-
-  @Get("v2/logout")
-  @SuccessResponse("302", "Redirect")
-  public async logout(
-    @Request() request: RequestWithContext,
-    @Query("client_id") clientId: string,
-    @Query("returnTo") returnTo?: string
-  ): Promise<string> {
-    const client = await getClient(request.ctx.env, clientId);
-    if (!client) {
-      throw new Error("Client not found");
-    }
-
-    const redirectUri = returnTo || request.ctx.headers.get("referer");
-    if (!redirectUri) {
-      throw new Error("No return to url found");
-    }
-
-    if (
-      client.allowedCallbackUrls.some((callbackUrl) => {
-        const regex = new RegExp(callbackUrl, "i");
-        return regex.test(redirectUri);
-      })
-    ) {
-      throw new Error("Invalid return to url");
-    }
-
-    this.setStatus(302);
-    serializeClearCookie().forEach((cookie) => {
-      this.setHeader(headers.setCookie, cookie);
-    });
-    this.setHeader(headers.location, redirectUri);
-
-    return "Redirecting";
   }
 }

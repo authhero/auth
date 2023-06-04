@@ -1,6 +1,5 @@
 import { ContextWithBody } from "cloudworker-router";
-import { Env } from "./Env";
 
-export interface RequestWithContext extends Request {
+export interface RequestWithContext<Env> extends Request {
   ctx: ContextWithBody<Env>;
 }
