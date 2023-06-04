@@ -2,10 +2,10 @@ import { Controller } from "@tsoa/runtime";
 import { AuthorizationResponseType, AuthParams, Client, Env } from "../types";
 import { contentTypes, headers } from "../constants";
 import { encode, hexToBase64 } from "../utils/base64";
-import { Context } from "cloudworker-router";
 import { getClient } from "../services/clients";
 import { getId, User } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
+import { generateCode } from "../helpers/generate-auth-response";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -48,19 +48,19 @@ export async function socialAuth(
 }
 
 export interface socialAuthCallbackParams {
-  ctx: Context<Env>;
+  env: Env;
   controller: Controller;
   state: SocialAuthState;
   code: string;
 }
 
 export async function socialAuthCallback({
-  ctx,
+  env,
   controller,
   state,
   code,
 }: socialAuthCallbackParams) {
-  const client = await getClient(ctx.env, state.authParams.client_id);
+  const client = await getClient(env, state.authParams.client_id);
   const oauthProvider = client.authProviders.find(
     (p) => p.name === state.connection
   );
@@ -70,7 +70,7 @@ export async function socialAuthCallback({
     throw new Error("Connection not found");
   }
 
-  const oauth2Client = ctx.env.oauth2ClientFactory.create(
+  const oauth2Client = env.oauth2ClientFactory.create(
     oauthProvider,
     `${client.loginBaseUrl}callback`,
     state.authParams.scope?.split(" ") || []
@@ -80,8 +80,8 @@ export async function socialAuthCallback({
 
   const oauth2Profile = await oauth2Client.getUserProfile(token.access_token);
 
-  const doId = getId(client.tenantId, oauth2Profile.email);
-  const user = User.getInstanceByName(ctx.env.USER, doId);
+  const userId = getId(client.tenantId, oauth2Profile.email);
+  const user = env.userFactory.getInstanceByName(userId);
 
   await user.patchProfile.mutate({
     email: oauth2Profile.email,
@@ -89,7 +89,7 @@ export async function socialAuthCallback({
     connections: [{ name: oauthProvider.name, profile: oauth2Profile }],
   });
 
-  await setSilentAuthCookies(ctx, controller, doId, state.authParams);
+  await setSilentAuthCookies(env, controller, userId, state.authParams);
 
   if (!state.authParams.redirect_uri) {
     throw new Error('Redirect URI not defined');
@@ -100,15 +100,12 @@ export async function socialAuthCallback({
 
   switch (state.authParams.response_type) {
     case AuthorizationResponseType.CODE:
-      const stateId = ctx.env.STATE.newUniqueId().toString();
-      const stateInstance = ctx.env.stateFactory.getInstanceById(stateId);
-      await stateInstance.createState.mutate({
-        state: JSON.stringify({
-          userId: doId,
-          authParams: state.authParams,
-        }),
-      });
-      redirectUri.searchParams.set("code", hexToBase64(stateId));
+      const code = await generateCode({
+        env,
+        userId,
+        authParams: state.authParams,
+      })
+      redirectUri.searchParams.set("code", code);
       if (state.authParams.state) {
         redirectUri.searchParams.set("state", state.authParams.state);
       }

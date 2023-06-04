@@ -35,7 +35,7 @@ export class TokenRoutes extends Controller {
       case GrantType.RefreshToken:
         break;
       case GrantType.AuthorizationCode:
-        tokenResponse = await authorizationCodeGrant(ctx, this, body);
+        tokenResponse = await authorizationCodeGrant(ctx.env, this, body);
         break;
       case GrantType.ClientCredential:
         break;

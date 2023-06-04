@@ -14,13 +14,13 @@ interface PasswordlessState {
 }
 
 export async function ticketAuth(
-  ctx: Context<Env>,
+  env: Env,
   controller: Controller,
   ticket: string,
   state: string,
   redirectUri: string
 ) {
-  const ticketInstance = ctx.env.stateFactory.getInstanceById(
+  const ticketInstance = env.stateFactory.getInstanceById(
     base64ToHex(ticket)
   );
 
@@ -35,13 +35,13 @@ export async function ticketAuth(
   const { userId, authParams } = ticketJson;
 
   const tokenResponse = await generateAuthResponse({
-    env: ctx.env,
+    env,
     userId,
     state,
     authParams,
   });
 
-  await setSilentAuthCookies(ctx, controller, userId, authParams);
+  await setSilentAuthCookies(env, controller, userId, authParams);
 
   const redirectURL = new URL(redirectUri);
 

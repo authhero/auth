@@ -3,6 +3,7 @@ import { getCertificate } from "../models";
 import { Env, AuthParams } from "../types";
 import { TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
+import { hexToBase64 } from "../utils/base64";
 
 export interface GenerateAuthResponseParams {
   env: Env;
@@ -11,6 +12,27 @@ export interface GenerateAuthResponseParams {
   nonce?: string;
   authParams: AuthParams;
 }
+
+export async function generateCode({
+  env,
+  userId,
+  state,
+  nonce,
+  authParams,
+}: GenerateAuthResponseParams) {
+  const stateId = env.STATE.newUniqueId().toString();
+  const stateInstance = env.stateFactory.getInstanceById(stateId);
+  await stateInstance.createState.mutate({
+    state: JSON.stringify({
+      userId,
+      authParams,
+      nonce,
+      state,
+    }),
+  });
+
+  return hexToBase64(stateId);
+};
 
 export async function generateAuthResponse({
   env,
