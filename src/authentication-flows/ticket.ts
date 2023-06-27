@@ -1,5 +1,4 @@
 import { Controller } from "@tsoa/runtime";
-import { Context } from "cloudworker-router";
 import { Env, AuthParams } from "../types";
 import { headers } from "../constants";
 import { base64ToHex } from "../utils/base64";
@@ -20,18 +19,14 @@ export async function ticketAuth(
   state: string,
   redirectUri: string
 ) {
-  const ticketInstance = env.stateFactory.getInstanceById(
-    base64ToHex(ticket)
-  );
+  const ticketInstance = env.stateFactory.getInstanceById(base64ToHex(ticket));
 
   const ticketString = await ticketInstance.getState.query();
   if (!ticketString) {
     throw new Error("Ticket not found");
   }
 
-  const ticketJson: PasswordlessState = JSON.parse(
-    ticketString
-  );
+  const ticketJson: PasswordlessState = JSON.parse(ticketString);
   const { userId, authParams } = ticketJson;
 
   const tokenResponse = await generateAuthResponse({
@@ -39,6 +34,10 @@ export async function ticketAuth(
     userId,
     state,
     authParams,
+    user: {
+      email: "dummy@example.com",
+    },
+    sid: "sid",
   });
 
   await setSilentAuthCookies(env, controller, userId, authParams);

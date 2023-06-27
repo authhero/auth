@@ -1,3 +1,11 @@
+export class NotFoundError extends Error {
+  status = 404;
+}
+
+export class AuthError extends Error {
+  status = 400;
+}
+
 export class UnauthenticatedError extends Error {
   status = 401;
 
@@ -52,6 +60,22 @@ export class UserConflictError extends Error {
   status = 404;
 
   constructor(message = "User Alredy Exists") {
+    super();
+
+    this.message = message;
+  }
+}
+
+export class InvalidCodeVerifierError extends AuthError {
+  constructor(message = "Invalid Code Verifier") {
+    super();
+
+    this.message = message;
+  }
+}
+
+export class InvalidClientError extends AuthError {
+  constructor(message = "Invalid Client") {
     super();
 
     this.message = message;

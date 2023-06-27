@@ -10,20 +10,6 @@ export class MockedDurabableObjectId implements DurableObjectId {
   }
 }
 
-export class MockedNamespaceStub implements DurableObjectStub {
-  readonly id: DurableObjectId;
-  readonly name?: string;
-
-  constructor(id: DurableObjectId, name?: string) {
-    this.id = id;
-    this.name = name;
-  }
-
-  async fetch(input: RequestInfo, init?: RequestInit) {
-    return new Response("Hello");
-  }
-}
-
 export function mockedNamespace<T>(instance: any) {
   return {
     newUniqueId: () => instance,

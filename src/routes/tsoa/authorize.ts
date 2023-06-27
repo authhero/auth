@@ -8,10 +8,10 @@ import {
   SuccessResponse,
 } from "@tsoa/runtime";
 import {
+  AuthorizationResponseMode,
   AuthorizationResponseType,
   AuthParams,
   CodeChallengeMethod,
-  Env,
 } from "../../types";
 import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -20,18 +20,34 @@ import {
   ticketAuth,
   socialAuth,
   universalAuth,
-  socialAuthCallback,
-  SocialAuthState,
 } from "../../authentication-flows";
-import { decode } from "../../utils/base64";
 
-@Route("")
+export interface AuthorizeParams {
+  request: RequestWithContext;
+  client_id: string;
+  response_type: AuthorizationResponseType;
+  redirect_uri: string;
+  scope: string;
+  state: string;
+  prompt?: string;
+  response_mode?: AuthorizationResponseMode;
+  audience?: string;
+  connection?: string;
+  username?: string;
+  nonce?: string;
+  max_age?: number;
+  loginTicket?: string;
+  code_challenge_method?: CodeChallengeMethod;
+  code_challenge?: string;
+}
+
+@Route("authorize")
 @Tags("authorize")
 export class AuthorizeController extends Controller {
-  @Get("authorize")
+  @Get("")
   @SuccessResponse(302, "Redirect")
   public async authorize(
-    @Request() request: RequestWithContext<Env>,
+    @Request() request: RequestWithContext,
     /**
      * This is a required parameter. It is the public identifier for the client (third-party application).
      */
@@ -68,9 +84,9 @@ export class AuthorizeController extends Controller {
      */
     @Query("nonce") nonce?: string,
     /**
-     * It allows to set the maximum authentication age. 
+     * It allows to set the maximum authentication age.
      * */
-    @Query('max_age') max_age?: number,
+    @Query("max_age") max_age?: number,
     @Query("login_ticket") loginTicket?: string,
     @Query("code_challenge_method") code_challenge_method?: CodeChallengeMethod,
     @Query("code_challenge") code_challenge?: string
@@ -87,6 +103,8 @@ export class AuthorizeController extends Controller {
       audience,
       nonce,
       response_type,
+      code_challenge,
+      code_challenge_method,
     };
 
     // Silent authentication
@@ -106,36 +124,32 @@ export class AuthorizeController extends Controller {
 
     // Social login
     if (connection) {
-      return socialAuth(this, client, connection, authParams);
+      return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
       return ticketAuth(env, this, loginTicket, state, redirect_uri);
     }
 
-    return universalAuth({ controller: this, authParams });
+    return universalAuth({ env, controller: this, authParams });
   }
 
-  /**
-   * A callback endpoint used for oauth2 providers such as google.
-   */
-  @Get("callback")
-  @SuccessResponse("302", "Redirect")
-  public async callback(
-    @Request() request: RequestWithContext<Env>,
-    @Query("state") state: string,
-    @Query("scope") scope: string,
-    @Query("code") code: string,
-    @Query("prompt") prompt: string,
-    @Query("authuser") authUser?: string,
-    @Query("hd") hd?: string
-  ): Promise<string> {
-    const { env } = request.ctx;
-
-    const socialAuthState: SocialAuthState = JSON.parse(decode(state));
-    return socialAuthCallback({
-      env,
-      controller: this,
-      state: socialAuthState,
-      code,
-    });
+  public async authorizeWithParams(params: AuthorizeParams): Promise<string> {
+    return this.authorize(
+      params.request,
+      params.client_id,
+      params.response_type,
+      params.redirect_uri,
+      params.scope,
+      params.state,
+      params.prompt,
+      params.response_mode,
+      params.audience,
+      params.connection,
+      params.username,
+      params.nonce,
+      params.max_age,
+      params.loginTicket,
+      params.code_challenge_method,
+      params.code_challenge
+    );
   }
 }

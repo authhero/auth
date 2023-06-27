@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { contextFixture, mockedController } from "../fixtures";
+import { contextFixture, controllerFixture } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
@@ -17,7 +17,7 @@ describe("passwordlessAuth", () => {
         }),
       },
     });
-    const controller = mockedController();
+    const controller = controllerFixture();
     const ticket = "ticket";
     const state = "state";
     const redirectUri = "https://example.com";

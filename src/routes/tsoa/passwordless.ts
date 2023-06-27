@@ -31,7 +31,7 @@ export class PasswordlessController extends Controller {
   @Post("start")
   public async startPasswordless(
     @Body() body: PasswordlessOptions,
-    @Request() request: RequestWithContext<Env>
+    @Request() request: RequestWithContext
   ): Promise<string> {
     const { env } = request.ctx;
 
@@ -40,7 +40,9 @@ export class PasswordlessController extends Controller {
       throw new Error("Client not found");
     }
 
-    const user = env.userFactory.getInstanceByName(`${client.tenantId}|${body.email}`);
+    const user = env.userFactory.getInstanceByName(
+      `${client.tenantId}|${body.email}`
+    );
     const { code } = await user.createAuthenticationCode.mutate({
       authParams: {
         ...body.authParams,

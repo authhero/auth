@@ -23,7 +23,7 @@ export async function passwordlessGrant(
   const token = await tokenFactory.createAccessToken({
     scopes: params.scope?.split(" ") ?? [],
     userId: params.username,
-    iss: env.AUTH_DOMAIN_URL,
+    iss: env.ISSUER,
   });
 
   if (!token) {

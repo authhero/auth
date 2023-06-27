@@ -22,7 +22,11 @@ export async function setSilentAuthCookies(
     ttl: MONTH_IN_SECONDS,
   });
 
-  serializeStateInCookie(hexToBase64(stateId)).forEach((cookie) => {
+  const sessionId = hexToBase64(stateId);
+
+  serializeStateInCookie(sessionId).forEach((cookie) => {
     controller.setHeader(headers.setCookie, cookie);
   });
+
+  return sessionId;
 }

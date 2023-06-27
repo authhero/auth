@@ -3,7 +3,7 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../src/types";
-import { contextFixture, mockedController } from "../fixtures";
+import { contextFixture, controllerFixture } from "../fixtures";
 
 import { silentAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
@@ -11,7 +11,7 @@ import { base64ToHex } from "../../src/utils/base64";
 describe("silentAuth", () => {
   it('should render an iframe with "login required" as error if the user is not authenticated', async () => {
     const ctx = contextFixture();
-    const controller = mockedController();
+    const controller = controllerFixture();
 
     const actual = await silentAuth({
       env: ctx.env,
@@ -47,7 +47,7 @@ describe("silentAuth", () => {
         }),
       },
     });
-    const controller = mockedController();
+    const controller = controllerFixture();
 
     const actual = await silentAuth({
       env: ctx.env,
@@ -63,7 +63,7 @@ describe("silentAuth", () => {
 
     expect(
       actual.includes(
-        '{"code":"Eg","state":"RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ=="}'
+        '{"code":"AAAAAA4","state":"RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ=="}'
       )
     ).toBe(true);
   });

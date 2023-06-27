@@ -1,23 +1,29 @@
 import { Controller } from "@tsoa/runtime";
-import { AuthParams } from "../types";
+import { AuthParams, Env } from "../types";
 import { headers } from "../constants";
-import { encode } from "../utils/base64";
+import { encode, hexToBase64 } from "../utils/base64";
 
 export interface UniversalAuthParams {
+  env: Env;
   controller: Controller;
   authParams: AuthParams;
 }
 
 export async function universalAuth({
+  env,
   controller,
   authParams,
 }: UniversalAuthParams) {
-  const encodedAuthParams = encode(JSON.stringify({ authParams }));
-
-  const querystring = new URLSearchParams();
-  querystring.set("state", encodedAuthParams);
+  const stateId = env.STATE.newUniqueId().toString();
+  const stateInstance = env.stateFactory.getInstanceById(stateId);
+  await stateInstance.createState.mutate({
+    state: JSON.stringify({ authParams }),
+  });
 
   controller.setStatus(302);
-  controller.setHeader(headers.location, `/u/login?state=${encodedAuthParams}`);
+  controller.setHeader(
+    headers.location,
+    `/u/login?state=${hexToBase64(stateId)}`
+  );
   return "Redirect to login";
 }

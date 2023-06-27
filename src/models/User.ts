@@ -254,11 +254,13 @@ export const userRouter = router({
       return profile;
     }),
   validateAuthenticationCode: publicProcedure
-    .input(z.object({
-      email: z.string(),
-      tenantId: z.string(),
-      code: z.string()
-    }))
+    .input(
+      z.object({
+        email: z.string(),
+        tenantId: z.string(),
+        code: z.string(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const codeString = await ctx.state.storage.get<string>(
         StorageKeys.authenticationCode
@@ -278,17 +280,15 @@ export const userRouter = router({
         throw new AuthenticationCodeExpiredError();
       }
 
-      await updateUser(
-        ctx.state.storage,
-        ctx.env.USERS_QUEUE,
-        {
-          email: input.email,
-          tenantId: input.tenantId,
-          connections: [{
-            name: 'email'
-          }]
-        }
-      );
+      await updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+        email: input.email,
+        tenantId: input.tenantId,
+        connections: [
+          {
+            name: "email",
+          },
+        ],
+      });
 
       // Remove once used
       await ctx.state.storage.put(StorageKeys.authenticationCode, "");
@@ -341,11 +341,13 @@ export const userRouter = router({
       );
     }),
   validatePassword: publicProcedure
-    .input(z.object({
-      email: z.string(),
-      tenantId: z.string(),
-      password: z.string()
-    }))
+    .input(
+      z.object({
+        email: z.string(),
+        tenantId: z.string(),
+        password: z.string(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const passwordHash = await ctx.state.storage.get<string>(
         StorageKeys.passwordHash
@@ -359,17 +361,15 @@ export const userRouter = router({
         throw new UnauthenticatedError();
       }
 
-      return updateUser(
-        ctx.state.storage,
-        ctx.env.USERS_QUEUE,
-        {
-          email: input.email,
-          tenantId: input.tenantId,
-          connections: [{
-            name: 'auth'
-          }]
-        }
-      );
+      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+        email: input.email,
+        tenantId: input.tenantId,
+        connections: [
+          {
+            name: "auth",
+          },
+        ],
+      });
     }),
 });
 

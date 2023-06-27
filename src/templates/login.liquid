@@ -36,18 +36,11 @@
             </span>
         </div>
         <div class="flex-c-m">
-            <a href="/authorize?connection=facebook&state={{state}}&response_type={{response_type}}&scope={{scope}}&state={{state}}&nonce={{nonce}}&client_id={{client_id}}&redirect_uri={{redirect_uri}}"
-                class="login100-social-item bg1">
-                <i class="fa fa-facebook"></i>
+            {% for item in connections %}
+            <a href="{{ item.href }}" class="login100-social-item {{ item.bg_class }}">
+                <i class="fa fa-{{ item.icon_class }}"></i>
             </a>
-            <a href="/authorize?connection=twitter&state={{state}}&response_type={{response_type}}&scope={{scope}}&state={{state}}&nonce={{nonce}}&client_id={{client_id}}&redirect_uri={{redirect_uri}}"
-                class="login100-social-item bg2">
-                <i class="fa fa-twitter"></i>
-            </a>
-            <a href="/authorize?connection=google-oauth2&state={{state}}&response_type={{response_type}}&scope={{scope}}&state={{state}}&nonce={{nonce}}&client_id={{client_id}}&redirect_uri={{redirect_uri}}"
-                class="login100-social-item bg3">
-                <i class="fa fa-google"></i>
-            </a>
+            {% endfor %}
         </div>
         <div class="text-center flex-col-m p-t-20">
             <span class="txt1 p-b-17">

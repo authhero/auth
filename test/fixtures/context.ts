@@ -10,21 +10,26 @@ import { EmailOptions } from "../../src/services/email";
 import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
 import { userRouter } from "../../src/models/User";
 
-const caller = userRouter
-  .createCaller({
-    req: new Request("http://localhost:8787"),
-    resHeaders: new Headers(),
-    env: {},
-    state: {
-    } as DurableObjectState,
-  })
+const caller = userRouter.createCaller({
+  req: new Request("http://localhost:8787"),
+  resHeaders: new Headers(),
+  env: {},
+  state: {} as DurableObjectState,
+});
 
-type ValidateAuthenticationCodeParams = Parameters<typeof caller.validateAuthenticationCode>[0];
+type ValidateAuthenticationCodeParams = Parameters<
+  typeof caller.validateAuthenticationCode
+>[0];
 
 export interface MockedContextParams {
-  stateData: { [key: string]: string };
+  stateData?: { [key: string]: string };
   userData?: { [key: string]: string | boolean };
   logs?: any[];
+}
+
+interface stateInput {
+  state: string;
+  ttl?: number;
 }
 
 export function contextFixture(params?: MockedContextParams): Context<Env> {
@@ -34,7 +39,7 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
     headers: new URLSearchParams(),
     env: {
       AUTH_TEMPLATES: mockedR2Bucket(),
-      AUTH_DOMAIN_URL: "https://auth.example.com",
+      ISSUER: "https://auth.example.com",
       oauth2ClientFactory: {
         create: oAuth2ClientFactory,
       },
@@ -49,8 +54,8 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
             },
           },
           createState: {
-            mutate: async (value: string) => {
-              stateData[id] = value;
+            mutate: async (value: stateInput) => {
+              stateData[id] = value.state;
             },
           },
         }),
@@ -67,7 +72,7 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
           },
           validatePassword: {
             mutate: async () => {
-              if (userData.validatePassword === 'UnauthenticatedError') {
+              if (userData.validatePassword === "UnauthenticatedError") {
                 throw new UnauthenticatedError();
               }
 
@@ -76,23 +81,23 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
           },
           validateAuthenticationCode: {
             mutate: async (input: ValidateAuthenticationCodeParams) => {
-              const { code, email, tenantId } = input
-              if (code === '000000') {
+              const { code, email, tenantId } = input;
+              if (code === "000000") {
                 throw new InvalidCodeError();
               }
 
-              caller.validateAuthenticationCode
+              caller.validateAuthenticationCode;
 
               return {
-                client_id: 'clientId'
+                client_id: "clientId",
               };
-            }
-          }
+            },
+          },
         }),
       },
       TokenFactory: MockedTokenFactory,
       STATE: {
-        newUniqueId: () => "123",
+        newUniqueId: () => "newUniqueId",
       },
       CERTIFICATES: mockedKVStorage({
         default: certificate,
@@ -102,7 +107,7 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
           tenantId: "tenantId",
           senderEmail: "senderEmail",
           senderName: "senderName",
-          allowedCallbackUrls: ['http://localhost:3000']
+          allowedCallbackUrls: ["http://localhost:3000"],
         }),
       }),
     },

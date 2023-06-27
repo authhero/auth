@@ -17,19 +17,6 @@ async function getTemplate(bucket: R2Bucket, templateName: string) {
   return engine.parse(templateString);
 }
 
-export async function renderAuthIframe(
-  bucket: R2Bucket,
-  controller: Controller,
-  context: { targetOrigin: string; response: any }
-) {
-  const template = await getTemplate(bucket, "auth-iframe");
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
-
-  return engine.render(template, context);
-}
-
 export async function renderForgotPassword(
   bucket: R2Bucket,
   controller: Controller,
@@ -59,6 +46,7 @@ export interface RenderLoginContext {
   authParams: AuthParams;
   username?: string;
   errorMessage?: string;
+  connection?: string;
 }
 
 export async function renderLogin(
@@ -73,11 +61,37 @@ export async function renderLogin(
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const loginState = encode(JSON.stringify(context));
+  const socialLoginQuery = new URLSearchParams();
+  Object.keys(context.authParams).forEach((key) =>
+    socialLoginQuery.set(key, context.authParams[key])
+  );
+
+  const connections = [
+    {
+      connection: "apple",
+      href: `/authorize?connection=apple&${socialLoginQuery.toString()}`,
+      icon_class: "apple",
+      bg_class: "bg1",
+    },
+    {
+      connection: "facebook",
+      href: `/authorize?connection=facebook&${socialLoginQuery.toString()}`,
+      icon_class: "facebook",
+      bg_class: "bg2",
+    },
+    {
+      connection: "google-oauth2",
+      href: `/authorize?connection=google-oauth2&${socialLoginQuery.toString()}`,
+      icon_class: "google",
+      bg_class: "bg3",
+    },
+  ];
+
   const content = await engine.render(template, {
     ...context.authParams,
-    loginState,
+    connections,
   });
+
   return engine.render(layoutTemplate, {
     ...context,
     content,

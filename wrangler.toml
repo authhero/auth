@@ -13,7 +13,7 @@ route = "auth2.sesamy.dev/*"
 logpush = true
 
 [vars]
-AUTH_DOMAIN_URL = "https://auth2.sesamy.dev/"
+ISSUER = "https://auth2.sesamy.dev/"
 
 [[r2_buckets]]
 binding = 'AUTH_TEMPLATES'

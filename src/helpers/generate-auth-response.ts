@@ -1,6 +1,6 @@
 // This should probably live somewhere else.
 import { getCertificate } from "../models";
-import { Env, AuthParams } from "../types";
+import { Env, AuthParams, CodeChallengeMethod } from "../types";
 import { TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { hexToBase64 } from "../utils/base64";
@@ -8,9 +8,19 @@ import { hexToBase64 } from "../utils/base64";
 export interface GenerateAuthResponseParams {
   env: Env;
   userId: string;
+  sid: string;
   state?: string;
   nonce?: string;
   authParams: AuthParams;
+  user: {
+    email: string;
+    name?: string;
+    givenName?: string;
+    familyName?: string;
+    nickname?: string;
+  };
+  code_challenge_method?: CodeChallengeMethod;
+  code_challenge?: string;
 }
 
 export async function generateCode({
@@ -19,6 +29,10 @@ export async function generateCode({
   state,
   nonce,
   authParams,
+  user,
+  sid,
+  code_challenge_method,
+  code_challenge,
 }: GenerateAuthResponseParams) {
   const stateId = env.STATE.newUniqueId().toString();
   const stateInstance = env.stateFactory.getInstanceById(stateId);
@@ -28,11 +42,15 @@ export async function generateCode({
       authParams,
       nonce,
       state,
+      user,
+      sid,
+      code_challenge_method,
+      code_challenge,
     }),
   });
 
   return hexToBase64(stateId);
-};
+}
 
 export async function generateAuthResponse({
   env,
@@ -53,7 +71,7 @@ export async function generateAuthResponse({
   const accessToken = await tokenFactory.createAccessToken({
     scopes: authParams.scope?.split(" ") || [],
     userId,
-    iss: env.AUTH_DOMAIN_URL,
+    iss: env.ISSUER,
   });
 
   const idToken = await tokenFactory.createIDToken({
@@ -63,7 +81,7 @@ export async function generateAuthResponse({
     family_name: profile.familyName,
     nickname: profile.nickname,
     name: profile.name,
-    iss: env.AUTH_DOMAIN_URL,
+    iss: env.ISSUER,
     nonce: nonce || authParams.nonce,
   });
 

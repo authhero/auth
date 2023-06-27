@@ -58,7 +58,7 @@ async function updateClientInKV(env: Env, clientId: string) {
     issuer: application.issuer,
     senderEmail: application.senderEmail,
     senderName: application.senderName,
-    loginBaseUrl: env.AUTH_DOMAIN_URL,
+    loginBaseUrl: env.ISSUER,
     tenantId: application.tenantId,
     allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
     allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
@@ -93,18 +93,18 @@ export class ApplicationsController extends Controller {
   public async getApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path("tenantId") tenantId: string
   ): Promise<Application | string> {
     const db = getDb(request.ctx.env);
     const application = await db
       .selectFrom("applications")
       .where("applications.tenantId", "=", tenantId)
       .selectAll()
-      .executeTakeFirst()
+      .executeTakeFirst();
 
     if (!application) {
       this.setStatus(404);
-      return 'Not found'
+      return "Not found";
     }
 
     return application;

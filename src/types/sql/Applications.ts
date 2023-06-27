@@ -5,6 +5,7 @@ export interface Application {
   allowedWebOrigins: string;
   allowedCallbackUrls: string;
   allowedLogoutUrls: string;
+  clientSecret: string;
   createdAt: string;
   modifiedAt: string;
 }

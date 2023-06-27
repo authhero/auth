@@ -36,18 +36,20 @@ export class UsersController extends Controller {
   @Patch("{userId}")
   public async updateUser(
     @Request() request: RequestWithContext,
-    @Body() body: Partial<Omit<User, "id" | "createdAt" | "modifiedAt">> & { password?: string },
+    @Body()
+    body: Partial<Omit<User, "id" | "createdAt" | "modifiedAt">> & {
+      password?: string;
+    },
     @Path("userId") userId: string,
     @Path("tenantId") tenantId: string
   ): Promise<User> {
     const { env } = request.ctx;
 
-
     const db = getDb(request.ctx.env);
     const user = await db
       .selectFrom("users")
       .where("users.tenantId", "=", tenantId)
-      .select('email')
+      .select("email")
       .executeTakeFirst();
 
     if (!user) {

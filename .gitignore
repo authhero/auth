@@ -9,4 +9,6 @@ build/
 lib/
 data/
 coverage/
+wrangler/
 .dev.vars
+.env

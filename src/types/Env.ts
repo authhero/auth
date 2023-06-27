@@ -3,6 +3,7 @@ import { StateClient, UserClient } from "../models";
 import { QueueMessage } from "../services/events";
 import { createTokenFactory } from "../services/token-factory";
 import { SendEmail } from "../services/email";
+import hash from "../utils/hash";
 
 export interface StateRouterFactory {
   (name: string): StateClient;
@@ -14,8 +15,8 @@ export interface ClientFactory<ClientType> {
 }
 
 export interface Env {
-  AUTH0_JWKS_URL: string;
-  AUTH_DOMAIN_URL: string;
+  ISSUER: string;
+  DD_API_KEY: string;
   USER: DurableObjectNamespace;
   STATE: DurableObjectNamespace;
   USERS_QUEUE: Queue<QueueMessage>;
@@ -28,4 +29,5 @@ export interface Env {
   userFactory: ClientFactory<UserClient>;
   sendEmail: SendEmail;
   TokenFactory: ReturnType<typeof createTokenFactory>;
+  hash: typeof hash;
 }

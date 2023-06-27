@@ -1,57 +1,60 @@
-import { requestWithContext } from '../../fixtures/requestWithContext';
-import { LogoutController } from '../../../src/routes/tsoa/logout';
+import { requestWithContext } from "../../fixtures/requestWithContext";
+import { LogoutController } from "../../../src/routes/tsoa/logout";
 
-import { contextFixture } from '../../fixtures/context';
+import { contextFixture } from "../../fixtures/context";
 
-describe('logout', () => {
+describe("logout", () => {
+  it("should return a redirect to the returnTo param and clear the session cookie", async () => {
+    const stateData = {};
 
-    it('should return a redirect to the returnTo param and clear the session cookie', async () => {
-        const stateData = {};
-
-        const ctx = contextFixture({
-            stateData,
-        });
-
-        const controller = new LogoutController();
-        const actual = await controller.logout(
-            requestWithContext(ctx),
-            'clientId',
-            'http://localhost:3000'
-        );
-
-        expect(actual).toBe('Redirecting');
-        expect(controller.getStatus()).toBe(302);
-
-        const location = controller.getHeader('location');
-        expect(location).toBe('http://localhost:3000')
-
-        const cookieHeader = controller.getHeader('set-cookie');
-        expect(cookieHeader).toBe('auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None')
+    const ctx = contextFixture({
+      stateData,
     });
 
-    it('should return a redirect to the referer header if the returnTo is not specified', async () => {
-        const stateData = {};
+    const controller = new LogoutController();
+    const actual = await controller.logout(
+      requestWithContext(ctx),
+      "clientId",
+      "http://localhost:3000"
+    );
 
-        const ctx = contextFixture({
-            stateData,
-        });
+    expect(actual).toBe("Redirecting");
+    expect(controller.getStatus()).toBe(302);
 
-        ctx.headers.set('referer', 'http://localhost:3000')
+    const location = controller.getHeader("location");
+    expect(location).toBe("http://localhost:3000");
 
-        const controller = new LogoutController();
-        const actual = await controller.logout(
-            requestWithContext(ctx),
-            'clientId',
-            undefined
-        );
+    const cookieHeader = controller.getHeader("set-cookie");
+    expect(cookieHeader).toBe(
+      "auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None"
+    );
+  });
 
-        expect(actual).toBe('Redirecting');
-        expect(controller.getStatus()).toBe(302);
+  it("should return a redirect to the referer header if the returnTo is not specified", async () => {
+    const stateData = {};
 
-        const location = controller.getHeader('location');
-        expect(location).toBe('http://localhost:3000')
-
-        const cookieHeader = controller.getHeader('set-cookie');
-        expect(cookieHeader).toBe('auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None')
+    const ctx = contextFixture({
+      stateData,
     });
+
+    ctx.headers.set("referer", "http://localhost:3000");
+
+    const controller = new LogoutController();
+    const actual = await controller.logout(
+      requestWithContext(ctx),
+      "clientId",
+      undefined
+    );
+
+    expect(actual).toBe("Redirecting");
+    expect(controller.getStatus()).toBe(302);
+
+    const location = controller.getHeader("location");
+    expect(location).toBe("http://localhost:3000");
+
+    const cookieHeader = controller.getHeader("set-cookie");
+    expect(cookieHeader).toBe(
+      "auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None"
+    );
+  });
 });

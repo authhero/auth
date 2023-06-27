@@ -10,7 +10,7 @@ function createCaller(storage: any) {
     resHeaders: new Headers(),
     env: {
       USERS_QUEUE: {
-        send: async () => { },
+        send: async () => {},
       } as unknown as Queue<QueueMessage>,
     },
     state: {
@@ -32,8 +32,11 @@ describe("User", () => {
           get: async () => {
             return bcrypt.hashSync("another password");
           },
-        })
-          .validatePassword({ password: "password", email: "test@example.com", tenantId: "tenantId" });
+        }).validatePassword({
+          password: "password",
+          email: "test@example.com",
+          tenantId: "tenantId",
+        });
 
         throw new Error("Should throw");
       } catch (err: any) {
@@ -59,8 +62,11 @@ describe("User", () => {
           profile = JSON.parse(value);
           return;
         },
-      })
-        .validatePassword({ password: "password", email: "test@example.com", tenantId: "tenantId" });
+      }).validatePassword({
+        password: "password",
+        email: "test@example.com",
+        tenantId: "tenantId",
+      });
     });
   });
 
@@ -185,7 +191,13 @@ describe("User", () => {
         },
       });
 
-      await expect(caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' })).rejects.toThrow('No code found')
+      await expect(
+        caller.validateAuthenticationCode({
+          code: "123456",
+          email: "test@example.com",
+          tenantId: "tenantId",
+        })
+      ).rejects.toThrow("No code found");
     });
 
     it("should throw a InvalidCodeError if a user tries to validate an incorrect code", async () => {
@@ -198,7 +210,13 @@ describe("User", () => {
         },
       });
 
-      await expect(caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' })).rejects.toThrow('Invalid code')
+      await expect(
+        caller.validateAuthenticationCode({
+          code: "123456",
+          email: "test@example.com",
+          tenantId: "tenantId",
+        })
+      ).rejects.toThrow("Invalid code");
     });
 
     it("should throw a AuthenticationCodeExpiredError if a user tries to validate an incorrect code", async () => {
@@ -206,13 +224,21 @@ describe("User", () => {
         get: async (key: string) => {
           switch (key) {
             case "authentication-code":
-              return JSON.stringify({ code: "123456", expireAt: 1684757783145 });
+              return JSON.stringify({
+                code: "123456",
+                expireAt: 1684757783145,
+              });
           }
         },
       });
 
-
-      await expect(caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' })).rejects.toThrow('Authentication code expired');
+      await expect(
+        caller.validateAuthenticationCode({
+          code: "123456",
+          email: "test@example.com",
+          tenantId: "tenantId",
+        })
+      ).rejects.toThrow("Authentication code expired");
     });
 
     it("should add a new connection to the profile if it does not exist", async () => {
@@ -225,22 +251,28 @@ describe("User", () => {
               return null;
             case "authentication-code":
               return JSON.stringify({
-                code: "123456", expireAt: 1784757783145, authParams: {
-                  client_id: "clientId"
-                }
+                code: "123456",
+                expireAt: 1784757783145,
+                authParams: {
+                  client_id: "clientId",
+                },
               });
           }
         },
         put: async (key: string, value: string) => {
           storage[key] = value;
-        }
+        },
       });
 
-      await caller.validateAuthenticationCode({ code: "123456", email: 'test@example.com', tenantId: 'tenantId' });
+      await caller.validateAuthenticationCode({
+        code: "123456",
+        email: "test@example.com",
+        tenantId: "tenantId",
+      });
 
-      const profile = JSON.parse(storage.profile)
+      const profile = JSON.parse(storage.profile);
 
-      expect(profile.email).toBe("test@example.com")
+      expect(profile.email).toBe("test@example.com");
     });
   });
 });

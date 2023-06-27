@@ -13,7 +13,7 @@ import sendEmail from "./services/email";
 // our Durable Object namespace, we must export it from the root module.
 export { User, State };
 
-export default {
+const server = {
   async fetch(
     request: Request,
     env: Env,
@@ -55,3 +55,5 @@ export default {
     }
   },
 };
+
+export default server;

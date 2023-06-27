@@ -1,4 +1,4 @@
 export * from "./context";
-export * from "./mocked-controller";
+export * from "./controller";
 export * from "./mocked-r2-bucket";
-export * from "./mocked-namespace";
+export * from "./namespace";

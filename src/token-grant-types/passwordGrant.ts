@@ -25,7 +25,7 @@ export async function passwordGrant(
   const token = await tokenFactory.createAccessToken({
     scopes: params.scope?.split(" ") ?? [],
     userId: params.username,
-    iss: ctx.env.AUTH_DOMAIN_URL,
+    iss: ctx.env.ISSUER,
   });
 
   if (!token) {

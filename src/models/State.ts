@@ -23,6 +23,10 @@ export const stateRouter = t.router({
   getState: publicProcedure.query(async ({ input, ctx }) => {
     const state = await ctx.state.storage.get<string>(STATE);
 
+    if (!state) {
+      throw new Error("State not found");
+    }
+
     return state;
   }),
 });

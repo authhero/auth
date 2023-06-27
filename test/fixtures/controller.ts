@@ -1,6 +1,6 @@
 import { Controller } from "@tsoa/runtime";
 
-export function mockedController(): Controller {
+export function controllerFixture(): Controller {
   const headers = {};
   let _status: number | undefined;
 

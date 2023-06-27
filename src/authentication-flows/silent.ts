@@ -1,16 +1,23 @@
 import { Controller } from "@tsoa/runtime";
-import { getStateFromCookie } from "../services/cookies";
+import {
+  getStateFromCookie,
+  serializeStateInCookie,
+} from "../services/cookies";
 import { State as StateModel } from "../models";
-import { Context } from "cloudworker-router";
 import {
   AuthorizationResponseType,
   AuthParams,
   CodeChallengeMethod,
   Env,
 } from "../types";
-import { renderAuthIframe } from "../templates/render";
+import renderAuthIframe from "../templates/authIframe";
 import { base64ToHex } from "../utils/base64";
-import { generateAuthResponse, generateCode } from "../helpers/generate-auth-response";
+import {
+  generateAuthResponse,
+  generateCode,
+} from "../helpers/generate-auth-response";
+import { User } from "../types/sql/User";
+import { headers } from "../constants";
 
 export interface SilentAuthParams {
   env: Env;
@@ -28,6 +35,7 @@ export interface SilentAuthParams {
 interface SuperState {
   userId: string;
   authParams: AuthParams;
+  user: User;
 }
 
 export async function silentAuth({
@@ -38,6 +46,8 @@ export async function silentAuth({
   state,
   nonce,
   response_type,
+  code_challenge_method,
+  code_challenge,
 }: SilentAuthParams) {
   const tokenState = getStateFromCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);
@@ -52,20 +62,36 @@ export async function silentAuth({
     if (superStateString) {
       const superState: SuperState = JSON.parse(superStateString);
 
-      // TODO: validate the codeChallenge
+      // Update the cookie
+      serializeStateInCookie(tokenState).forEach((cookie) => {
+        controller.setHeader(headers.setCookie, cookie);
+      });
 
       try {
         switch (response_type) {
           case AuthorizationResponseType.CODE:
-            const code = await generateCode({ env, state, nonce, userId: superState.userId, authParams: superState.authParams })
+            const code = await generateCode({
+              env,
+              state,
+              nonce,
+              userId: superState.userId,
+              authParams: {
+                ...superState.authParams,
+                code_challenge_method,
+                code_challenge,
+              },
+              user: superState.user,
+              sid: tokenState,
+            });
 
-            return renderAuthIframe(env.AUTH_TEMPLATES, controller, {
-              targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
-              response: JSON.stringify({
+            return renderAuthIframe(
+              controller,
+              `${redirectURL.protocol}//${redirectURL.host}`,
+              JSON.stringify({
                 code,
                 state,
-              }),
-            });
+              })
+            );
           case AuthorizationResponseType.IMPLICIT:
           case AuthorizationResponseType.TOKEN_ID_TOKEN:
             const tokenResponse = await generateAuthResponse({
@@ -74,12 +100,15 @@ export async function silentAuth({
               state,
               nonce,
               authParams: superState.authParams,
+              user: superState.user,
+              sid: tokenState,
             });
 
-            return renderAuthIframe(env.AUTH_TEMPLATES, controller, {
-              targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
-              response: JSON.stringify(tokenResponse),
-            });
+            return renderAuthIframe(
+              controller,
+              `${redirectURL.protocol}//${redirectURL.host}`,
+              JSON.stringify(tokenResponse)
+            );
           default:
             throw new Error("Response type not supported");
         }
@@ -89,12 +118,13 @@ export async function silentAuth({
     }
   }
 
-  return renderAuthIframe(env.AUTH_TEMPLATES, controller, {
-    targetOrigin: `${redirectURL.protocol}//${redirectURL.host}`,
-    response: JSON.stringify({
+  return renderAuthIframe(
+    controller,
+    `${redirectURL.protocol}//${redirectURL.host}`,
+    JSON.stringify({
       error: "login_required",
       error_description: "Login required",
       state,
-    }),
-  });
+    })
+  );
 }

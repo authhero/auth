@@ -17,4 +17,5 @@ export interface Client {
   allowedWebOrigins: string[];
   authProviders: AuthProvider[];
   tenantId: string;
+  clientSecret: string;
 }

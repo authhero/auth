@@ -1,11 +1,12 @@
 import { Controller } from "@tsoa/runtime";
 import { AuthorizationResponseType, AuthParams, Client, Env } from "../types";
 import { contentTypes, headers } from "../constants";
-import { encode, hexToBase64 } from "../utils/base64";
+import { hexToBase64 } from "../utils/base64";
 import { getClient } from "../services/clients";
-import { getId, User } from "../models";
+import { getId } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateCode } from "../helpers/generate-auth-response";
+import { RenderLoginContext } from "../templates/render";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -13,6 +14,7 @@ export interface SocialAuthState {
 }
 
 export async function socialAuth(
+  env: Env,
   controller: Controller,
   client: Client,
   connection: string,
@@ -23,18 +25,17 @@ export async function socialAuth(
     throw new Error("Connection not found");
   }
 
-  const state: SocialAuthState = {
-    authParams,
-    connection,
-  };
-
-  const encodedSocialAuthState = encode(JSON.stringify(state));
+  const stateId = env.STATE.newUniqueId().toString();
+  const stateInstance = env.stateFactory.getInstanceById(stateId);
+  await stateInstance.createState.mutate({
+    state: JSON.stringify({ authParams, connection }),
+  });
 
   const oauthLoginUrl = new URL(oauthProvider.authorizationEndpoint);
   if (authParams.scope) {
     oauthLoginUrl.searchParams.set("scope", authParams.scope);
   }
-  oauthLoginUrl.searchParams.set("state", encodedSocialAuthState);
+  oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
   // TODO: this should be pointing to the callback url
   oauthLoginUrl.searchParams.set(
     "redirect_uri",
@@ -50,7 +51,7 @@ export async function socialAuth(
 export interface socialAuthCallbackParams {
   env: Env;
   controller: Controller;
-  state: SocialAuthState;
+  state: RenderLoginContext;
   code: string;
 }
 
@@ -89,10 +90,15 @@ export async function socialAuthCallback({
     connections: [{ name: oauthProvider.name, profile: oauth2Profile }],
   });
 
-  await setSilentAuthCookies(env, controller, userId, state.authParams);
+  const sessionId = await setSilentAuthCookies(
+    env,
+    controller,
+    userId,
+    state.authParams
+  );
 
   if (!state.authParams.redirect_uri) {
-    throw new Error('Redirect URI not defined');
+    throw new Error("Redirect URI not defined");
   }
 
   // TODO: This is quick and dirty.. we should validate the values.
@@ -104,15 +110,18 @@ export async function socialAuthCallback({
         env,
         userId,
         authParams: state.authParams,
-      })
+        user: {
+          email: "dummy@example.com",
+        },
+        sid: sessionId,
+      });
       redirectUri.searchParams.set("code", code);
       if (state.authParams.state) {
         redirectUri.searchParams.set("state", state.authParams.state);
       }
       break;
-    case AuthorizationResponseType.IMPLICIT:
-      // TODO: add implicit auth
-      break;
+    default:
+      throw new Error("Unsupported response type");
   }
 
   controller.setStatus(302);

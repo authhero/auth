@@ -4,7 +4,7 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../src/types";
-import { contextFixture, mockedController } from "../fixtures";
+import { contextFixture, controllerFixture } from "../fixtures";
 
 import { universalAuth } from "../../src/authentication-flows";
 import { headers } from "../../src/constants";
@@ -23,9 +23,10 @@ describe("universalAuth", () => {
     //   code_challenge_method=S256&
     //   auth0Client=eyJuYW1lIjoiYXV0aDAtcmVhY3QiLCJ2ZXJzaW9uIjoiMi4wLjEifQ%3D%3D
     const ctx = contextFixture();
-    const controller = mockedController();
+    const controller = controllerFixture();
 
     await universalAuth({
+      env: ctx.env,
       controller,
       authParams: {
         redirect_uri: "http://localhost:3000",
@@ -39,8 +40,9 @@ describe("universalAuth", () => {
       },
     });
 
+    // The state is stored in a durable object
     expect(controller.getHeader(headers.location)).toBe(
-      "/u/login?state=eyJhdXRoUGFyYW1zIjp7InJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCIsImNsaWVudF9pZCI6IjBOMHdVSFhGbDBUTVRZMkw5YURKWXZ3WDdYeTg0SGtXIiwibm9uY2UiOiJZa2syTTBKTmEyRTFXbk01VFVad1gyVXhVakp0VjJWSVRUbHZia3RHTm5oQ2IxTm1aRzFpZEVKQmRBPT0mIiwicmVzcG9uc2VfdHlwZSI6ImNvZGUiLCJyZXNwb25zZV9tb2RlIjoicXVlcnkiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiY29kZV9jaGFsbGVuZ2VfbWV0aG9kIjoiUzI1NiIsImNvZGVfY2hhbGxlbmdlIjoiNE9SN3hEbGdnQ2dad3BzM1hPMkFWYVVYRUI4Mk82eFBRQmtKSUd6a3Z3dyJ9fQ"
+      "/u/login?state=AAAAAA4"
     );
   });
 });

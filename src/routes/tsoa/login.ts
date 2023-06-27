@@ -20,6 +20,7 @@ import {
   renderResetPassword,
   renderSignup,
   renderLogin,
+  RenderLoginContext,
 } from "../../templates/render";
 import { AuthParams } from "../../types";
 
@@ -50,10 +51,12 @@ export class LoginController extends Controller {
     @Request() request: RequestWithContext,
     @Query("state") state: string
   ): Promise<string> {
-    const { ctx } = request;
-    const loginState: LoginState = JSON.parse(decode(state));
+    const { env } = request.ctx;
+    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
+    const loginString = await stateInstance.getState.query();
+    const loginState: RenderLoginContext = JSON.parse(loginString);
 
-    return renderLogin(ctx.env.AUTH_TEMPLATES, this, loginState);
+    return renderLogin(env.AUTH_TEMPLATES, this, loginState);
   }
 
   /**
@@ -163,7 +166,7 @@ export class LoginController extends Controller {
       })
     );
 
-    const message = `Click this link to reset your password: ${env.AUTH_DOMAIN_URL}u/reset-password?state=${passwordResetState}`;
+    const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${passwordResetState}`;
     await env.sendEmail({
       to: [{ email: params.username, name: "" }],
       from: {
@@ -252,7 +255,11 @@ export class LoginController extends Controller {
     );
 
     try {
-      await user.validatePassword.mutate(loginParams.password);
+      await user.validatePassword.mutate({
+        password: loginParams.password,
+        tenantId: client.tenantId,
+        email: loginState.username!,
+      });
 
       return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
         page_title: "Logged in",

@@ -11,9 +11,11 @@ import { migrateDown, migrateToLatest } from "./migrate";
 import errorHandler from "./middlewares/errorHandler";
 import corsMiddleware from "./middlewares/cors";
 import { getDb } from "./services/db";
+import loggerMiddleware from "./middlewares/logger";
 
 export const app = new Router<Env>();
 
+app.use(loggerMiddleware);
 app.use(corsMiddleware);
 app.use(errorHandler);
 

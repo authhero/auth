@@ -1,4 +1,5 @@
 export enum AuthorizationResponseType {
+  TOKEN = "token",
   TOKEN_ID_TOKEN = "token id_token",
   IMPLICIT = "implicit",
   CODE = "code",
@@ -6,6 +7,9 @@ export enum AuthorizationResponseType {
 
 export enum AuthorizationResponseMode {
   QUERY = "query",
+  FRAGMENT = "fragment",
+  FORM_POST = "form_post",
+  WEB_MESSAGE = "web_message",
 }
 
 export enum CodeChallengeMethod {

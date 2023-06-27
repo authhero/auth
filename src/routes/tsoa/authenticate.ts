@@ -3,11 +3,14 @@ import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import { contentTypes, headers } from "../../constants";
-import { AuthenticationCodeExpiredError, InvalidCodeError, UnauthenticatedError } from "../../errors";
+import {
+  AuthenticationCodeExpiredError,
+  InvalidCodeError,
+  UnauthenticatedError,
+} from "../../errors";
 import randomString from "../../utils/random-string";
 import { hexToBase64 } from "../../utils/base64";
 import { AuthParams, Env } from "../../types";
-
 
 export interface LoginError {
   error: string;
@@ -26,14 +29,14 @@ export interface AuthenticateParams {
 }
 
 export interface CodeAuthenticateParams extends AuthenticateParams {
-  credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp"
-  realm: "email"
+  credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp";
+  realm: "email";
   otp: string;
 }
 
 export interface PasswordAuthenticateParams extends AuthenticateParams {
-  credential_type: "http://auth0.com/oauth/grant-type/password-realm"
-  realm: "Username-Password-Authentication"
+  credential_type: "http://auth0.com/oauth/grant-type/password-realm";
+  realm: "Username-Password-Authentication";
   password: string;
 }
 
@@ -49,31 +52,41 @@ export class AuthenticateController extends Controller {
   @Post("authenticate")
   public async authenticate(
     @Body() body: CodeAuthenticateParams | PasswordAuthenticateParams,
-    @Request() request: RequestWithContext<Env>
+    @Request() request: RequestWithContext
   ): Promise<LoginTicket | LoginError> {
-    const { env } = request.ctx
+    const { env } = request.ctx;
 
     const client = await getClient(env, body.client_id);
     if (!client) {
       throw new Error("Client not found");
     }
 
-    const user = env.userFactory.getInstanceByName(`${client.tenantId}|${body.username}`);
+    const user = env.userFactory.getInstanceByName(
+      `${client.tenantId}|${body.username}`
+    );
 
     let authParams: AuthParams | undefined = {
       client_id: client.id,
-    }
+    };
 
     try {
       switch (body.realm) {
         case "email":
-          authParams = await user.validateAuthenticationCode.mutate({ code: body.otp, email: body.username, tenantId: client.tenantId });
+          authParams = await user.validateAuthenticationCode.mutate({
+            code: body.otp,
+            email: body.username,
+            tenantId: client.tenantId,
+          });
           break;
         case "Username-Password-Authentication":
-          await user.validatePassword.mutate({ password: body.password, email: body.username, tenantId: client.tenantId });
+          await user.validatePassword.mutate({
+            password: body.password,
+            email: body.username,
+            tenantId: client.tenantId,
+          });
           break;
         default:
-          throw new Error("Unsupported realm")
+          throw new Error("Unsupported realm");
       }
 
       const coVerifier = randomString(32);

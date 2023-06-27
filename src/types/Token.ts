@@ -31,7 +31,7 @@ export interface PKCEAuthorizationCodeGrantTypeParams {
   grant_type: GrantType.AuthorizationCode;
   code: string;
   code_verifier: string;
-  client_id: string;
+  client_id?: string;
   redirect_uri: string;
 }
 
