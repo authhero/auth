@@ -29,13 +29,13 @@ async function log(
   const hostname = request.headers.get("host") || "";
   const headers = instanceToJson(ctx.headers);
 
-  // if (headers.cookie) {
-  //   headers.cookie = "REDACTED";
-  // }
+  if (headers.cookie) {
+    headers.cookie = "REDACTED";
+  }
 
-  // if (headers.authorization) {
-  //   headers.authorization = "REDACTED";
-  // }
+  if (headers.authorization) {
+    headers.authorization = "REDACTED";
+  }
 
   // data to log
   const data = {
