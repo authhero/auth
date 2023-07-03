@@ -61,37 +61,50 @@ function decodeJwt(token: string): TokenData {
   };
 }
 
-async function getJwks(ctx: Context<Env>, clientId: string) {
-  const certificatesString = await ctx.env.CERTIFICATES.get(clientId);
-  const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
-    (cert: any) => {
-      return { kid: cert.kid, ...cert.publicKey };
-    }
-  );
+async function getJwks(env: Env) {
+  // TODO: add caching
 
-  return keys;
+  // If we're using this service for authenticating
+  if (env.JWKS_URL.startsWith(env.ISSUER)) {
+    const certificatesString = await env.CERTIFICATES.get("default");
+    const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
+      (cert: any) => {
+        return { kid: cert.kid, ...cert.publicKey };
+      }
+    );
+
+    return keys;
+  }
+
+  const response = env.TOKEN_SERVICE
+    ? await env.TOKEN_SERVICE.fetch(env.JWKS_URL)
+    : await fetch(env.JWKS_URL);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch jwks");
+  }
+
+  const body = await response.json();
+
+  return (body as any).keys as JwkKey[];
 }
 
 function isValidScopes(token: TokenData, scopes: string[]) {
-  const tokenScopes = token.payload.scope.split(" ");
+  const tokenScopes = token.payload.scope?.split(" ") || [];
 
   const match = !scopes.some((scope) => !tokenScopes.includes(scope));
 
   return match;
 }
 
-async function isValidJwtSignature(
-  ctx: Context<Env>,
-  clientId: string,
-  token: TokenData
-) {
+async function isValidJwtSignature(ctx: Context<Env>, token: TokenData) {
   const encoder = new TextEncoder();
   const data = encoder.encode([token.raw.header, token.raw.payload].join("."));
   const signature = new Uint8Array(
     Array.from(token.signature).map((c) => c.charCodeAt(0))
   );
 
-  const jwkKeys = await getJwks(ctx, clientId);
+  const jwkKeys = await getJwks(ctx.env);
 
   const jwkKey = jwkKeys.find((key) => key.kid === token.header.kid);
 
@@ -131,7 +144,7 @@ export async function getUser(
     return null;
   }
 
-  if (!(await isValidJwtSignature(ctx, clientId, token))) {
+  if (!(await isValidJwtSignature(ctx, token))) {
     return null;
   }
 
@@ -159,7 +172,7 @@ export function authenticationHandler(security: Security[]) {
       ctx,
       ctx.params.clientId,
       bearer,
-      scope.split(" ")
+      scope?.split(" ") || []
     );
 
     if (!ctx.state.user) {

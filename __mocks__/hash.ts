@@ -1,9 +1,11 @@
-// This is a mock function for your `hash` function
+import { createHash } from "crypto";
+
+// This is a node version of the hash function from web crypto
 export default async function hash(
   data: string,
   algorithm: "SHA-256" | "SHA-1" = "SHA-256"
 ): Promise<string> {
-  // You can define the behavior of your mock function here.
-  // In this example, we'll just return a static string.
-  return "mock-hash-string";
+  const hash = createHash(algorithm);
+  hash.update(data);
+  return hash.digest("base64");
 }
