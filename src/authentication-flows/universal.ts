@@ -16,14 +16,12 @@ export async function universalAuth({
 }: UniversalAuthParams) {
   const stateId = env.STATE.newUniqueId().toString();
   const stateInstance = env.stateFactory.getInstanceById(stateId);
+  const state = hexToBase64(stateId);
   await stateInstance.createState.mutate({
-    state: JSON.stringify({ authParams }),
+    state: JSON.stringify({ authParams, state }),
   });
 
   controller.setStatus(302);
-  controller.setHeader(
-    headers.location,
-    `/u/login?state=${hexToBase64(stateId)}`
-  );
+  controller.setHeader(headers.location, `/u/login?state=${state}`);
   return "Redirect to login";
 }

@@ -17,6 +17,9 @@ export interface ClientFactory<ClientType> {
 export interface Env {
   ISSUER: string;
   DD_API_KEY: string;
+  JWKS_URL: string;
+  OAUTH2_CLIENT_ID: string;
+  TOKEN_SERVICE: Fetcher;
   USER: DurableObjectNamespace;
   STATE: DurableObjectNamespace;
   USERS_QUEUE: Queue<QueueMessage>;

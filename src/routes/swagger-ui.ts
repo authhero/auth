@@ -1,7 +1,7 @@
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
 
-function getSwaggerHtml() {
+function getSwaggerHtml(env: Env) {
   return `<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
@@ -59,6 +59,11 @@ function getSwaggerHtml() {
         });
         // End Swagger UI call region
 
+
+        if (ui.hasOwnProperty("initOAuth")) {
+          ui.initOAuth({"clientId":"${env.OAUTH2_CLIENT_ID}","appName":"sesamy"})
+        }
+
         window.ui = ui;
       };
     </script>
@@ -67,7 +72,7 @@ function getSwaggerHtml() {
 }
 
 export default async function swaggerUi(ctx: Context<Env>) {
-  return new Response(getSwaggerHtml(), {
+  return new Response(getSwaggerHtml(ctx.env), {
     headers: {
       "content-type": "text/html",
     },

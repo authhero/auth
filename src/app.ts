@@ -12,6 +12,7 @@ import errorHandler from "./middlewares/errorHandler";
 import corsMiddleware from "./middlewares/cors";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
+import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 
 export const app = new Router<Env>();
 
@@ -33,6 +34,7 @@ app.get("/spec", async () => {
 });
 
 app.get("/docs", swaggerUi);
+app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 
 app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
   try {

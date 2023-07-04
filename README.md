@@ -118,6 +118,10 @@ The users are stored in durable objects and contain the user profile and the log
 
 Each user object is connected to one email, so for instance, there would be one common user object for a user that logged in with email/password, code and google. The user object will keep an array of the login methods and store separate profiles for syncing purposes.
 
+# API Authentication
+
+The auth service uses any oauth2 service for authentication of the API endpoint. If a user creates a tenant the user is granted admin privileges for this tenant.
+
 # Client libraries
 
 ## @auth0/auth0-react
@@ -140,9 +144,3 @@ The auth0-nextjs library uses the universal login with a Code Grant Flow.
 - The browser is redirected to the universal auth login with a Code flow
 - After a successful authentication the browser is redirected back to the nextjs callback url (/api/auth/callback)
 - The nextjs api route calls the token endpoint (/token) to get a set of tokens. Nextjs generates a session cookie that is passed back to the client
-
-# Leftovers
-
-- Add inversify
-- Trigger events from durable objects
-- Should the userId be the durable object ID as base64?

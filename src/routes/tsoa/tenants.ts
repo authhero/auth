@@ -7,6 +7,7 @@ import {
   Tags,
   Body,
   SuccessResponse,
+  Security,
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql/Tenant";
 import { getDb } from "../../services/db";
@@ -17,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 @Tags("tenants")
 export class TenantsController extends Controller {
   @Get("")
+  // @Security('oauth2', [])
   public async listTenants(
     @Request() request: RequestWithContext
   ): Promise<Tenant[]> {
@@ -27,6 +29,7 @@ export class TenantsController extends Controller {
   }
 
   @Post("")
+  @Security("oauth2", [])
   @SuccessResponse(201, "Created")
   public async postTenants(
     @Request() request: RequestWithContext,

@@ -9,11 +9,17 @@ kv_namespaces = [
     { binding = "CERTIFICATES", id = "2a5901d369d441bba149bb236af71c27", preview_id = "2a5901d369d441bba149bb236af71c27" },
     { binding = "CLIENTS", id = "7e3153d8585547fdb67ee342c8592de0", preview_id = "7e3153d8585547fdb67ee342c8592de0" }    
 ]
-route = "auth2.sesamy.dev/*"
-logpush = true
+
+services = [  
+    { binding = "TOKEN_SERVICE", service = "token-service-dev" }
+]
+
+route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" }
 
 [vars]
 ISSUER = "https://auth2.sesamy.dev/"
+JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
+OAUTH2_CLIENT_ID = '0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW'
 
 [[r2_buckets]]
 binding = 'AUTH_TEMPLATES'

@@ -9,6 +9,7 @@ import {
   Tags,
   Body,
   SuccessResponse,
+  Security,
 } from "@tsoa/runtime";
 import { v4 as uuidv4 } from "uuid";
 import { UpdateResult } from "kysely";
@@ -20,7 +21,7 @@ import { Env, Client } from "../../types";
 
 async function updateClientInKV(env: Env, clientId: string) {
   const db = getDb(env);
-  const applications = await db
+  const application = await db
     .selectFrom("applications")
     .innerJoin("tenants", "applications.tenantId", "tenants.id")
     .select([
@@ -30,15 +31,14 @@ async function updateClientInKV(env: Env, clientId: string) {
       "applications.allowedWebOrigins",
       "applications.allowedCallbackUrls",
       "applications.allowedLogoutUrls",
+      "applications.clientSecret",
       "tenants.senderEmail",
       "tenants.senderName",
       "tenants.audience",
       "tenants.issuer",
     ])
     .where("applications.id", "=", clientId)
-    .execute();
-
-  const application = applications[0];
+    .executeTakeFirst();
 
   if (!application) {
     throw new Error("Client not found");
@@ -50,7 +50,6 @@ async function updateClientInKV(env: Env, clientId: string) {
     .selectAll()
     .execute();
 
-  // TODO: fetch straight from sql. Should be stored in KV-storage
   const client: Client = {
     id: application.id,
     name: application.name,
@@ -63,6 +62,7 @@ async function updateClientInKV(env: Env, clientId: string) {
     allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
     allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
     allowedWebOrigins: application.allowedWebOrigins?.split(",") || [],
+    clientSecret: application.clientSecret,
     authProviders,
   };
 
@@ -75,6 +75,7 @@ async function updateClientInKV(env: Env, clientId: string) {
 @Tags("applications")
 export class ApplicationsController extends Controller {
   @Get("")
+  @Security("oauth2", [])
   public async listApplications(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string
@@ -90,6 +91,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Get("{id}")
+  @Security("oauth2", [])
   public async getApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -99,6 +101,7 @@ export class ApplicationsController extends Controller {
     const application = await db
       .selectFrom("applications")
       .where("applications.tenantId", "=", tenantId)
+      .where("applications.id", "=", id)
       .selectAll()
       .executeTakeFirst();
 
@@ -111,6 +114,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Patch("{id}")
+  @Security("oauth2", [])
   public async patchApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -141,6 +145,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Post("")
+  @Security("oauth2", [])
   @SuccessResponse(201, "Created")
   public async postApplications(
     @Request() request: RequestWithContext,

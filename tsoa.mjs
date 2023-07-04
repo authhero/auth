@@ -15,7 +15,7 @@ import { readFile, writeFile } from "fs/promises";
         description: "This API uses OAuth 2 with the implicit flow",
         flows: {
           implicit: {
-            authorizationUrl: "/authorize",
+            authorizationUrl: "https://token.sesamy.dev/authorize",
             scopes: {
               openid: "Basic user information",
               email: "User email",

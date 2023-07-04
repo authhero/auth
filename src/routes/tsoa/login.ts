@@ -68,13 +68,12 @@ export class LoginController extends Controller {
     @Request() request: RequestWithContext,
     @Query("state") state: string
   ): Promise<string> {
-    const { ctx } = request;
-    const loginState: LoginState = JSON.parse(decode(state));
+    const { env } = request.ctx;
+    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
+    const loginString = await stateInstance.getState.query();
+    const loginState: RenderLoginContext = JSON.parse(loginString);
 
-    return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
-      client_id: loginState.authParams.client_id,
-      state,
-    });
+    return renderSignup(env.AUTH_TEMPLATES, this, loginState);
   }
 
   @Post("signup")
@@ -83,33 +82,27 @@ export class LoginController extends Controller {
     @Body() loginParams: LoginParams,
     @Query("state") state: string
   ): Promise<string> {
-    const { ctx } = request;
-    const loginState: LoginState = JSON.parse(decode(state));
+    const { env } = request.ctx;
+    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
+    const loginString = await stateInstance.getState.query();
+    const loginState: RenderLoginContext = JSON.parse(loginString);
 
-    const client = await getClient(ctx.env, loginState.authParams.client_id);
-    const user = ctx.env.userFactory.getInstanceByName(
+    const client = await getClient(env, loginState.authParams.client_id);
+    const user = env.userFactory.getInstanceByName(
       getId(client.tenantId, loginParams.username)
     );
 
     try {
       await user.registerPassword.mutate(loginParams.password);
     } catch (err: any) {
-      const signupState = encode(
-        JSON.stringify({
-          username: loginParams.username,
-          clientId: loginState.authParams.client_id,
-        })
-      );
-
-      return renderSignup(ctx.env.AUTH_TEMPLATES, this, {
-        client_id: loginState.authParams.client_id,
-        username: loginParams.username,
+      return renderSignup(env.AUTH_TEMPLATES, this, {
+        ...loginState,
         errorMessage: err.message,
-        state: signupState,
+        username: loginParams.username,
       });
     }
 
-    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+    return renderMessage(env.AUTH_TEMPLATES, this, {
       page_title: "User created",
       message: "Your user has been created",
     });
@@ -270,6 +263,7 @@ export class LoginController extends Controller {
         authParams: loginState.authParams,
         username: loginParams.username,
         errorMessage: err.message,
+        state,
       });
     }
   }
