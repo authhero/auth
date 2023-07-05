@@ -1,4 +1,4 @@
-export interface Connection {
+interface Connection {
   name: string;
   profile?: { [key: string]: string | boolean };
 }

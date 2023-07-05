@@ -18,7 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 @Tags("tenants")
 export class TenantsController extends Controller {
   @Get("")
-  // @Security('oauth2', [])
+  @Security('oauth2', [])
   public async listTenants(
     @Request() request: RequestWithContext
   ): Promise<Tenant[]> {
