@@ -17,7 +17,7 @@ async function log(
 ) {
   const ddApiKey = ctx.env.DD_API_KEY;
 
-  if (!ddApiKey.length) {
+  if (!ddApiKey?.length) {
     console.log("No datadog api key available");
     return;
   }
@@ -91,7 +91,7 @@ async function log(
 async function err(ctx: Context<Env>, err: Error, message?: string) {
   const ddApiKey = ctx.env.DD_API_KEY;
 
-  if (!ddApiKey.length) {
+  if (!ddApiKey?.length) {
     console.log("No datadog api key available");
     return;
   }
@@ -111,11 +111,11 @@ async function err(ctx: Context<Env>, err: Error, message?: string) {
     message:
       message ||
       "Error processing call to route " +
-        request.method +
-        " " +
-        request.url +
-        ":" +
-        err.message,
+      request.method +
+      " " +
+      request.url +
+      ":" +
+      err.message,
     date_access: Date.now(),
     http: {
       protocol: request.headers.get("X-Forwarded-Proto") || "",
