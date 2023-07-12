@@ -23,4 +23,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN }}
 
+      - run: yarn lint
+      - run: yarn format:ci-cd
       - run: yarn test
