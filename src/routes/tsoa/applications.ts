@@ -10,6 +10,7 @@ import {
   Body,
   SuccessResponse,
   Security,
+  Delete,
 } from "@tsoa/runtime";
 import { v4 as uuidv4 } from "uuid";
 import { UpdateResult } from "kysely";
@@ -17,59 +18,7 @@ import { UpdateResult } from "kysely";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Application } from "../../types/sql";
-import { Env, Client } from "../../types";
-
-async function updateClientInKV(env: Env, clientId: string) {
-  const db = getDb(env);
-  const application = await db
-    .selectFrom("applications")
-    .innerJoin("tenants", "applications.tenantId", "tenants.id")
-    .select([
-      "applications.id",
-      "applications.name",
-      "applications.tenantId",
-      "applications.allowedWebOrigins",
-      "applications.allowedCallbackUrls",
-      "applications.allowedLogoutUrls",
-      "applications.clientSecret",
-      "tenants.senderEmail",
-      "tenants.senderName",
-      "tenants.audience",
-      "tenants.issuer",
-    ])
-    .where("applications.id", "=", clientId)
-    .executeTakeFirst();
-
-  if (!application) {
-    throw new Error("Client not found");
-  }
-
-  const authProviders = await db
-    .selectFrom("authProviders")
-    .where("tenantId", "=", application.tenantId)
-    .selectAll()
-    .execute();
-
-  const client: Client = {
-    id: application.id,
-    name: application.name,
-    audience: application.audience,
-    issuer: application.issuer,
-    senderEmail: application.senderEmail,
-    senderName: application.senderName,
-    loginBaseUrl: env.ISSUER,
-    tenantId: application.tenantId,
-    allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
-    allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
-    allowedWebOrigins: application.allowedWebOrigins?.split(",") || [],
-    clientSecret: application.clientSecret,
-    authProviders,
-  };
-
-  await env.CLIENTS.put(clientId, JSON.stringify(client));
-
-  return client;
-}
+import { updateClientInKV } from "../../hooks/update-client";
 
 @Route("tenants/{tenantId}/applications")
 @Tags("applications")
@@ -111,6 +60,27 @@ export class ApplicationsController extends Controller {
     }
 
     return application;
+  }
+
+  @Delete("{id}")
+  @Security("oauth2", [])
+  public async deleteConnection(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+    @Path("tenantId") tenantId: string
+  ): Promise<string> {
+    const { env } = request.ctx;
+
+    const db = getDb(env);
+    await db
+      .deleteFrom("applications")
+      .where("applications.tenantId", "=", tenantId)
+      .where("applications.id", "=", id)
+      .execute();
+
+    await updateClientInKV(env, id);
+
+    return "OK";
   }
 
   @Patch("{id}")

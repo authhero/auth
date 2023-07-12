@@ -43,21 +43,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute();
 
   await db.schema
-    .createTable("auth_providers")
-    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
-    .addColumn("tenant_id", "varchar", (col) =>
-      col.references("tenants.id").onDelete("cascade").notNull()
-    )
-    .addColumn("name", "varchar", (col) => col.notNull())
-    .addColumn("client_secret", "varchar")
-    .addColumn("authorization_endpoint", "varchar")
-    .addColumn("token_endpoint", "varchar")
-    .addColumn("profile_endpoint", "varchar")
-    .addColumn("created_at", "varchar")
-    .addColumn("modified_at", "varchar")
-    .execute();
-
-  await db.schema
     .createTable("applications")
     .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
     .addColumn("tenant_id", "varchar", (col) =>
@@ -85,6 +70,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("client_id", "varchar")
     .addColumn("client_secret", "varchar")
     .addColumn("authorization_endpoint", "varchar")
+    .addColumn("token_endpoint", "varchar")
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
     .execute();
@@ -94,7 +80,6 @@ export async function down(db: Kysely<any>): Promise<void> {
   await db.schema.dropTable("users_tenants").execute();
   await db.schema.dropTable("users").execute();
   await db.schema.dropTable("connections").execute();
-  await db.schema.dropTable("auth_providers").execute();
   await db.schema.dropTable("applications").execute();
   await db.schema.dropTable("tenants").execute();
 }

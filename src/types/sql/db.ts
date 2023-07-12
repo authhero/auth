@@ -1,4 +1,4 @@
-import { Tenant, Application, User, AuthProvider, Connection } from "./";
+import { Tenant, Application, User, Connection } from "./";
 
 // Keys of this interface are table names.
 export interface Database {
@@ -6,5 +6,4 @@ export interface Database {
   applications: Application;
   connections: Connection;
   tenants: Tenant;
-  authProviders: AuthProvider;
 }

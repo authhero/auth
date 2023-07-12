@@ -1,8 +1,4 @@
-import { OAuthProviderParams } from "../services/oauth2-client";
-
-export interface AuthProvider extends OAuthProviderParams {
-  name: string;
-}
+import { Connection } from "./sql";
 
 export interface Client {
   id: string;
@@ -12,10 +8,10 @@ export interface Client {
   senderEmail: string;
   senderName: string;
   loginBaseUrl: string;
+  connections: Connection[];
   allowedCallbackUrls: string[];
   allowedLogoutUrls: string[];
   allowedWebOrigins: string[];
-  authProviders: AuthProvider[];
   tenantId: string;
   clientSecret: string;
 }

@@ -20,11 +20,8 @@ export async function updateUser(env: Env, tenantId: string, email: string) {
     .selectAll()
     .execute();
 
-  console.log("existingUsers", existingUsers);
-
   // TODO: this is some ugly upsert functionality
   if (!existingUsers.length) {
-    console.log("create new");
     await db
       .insertInto("users")
       .values({
@@ -41,7 +38,6 @@ export async function updateUser(env: Env, tenantId: string, email: string) {
       })
       .execute();
   } else {
-    console.log("update existing");
     await db
       .updateTable("users")
       .set({

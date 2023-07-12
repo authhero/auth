@@ -111,11 +111,11 @@ async function err(ctx: Context<Env>, err: Error, message?: string) {
     message:
       message ||
       "Error processing call to route " +
-      request.method +
-      " " +
-      request.url +
-      ":" +
-      err.message,
+        request.method +
+        " " +
+        request.url +
+        ":" +
+        err.message,
     date_access: Date.now(),
     http: {
       protocol: request.headers.get("X-Forwarded-Proto") || "",

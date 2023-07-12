@@ -1,7 +1,7 @@
 import { Controller } from "tsoa";
 import { Liquid } from "liquidjs";
 import { encode } from "../utils/base64";
-import { AuthParams, LoginState } from "../types";
+import { LoginState } from "../types";
 
 const engine = new Liquid();
 
@@ -20,11 +20,7 @@ async function getTemplate(bucket: R2Bucket, templateName: string) {
 export async function renderForgotPassword(
   bucket: R2Bucket,
   controller: Controller,
-  context: {
-    username?: string;
-    client_id: string;
-    state: string;
-  }
+  context: LoginState
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -42,18 +38,10 @@ export async function renderForgotPassword(
   });
 }
 
-export interface RenderLoginContext {
-  authParams: AuthParams;
-  state: string;
-  username?: string;
-  errorMessage?: string;
-  connection?: string;
-}
-
 export async function renderLogin(
   bucket: R2Bucket,
   controller: Controller,
-  context: RenderLoginContext
+  context: LoginState
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -67,6 +55,7 @@ export async function renderLogin(
     socialLoginQuery.set(key, context.authParams[key])
   );
 
+  // TODO: pull from client instead
   const connections = [
     {
       connection: "apple",
@@ -99,17 +88,10 @@ export async function renderLogin(
   });
 }
 
-export interface RenderSignupContext {
-  username?: string;
-  client_id: string;
-  state: string;
-  errorMessage?: string;
-}
-
 export async function renderSignup(
   bucket: R2Bucket,
   controller: Controller,
-  context: RenderLoginContext
+  context: LoginState
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -125,15 +107,10 @@ export async function renderSignup(
   });
 }
 
-export interface RenderMessageContext {
-  page_title: string;
-  message: string;
-}
-
 export async function renderMessage(
   bucket: R2Bucket,
   controller: Controller,
-  context: RenderMessageContext
+  context: LoginState | { page_title: string; message: string }
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -149,18 +126,10 @@ export async function renderMessage(
   });
 }
 
-export interface RenderResetPasswordContext {
-  username: string;
-  code: string;
-  state: string;
-  client_id: string;
-  errorMessage?: string;
-}
-
 export async function renderResetPassword(
   bucket: R2Bucket,
   controller: Controller,
-  context: RenderResetPasswordContext
+  context: LoginState
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 

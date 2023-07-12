@@ -28,4 +28,5 @@ export interface AuthParams {
   scope?: string;
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
+  username?: string;
 }

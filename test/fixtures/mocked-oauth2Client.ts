@@ -31,7 +31,7 @@ export class MockedOAuth2Client implements IOAuth2Client {
     return "https://example.com";
   }
 
-  async exchangeCodeForToken(code: string): Promise<TokenResponse> {
+  async exchangeCodeForTokenResponse(code: string): Promise<TokenResponse> {
     return {
       access_token: "access_token",
       token_type: "token_type",

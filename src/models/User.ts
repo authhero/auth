@@ -238,7 +238,9 @@ export const userRouter = router({
           .array(
             z.object({
               name: z.string(),
-              profile: z.record(z.union([z.string(), z.boolean()])).optional(),
+              profile: z
+                .record(z.union([z.string(), z.boolean(), z.number()]))
+                .optional(),
             })
           )
           .optional(),

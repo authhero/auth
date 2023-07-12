@@ -13,7 +13,7 @@ import {
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { NoUserFoundError } from "../../errors";
+import { NoUserFoundError, NotFoundError } from "../../errors";
 
 @Route("tenants/{tenantId}/users")
 @Tags("users")
@@ -31,6 +31,32 @@ export class UsersController extends Controller {
       .execute();
 
     return users;
+  }
+
+  @Get("{userId}")
+  public async getUser(
+    @Request() request: RequestWithContext,
+    @Path("tenantId") tenantId: string,
+    @Path("userId") userId: string
+  ): Promise<User> {
+    // TODO: should this query the database or rather the durable object?
+
+    const db = getDb(request.ctx.env);
+    const user = await db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .where("users.id", "=", userId)
+      .selectAll()
+      .executeTakeFirst();
+
+    if (!user) {
+      throw new NotFoundError();
+    }
+
+    return {
+      ...user,
+      connections: user.connections || [],
+    };
   }
 
   @Patch("{userId}")

@@ -140,7 +140,6 @@ export async function getUser(
   }
 
   if (!isValidScopes(token, scopes)) {
-    console.log("scopes");
     return null;
   }
 

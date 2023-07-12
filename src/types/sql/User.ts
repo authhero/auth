@@ -1,6 +1,6 @@
 interface Connection {
   name: string;
-  profile?: { [key: string]: string | boolean };
+  profile?: { [key: string]: string | boolean | number };
 }
 
 // Entity from auth0

@@ -5,6 +5,7 @@ export interface Connection {
   clientId: string;
   clientSecret: string;
   authorizationEndpoint: string;
+  tokenEndpoint: string;
   createdAt: string;
   modifiedAt: string;
 }

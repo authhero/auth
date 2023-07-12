@@ -20,9 +20,8 @@ import {
   renderResetPassword,
   renderSignup,
   renderLogin,
-  RenderLoginContext,
 } from "../../templates/render";
-import { AuthParams } from "../../types";
+import { AuthParams, Env } from "../../types";
 
 export interface LoginParams {
   username: string;
@@ -39,6 +38,14 @@ export interface ResetPasswordState {
   client_id: string;
 }
 
+async function getLoginState(env: Env, state: string) {
+  const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
+  const loginString = await stateInstance.getState.query();
+  const loginState: LoginState = JSON.parse(loginString);
+
+  return loginState;
+}
+
 @Route("u")
 @Tags("login ui")
 export class LoginController extends Controller {
@@ -52,9 +59,7 @@ export class LoginController extends Controller {
     @Query("state") state: string
   ): Promise<string> {
     const { env } = request.ctx;
-    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
-    const loginString = await stateInstance.getState.query();
-    const loginState: RenderLoginContext = JSON.parse(loginString);
+    const loginState = await getLoginState(env, state);
 
     return renderLogin(env.AUTH_TEMPLATES, this, loginState);
   }
@@ -69,9 +74,7 @@ export class LoginController extends Controller {
     @Query("state") state: string
   ): Promise<string> {
     const { env } = request.ctx;
-    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
-    const loginString = await stateInstance.getState.query();
-    const loginState: RenderLoginContext = JSON.parse(loginString);
+    const loginState = await getLoginState(env, state);
 
     return renderSignup(env.AUTH_TEMPLATES, this, loginState);
   }
@@ -83,9 +86,7 @@ export class LoginController extends Controller {
     @Query("state") state: string
   ): Promise<string> {
     const { env } = request.ctx;
-    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
-    const loginString = await stateInstance.getState.query();
-    const loginState: RenderLoginContext = JSON.parse(loginString);
+    const loginState = await getLoginState(env, state);
 
     const client = await getClient(env, loginState.authParams.client_id);
     const user = env.userFactory.getInstanceByName(
@@ -103,6 +104,7 @@ export class LoginController extends Controller {
     }
 
     return renderMessage(env.AUTH_TEMPLATES, this, {
+      ...loginState,
       page_title: "User created",
       message: "Your user has been created",
     });
@@ -117,10 +119,10 @@ export class LoginController extends Controller {
     @Request() request: RequestWithContext,
     @Query("state") state: string
   ): Promise<string> {
-    const { ctx } = request;
-    const loginState = JSON.parse(atob(state));
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
 
-    return renderForgotPassword(ctx.env.AUTH_TEMPLATES, this, {
+    return renderForgotPassword(env.AUTH_TEMPLATES, this, {
       ...loginState,
       state,
     });
@@ -138,7 +140,7 @@ export class LoginController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const loginState: LoginState = JSON.parse(decode(state));
+    const loginState = await getLoginState(env, state);
     const { client_id } = loginState.authParams;
 
     const client = await getClient(env, client_id);
@@ -176,6 +178,7 @@ export class LoginController extends Controller {
     });
 
     return renderMessage(env.AUTH_TEMPLATES, this, {
+      ...loginState,
       page_title: "Password reset",
       message: "A code has been sent to your email address",
     });
@@ -190,13 +193,10 @@ export class LoginController extends Controller {
     @Request() request: RequestWithContext,
     @Query("state") state: string
   ): Promise<string> {
-    const { ctx } = request;
-    const resetPasswordState: ResetPasswordState = JSON.parse(decode(state));
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
 
-    return renderResetPassword(ctx.env.AUTH_TEMPLATES, this, {
-      ...resetPasswordState,
-      state,
-    });
+    return renderResetPassword(env.AUTH_TEMPLATES, this, loginState);
   }
 
   /**
@@ -206,27 +206,26 @@ export class LoginController extends Controller {
   @Post("reset-password")
   public async postResetPassword(
     @Request() request: RequestWithContext,
-    @Body() params: { password: string },
+    @Body() params: { code: string },
     @Query("state") state: string
   ): Promise<string> {
-    const { ctx } = request;
-    const resetPasswordState: ResetPasswordState = JSON.parse(decode(state));
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
 
-    const user = ctx.env.userFactory.getInstanceByName(
-      getId(resetPasswordState.client_id, resetPasswordState.username)
+    const user = env.userFactory.getInstanceByName(
+      getId(loginState.authParams.client_id, loginState.authParams.username!)
     );
 
-    if (
-      !(await user.validatePasswordResetCode.query(resetPasswordState.code))
-    ) {
-      return renderResetPassword(ctx.env.AUTH_TEMPLATES, this, {
-        ...resetPasswordState,
+    if (!(await user.validatePasswordResetCode.query(params.code))) {
+      return renderResetPassword(env.AUTH_TEMPLATES, this, {
+        ...loginState,
         state,
         errorMessage: "Invalid code",
       });
     }
 
-    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+    return renderMessage(env.AUTH_TEMPLATES, this, {
+      ...loginState,
       page_title: "Password reset",
       message: "The password has been reset",
     });
@@ -255,13 +254,13 @@ export class LoginController extends Controller {
       });
 
       return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+        ...loginState,
         page_title: "Logged in",
         message: "You are logged in",
       });
     } catch (err: any) {
       return renderLogin(ctx.env.AUTH_TEMPLATES, this, {
-        authParams: loginState.authParams,
-        username: loginParams.username,
+        ...loginState,
         errorMessage: err.message,
         state,
       });

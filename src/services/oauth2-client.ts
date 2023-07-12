@@ -1,5 +1,6 @@
 export interface TokenResponse {
   access_token: string;
+  id_token?: string;
   token_type: string;
   expires_in: number;
   refresh_token: string;
@@ -31,7 +32,7 @@ export function oAuth2ClientFactory(
 
 export interface IOAuth2Client {
   getAuthorizationUrl(state: string): Promise<string>;
-  exchangeCodeForToken(code: string): Promise<TokenResponse>;
+  exchangeCodeForTokenResponse(code: string): Promise<TokenResponse>;
   getUserProfile(accessToken: string): Promise<{ [key: string]: string }>;
 }
 
@@ -62,7 +63,7 @@ export class OAuth2Client implements IOAuth2Client {
     return `${this.params.authorizationEndpoint}?${params.toString()}`;
   }
 
-  async exchangeCodeForToken(code: string): Promise<TokenResponse> {
+  async exchangeCodeForTokenResponse(code: string): Promise<TokenResponse> {
     const params = new URLSearchParams({
       grant_type: "authorization_code",
       code,

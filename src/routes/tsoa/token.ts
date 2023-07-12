@@ -45,7 +45,6 @@ export class TokenRoutes extends Controller {
     }
 
     if (!tokenResponse) {
-      console.log("Error: " + JSON.stringify(tokenResponse));
       this.setStatus(400);
       return "Invalid Request";
     }

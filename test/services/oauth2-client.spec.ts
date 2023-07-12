@@ -46,10 +46,10 @@ describe("OAuth2Client", () => {
     });
   });
 
-  describe("exchangeCodeForToken", () => {
+  describe("exchangeCodeForTokenResponse", () => {
     it("exchanges an authorization code for an access token", async () => {
       const code = "some_authorization_code";
-      const tokenResponse = await client.exchangeCodeForToken(code);
+      const tokenResponse = await client.exchangeCodeForTokenResponse(code);
 
       expect(tokenResponse).toEqual({ access_token: "some_access_token" });
     });
@@ -58,7 +58,7 @@ describe("OAuth2Client", () => {
       (global as any).fetch = mockFetch("invalid_grant", 400);
 
       const code = "some_authorization_code";
-      await expect(client.exchangeCodeForToken(code)).rejects.toThrow(
+      await expect(client.exchangeCodeForTokenResponse(code)).rejects.toThrow(
         "Error exchanging code for token: invalid_grant"
       );
     });

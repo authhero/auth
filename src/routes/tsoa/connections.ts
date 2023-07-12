@@ -10,6 +10,7 @@ import {
   Body,
   SuccessResponse,
   Security,
+  Delete,
 } from "@tsoa/runtime";
 import { v4 as uuidv4 } from "uuid";
 import { UpdateResult } from "kysely";
@@ -17,6 +18,7 @@ import { UpdateResult } from "kysely";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Connection } from "../../types/sql";
+import { updateTenantClientsInKV } from "../../hooks/update-client";
 
 @Route("tenants/{tenantId}/connections")
 @Tags("connections")
@@ -60,6 +62,27 @@ export class ConnectionsController extends Controller {
     return connection;
   }
 
+  @Delete("{id}")
+  @Security("oauth2", [])
+  public async deleteConnection(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+    @Path("tenantId") tenantId: string
+  ): Promise<string> {
+    const { env } = request.ctx;
+
+    const db = getDb(env);
+    await db
+      .deleteFrom("connections")
+      .where("connections.tenantId", "=", tenantId)
+      .where("connections.id", "=", id)
+      .execute();
+
+    await updateTenantClientsInKV(env, tenantId);
+
+    return "OK";
+  }
+
   @Patch("{id}")
   @Security("oauth2", [])
   public async patchConnection(
@@ -86,6 +109,8 @@ export class ConnectionsController extends Controller {
       .where("id", "=", id)
       .execute();
 
+    await updateTenantClientsInKV(env, tenantId);
+
     return results;
   }
 
@@ -110,6 +135,8 @@ export class ConnectionsController extends Controller {
     };
 
     await db.insertInto("connections").values(connection).execute();
+
+    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
     return connection;
