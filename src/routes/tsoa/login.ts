@@ -20,9 +20,12 @@ import {
   renderResetPassword,
   renderSignup,
   renderLogin,
+  renderLoginWithCode,
+  renderEnterCode,
 } from "../../templates/render";
 import { AuthParams, Env } from "../../types";
 import { InvalidRequestError } from "../../errors";
+import { headers } from "../../constants";
 
 export interface LoginParams {
   username: string;
@@ -68,6 +71,125 @@ export class LoginController extends Controller {
     const loginState = await getLoginState(env, state);
 
     return renderLogin(env.AUTH_TEMPLATES, this, loginState);
+  }
+
+  /**
+ * Renders a code login form
+ * @param request
+ */
+  @Get("code")
+  public async getLoginWithCode(
+    @Request() request: RequestWithContext,
+    @Query("state") state: string
+  ): Promise<string> {
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
+
+    return renderLoginWithCode(env.AUTH_TEMPLATES, this, loginState);
+  }
+
+  /**
+  * Renders a code login form
+  * @param request
+  */
+  @Post("code")
+  public async getCode(
+    @Request() request: RequestWithContext,
+    @Body() params: { username: string },
+    @Query("state") state: string
+  ): Promise<string> {
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
+
+    const client = await getClient(env, loginState.authParams.client_id);
+    const user = env.userFactory.getInstanceByName(
+      getId(client.tenantId, params.username)
+    );
+
+    const { code } = await user.createAuthenticationCode.mutate(loginState);
+
+    // Add the usernmane to the state
+    loginState.authParams.username = params.username;
+    await setLoginState(env, state, loginState);
+
+    const message = `Here is your login code: ${code}`;
+    await env.sendEmail({
+      to: [{ email: params.username, name: "" }],
+      from: {
+        email: client.senderEmail,
+        name: client.senderName,
+      },
+      content: [
+        {
+          type: "text/plain",
+          value: message,
+        },
+      ],
+      subject: "Login Code",
+    });
+
+    this.setHeader(headers.location, `/u/enter-code?state=${state}&username=${params.username}`)
+    this.setStatus(302);
+
+    return 'Redirect';
+  }
+
+  /**
+* Renders a code submit form
+* @param request
+*/
+  @Get("enter-code")
+  public async getEnterCode(
+    @Request() request: RequestWithContext,
+    @Query("state") state: string,
+    @Query("username") username: string
+  ): Promise<string> {
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
+
+    return renderEnterCode(env.AUTH_TEMPLATES, this, loginState);
+  }
+
+  /**
+* Posts a code
+* @param request
+*/
+  @Post("enter-code")
+  public async postCode(
+    @Request() request: RequestWithContext,
+    @Body() params: { code: string },
+    @Query("state") state: string
+  ): Promise<string> {
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
+
+    if (!loginState.authParams.username) {
+      throw new Error('username required in state')
+    }
+
+    const client = await getClient(env, loginState.authParams.client_id);
+    const user = env.userFactory.getInstanceByName(
+      getId(client.tenantId, loginState.authParams.username)
+    );
+
+    try {
+      await user.validateAuthenticationCode.mutate({
+        code: params.code,
+        email: loginState.authParams.username,
+        tenantId: client.tenantId
+      })
+    } catch (err) {
+      return renderEnterCode(env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        errorMessage: 'Invalid code'
+      });
+    }
+
+    return renderMessage(env.AUTH_TEMPLATES, this, {
+      ...loginState,
+      page_title: "Logged in",
+      message: "You are logged in",
+    });
   }
 
   /**
@@ -165,7 +287,7 @@ export class LoginController extends Controller {
 
     const { code } = await user.createPasswordResetCode.mutate();
 
-    const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
+    const message = `Click this link to reset your password: ${env.ISSUER}u / reset - password ? state = ${state} & code=${code}`;
     await env.sendEmail({
       to: [{ email: params.username, name: "" }],
       from: {
