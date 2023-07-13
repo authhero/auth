@@ -14,6 +14,7 @@ import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NoUserFoundError, NotFoundError } from "../../errors";
+import { getId } from "../../models";
 
 @Route("tenants/{tenantId}/users")
 @Tags("users")
@@ -39,24 +40,26 @@ export class UsersController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("userId") userId: string
   ): Promise<User> {
-    // TODO: should this query the database or rather the durable object?
+    const { env } = request.ctx;
 
-    const db = getDb(request.ctx.env);
-    const user = await db
+    const db = getDb(env);
+    const dbUser = await db
       .selectFrom("users")
       .where("users.tenantId", "=", tenantId)
       .where("users.id", "=", userId)
-      .selectAll()
+      .select('email')
       .executeTakeFirst();
 
-    if (!user) {
+    if (!dbUser) {
       throw new NotFoundError();
     }
 
-    return {
-      ...user,
-      connections: user.connections || [],
-    };
+    // Fetch the user from durable object
+    const user = env.userFactory.getInstanceByName(
+      getId(tenantId, dbUser.email)
+    );
+
+    return user.getProfile.query();
   }
 
   @Patch("{userId}")

@@ -45,23 +45,12 @@ enum StorageKeys {
 const PROFILE_FIELDS = [
   "name",
   "email",
-  "givenName",
-  "familyName",
+  "given_name",
+  "family_name",
   "nickname",
   "picture",
   "locale",
 ];
-
-// This might be different for different providers
-const PROFILE_MAPPING = {
-  name: "name",
-  email: "email",
-  given_name: "givenName",
-  family_name: "familyName",
-  nickname: "nickname",
-  picture: "picture",
-  locale: "locale",
-};
 
 async function getProfile(
   storage: DurableObjectStorage
@@ -106,10 +95,10 @@ async function updateUser(
     updatedProfile.connections?.push(connection);
 
     // Set standard fields if allready defined in profile
-    Object.keys(PROFILE_MAPPING)
-      .filter((key) => !updatedProfile[PROFILE_MAPPING[key]])
+    Object.keys(PROFILE_FIELDS)
+      .filter((key) => !updatedProfile[key])
       .forEach((key) => {
-        updatedProfile[PROFILE_MAPPING[key]] = connection.profile?.[key];
+        updatedProfile[key] = connection.profile?.[key];
       });
   });
 
@@ -383,6 +372,9 @@ export const userRouter = router({
         connections: [
           {
             name: "auth",
+            profile: {
+              email: input.email
+            }
           },
         ],
       });
