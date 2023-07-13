@@ -6,6 +6,10 @@ export class AuthError extends Error {
   status = 400;
 }
 
+export class InvalidRequestError extends Error {
+  status = 400;
+}
+
 export class UnauthenticatedError extends Error {
   status = 401;
 
