@@ -29,6 +29,15 @@ export const stateRouter = t.router({
 
     return state;
   }),
+  setState: publicProcedure
+    .input(
+      z.object({
+        state: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.state.storage.put(STATE, input.state);
+    }),
 });
 
 export async function stateAlarm(state: DurableObjectState) {

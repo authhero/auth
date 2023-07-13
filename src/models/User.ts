@@ -165,21 +165,19 @@ export const userRouter = router({
 
       return result;
     }),
-  createPasswordResetCode: publicProcedure
-    .input(z.string().nullish())
-    .mutation(async ({ input, ctx }) => {
-      const result: Code = {
-        code: generateOTP(),
-        expireAt: Date.now() + 300 * 1000,
-      };
+  createPasswordResetCode: publicProcedure.mutation(async ({ ctx }) => {
+    const result: Code = {
+      code: generateOTP(),
+      expireAt: Date.now() + 300 * 1000,
+    };
 
-      await ctx.state.storage.put(
-        StorageKeys.passwordResetCode,
-        JSON.stringify(result)
-      );
+    await ctx.state.storage.put(
+      StorageKeys.passwordResetCode,
+      JSON.stringify(result)
+    );
 
-      return result;
-    }),
+    return result;
+  }),
   getProfile: publicProcedure.query(async ({ ctx }) => {
     const profile = await getProfile(ctx.state.storage);
     if (!profile) {
@@ -206,6 +204,42 @@ export const userRouter = router({
         StorageKeys.passwordHash,
         bcrypt.hashSync(input, 10)
       );
+    }),
+  resetPasswordWithCode: publicProcedure
+    .input(
+      z.object({
+        code: z.string(),
+        password: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const passwordResetCodeString = await ctx.state.storage.get<string>(
+        StorageKeys.passwordResetCode
+      );
+
+      if (!passwordResetCodeString) {
+        throw new InvalidCodeError("No code set");
+      }
+
+      const passwordResetCode: Code = JSON.parse(passwordResetCodeString);
+
+      if (input.code !== passwordResetCode.code) {
+        throw new InvalidCodeError();
+      }
+
+      if (
+        !passwordResetCode.expireAt ||
+        Date.now() > passwordResetCode.expireAt
+      ) {
+        throw new InvalidCodeError("Code expired");
+      }
+
+      await ctx.state.storage.put(
+        StorageKeys.passwordHash,
+        bcrypt.hashSync(input.password, 10)
+      );
+
+      ctx.state.storage.delete(StorageKeys.passwordResetCode);
     }),
   setEmailValidated: publicProcedure
     .input(z.boolean())
@@ -321,26 +355,6 @@ export const userRouter = router({
 
       // Remove once used
       await ctx.state.storage.delete(StorageKeys.emailValidationCode);
-    }),
-  validatePasswordResetCode: publicProcedure
-    .input(z.string())
-    .query(async ({ input, ctx }) => {
-      const passwordResetCodeString = await ctx.state.storage.get<string>(
-        StorageKeys.passwordResetCode
-      );
-
-      if (!passwordResetCodeString) {
-        throw new Error();
-      }
-
-      const passwordResetCode: Code = JSON.parse(passwordResetCodeString);
-
-      return (
-        passwordResetCode &&
-        input === passwordResetCode.code &&
-        passwordResetCode.expireAt !== undefined &&
-        Date.now() < passwordResetCode.expireAt
-      );
     }),
   validatePassword: publicProcedure
     .input(
