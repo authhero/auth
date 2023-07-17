@@ -112,7 +112,7 @@ export function createTokenFactory(getToken: GetToken) {
       name,
       nonce,
       iss,
-      email
+      email,
     }: CreateIDTokenParams): Promise<string | null> {
       const payload: IDTokenPayload = {
         // The audience for an id token is the client id
