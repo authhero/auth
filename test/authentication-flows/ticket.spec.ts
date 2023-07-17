@@ -5,6 +5,16 @@ import { ticketAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
 
 describe("passwordlessAuth", () => {
+  const date = new Date();
+
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(date);
+  });
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   it("should redirect with implicit flow as anchor links", async () => {
     const ticketInstanceId = base64ToHex("ticket");
 
@@ -35,12 +45,19 @@ describe("passwordlessAuth", () => {
     const redirectURL = new URL(redirectHeader);
     const hashParams = new URLSearchParams(redirectURL.hash.slice(1));
 
-    // console.log(redirectURL.hash.slice(1));
+    const accessToken = JSON.parse(hashParams.get("access_token") as string);
 
     expect(response).toEqual("Redirecting");
     expect(controller.getStatus()).toEqual(302);
-    expect(hashParams.get("access_token")).toBe("access_token");
-    expect(hashParams.get("id_token")).toBe("id_token");
+    expect(accessToken).toEqual({
+      aud: "default",
+      scope: "openid profile email",
+      kid: "s45bQJ933dwqmrB92ee-l",
+      iss: "https://auth.example.com",
+      iat: Math.floor(date.getTime() / 1000),
+      exp: Math.floor(date.getTime() / 1000) + 86400,
+    });
+    expect(hashParams.get("id_token")).toBe(null);
     expect(hashParams.get("token_type")).toBe("Bearer");
     expect(hashParams.get("expires_in")).toBe("28800");
     expect(hashParams.get("state")).toBe(encodeURIComponent(state));

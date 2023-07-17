@@ -88,7 +88,7 @@ export async function socialAuthCallback({
   const userId = getId(client.tenantId, oauth2Profile.email);
   const user = env.userFactory.getInstanceByName(userId);
 
-  await user.patchProfile.mutate({
+  const profile = await user.patchProfile.mutate({
     email: oauth2Profile.email,
     tenantId: client.tenantId,
     connections: [{ name: connection.name, profile: oauth2Profile }],
@@ -110,16 +110,15 @@ export async function socialAuthCallback({
 
   switch (state.authParams.response_type) {
     case AuthorizationResponseType.CODE:
-      const code = await generateCode({
+      const codeResponse = await generateCode({
         env,
         userId,
         authParams: state.authParams,
-        user: {
-          email: "dummy@example.com",
-        },
+        user: profile,
         sid: sessionId,
+        responseType: AuthorizationResponseType.CODE,
       });
-      redirectUri.searchParams.set("code", code);
+      redirectUri.searchParams.set("code", codeResponse.code);
       if (state.authParams.state) {
         redirectUri.searchParams.set("state", state.authParams.state);
       }

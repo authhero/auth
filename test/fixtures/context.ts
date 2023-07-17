@@ -1,11 +1,10 @@
 import { Context } from "cloudworker-router";
 // This is to make Request and other browser stuff work
 import "isomorphic-fetch";
-import { Env, RequestWithContext } from "../../src/types";
+import { Env } from "../../src/types";
 import { oAuth2ClientFactory } from "./mocked-oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { mockedKVStorage } from "./mocked-kv-storage";
-import { MockedTokenFactory } from "./mocked-token-factory";
 import { EmailOptions } from "../../src/services/email";
 import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
 import { userRouter } from "../../src/models/User";
@@ -95,7 +94,6 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
           },
         }),
       },
-      TokenFactory: MockedTokenFactory,
       STATE: {
         newUniqueId: () => "newUniqueId",
       },
