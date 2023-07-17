@@ -95,7 +95,7 @@ export class ApplicationsController extends Controller {
 
   @Delete("{id}")
   @Security("oauth2", [])
-  public async deleteConnection(
+  public async deleteApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
@@ -158,7 +158,7 @@ export class ApplicationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Application, "id" | "createdAt" | "modifiedAt">,
+    body: Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt"> & { id?: string },
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;
@@ -180,7 +180,7 @@ export class ApplicationsController extends Controller {
     const application: Application = {
       ...body,
       tenantId,
-      id: nanoid(),
+      id: body.id || nanoid(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
