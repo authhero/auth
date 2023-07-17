@@ -70,3 +70,8 @@ export interface TokenResponse {
   token_type: string;
   expires_in: number;
 }
+
+export interface CodeResponse {
+  code: string;
+  state?: string;
+}

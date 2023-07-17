@@ -1,26 +1,36 @@
-// This should probably live somewhere else.
 import { getCertificate } from "../models";
-import { Env, AuthParams, CodeChallengeMethod } from "../types";
-import { TokenResponse } from "../types/Token";
+import { Env, AuthParams, AuthorizationResponseType, Profile } from "../types";
+import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { hexToBase64 } from "../utils/base64";
+// import { createRefreshToken } from '../controllers/refresh-tokens';
+import { Profile as User } from "../types";
+import { TokenFactory } from "../services/token-factory";
 
-export interface GenerateAuthResponseParams {
+export interface GenerateAuthResponseParamsBase {
   env: Env;
   userId: string;
   sid: string;
   state?: string;
   nonce?: string;
   authParams: AuthParams;
-  user: {
-    email: string;
-    name?: string;
-    givenName?: string;
-    familyName?: string;
-    nickname?: string;
-  };
-  code_challenge_method?: CodeChallengeMethod;
-  code_challenge?: string;
+}
+
+export interface GenerateAuthResponseParamsForCode
+  extends GenerateAuthResponseParamsBase {
+  responseType: AuthorizationResponseType.CODE;
+  user: User;
+}
+
+export interface GenerateAuthResponseParamsForToken
+  extends GenerateAuthResponseParamsBase {
+  responseType: AuthorizationResponseType.TOKEN;
+}
+
+export interface GenerateAuthResponseParamsForIdToken
+  extends GenerateAuthResponseParamsBase {
+  responseType: AuthorizationResponseType.TOKEN_ID_TOKEN;
+  user: Profile;
 }
 
 export async function generateCode({
@@ -29,11 +39,9 @@ export async function generateCode({
   state,
   nonce,
   authParams,
-  user,
   sid,
-  code_challenge_method,
-  code_challenge,
-}: GenerateAuthResponseParams) {
+  user,
+}: GenerateAuthResponseParamsForCode) {
   const stateId = env.STATE.newUniqueId().toString();
   const stateInstance = env.stateFactory.getInstanceById(stateId);
   await stateInstance.createState.mutate({
@@ -42,62 +50,80 @@ export async function generateCode({
       authParams,
       nonce,
       state,
-      user,
       sid,
-      code_challenge_method,
-      code_challenge,
+      user,
     }),
   });
 
-  return hexToBase64(stateId);
+  const codeResponse: CodeResponse = {
+    code: hexToBase64(stateId),
+    state,
+  };
+
+  return codeResponse;
 }
 
-export async function generateAuthResponse({
-  env,
-  userId,
-  state,
-  nonce,
-  authParams,
-}: GenerateAuthResponseParams) {
+export async function generateTokens(
+  params:
+    | GenerateAuthResponseParamsForToken
+    | GenerateAuthResponseParamsForIdToken,
+) {
+  const { env, authParams, userId, state, responseType, sid, nonce } = params;
+
   const certificate = await getCertificate(env);
-  const tokenFactory = new env.TokenFactory(
+  const tokenFactory = new TokenFactory(
     certificate.privateKey,
     certificate.kid,
   );
 
-  const userInstance = await env.userFactory.getInstanceByName(userId);
-  const profile = await userInstance.getProfile.query();
-
   const accessToken = await tokenFactory.createAccessToken({
-    scopes: authParams.scope?.split(" ") || [],
-    userId,
+    scope: authParams.scope || "",
+    sub: userId,
     iss: env.ISSUER,
   });
-
-  const idToken = await tokenFactory.createIDToken({
-    clientId: authParams.client_id,
-    userId: userId,
-    given_name: profile.given_name,
-    family_name: profile.family_name,
-    nickname: profile.nickname,
-    name: profile.name,
-    iss: env.ISSUER,
-    nonce: nonce || authParams.nonce,
-    email: profile.email,
-  });
-
-  if (!accessToken || !idToken) {
-    throw new Error("This should never be undefined");
-  }
 
   const tokenResponse: TokenResponse = {
     access_token: accessToken,
-    id_token: idToken,
     token_type: "Bearer",
     state,
     scope: authParams.scope,
     expires_in: ACCESS_TOKEN_EXPIRE_IN_SECONDS,
   };
 
+  // ID TOKEN
+  if (responseType === AuthorizationResponseType.TOKEN_ID_TOKEN) {
+    const { user } = params;
+
+    tokenResponse.id_token = await tokenFactory.createIDToken({
+      ...user,
+      clientId: authParams.client_id,
+      userId: userId,
+      iss: env.ISSUER,
+      sid,
+      nonce: nonce || authParams.nonce,
+    });
+  }
+
+  // REFRESH TOKEN
+  // if (authParams.scope?.split(' ').includes('offline_access')) {
+  //   const { refresh_token } = await createRefreshToken(params);
+  //   tokenResponse.refresh_token = refresh_token;
+  // }
+
   return tokenResponse;
+}
+
+export type GenerateAuthResponseParams =
+  | GenerateAuthResponseParamsForToken
+  | GenerateAuthResponseParamsForIdToken
+  | GenerateAuthResponseParamsForCode;
+
+export async function generateAuthResponse(params: GenerateAuthResponseParams) {
+  switch (params.responseType) {
+    case AuthorizationResponseType.TOKEN:
+    case AuthorizationResponseType.TOKEN_ID_TOKEN:
+      return generateTokens(params);
+    case AuthorizationResponseType.CODE:
+      return generateCode(params);
+  }
 }

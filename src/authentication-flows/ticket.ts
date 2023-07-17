@@ -1,8 +1,11 @@
 import { Controller } from "@tsoa/runtime";
-import { Env, AuthParams } from "../types";
+import { Env, AuthParams, AuthorizationResponseType } from "../types";
 import { headers } from "../constants";
 import { base64ToHex } from "../utils/base64";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
+import {
+  generateAuthResponse,
+  generateTokens,
+} from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 
 interface PasswordlessState {
@@ -29,15 +32,13 @@ export async function ticketAuth(
   const ticketJson: PasswordlessState = JSON.parse(ticketString);
   const { userId, authParams } = ticketJson;
 
-  const tokenResponse = await generateAuthResponse({
+  const tokenResponse = await generateTokens({
     env,
     userId,
     state,
     authParams,
-    user: {
-      email: "dummy@example.com",
-    },
     sid: "sid",
+    responseType: AuthorizationResponseType.TOKEN,
   });
 
   await setSilentAuthCookies(env, controller, userId, authParams);

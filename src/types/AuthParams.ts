@@ -1,7 +1,6 @@
 export enum AuthorizationResponseType {
   TOKEN = "token",
   TOKEN_ID_TOKEN = "token id_token",
-  IMPLICIT = "implicit",
   CODE = "code",
 }
 

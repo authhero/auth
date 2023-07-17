@@ -5,8 +5,6 @@ import { User, State } from "./models";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { QueueMessage } from "./services/events";
 import { updateUser } from "./handlers/update-user";
-import { getToken } from "@sagi.io/workers-jwt";
-import { createTokenFactory } from "./services/token-factory";
 import sendEmail from "./services/email";
 
 // In order for the workers runtime to find the class that implements
@@ -28,7 +26,6 @@ const server = {
         sendEmail,
         stateFactory: State.getFactory(env.STATE, env),
         userFactory: User.getFactory(env.USER, env),
-        TokenFactory: createTokenFactory(getToken),
       },
       ctx,
     );

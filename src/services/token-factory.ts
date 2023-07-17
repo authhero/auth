@@ -1,3 +1,5 @@
+import { getToken } from "@sagi.io/workers-jwt";
+
 const DAY_IN_SECONDS = 60 * 60 * 24;
 
 export interface GetTokenParams {
@@ -12,11 +14,7 @@ export interface GetTokenParams {
   };
 }
 
-export interface GetToken {
-  (getTokenParams: GetTokenParams): string;
-}
-
-interface AcessTokenPayload {
+interface AccessTokenPayload {
   aud: string;
   azp?: string;
   kid: string;
@@ -25,115 +23,124 @@ interface AcessTokenPayload {
   iss: string;
 }
 
-interface IDTokenPayload {
+export interface IDTokenPayload {
   aud: string;
-  kid: string;
   sub: string;
   sid: string;
   iss: string;
   nonce?: string;
   email?: string;
   email_verified?: boolean;
-  locale: string;
-  updated_at: string;
-  picture: string;
+  locale?: string;
+  picture?: string;
   given_name?: string;
   family_name?: string;
   nickname?: string;
   name?: string;
+}
+
+export interface CreateAccessTokenParams {
+  scope: string;
+  sub: string;
+  iss: string;
+  azp?: string;
 }
 
 export interface CreateIDTokenParams {
   clientId: string;
   userId: string;
+  // Issuer
   iss: string;
+  // Session ID
+  sid: string;
   nonce?: string;
   email?: string;
+  email_verified?: boolean;
   given_name?: string;
   family_name?: string;
   nickname?: string;
   name?: string;
+  picture?: string;
+  locale?: string;
 }
 
-export function createTokenFactory(getToken: GetToken) {
-  return class TokenFactory {
-    privateKeyPEM: string;
+export class TokenFactory {
+  privateKeyPEM: string;
 
-    keyId: string;
+  keyId: string;
 
-    constructor(privateKeyPEM: string, keyId: string) {
-      this.privateKeyPEM = privateKeyPEM;
-      this.keyId = keyId;
-    }
+  constructor(privateKeyPEM: string, keyId: string) {
+    this.privateKeyPEM = privateKeyPEM;
+    this.keyId = keyId;
+  }
 
-    async getJwt(payload: any): Promise<string> {
-      const now = Math.floor(Date.now() / 1000);
+  async getJwt(payload: any): Promise<string> {
+    const now = Math.floor(Date.now() / 1000);
 
-      return getToken({
-        privateKeyPEM: this.privateKeyPEM,
-        payload: {
-          ...payload,
-          iat: now,
-          exp: now + DAY_IN_SECONDS,
-        },
-        alg: "RS256",
-        headerAdditions: {
-          kid: this.keyId,
-        },
-      });
-    }
-
-    async createAccessToken({
-      scopes,
-      userId,
-      iss,
-    }: {
-      scopes: string[];
-      userId: string;
-      iss: string;
-    }): Promise<string | null> {
-      const payload: AcessTokenPayload = {
-        aud: "default",
-        scope: scopes.join(" "),
-        sub: userId,
+    return getToken({
+      privateKeyPEM: this.privateKeyPEM,
+      payload: {
+        ...payload,
+        iat: now,
+        exp: now + DAY_IN_SECONDS,
+      },
+      alg: "RS256",
+      headerAdditions: {
         kid: this.keyId,
-        iss,
-      };
+      },
+    });
+  }
 
-      return this.getJwt(payload);
-    }
+  async createAccessToken({
+    scope,
+    sub,
+    iss,
+    azp,
+  }: CreateAccessTokenParams): Promise<string> {
+    const payload: AccessTokenPayload = {
+      aud: "default",
+      scope,
+      sub,
+      kid: this.keyId,
+      iss,
+      azp,
+    };
 
-    async createIDToken({
-      clientId,
-      userId,
+    return this.getJwt(payload);
+  }
+
+  async createIDToken({
+    clientId,
+    userId,
+    given_name,
+    family_name,
+    nickname,
+    picture,
+    locale,
+    name,
+    email,
+    email_verified,
+    nonce,
+    iss,
+    sid,
+  }: CreateIDTokenParams): Promise<string> {
+    const payload: IDTokenPayload = {
+      // The audience for an id token is the client id
+      aud: clientId,
+      sub: userId,
       given_name,
       family_name,
       nickname,
       name,
+      email,
+      email_verified,
       nonce,
       iss,
-      email,
-    }: CreateIDTokenParams): Promise<string | null> {
-      const payload: IDTokenPayload = {
-        // The audience for an id token is the client id
-        aud: clientId,
-        sub: userId,
-        kid: this.keyId,
-        given_name,
-        family_name,
-        nickname,
-        name,
-        nonce,
-        iss,
-        picture:
-          "https://lh3.googleusercontent.com/a/AGNmyxahgsZ1mBDfjYbydgtNDWgS78AvYk68SSoF1it-=s96-c",
-        locale: "en",
-        sid: "BVhF_cwjxxUN5dKFU9b9dc9N9-VyPuLf",
-        updated_at: "2023-04-11T20:33:16.226Z",
-        email,
-      };
+      picture,
+      locale,
+      sid,
+    };
 
-      return this.getJwt(payload);
-    }
-  };
+    return this.getJwt(payload);
+  }
 }

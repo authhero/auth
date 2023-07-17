@@ -9,6 +9,7 @@ import {
   AuthParams,
   CodeChallengeMethod,
   Env,
+  Profile,
 } from "../types";
 import renderAuthIframe from "../templates/authIframe";
 import { base64ToHex } from "../utils/base64";
@@ -35,7 +36,7 @@ export interface SilentAuthParams {
 interface SuperState {
   userId: string;
   authParams: AuthParams;
-  user: User;
+  user: Profile;
 }
 
 export async function silentAuth({
@@ -56,7 +57,6 @@ export async function silentAuth({
     const stateInstance = env.stateFactory.getInstanceById(
       base64ToHex(tokenState),
     );
-
     const superStateString = await stateInstance.getState.query();
 
     if (superStateString) {
@@ -70,7 +70,7 @@ export async function silentAuth({
       try {
         switch (response_type) {
           case AuthorizationResponseType.CODE:
-            const code = await generateCode({
+            const codeResponse = await generateCode({
               env,
               state,
               nonce,
@@ -80,19 +80,16 @@ export async function silentAuth({
                 code_challenge_method,
                 code_challenge,
               },
-              user: superState.user,
+              user: superState.user as Profile,
               sid: tokenState,
+              responseType: AuthorizationResponseType.CODE,
             });
 
             return renderAuthIframe(
               controller,
               `${redirectURL.protocol}//${redirectURL.host}`,
-              JSON.stringify({
-                code,
-                state,
-              }),
+              JSON.stringify(codeResponse),
             );
-          case AuthorizationResponseType.IMPLICIT:
           case AuthorizationResponseType.TOKEN_ID_TOKEN:
             const tokenResponse = await generateAuthResponse({
               env,
@@ -100,8 +97,8 @@ export async function silentAuth({
               state,
               nonce,
               authParams: superState.authParams,
-              user: superState.user,
               sid: tokenState,
+              responseType: AuthorizationResponseType.TOKEN,
             });
 
             return renderAuthIframe(
