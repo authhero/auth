@@ -14,7 +14,7 @@ export default async function rotateKeys(env: Env) {
 
   const filteredCertificates: Certificate[] = certificates.filter(
     (certificate: any) =>
-      certificate.createdAt > Date.now() - CERTIFICATE_EXPIRE_IN_SECONDS * 1000
+      certificate.createdAt > Date.now() - CERTIFICATE_EXPIRE_IN_SECONDS * 1000,
   );
 
   await env.CERTIFICATES.put("default", JSON.stringify(filteredCertificates));

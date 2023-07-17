@@ -7,7 +7,7 @@ export class UserinfoController extends Controller {
   @Get("userinfo")
   @Security("oauth2", ["openid profile"])
   public async getUser(
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
   ): Promise<{ id: string }> {
     const { ctx } = request;
 

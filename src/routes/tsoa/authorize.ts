@@ -89,7 +89,7 @@ export class AuthorizeController extends Controller {
     @Query("max_age") max_age?: number,
     @Query("login_ticket") loginTicket?: string,
     @Query("code_challenge_method") code_challenge_method?: CodeChallengeMethod,
-    @Query("code_challenge") code_challenge?: string
+    @Query("code_challenge") code_challenge?: string,
   ): Promise<string> {
     const { ctx } = request;
     const { env } = ctx;
@@ -149,7 +149,7 @@ export class AuthorizeController extends Controller {
       params.max_age,
       params.loginTicket,
       params.code_challenge_method,
-      params.code_challenge
+      params.code_challenge,
     );
   }
 }

@@ -15,11 +15,11 @@ import hash from "../utils/hash";
 export async function authorizeCodeGrant(
   env: Env,
   controller: Controller,
-  params: AuthorizationCodeGrantTypeParams
+  params: AuthorizationCodeGrantTypeParams,
 ): Promise<TokenResponse> {
   // Either get the instance based on the id or the code
   const stateInstance = env.stateFactory.getInstanceById(
-    base64ToHex(params.code)
+    base64ToHex(params.code),
   );
 
   const stateString = await stateInstance.getState.query();

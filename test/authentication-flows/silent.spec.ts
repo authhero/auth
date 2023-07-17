@@ -63,8 +63,8 @@ describe("silentAuth", () => {
 
     expect(
       actual.includes(
-        '{"code":"AAAAAA4","state":"RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ=="}'
-      )
+        '{"code":"AAAAAA4","state":"RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ=="}',
+      ),
     ).toBe(true);
   });
 });

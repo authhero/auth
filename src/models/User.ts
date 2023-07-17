@@ -53,7 +53,7 @@ const PROFILE_FIELDS = [
 ];
 
 async function getProfile(
-  storage: DurableObjectStorage
+  storage: DurableObjectStorage,
 ): Promise<Profile | null> {
   const profilesString = await storage.get<string>(StorageKeys.profile);
   if (!profilesString) {
@@ -67,7 +67,7 @@ async function getProfile(
 async function updateUser(
   storage: DurableObjectStorage,
   queue: Queue<QueueMessage>,
-  profile: Partial<Profile> & Pick<Profile, "tenantId" | "email">
+  profile: Partial<Profile> & Pick<Profile, "tenantId" | "email">,
 ) {
   let existingProfile = await getProfile(storage);
 
@@ -89,7 +89,7 @@ async function updateUser(
   profile.connections?.forEach((connection) => {
     // remove any existing connections with the same name
     updatedProfile.connections = updatedProfile.connections?.filter(
-      (c) => c.name !== connection.name
+      (c) => c.name !== connection.name,
     );
 
     updatedProfile.connections?.push(connection);
@@ -107,7 +107,7 @@ async function updateUser(
   await sendUserEvent(
     queue,
     `${profile.tenantId}|${profile.email}`,
-    existingProfile ? UserEvent.userUpdated : UserEvent.userCreated
+    existingProfile ? UserEvent.userUpdated : UserEvent.userCreated,
   );
 
   return updatedProfile;
@@ -118,7 +118,7 @@ export const userRouter = router({
     .input(
       z.object({
         authParams: z.custom<AuthParams>(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const result: Code = {
@@ -129,7 +129,7 @@ export const userRouter = router({
 
       await ctx.state.storage.put(
         StorageKeys.authenticationCode,
-        JSON.stringify(result)
+        JSON.stringify(result),
       );
 
       return result;
@@ -144,7 +144,7 @@ export const userRouter = router({
 
       await ctx.state.storage.put(
         StorageKeys.emailValidationCode,
-        JSON.stringify(result)
+        JSON.stringify(result),
       );
 
       return result;
@@ -157,7 +157,7 @@ export const userRouter = router({
 
     await ctx.state.storage.put(
       StorageKeys.passwordResetCode,
-      JSON.stringify(result)
+      JSON.stringify(result),
     );
 
     return result;
@@ -177,7 +177,7 @@ export const userRouter = router({
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
       const passwordHash = await ctx.state.storage.get<string>(
-        StorageKeys.passwordHash
+        StorageKeys.passwordHash,
       );
 
       if (passwordHash) {
@@ -186,7 +186,7 @@ export const userRouter = router({
 
       await ctx.state.storage.put(
         StorageKeys.passwordHash,
-        bcrypt.hashSync(input, 10)
+        bcrypt.hashSync(input, 10),
       );
     }),
   resetPasswordWithCode: publicProcedure
@@ -194,11 +194,11 @@ export const userRouter = router({
       z.object({
         code: z.string(),
         password: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const passwordResetCodeString = await ctx.state.storage.get<string>(
-        StorageKeys.passwordResetCode
+        StorageKeys.passwordResetCode,
       );
 
       if (!passwordResetCodeString) {
@@ -220,7 +220,7 @@ export const userRouter = router({
 
       await ctx.state.storage.put(
         StorageKeys.passwordHash,
-        bcrypt.hashSync(input.password, 10)
+        bcrypt.hashSync(input.password, 10),
       );
 
       ctx.state.storage.delete(StorageKeys.passwordResetCode);
@@ -235,7 +235,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.state.storage.put(
         StorageKeys.passwordHash,
-        bcrypt.hashSync(input, 10)
+        bcrypt.hashSync(input, 10),
       );
     }),
   patchProfile: publicProcedure
@@ -259,16 +259,16 @@ export const userRouter = router({
               profile: z
                 .record(z.union([z.string(), z.boolean(), z.number()]))
                 .optional(),
-            })
+            }),
           )
           .optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const profile = await updateUser(
         ctx.state.storage,
         ctx.env.USERS_QUEUE,
-        input
+        input,
       );
 
       return profile;
@@ -279,11 +279,11 @@ export const userRouter = router({
         email: z.string(),
         tenantId: z.string(),
         code: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const codeString = await ctx.state.storage.get<string>(
-        StorageKeys.authenticationCode
+        StorageKeys.authenticationCode,
       );
 
       if (!codeString) {
@@ -319,7 +319,7 @@ export const userRouter = router({
     .input(z.string())
     .query(async ({ input, ctx }) => {
       const code = await ctx.state.storage.get<Code>(
-        StorageKeys.emailValidationCode
+        StorageKeys.emailValidationCode,
       );
 
       if (!code) {
@@ -346,11 +346,11 @@ export const userRouter = router({
         email: z.string(),
         tenantId: z.string(),
         password: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const passwordHash = await ctx.state.storage.get<string>(
-        StorageKeys.passwordHash
+        StorageKeys.passwordHash,
       );
 
       if (!passwordHash) {

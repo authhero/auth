@@ -44,7 +44,7 @@ export class DbConnectionController extends Controller {
   public async registerUser(
     @Body() body: RegisterParams,
     @Request() request: RequestWithContext,
-    @Path("clientId") clientId: string
+    @Path("clientId") clientId: string,
   ): Promise<string> {
     const { ctx } = request;
 
@@ -52,7 +52,7 @@ export class DbConnectionController extends Controller {
 
     const user = User.getInstanceByName(
       ctx.env.USER,
-      getId(client.tenantId, body.email)
+      getId(client.tenantId, body.email),
     );
     // This throws if if fails
     await user.registerPassword.mutate(body.password);
@@ -64,7 +64,7 @@ export class DbConnectionController extends Controller {
   public async resetPassword(
     @Body() body: ResetPasswordParams,
     @Request() request: RequestWithContext,
-    @Path("clientId") clientId: string
+    @Path("clientId") clientId: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
@@ -99,13 +99,13 @@ export class DbConnectionController extends Controller {
   public async verifyEmail(
     @Body() body: VerifyEmailParams,
     @Request() request: RequestWithContext,
-    @Path("clientId") clientId: string
+    @Path("clientId") clientId: string,
   ): Promise<string> {
     const { ctx } = request;
 
     const user = User.getInstanceByName(
       ctx.env.USER,
-      getId(clientId, body.email)
+      getId(clientId, body.email),
     );
     await user.validateEmailValidationCode.query(body.code);
 

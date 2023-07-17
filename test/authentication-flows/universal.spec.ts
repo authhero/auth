@@ -42,7 +42,7 @@ describe("universalAuth", () => {
 
     // The state is stored in a durable object
     expect(controller.getHeader(headers.location)).toBe(
-      "/u/login?state=AAAAAA4"
+      "/u/login?state=AAAAAA4",
     );
   });
 });

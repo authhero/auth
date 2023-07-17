@@ -17,7 +17,7 @@ const server = {
   async fetch(
     request: Request,
     env: Env,
-    ctx: ExecutionContext
+    ctx: ExecutionContext,
   ): Promise<Response> {
     return app.handle(
       request,
@@ -30,7 +30,7 @@ const server = {
         userFactory: User.getFactory(env.USER, env),
         TokenFactory: createTokenFactory(getToken),
       },
-      ctx
+      ctx,
     );
   },
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
@@ -39,7 +39,7 @@ const server = {
   async queue(
     batch: MessageBatch<QueueMessage>,
     env: Env,
-    ctx: ExecutionContext
+    ctx: ExecutionContext,
   ) {
     for (const message of batch.messages) {
       const { body } = message;

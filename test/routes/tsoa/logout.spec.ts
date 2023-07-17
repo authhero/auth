@@ -15,7 +15,7 @@ describe("logout", () => {
     const actual = await controller.logout(
       requestWithContext(ctx),
       "clientId",
-      "http://localhost:3000"
+      "http://localhost:3000",
     );
 
     expect(actual).toBe("Redirecting");
@@ -26,7 +26,7 @@ describe("logout", () => {
 
     const cookieHeader = controller.getHeader("set-cookie");
     expect(cookieHeader).toBe(
-      "auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None"
+      "auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None",
     );
   });
 
@@ -43,7 +43,7 @@ describe("logout", () => {
     const actual = await controller.logout(
       requestWithContext(ctx),
       "clientId",
-      undefined
+      undefined,
     );
 
     expect(actual).toBe("Redirecting");
@@ -54,7 +54,7 @@ describe("logout", () => {
 
     const cookieHeader = controller.getHeader("set-cookie");
     expect(cookieHeader).toBe(
-      "auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None"
+      "auth-token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None",
     );
   });
 });

@@ -4,7 +4,7 @@ import { getCertificate } from "../models/Certificate";
 
 export async function passwordlessGrant(
   env: Env,
-  params: PasswordlessGrantTypeParams
+  params: PasswordlessGrantTypeParams,
 ): Promise<TokenResponse | null> {
   const user = env.userFactory.getInstanceByName(params.username);
 
@@ -17,7 +17,7 @@ export async function passwordlessGrant(
   const certificate = await getCertificate(env);
   const tokenFactory = new env.TokenFactory(
     certificate.privateKey,
-    certificate.kid
+    certificate.kid,
   );
 
   const token = await tokenFactory.createAccessToken({

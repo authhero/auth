@@ -70,7 +70,7 @@ async function getJwks(env: Env) {
     const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
       (cert: any) => {
         return { kid: cert.kid, ...cert.publicKey };
-      }
+      },
     );
 
     return keys;
@@ -101,7 +101,7 @@ async function isValidJwtSignature(ctx: Context<Env>, token: TokenData) {
   const encoder = new TextEncoder();
   const data = encoder.encode([token.raw.header, token.raw.payload].join("."));
   const signature = new Uint8Array(
-    Array.from(token.signature).map((c) => c.charCodeAt(0))
+    Array.from(token.signature).map((c) => c.charCodeAt(0)),
   );
 
   const jwkKeys = await getJwks(ctx.env);
@@ -118,7 +118,7 @@ async function isValidJwtSignature(ctx: Context<Env>, token: TokenData) {
     jwkKey,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
-    ["verify"]
+    ["verify"],
   );
 
   return crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, data);
@@ -128,7 +128,7 @@ export async function getUser(
   ctx: Context<Env>,
   clientId: string,
   bearer: string,
-  scopes: string[]
+  scopes: string[],
 ): Promise<any | null> {
   const token = decodeJwt(bearer);
 
@@ -158,7 +158,7 @@ export function authenticationHandler(security: Security[]) {
   const [scope] = security[0].oauth2;
   return async function jwtMiddleware(
     ctx: Context<Env>,
-    next: Next
+    next: Next,
   ): Promise<Response | undefined> {
     const authHeader = ctx.headers.get("authorization");
     if (!authHeader || !authHeader.toLowerCase().startsWith("bearer")) {
@@ -171,7 +171,7 @@ export function authenticationHandler(security: Security[]) {
       ctx,
       ctx.params.clientId,
       bearer,
-      scope?.split(" ") || []
+      scope?.split(" ") || [],
     );
 
     if (!ctx.state.user) {

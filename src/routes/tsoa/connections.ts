@@ -49,7 +49,7 @@ export class ConnectionsController extends Controller {
   @Security("oauth2", [])
   public async listConnections(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<Connection[]> {
     const { ctx } = request;
 
@@ -71,7 +71,7 @@ export class ConnectionsController extends Controller {
   public async getConnection(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<Connection | string> {
     const { ctx } = request;
 
@@ -99,7 +99,7 @@ export class ConnectionsController extends Controller {
   public async deleteConnection(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
@@ -126,7 +126,7 @@ export class ConnectionsController extends Controller {
     @Body()
     body: Partial<
       Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">
-    >
+    >,
   ): Promise<UpdateResult[]> {
     const { env } = request.ctx;
 
@@ -157,7 +157,7 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Connection, "id" | "createdAt" | "modifiedAt">
+    body: Omit<Connection, "id" | "createdAt" | "modifiedAt">,
   ): Promise<Connection> {
     const { ctx } = request;
     const { env } = ctx;

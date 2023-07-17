@@ -18,7 +18,7 @@ export type QueueMessage = { tenantId: string } & UserMessage;
 export async function sendUserEvent(
   queue: Queue<QueueMessage>,
   doId: string,
-  event: UserEvent
+  event: UserEvent,
 ) {
   const [tenantId, userId] = doId.split("|");
 

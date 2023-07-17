@@ -17,7 +17,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("users")
     .addColumn("id", "varchar", (col) => col.notNull())
     .addColumn("tenant_id", "varchar", (col) =>
-      col.references("tenants.id").onDelete("cascade").notNull()
+      col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("email", "varchar", (col) => col.notNull())
     .addColumn("linked_to", "varchar")
@@ -35,7 +35,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("admin_users")
     .addColumn("id", "varchar", (col) => col.notNull())
     .addColumn("tenant_id", "varchar", (col) =>
-      col.references("tenants.id").onDelete("cascade").notNull()
+      col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("email", "varchar")
     .addColumn("name", "varchar")
@@ -51,7 +51,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("applications")
     .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
     .addColumn("tenant_id", "varchar", (col) =>
-      col.references("tenants.id").onDelete("cascade").notNull()
+      col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("name", "varchar", (col) => col.notNull())
     .addColumn("client_id", "varchar")
@@ -69,7 +69,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable("connections")
     .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
     .addColumn("tenant_id", "varchar", (col) =>
-      col.references("tenants.id").onDelete("cascade").notNull()
+      col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("name", "varchar", (col) => col.notNull())
     .addColumn("client_id", "varchar")

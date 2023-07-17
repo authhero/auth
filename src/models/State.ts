@@ -14,7 +14,7 @@ export const stateRouter = t.router({
       z.object({
         state: z.string(),
         ttl: z.number().default(300),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       await ctx.state.storage.put(STATE, input.state);
@@ -33,7 +33,7 @@ export const stateRouter = t.router({
     .input(
       z.object({
         state: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       await ctx.state.storage.put(STATE, input.state);

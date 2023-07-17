@@ -49,7 +49,7 @@ export class ApplicationsController extends Controller {
   @Security("oauth2", [])
   public async listApplications(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<Application[]> {
     const { ctx } = request;
 
@@ -71,7 +71,7 @@ export class ApplicationsController extends Controller {
   public async getApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<Application | string> {
     const { ctx } = request;
 
@@ -99,7 +99,7 @@ export class ApplicationsController extends Controller {
   public async deleteConnection(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
@@ -127,7 +127,7 @@ export class ApplicationsController extends Controller {
     @Body()
     body: Partial<
       Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">
-    >
+    >,
   ): Promise<UpdateResult[]> {
     const { env } = request.ctx;
 
@@ -159,7 +159,7 @@ export class ApplicationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Application, "id" | "createdAt" | "modifiedAt">
+    body: Omit<Application, "id" | "createdAt" | "modifiedAt">,
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;

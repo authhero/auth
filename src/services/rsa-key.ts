@@ -16,7 +16,7 @@ export async function create(): Promise<Certificate> {
       hash: "SHA-256",
     },
     true,
-    ["encrypt", "decrypt"]
+    ["encrypt", "decrypt"],
   )) as CryptoKeyPair;
 
   const kid = nanoid();
@@ -66,7 +66,7 @@ function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
 
 export async function toPrivatePEM(
   key: CryptoKey,
-  kid: string
+  kid: string,
 ): Promise<string> {
   const pkcs8Key = (await crypto.subtle.exportKey("pkcs8", key)) as ArrayBuffer;
 

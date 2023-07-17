@@ -205,7 +205,7 @@ describe("User", () => {
           code: "123456",
           email: "test@example.com",
           tenantId: "tenantId",
-        })
+        }),
       ).rejects.toThrow("No code found");
     });
 
@@ -224,7 +224,7 @@ describe("User", () => {
           code: "123456",
           email: "test@example.com",
           tenantId: "tenantId",
-        })
+        }),
       ).rejects.toThrow("Invalid code");
     });
 
@@ -246,7 +246,7 @@ describe("User", () => {
           code: "123456",
           email: "test@example.com",
           tenantId: "tenantId",
-        })
+        }),
       ).rejects.toThrow("Authentication code expired");
     });
 

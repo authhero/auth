@@ -20,7 +20,7 @@ async function getTemplate(bucket: R2Bucket, templateName: string) {
 export async function renderForgotPassword(
   bucket: R2Bucket,
   controller: Controller,
-  context: LoginState
+  context: LoginState,
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -41,7 +41,7 @@ export async function renderForgotPassword(
 export async function renderLogin(
   bucket: R2Bucket,
   controller: Controller,
-  context: LoginState
+  context: LoginState,
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -52,7 +52,7 @@ export async function renderLogin(
 
   const socialLoginQuery = new URLSearchParams();
   Object.keys(context.authParams).forEach((key) =>
-    socialLoginQuery.set(key, context.authParams[key])
+    socialLoginQuery.set(key, context.authParams[key]),
   );
 
   // TODO: pull from client instead
@@ -91,7 +91,7 @@ export async function renderLogin(
 export async function renderLoginWithCode(
   bucket: R2Bucket,
   controller: Controller,
-  context: LoginState
+  context: LoginState,
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -111,7 +111,7 @@ export async function renderLoginWithCode(
 export async function renderEnterCode(
   bucket: R2Bucket,
   controller: Controller,
-  context: LoginState
+  context: LoginState,
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -131,7 +131,7 @@ export async function renderEnterCode(
 export async function renderSignup(
   bucket: R2Bucket,
   controller: Controller,
-  context: LoginState
+  context: LoginState,
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -150,7 +150,7 @@ export async function renderSignup(
 export async function renderMessage(
   bucket: R2Bucket,
   controller: Controller,
-  context: LoginState | { page_title: string; message: string }
+  context: LoginState | { page_title: string; message: string },
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 
@@ -169,7 +169,7 @@ export async function renderMessage(
 export async function renderResetPassword(
   bucket: R2Bucket,
   controller: Controller,
-  context: LoginState
+  context: LoginState,
 ) {
   const layoutTemplate = await getTemplate(bucket, "layout");
 

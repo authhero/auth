@@ -8,7 +8,7 @@ export async function setSilentAuthCookies(
   env: Env,
   controller: Controller,
   userId: string,
-  authParams: AuthParams
+  authParams: AuthParams,
 ) {
   const payload = {
     userId,
