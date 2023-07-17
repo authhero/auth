@@ -66,51 +66,26 @@ export async function silentAuth({
         controller.setHeader(headers.setCookie, cookie);
       });
 
-      try {
-        switch (response_type) {
-          case AuthorizationResponseType.CODE:
-            const codeResponse = await generateCode({
-              env,
-              state,
-              nonce,
-              userId: superState.userId,
-              authParams: {
-                ...superState.authParams,
-                code_challenge_method,
-                code_challenge,
-              },
-              user: superState.user as Profile,
-              sid: tokenState,
-              responseType: AuthorizationResponseType.CODE,
-            });
+      const tokenResponse = await generateAuthResponse({
+        env,
+        state,
+        nonce,
+        userId: superState.userId,
+        authParams: {
+          ...superState.authParams,
+          code_challenge_method,
+          code_challenge,
+        },
+        user: superState.user as Profile,
+        sid: tokenState,
+        responseType: response_type,
+      });
 
-            return renderAuthIframe(
-              controller,
-              `${redirectURL.protocol}//${redirectURL.host}`,
-              JSON.stringify(codeResponse),
-            );
-          case AuthorizationResponseType.TOKEN_ID_TOKEN:
-            const tokenResponse = await generateAuthResponse({
-              env,
-              userId: superState.userId,
-              state,
-              nonce,
-              authParams: superState.authParams,
-              sid: tokenState,
-              responseType: AuthorizationResponseType.TOKEN,
-            });
-
-            return renderAuthIframe(
-              controller,
-              `${redirectURL.protocol}//${redirectURL.host}`,
-              JSON.stringify(tokenResponse),
-            );
-          default:
-            throw new Error("Response type not supported");
-        }
-      } catch (error: any) {
-        console.log(`Failed to generate token: ${error.message}`);
-      }
+      return renderAuthIframe(
+        controller,
+        `${redirectURL.protocol}//${redirectURL.host}`,
+        JSON.stringify(tokenResponse),
+      );
     }
   }
 

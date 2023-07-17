@@ -45,7 +45,9 @@ export function applyTokenResponseAsQuery(
     );
   }
 
+  controller.setStatus(302);
   controller.setHeader(headers.location, redirectUri.href);
+  return "Redirecting";
 }
 
 export function applyTokenResponseAsFragment(
@@ -84,7 +86,9 @@ export function applyTokenResponseAsFragment(
 
   redirectUri.hash = anchorLinks.toString();
 
+  controller.setStatus(302);
   controller.setHeader(headers.location, redirectUri.href);
+  return "Redirecting";
 }
 
 export function applyTokenResponse(
@@ -94,15 +98,13 @@ export function applyTokenResponse(
 ) {
   switch (authParams.response_mode) {
     case AuthorizationResponseMode.FRAGMENT:
-      applyTokenResponseAsFragment(controller, tokenResponse, authParams);
-      break;
+      return applyTokenResponseAsFragment(
+        controller,
+        tokenResponse,
+        authParams,
+      );
     case AuthorizationResponseMode.QUERY:
     default:
-      applyTokenResponseAsQuery(controller, tokenResponse, authParams);
-      break;
+      return applyTokenResponseAsQuery(controller, tokenResponse, authParams);
   }
-
-  controller.setStatus(302);
-
-  return "Redirecting";
 }
