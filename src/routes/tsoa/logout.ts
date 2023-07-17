@@ -23,7 +23,7 @@ export class LogoutController extends Controller {
   public async logout(
     @Request() request: RequestWithContext,
     @Query("client_id") clientId: string,
-    @Query("return_to") returnTo?: string,
+    @Query("returnTo") returnTo?: string
   ) {
     const client = await getClient(request.ctx.env, clientId);
 
