@@ -88,7 +88,6 @@ export async function renderLogin(
   });
 }
 
-
 export async function renderLoginWithCode(
   bucket: R2Bucket,
   controller: Controller,

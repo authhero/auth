@@ -17,7 +17,7 @@ import { AuthParams } from "../types/AuthParams";
 import { v4 as uuidv4 } from "uuid";
 import { Env } from "../types";
 import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
-import { User as Profile } from "../types/sql";
+import { Profile } from "../types";
 
 interface Code {
   authParams?: AuthParams;
@@ -74,16 +74,16 @@ async function updateUser(
   if (!existingProfile || !existingProfile.id) {
     existingProfile = {
       id: uuidv4(),
-      modifiedAt: "",
+      modified_at: "",
       connections: [],
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       ...profile,
     };
   }
 
   const updatedProfile: Profile = {
     ...existingProfile,
-    modifiedAt: new Date().toISOString(),
+    modified_at: new Date().toISOString(),
   };
 
   profile.connections?.forEach((connection) => {
@@ -94,17 +94,12 @@ async function updateUser(
 
     updatedProfile.connections?.push(connection);
 
-    // Set standard fields if allready defined in profile
-    Object.keys(PROFILE_FIELDS)
-      .filter((key) => !updatedProfile[key])
-      .forEach((key) => {
-        updatedProfile[key] = connection.profile?.[key];
-      });
-  });
-
-  // Set standard fields if specified in profile
-  PROFILE_FIELDS.filter((key) => profile[key]).forEach((key) => {
-    updatedProfile[key] = profile[key];
+    // Set standard fields if not allready defined in profile
+    PROFILE_FIELDS.forEach((key) => {
+      if (!updatedProfile[key] && connection.profile?.[key]) {
+        updatedProfile[key] = connection.profile[key];
+      }
+    });
   });
 
   await storage.put(StorageKeys.profile, JSON.stringify(updatedProfile));
@@ -249,10 +244,10 @@ export const userRouter = router({
         email: z.string(),
         tenantId: z.string(),
         id: z.string().optional(),
-        createdAt: z.string().optional(),
-        modifiedAt: z.string().optional(),
-        givenName: z.string().optional(),
-        familyName: z.string().optional(),
+        created_at: z.string().optional(),
+        modified_at: z.string().optional(),
+        given_name: z.string().optional(),
+        family_name: z.string().optional(),
         nickname: z.string().optional(),
         name: z.string().optional(),
         picture: z.string().optional(),
@@ -373,8 +368,8 @@ export const userRouter = router({
           {
             name: "auth",
             profile: {
-              email: input.email
-            }
+              email: input.email,
+            },
           },
         ],
       });

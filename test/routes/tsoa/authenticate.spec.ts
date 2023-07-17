@@ -5,7 +5,6 @@ import {
   CodeAuthenticateParams,
   PasswordAuthenticateParams,
 } from "../../../src/routes/tsoa/authenticate";
-import { Env } from "../../../src/types";
 
 describe("Authenticated", () => {
   describe("password", () => {

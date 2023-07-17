@@ -32,16 +32,23 @@
 //   "family_name": ""
 // }
 
-export interface User {
+interface Connection {
+  name: string;
+  profile?: { [key: string]: string | boolean | number };
+}
+
+export interface Profile {
   id: string;
-  email: string;
+  // TODO: this should probably be snake cased as well. Or maybe stored somewhere else
   tenantId: string;
-  createdAt: string;
-  modifiedAt: string;
-  givenName?: string;
-  familyName?: string;
+  email: string;
+  created_at: string;
+  modified_at: string;
+  given_name?: string;
+  family_name?: string;
   nickname?: string;
   name?: string;
   picture?: string;
   locale?: string;
+  connections: Connection[];
 }

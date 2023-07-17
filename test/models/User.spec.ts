@@ -20,6 +20,16 @@ function createCaller(storage: any) {
 }
 
 describe("User", () => {
+  const date = new Date();
+
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(date);
+  });
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   it("use jsdom in this test file", () => {
     const element = document.createElement("div");
     expect(element).not.toBeNull();
@@ -94,8 +104,8 @@ describe("User", () => {
       });
 
       expect(profile.name).toEqual("Test");
-      expect(typeof profile.modifiedAt).toBe("string");
-      expect(typeof profile.createdAt).toBe("string");
+      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.created_at).toBe(date.toISOString());
       expect(typeof profile.id).toBe("string");
     });
 
@@ -142,8 +152,8 @@ describe("User", () => {
               return JSON.stringify({
                 id: "id",
                 name: "Test",
-                createdAt: "2021-01-01T00:00:00.000Z",
-                modifiedAt: "2021-01-01T00:00:00.000Z",
+                created_at: "2021-01-01T00:00:00.000Z",
+                modified_at: "2021-01-01T00:00:00.000Z",
                 connections: [],
               });
           }
@@ -170,11 +180,10 @@ describe("User", () => {
       });
 
       expect(profile.name).toEqual("Test");
-      expect(typeof profile.modifiedAt).toBe("string");
-      expect(profile.modifiedAt).not.toBe("2021-01-01T00:00:00.000Z");
-      expect(profile.createdAt).toBe("2021-01-01T00:00:00.000Z");
-      expect(profile.givenName).toBe("given_name");
-      expect(profile.familyName).toBe("family_name");
+      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
+      expect(profile.given_name).toBe("given_name");
+      expect(profile.family_name).toBe("family_name");
       expect(profile.id).toBe("id");
       expect(profile.connections[0].name).toBe("google-oauth2");
     });

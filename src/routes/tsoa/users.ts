@@ -15,6 +15,7 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NoUserFoundError, NotFoundError } from "../../errors";
 import { getId } from "../../models";
+import { Profile } from "../../types";
 
 @Route("tenants/{tenantId}/users")
 @Tags("users")
@@ -39,7 +40,7 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Path("userId") userId: string
-  ): Promise<User> {
+  ): Promise<Profile> {
     const { env } = request.ctx;
 
     const db = getDb(env);
@@ -47,7 +48,7 @@ export class UsersController extends Controller {
       .selectFrom("users")
       .where("users.tenantId", "=", tenantId)
       .where("users.id", "=", userId)
-      .select('email')
+      .select("email")
       .executeTakeFirst();
 
     if (!dbUser) {
@@ -71,13 +72,14 @@ export class UsersController extends Controller {
     },
     @Path("userId") userId: string,
     @Path("tenantId") tenantId: string
-  ): Promise<User> {
+  ): Promise<Profile> {
     const { env } = request.ctx;
 
     const db = getDb(request.ctx.env);
     const user = await db
       .selectFrom("users")
       .where("users.tenantId", "=", tenantId)
+      .where("users.id", "=", userId)
       .select("email")
       .executeTakeFirst();
 
@@ -103,7 +105,7 @@ export class UsersController extends Controller {
     @Body()
     user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id"> &
       Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>
-  ): Promise<User> {
+  ): Promise<Profile> {
     const { ctx } = request;
 
     const doId = `${tenantId}|${user.email}`;
@@ -111,10 +113,10 @@ export class UsersController extends Controller {
 
     const result = await userInstance.patchProfile.mutate({
       ...user,
-      connections: user.connections || [],
+      connections: [],
       tenantId,
     });
 
-    return result as User;
+    return result as Profile;
   }
 }

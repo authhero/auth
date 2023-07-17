@@ -74,9 +74,9 @@ export class LoginController extends Controller {
   }
 
   /**
- * Renders a code login form
- * @param request
- */
+   * Renders a code login form
+   * @param request
+   */
   @Get("code")
   public async getLoginWithCode(
     @Request() request: RequestWithContext,
@@ -89,9 +89,9 @@ export class LoginController extends Controller {
   }
 
   /**
-  * Renders a code login form
-  * @param request
-  */
+   * Renders a code login form
+   * @param request
+   */
   @Post("code")
   public async getCode(
     @Request() request: RequestWithContext,
@@ -128,16 +128,19 @@ export class LoginController extends Controller {
       subject: "Login Code",
     });
 
-    this.setHeader(headers.location, `/u/enter-code?state=${state}&username=${params.username}`)
+    this.setHeader(
+      headers.location,
+      `/u/enter-code?state=${state}&username=${params.username}`
+    );
     this.setStatus(302);
 
-    return 'Redirect';
+    return "Redirect";
   }
 
   /**
-* Renders a code submit form
-* @param request
-*/
+   * Renders a code submit form
+   * @param request
+   */
   @Get("enter-code")
   public async getEnterCode(
     @Request() request: RequestWithContext,
@@ -151,9 +154,9 @@ export class LoginController extends Controller {
   }
 
   /**
-* Posts a code
-* @param request
-*/
+   * Posts a code
+   * @param request
+   */
   @Post("enter-code")
   public async postCode(
     @Request() request: RequestWithContext,
@@ -164,7 +167,7 @@ export class LoginController extends Controller {
     const loginState = await getLoginState(env, state);
 
     if (!loginState.authParams.username) {
-      throw new Error('username required in state')
+      throw new Error("username required in state");
     }
 
     const client = await getClient(env, loginState.authParams.client_id);
@@ -176,12 +179,12 @@ export class LoginController extends Controller {
       await user.validateAuthenticationCode.mutate({
         code: params.code,
         email: loginState.authParams.username,
-        tenantId: client.tenantId
-      })
+        tenantId: client.tenantId,
+      });
     } catch (err) {
       return renderEnterCode(env.AUTH_TEMPLATES, this, {
         ...loginState,
-        errorMessage: 'Invalid code'
+        errorMessage: "Invalid code",
       });
     }
 
@@ -221,13 +224,17 @@ export class LoginController extends Controller {
       getId(client.tenantId, loginParams.username)
     );
 
+    if (loginState.authParams.username !== loginParams.username) {
+      loginState.authParams.username = loginParams.username;
+      await setLoginState(env, state, loginState);
+    }
+
     try {
       await user.registerPassword.mutate(loginParams.password);
     } catch (err: any) {
       return renderSignup(env.AUTH_TEMPLATES, this, {
         ...loginState,
         errorMessage: err.message,
-        username: loginParams.username,
       });
     }
 
