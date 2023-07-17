@@ -17,7 +17,7 @@ export async function ticketAuth(
   controller: Controller,
   ticket: string,
   state: string,
-  redirectUri: string,
+  redirectUri: string
 ) {
   const ticketInstance = env.stateFactory.getInstanceById(base64ToHex(ticket));
 
@@ -52,7 +52,7 @@ export async function ticketAuth(
   }
   anchorLinks.set("token_type", "Bearer");
   anchorLinks.set("expires_in", "28800");
-  anchorLinks.set("state", state);
+  anchorLinks.set("state", encodeURIComponent(state));
   if (authParams.scope) {
     anchorLinks.set("scope", authParams.scope);
   }
