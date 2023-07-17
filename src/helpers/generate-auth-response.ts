@@ -83,6 +83,7 @@ export async function generateAuthResponse({
     name: profile.name,
     iss: env.ISSUER,
     nonce: nonce || authParams.nonce,
+    email: profile.email,
   });
 
   if (!accessToken || !idToken) {
