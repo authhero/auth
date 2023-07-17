@@ -52,7 +52,7 @@ export async function ticketAuth(
   }
   anchorLinks.set("token_type", "Bearer");
   anchorLinks.set("expires_in", "28800");
-  anchorLinks.set("state", state);
+  anchorLinks.set("state", encodeURIComponent(state));
   if (authParams.scope) {
     anchorLinks.set("scope", authParams.scope);
   }
