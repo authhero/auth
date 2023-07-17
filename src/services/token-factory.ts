@@ -112,6 +112,7 @@ export function createTokenFactory(getToken: GetToken) {
       name,
       nonce,
       iss,
+      email,
     }: CreateIDTokenParams): Promise<string | null> {
       const payload: IDTokenPayload = {
         // The audience for an id token is the client id
@@ -129,6 +130,7 @@ export function createTokenFactory(getToken: GetToken) {
         locale: "en",
         sid: "BVhF_cwjxxUN5dKFU9b9dc9N9-VyPuLf",
         updated_at: "2023-04-11T20:33:16.226Z",
+        email,
       };
 
       return this.getJwt(payload);
