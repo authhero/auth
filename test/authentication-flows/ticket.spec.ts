@@ -3,6 +3,7 @@ import { contextFixture, controllerFixture } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
+import { AuthorizationResponseMode } from "../../src/types";
 
 describe("passwordlessAuth", () => {
   const date = new Date();
@@ -23,14 +24,16 @@ describe("passwordlessAuth", () => {
         [ticketInstanceId]: JSON.stringify({
           authParams: {
             scope: "openid profile email",
+            redirect_uri: "https://example.com",
+            response_mode: AuthorizationResponseMode.FRAGMENT,
+            state: "state",
           },
         }),
       },
     });
     const controller = controllerFixture();
     const ticket = "ticket";
-    const state =
-      "redirect_uri=https%3A%2F%2Fexample.com&client_id=kvartal&response_type=code&state=12345678";
+    const state = "state";
     const redirectUri = "https://example.com";
 
     const response = await ticketAuth(
@@ -60,10 +63,7 @@ describe("passwordlessAuth", () => {
     expect(hashParams.get("id_token")).toBe(null);
     expect(hashParams.get("token_type")).toBe("Bearer");
     expect(hashParams.get("expires_in")).toBe("28800");
-    expect(hashParams.get("state")).toBe(encodeURIComponent(state));
-    expect(hashParams.get("state")).toBe(
-      "redirect_uri%3Dhttps%253A%252F%252Fexample.com%26client_id%3Dkvartal%26response_type%3Dcode%26state%3D12345678",
-    );
+    expect(hashParams.get("state")).toBe(state);
     expect(hashParams.get("scope")).toBe("openid profile email");
   });
 });

@@ -6,13 +6,14 @@ import {
   Env,
   LoginState,
 } from "../types";
-import { contentTypes, headers } from "../constants";
+import { headers } from "../constants";
 import { hexToBase64 } from "../utils/base64";
 import { getClient } from "../services/clients";
 import { getId } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
-import { generateCode } from "../helpers/generate-auth-response";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/jwt";
+import { applyTokenResponse } from "../helpers/apply-token-response";
 import { InvalidConnectionError } from "../errors";
 
 export interface SocialAuthState {
@@ -106,30 +107,17 @@ export async function socialAuthCallback({
   }
 
   // TODO: This is quick and dirty.. we should validate the values.
-  const redirectUri = new URL(state.authParams.redirect_uri);
+  const tokenResponse = await generateAuthResponse({
+    env,
+    userId,
+    sid: sessionId,
+    state: state.authParams.state,
+    nonce: state.authParams.nonce,
+    authParams: state.authParams,
+    user: profile,
+    responseType:
+      state.authParams.response_type || AuthorizationResponseType.TOKEN,
+  });
 
-  switch (state.authParams.response_type) {
-    case AuthorizationResponseType.CODE:
-      const codeResponse = await generateCode({
-        env,
-        userId,
-        authParams: state.authParams,
-        user: profile,
-        sid: sessionId,
-        responseType: AuthorizationResponseType.CODE,
-      });
-      redirectUri.searchParams.set("code", codeResponse.code);
-      if (state.authParams.state) {
-        redirectUri.searchParams.set("state", state.authParams.state);
-      }
-      break;
-    default:
-      throw new Error("Unsupported response type");
-  }
-
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectUri.href);
-  controller.setHeader(headers.contentType, contentTypes.text);
-
-  return "Redirecting";
+  return applyTokenResponse(controller, tokenResponse, state.authParams);
 }
