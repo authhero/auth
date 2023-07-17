@@ -108,6 +108,16 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
           senderEmail: "senderEmail",
           senderName: "senderName",
           allowedCallbackUrls: ["http://localhost:3000"],
+          connections: [
+            {
+              name: "google-oauth2",
+              clientId: "googleClientId",
+              clientSecret: "googleClientSecret",
+              authorizationEndpoint:
+                "https://accounts.google.com/o/oauth2/v2/auth",
+              tokenEndpoint: "https://oauth2.googleapis.com/token",
+            },
+          ],
         }),
       }),
     },

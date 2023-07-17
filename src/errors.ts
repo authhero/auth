@@ -10,6 +10,14 @@ export class InvalidRequestError extends Error {
   status = 400;
 }
 
+export class InvalidConnectionError extends InvalidRequestError {
+  constructor(message = "Invalid Connection") {
+    super();
+
+    this.message = message;
+  }
+}
+
 export class UnauthenticatedError extends Error {
   status = 401;
 
