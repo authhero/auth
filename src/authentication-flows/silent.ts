@@ -17,7 +17,6 @@ import {
   generateAuthResponse,
   generateCode,
 } from "../helpers/generate-auth-response";
-import { User } from "../types/sql/User";
 import { headers } from "../constants";
 
 export interface SilentAuthParams {

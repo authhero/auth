@@ -3,6 +3,7 @@ import { contextFixture, controllerFixture } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
+import { AuthorizationResponseMode } from "../../src/types";
 
 describe("passwordlessAuth", () => {
   const date = new Date();
@@ -23,6 +24,9 @@ describe("passwordlessAuth", () => {
         [ticketInstanceId]: JSON.stringify({
           authParams: {
             scope: "openid profile email",
+            redirect_uri: "https://example.com",
+            response_mode: AuthorizationResponseMode.FRAGMENT,
+            state: "state",
           },
         }),
       },

@@ -11,8 +11,12 @@ import { hexToBase64 } from "../utils/base64";
 import { getClient } from "../services/clients";
 import { getId } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
-import { generateCode } from "../helpers/generate-auth-response";
+import {
+  generateAuthResponse,
+  generateCode,
+} from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/jwt";
+import { applyTokenResponse } from "../helpers/apply-token-response";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -44,11 +48,8 @@ export async function socialAuth(
     oauthLoginUrl.searchParams.set("scope", authParams.scope);
   }
   oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
-  // TODO: this should be pointing to the callback url
-  oauthLoginUrl.searchParams.set(
-    "redirect_uri",
-    `${client.loginBaseUrl}callback`,
-  );
+
+  oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
   oauthLoginUrl.searchParams.set("client_id", connectionInstance.clientId);
   oauthLoginUrl.searchParams.set("response_type", "code");
   controller.setHeader(headers.location, oauthLoginUrl.href);
@@ -109,30 +110,18 @@ export async function socialAuthCallback({
   }
 
   // TODO: This is quick and dirty.. we should validate the values.
-  const redirectUri = new URL(state.authParams.redirect_uri);
 
-  switch (state.authParams.response_type) {
-    case AuthorizationResponseType.CODE:
-      const codeResponse = await generateCode({
-        env,
-        userId,
-        authParams: state.authParams,
-        user: profile,
-        sid: sessionId,
-        responseType: AuthorizationResponseType.CODE,
-      });
-      redirectUri.searchParams.set("code", codeResponse.code);
-      if (state.authParams.state) {
-        redirectUri.searchParams.set("state", state.authParams.state);
-      }
-      break;
-    default:
-      throw new Error("Unsupported response type");
-  }
+  const tokenResponse = await generateAuthResponse({
+    env,
+    userId,
+    sid: sessionId,
+    state: state.authParams.state,
+    nonce: state.authParams.nonce,
+    authParams: state.authParams,
+    user: profile,
+    responseType:
+      state.authParams.response_type || AuthorizationResponseType.TOKEN,
+  });
 
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectUri.href);
-  controller.setHeader(headers.contentType, contentTypes.text);
-
-  return "Redirecting";
+  return applyTokenResponse(controller, tokenResponse, state.authParams);
 }

@@ -1,12 +1,9 @@
 import { Controller } from "@tsoa/runtime";
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
-import { headers } from "../constants";
 import { base64ToHex } from "../utils/base64";
-import {
-  generateAuthResponse,
-  generateTokens,
-} from "../helpers/generate-auth-response";
+import { generateTokens } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
+import { applyTokenResponse } from "../helpers/apply-token-response";
 
 interface PasswordlessState {
   clientId: string;
@@ -43,24 +40,5 @@ export async function ticketAuth(
 
   await setSilentAuthCookies(env, controller, userId, authParams);
 
-  const redirectURL = new URL(redirectUri);
-
-  const anchorLinks = new URLSearchParams();
-
-  anchorLinks.set("access_token", tokenResponse.access_token);
-  if (tokenResponse.id_token) {
-    anchorLinks.set("id_token", tokenResponse.id_token);
-  }
-  anchorLinks.set("token_type", "Bearer");
-  anchorLinks.set("expires_in", "28800");
-  anchorLinks.set("state", state);
-  if (authParams.scope) {
-    anchorLinks.set("scope", authParams.scope);
-  }
-
-  redirectURL.hash = anchorLinks.toString();
-
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectURL.href);
-  return "Redirecting";
+  return applyTokenResponse(controller, tokenResponse, authParams);
 }
