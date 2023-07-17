@@ -13,7 +13,6 @@ import {
   Delete,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-import { UpdateResult } from "kysely";
 
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -127,7 +126,7 @@ export class ConnectionsController extends Controller {
     body: Partial<
       Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">
     >,
-  ): Promise<UpdateResult[]> {
+  ) {
     const { env } = request.ctx;
 
     await checkAccess(request.ctx, tenantId, id);
@@ -147,7 +146,7 @@ export class ConnectionsController extends Controller {
 
     await updateTenantClientsInKV(env, tenantId);
 
-    return results;
+    return Number(results[0].numUpdatedRows);
   }
 
   @Post("")

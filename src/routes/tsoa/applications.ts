@@ -13,7 +13,6 @@ import {
   Delete,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-import { UpdateResult } from "kysely";
 
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -128,7 +127,7 @@ export class ApplicationsController extends Controller {
     body: Partial<
       Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">
     >,
-  ): Promise<UpdateResult[]> {
+  ) {
     const { env } = request.ctx;
 
     const db = getDb(env);
@@ -149,7 +148,7 @@ export class ApplicationsController extends Controller {
 
     await updateClientInKV(env, id);
 
-    return results;
+    return Number(results[0].numUpdatedRows);
   }
 
   @Post("")
