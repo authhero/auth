@@ -158,7 +158,9 @@ export class ApplicationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt"> & { id?: string },
+    body: Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt"> & {
+      id?: string;
+    },
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;
