@@ -19,7 +19,8 @@ describe("passwordlessAuth", () => {
     });
     const controller = controllerFixture();
     const ticket = "ticket";
-    const state = "state";
+    const state =
+      "redirect_uri=https%3A%2F%2Fexample.com&client_id=kvartal&response_type=code&state=12345678";
     const redirectUri = "https://example.com";
 
     const response = await ticketAuth(
@@ -34,7 +35,7 @@ describe("passwordlessAuth", () => {
     const redirectURL = new URL(redirectHeader);
     const hashParams = new URLSearchParams(redirectURL.hash.slice(1));
 
-    console.log(redirectURL.hash.slice(1));
+    // console.log(redirectURL.hash.slice(1));
 
     expect(response).toEqual("Redirecting");
     expect(controller.getStatus()).toEqual(302);
@@ -42,7 +43,7 @@ describe("passwordlessAuth", () => {
     expect(hashParams.get("id_token")).toBe("id_token");
     expect(hashParams.get("token_type")).toBe("Bearer");
     expect(hashParams.get("expires_in")).toBe("28800");
-    expect(hashParams.get("state")).toBe("state");
+    expect(hashParams.get("state")).toBe(encodeURIComponent(state));
     expect(hashParams.get("scope")).toBe("openid profile email");
   });
 });
