@@ -20,7 +20,7 @@ export class TenantsController extends Controller {
   @Get("")
   @Security("oauth2", [])
   public async listTenants(
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
   ): Promise<Tenant[]> {
     const { ctx } = request;
     const db = getDb(ctx.env);
@@ -40,7 +40,7 @@ export class TenantsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postTenants(
     @Request() request: RequestWithContext,
-    @Body() body: Omit<Tenant, "id">
+    @Body() body: Omit<Tenant, "id">,
   ): Promise<Tenant> {
     const { ctx } = request;
 

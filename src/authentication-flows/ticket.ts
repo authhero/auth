@@ -17,7 +17,7 @@ export async function ticketAuth(
   controller: Controller,
   ticket: string,
   state: string,
-  redirectUri: string
+  redirectUri: string,
 ) {
   const ticketInstance = env.stateFactory.getInstanceById(base64ToHex(ticket));
 

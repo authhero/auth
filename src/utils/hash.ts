@@ -1,6 +1,6 @@
 export default async function hash(
   data: string,
-  algorithm: "SHA-256" | "SHA-1" = "SHA-256"
+  algorithm: "SHA-256" | "SHA-1" = "SHA-256",
 ): Promise<string> {
   const encodedData = new TextEncoder().encode(data);
 

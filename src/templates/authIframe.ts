@@ -3,7 +3,7 @@ import { Controller } from "tsoa";
 export default async function renderAuthIframe(
   controller: Controller,
   targetOrigin: string,
-  response: string
+  response: string,
 ) {
   const auth0Iframe = `<!DOCTYPE html>
   <html>

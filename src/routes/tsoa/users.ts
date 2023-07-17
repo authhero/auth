@@ -49,7 +49,7 @@ export class UsersController extends Controller {
   @Get("")
   public async listUsers(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<User[]> {
     const { ctx } = request;
 
@@ -70,7 +70,7 @@ export class UsersController extends Controller {
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
-    @Path("userId") userId: string
+    @Path("userId") userId: string,
   ): Promise<Profile> {
     const { ctx } = request;
     const { env } = ctx;
@@ -92,7 +92,7 @@ export class UsersController extends Controller {
 
     // Fetch the user from durable object
     const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email)
+      getId(tenantId, dbUser.email),
     );
 
     return user.getProfile.query();
@@ -106,7 +106,7 @@ export class UsersController extends Controller {
       password?: string;
     },
     @Path("userId") userId: string,
-    @Path("tenantId") tenantId: string
+    @Path("tenantId") tenantId: string,
   ): Promise<Profile> {
     const { env } = request.ctx;
 
@@ -141,7 +141,7 @@ export class UsersController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>
+      Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>,
   ): Promise<Profile> {
     const { ctx } = request;
 

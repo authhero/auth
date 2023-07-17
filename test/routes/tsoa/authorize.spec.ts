@@ -49,7 +49,7 @@ describe("authorize", () => {
 
       ctx.headers.set(
         "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc"
+        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
       );
 
       const actual = await controller.authorizeWithParams({
@@ -117,7 +117,7 @@ describe("authorize", () => {
       });
 
       const locationHeader = `https://auth.example.com${controller.getHeader(
-        "location"
+        "location",
       )}`;
       const redirectUrl = new URL(locationHeader);
       const state = redirectUrl.searchParams.get("state");

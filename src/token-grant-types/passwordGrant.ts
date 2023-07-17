@@ -5,7 +5,7 @@ import { getCertificate } from "../models/Certificate";
 
 export async function passwordGrant(
   ctx: Context<Env>,
-  params: PasswordGrantTypeParams
+  params: PasswordGrantTypeParams,
 ): Promise<TokenResponse | null> {
   const user = ctx.env.userFactory.getInstanceByName(params.username);
 
@@ -19,7 +19,7 @@ export async function passwordGrant(
   const certificate = await getCertificate(ctx.env);
   const tokenFactory = new ctx.env.TokenFactory(
     certificate.privateKey,
-    certificate.kid
+    certificate.kid,
   );
 
   const token = await tokenFactory.createAccessToken({

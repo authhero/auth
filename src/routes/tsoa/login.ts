@@ -65,7 +65,7 @@ export class LoginController extends Controller {
   @Get("login")
   public async getLogin(
     @Request() request: RequestWithContext,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -80,7 +80,7 @@ export class LoginController extends Controller {
   @Get("code")
   public async getLoginWithCode(
     @Request() request: RequestWithContext,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -96,14 +96,14 @@ export class LoginController extends Controller {
   public async getCode(
     @Request() request: RequestWithContext,
     @Body() params: { username: string },
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
 
     const client = await getClient(env, loginState.authParams.client_id);
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, params.username)
+      getId(client.tenantId, params.username),
     );
 
     const { code } = await user.createAuthenticationCode.mutate(loginState);
@@ -130,7 +130,7 @@ export class LoginController extends Controller {
 
     this.setHeader(
       headers.location,
-      `/u/enter-code?state=${state}&username=${params.username}`
+      `/u/enter-code?state=${state}&username=${params.username}`,
     );
     this.setStatus(302);
 
@@ -145,7 +145,7 @@ export class LoginController extends Controller {
   public async getEnterCode(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
-    @Query("username") username: string
+    @Query("username") username: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -161,7 +161,7 @@ export class LoginController extends Controller {
   public async postCode(
     @Request() request: RequestWithContext,
     @Body() params: { code: string },
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -172,7 +172,7 @@ export class LoginController extends Controller {
 
     const client = await getClient(env, loginState.authParams.client_id);
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginState.authParams.username)
+      getId(client.tenantId, loginState.authParams.username),
     );
 
     try {
@@ -202,7 +202,7 @@ export class LoginController extends Controller {
   @Get("signup")
   public async getSignup(
     @Request() request: RequestWithContext,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -214,14 +214,14 @@ export class LoginController extends Controller {
   public async postSignup(
     @Request() request: RequestWithContext,
     @Body() loginParams: LoginParams,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
 
     const client = await getClient(env, loginState.authParams.client_id);
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginParams.username)
+      getId(client.tenantId, loginParams.username),
     );
 
     if (loginState.authParams.username !== loginParams.username) {
@@ -252,7 +252,7 @@ export class LoginController extends Controller {
   @Get("forgot-password")
   public async getForgotPassword(
     @Request() request: RequestWithContext,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -271,7 +271,7 @@ export class LoginController extends Controller {
   public async postForgotPassword(
     @Request() request: RequestWithContext,
     @Body() params: PasswordResetParams,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
@@ -284,7 +284,7 @@ export class LoginController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, params.username)
+      getId(client.tenantId, params.username),
     );
 
     if (loginState.authParams.username !== params.username) {
@@ -324,7 +324,7 @@ export class LoginController extends Controller {
   @Get("reset-password")
   public async getResetPassword(
     @Request() request: RequestWithContext,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -341,7 +341,7 @@ export class LoginController extends Controller {
     @Request() request: RequestWithContext,
     @Body() params: { password: string },
     @Query("state") state: string,
-    @Query("code") code: string
+    @Query("code") code: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -353,7 +353,7 @@ export class LoginController extends Controller {
     const client = await getClient(env, loginState.authParams.client_id);
 
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginState.authParams.username)
+      getId(client.tenantId, loginState.authParams.username),
     );
 
     try {
@@ -380,7 +380,7 @@ export class LoginController extends Controller {
   public async postLogin(
     @Request() request: RequestWithContext,
     @Body() loginParams: LoginParams,
-    @Query("state") state: string
+    @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const loginState = await getLoginState(env, state);
@@ -388,7 +388,7 @@ export class LoginController extends Controller {
     const client = await getClient(env, loginState.authParams.client_id);
 
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginParams.username)
+      getId(client.tenantId, loginParams.username),
     );
 
     try {
@@ -420,12 +420,12 @@ export class LoginController extends Controller {
   public async info(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
-    @Query("code") code: string
+    @Query("code") code: string,
   ): Promise<string> {
     const { ctx } = request;
 
     const stateInstance = ctx.env.stateFactory.getInstanceById(
-      base64ToHex(code)
+      base64ToHex(code),
     );
     const stateString = await stateInstance.getState.query();
     if (!stateString) {

@@ -74,7 +74,7 @@ describe("Authenticated", () => {
         JSON.stringify({
           error: "access_denied",
           error_description: "Wrong email or password.",
-        })
+        }),
       );
     });
   });
@@ -146,7 +146,7 @@ describe("Authenticated", () => {
         JSON.stringify({
           error: "access_denied",
           error_description: "Wrong email or verification code.",
-        })
+        }),
       );
     });
   });

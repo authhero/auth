@@ -21,7 +21,7 @@ const mockFetch = (data: unknown, status = 200): jest.Mock => {
       status,
       json: () => Promise.resolve(data),
       text: () => Promise.resolve(data),
-    })
+    }),
   );
 };
 (global as any).fetch = mockFetch({ access_token: "some_access_token" });
@@ -59,7 +59,7 @@ describe("OAuth2Client", () => {
 
       const code = "some_authorization_code";
       await expect(client.exchangeCodeForTokenResponse(code)).rejects.toThrow(
-        "Error exchanging code for token: invalid_grant"
+        "Error exchanging code for token: invalid_grant",
       );
     });
   });

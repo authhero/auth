@@ -15,10 +15,10 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 export async function pkceAuthorizeCodeGrant(
   env: Env,
   controller: Controller,
-  params: PKCEAuthorizationCodeGrantTypeParams
+  params: PKCEAuthorizationCodeGrantTypeParams,
 ): Promise<TokenResponse> {
   const stateInstance = env.stateFactory.getInstanceById(
-    base64ToHex(params.code)
+    base64ToHex(params.code),
   );
   const stateString = await stateInstance.getState.query();
   if (!stateString) {
@@ -49,7 +49,7 @@ export async function pkceAuthorizeCodeGrant(
   const challenge = await computeCodeChallenge(
     env,
     params.code_verifier,
-    state.authParams.code_challenge_method
+    state.authParams.code_challenge_method,
   );
   if (challenge !== state.authParams.code_challenge) {
     throw new InvalidCodeVerifierError();

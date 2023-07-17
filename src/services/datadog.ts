@@ -13,7 +13,7 @@ function instanceToJson(instance: any): any {
 async function log(
   ctx: ContextWithBody<Env>,
   response: Response,
-  message?: string
+  message?: string,
 ) {
   const ddApiKey = ctx.env.DD_API_KEY;
 

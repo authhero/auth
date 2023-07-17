@@ -17,10 +17,10 @@ export class StateController extends Controller {
   @Get("{id}")
   public async getState(
     @Request() request: RequestWithContext,
-    @Path("id") id: string
+    @Path("id") id: string,
   ): Promise<any> {
     const stateInstance = request.ctx.env.stateFactory.getInstanceById(
-      base64ToHex(id)
+      base64ToHex(id),
     );
     const state = await stateInstance.getState.query();
 
@@ -35,11 +35,11 @@ export class StateController extends Controller {
   @Post("")
   public async setState(
     @Request() request: RequestWithContext,
-    @Body() body: any
+    @Body() body: any,
   ): Promise<any> {
     const id = request.ctx.env.STATE.newUniqueId();
     const stateInstance = request.ctx.env.stateFactory.getInstanceById(
-      id.toString()
+      id.toString(),
     );
     await stateInstance.createState.mutate({
       state: JSON.stringify(body),

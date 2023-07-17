@@ -54,7 +54,7 @@ export async function silentAuth({
 
   if (tokenState) {
     const stateInstance = env.stateFactory.getInstanceById(
-      base64ToHex(tokenState)
+      base64ToHex(tokenState),
     );
 
     const superStateString = await stateInstance.getState.query();
@@ -90,7 +90,7 @@ export async function silentAuth({
               JSON.stringify({
                 code,
                 state,
-              })
+              }),
             );
           case AuthorizationResponseType.IMPLICIT:
           case AuthorizationResponseType.TOKEN_ID_TOKEN:
@@ -107,7 +107,7 @@ export async function silentAuth({
             return renderAuthIframe(
               controller,
               `${redirectURL.protocol}//${redirectURL.host}`,
-              JSON.stringify(tokenResponse)
+              JSON.stringify(tokenResponse),
             );
           default:
             throw new Error("Response type not supported");
@@ -125,6 +125,6 @@ export async function silentAuth({
       error: "login_required",
       error_description: "Login required",
       state,
-    })
+    }),
   );
 }

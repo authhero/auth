@@ -27,7 +27,7 @@ describe("passwordlessAuth", () => {
       controller,
       ticket,
       state,
-      redirectUri
+      redirectUri,
     );
 
     const redirectHeader = controller.getHeader("location") as string;

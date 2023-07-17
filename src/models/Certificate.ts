@@ -18,7 +18,7 @@ export async function getCertificate(env: Env): Promise<Certificate> {
     // Wait for the cache to be cleared
     .filter(
       (c: Certificate) =>
-        c.createdAt + JWKS_CACHE_TIMEOUT_IN_SECONDS * 1000 < Date.now()
+        c.createdAt + JWKS_CACHE_TIMEOUT_IN_SECONDS * 1000 < Date.now(),
     )
     .pop();
 

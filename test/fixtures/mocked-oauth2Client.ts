@@ -7,7 +7,7 @@ import {
 export function oAuth2ClientFactory(
   params: OAuthProviderParams,
   redirectUri: string,
-  scopes?: string[]
+  scopes?: string[],
 ): IOAuth2Client {
   return new MockedOAuth2Client(params, redirectUri, scopes);
 }
@@ -20,7 +20,7 @@ export class MockedOAuth2Client implements IOAuth2Client {
   constructor(
     params: OAuthProviderParams,
     redirectUri: string,
-    scopes: string[] = []
+    scopes: string[] = [],
   ) {
     this.params = params;
     this.redirectUri = redirectUri;
@@ -41,7 +41,7 @@ export class MockedOAuth2Client implements IOAuth2Client {
   }
 
   async getUserProfile(
-    accessToken: string
+    accessToken: string,
   ): Promise<{ [key: string]: string }> {
     return {
       id: "id",

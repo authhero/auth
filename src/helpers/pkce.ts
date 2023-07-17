@@ -4,7 +4,7 @@ import { CodeChallengeMethod, Env } from "../types";
 export async function computeCodeChallenge(
   env: Env,
   codeVerifier: string,
-  method: CodeChallengeMethod
+  method: CodeChallengeMethod,
 ): Promise<string> {
   let codeChallenge: string;
 

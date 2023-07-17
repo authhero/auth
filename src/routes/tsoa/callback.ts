@@ -26,7 +26,7 @@ export class CallbackController extends Controller {
     @Query("code") code: string,
     @Query("prompt") prompt: string,
     @Query("authuser") authUser?: string,
-    @Query("hd") hd?: string
+    @Query("hd") hd?: string,
   ): Promise<string> {
     const { env } = request.ctx;
     const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));

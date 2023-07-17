@@ -38,7 +38,7 @@ export class JWKSRoutes extends Controller {
    * An endpoint for converting an auth0 token to a publisher token using a redirect
    */
   public async getJWKS(
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
   ): Promise<JwksKeys> {
     const { env } = request.ctx;
 
@@ -46,7 +46,7 @@ export class JWKSRoutes extends Controller {
     const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
       (cert: any) => {
         return { kid: cert.kid, ...cert.publicKey };
-      }
+      },
     );
 
     this.setHeader(headers.contentType, contentTypes.json);
@@ -54,7 +54,7 @@ export class JWKSRoutes extends Controller {
     this.setHeader(headers.accessControlAllowMethod, "GET");
     this.setHeader(
       headers.cacheControl,
-      `public, max-age=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-while-revalidate=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-if-error=86400`
+      `public, max-age=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-while-revalidate=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-if-error=86400`,
     );
 
     return { keys };
@@ -65,7 +65,7 @@ export class JWKSRoutes extends Controller {
    * An endpoint for converting an auth0 token to a publisher token using a redirect
    */
   public async getOpenIDConfigration(
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
   ): Promise<OpenIDConfiguration> {
     const { ISSUER } = request.ctx.env;
 

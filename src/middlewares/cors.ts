@@ -3,7 +3,7 @@ import { headers } from "../constants";
 
 export default async function corsMiddleware<Env>(
   ctx: Context<Env>,
-  next: Next
+  next: Next,
 ) {
   const response = await next();
 
@@ -17,7 +17,7 @@ export default async function corsMiddleware<Env>(
   response?.headers.set(headers.accessControlAllowCredentials, "true");
   response?.headers.set(
     headers.accessControlAllowHeaders,
-    "Content-Type, Auth0-Client"
+    "Content-Type, Auth0-Client",
   );
 
   return response;

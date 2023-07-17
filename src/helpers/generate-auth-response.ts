@@ -62,7 +62,7 @@ export async function generateAuthResponse({
   const certificate = await getCertificate(env);
   const tokenFactory = new env.TokenFactory(
     certificate.privateKey,
-    certificate.kid
+    certificate.kid,
   );
 
   const userInstance = await env.userFactory.getInstanceByName(userId);

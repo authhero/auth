@@ -52,7 +52,7 @@ export class AuthenticateController extends Controller {
   @Post("authenticate")
   public async authenticate(
     @Body() body: CodeAuthenticateParams | PasswordAuthenticateParams,
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
   ): Promise<LoginTicket | LoginError> {
     const { env } = request.ctx;
 
@@ -62,7 +62,7 @@ export class AuthenticateController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      `${client.tenantId}|${body.username}`
+      `${client.tenantId}|${body.username}`,
     );
 
     let authParams: AuthParams | undefined = {

@@ -18,7 +18,7 @@ export class TokenRoutes extends Controller {
    */
   public async token(
     @Body() body: TokenParams,
-    @Request() request: RequestWithContext
+    @Request() request: RequestWithContext,
   ): Promise<TokenResponse | string> {
     const { ctx } = request;
 
