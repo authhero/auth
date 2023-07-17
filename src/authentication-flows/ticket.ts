@@ -1,5 +1,6 @@
 import { Controller } from "@tsoa/runtime";
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
+
 import { base64ToHex } from "../utils/base64";
 import { generateTokens } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";

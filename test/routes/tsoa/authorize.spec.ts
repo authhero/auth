@@ -6,7 +6,7 @@ import {
   AuthorizationResponseType,
   CodeChallengeMethod,
 } from "../../../src/types";
-import { decode } from "../../../src/utils/base64";
+import { InvalidConnectionError } from "../../../src/errors";
 
 describe("authorize", () => {
   describe("silent authentication", () => {
@@ -126,6 +126,71 @@ describe("authorize", () => {
 
       expect(actual).toBe("Redirect to login");
       expect(controller.getStatus()).toBe(302);
+    });
+  });
+
+  describe("social login", () => {
+    it("should login using a link from login2", async () => {
+      // https://auth2.sesamy.dev/authorize
+      //   ?client_id=db296ac4-0e1a-4460-8731-8ad4f75c6ff4
+      //   &response_type=token
+      //   &redirect_uri=https%3A%2F%2Flogin2-3u57midun.vercel.sesamy.dev%2Fcallback
+      //   &scope=openid%20profile%20email
+      //   &audience=https%3A%2F%2Fsesamy.com
+      //   &connection=google-oauth2
+      //   &state=nOZwqZjr2ZT23FA9ysq26ocRLMNSLn.6
+      //   &auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMC4yIn0%3D
+
+      const controller = new AuthorizeController();
+
+      const ctx = contextFixture({});
+
+      const actual = await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        redirect_uri: "https://example.com",
+        state: "state",
+        scope: "openid profile email",
+        connection: "google-oauth2",
+        response_type: AuthorizationResponseType.TOKEN,
+      });
+
+      const locationHeader = controller.getHeader("location") as string;
+
+      expect(locationHeader).toBe(
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.comcallback&client_id=googleClientId&response_type=code",
+      );
+
+      expect(actual).toBe("Redirecting to google-oauth2");
+      expect(controller.getStatus()).toBe(302);
+    });
+
+    it("should return a 400 if the connections is not available", async () => {
+      // https://auth2.sesamy.dev/authorize
+      //   ?client_id=db296ac4-0e1a-4460-8731-8ad4f75c6ff4
+      //   &response_type=token
+      //   &redirect_uri=https%3A%2F%2Flogin2-3u57midun.vercel.sesamy.dev%2Fcallback
+      //   &scope=openid%20profile%20email
+      //   &audience=https%3A%2F%2Fsesamy.com
+      //   &connection=google-oauth2
+      //   &state=nOZwqZjr2ZT23FA9ysq26ocRLMNSLn.6
+      //   &auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMC4yIn0%3D
+
+      const controller = new AuthorizeController();
+
+      const ctx = contextFixture({});
+
+      await expect(
+        controller.authorizeWithParams({
+          request: { ctx } as RequestWithContext,
+          client_id: "clientId",
+          redirect_uri: "https://example.com",
+          state: "state",
+          scope: "openid profile email",
+          connection: "invalid connection",
+          response_type: AuthorizationResponseType.TOKEN,
+        }),
+      ).rejects.toThrow(InvalidConnectionError);
     });
   });
 });

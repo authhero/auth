@@ -27,7 +27,7 @@ export interface AuthorizeParams {
   client_id: string;
   response_type: AuthorizationResponseType;
   redirect_uri: string;
-  scope: string;
+  scope?: string;
   state: string;
   prompt?: string;
   response_mode?: AuthorizationResponseMode;

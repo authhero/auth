@@ -6,17 +6,15 @@ import {
   Env,
   LoginState,
 } from "../types";
-import { contentTypes, headers } from "../constants";
+import { headers } from "../constants";
 import { hexToBase64 } from "../utils/base64";
 import { getClient } from "../services/clients";
 import { getId } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
-import {
-  generateAuthResponse,
-  generateCode,
-} from "../helpers/generate-auth-response";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/jwt";
 import { applyTokenResponse } from "../helpers/apply-token-response";
+import { InvalidConnectionError } from "../errors";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -34,7 +32,7 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
-    throw new Error("Connection not found");
+    throw new InvalidConnectionError("Connection not found");
   }
 
   const stateId = env.STATE.newUniqueId().toString();
@@ -48,7 +46,6 @@ export async function socialAuth(
     oauthLoginUrl.searchParams.set("scope", authParams.scope);
   }
   oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
-
   oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
   oauthLoginUrl.searchParams.set("client_id", connectionInstance.clientId);
   oauthLoginUrl.searchParams.set("response_type", "code");
@@ -81,7 +78,7 @@ export async function socialAuthCallback({
 
   const oauth2Client = env.oauth2ClientFactory.create(
     connection,
-    `${client.loginBaseUrl}callback`,
+    `${env.ISSUER}callback`,
     state.authParams.scope?.split(" ") || [],
   );
 
@@ -110,7 +107,6 @@ export async function socialAuthCallback({
   }
 
   // TODO: This is quick and dirty.. we should validate the values.
-
   const tokenResponse = await generateAuthResponse({
     env,
     userId,

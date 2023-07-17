@@ -54,7 +54,6 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     issuer: application.issuer,
     senderEmail: application.senderEmail,
     senderName: application.senderName,
-    loginBaseUrl: env.ISSUER,
     tenantId: application.tenantId,
     allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
     allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
