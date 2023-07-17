@@ -12,13 +12,35 @@ import {
   Security,
   Delete,
 } from "@tsoa/runtime";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import { UpdateResult } from "kysely";
 
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
+import { NotFoundError, UnauthorizedError } from "../../errors";
+import { Context } from "cloudworker-router";
+import { Env } from "../../types";
+
+async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
+  const db = getDb(ctx.env);
+
+  const application = await db
+    .selectFrom("applications")
+    .innerJoin("tenants", "tenants.id", "applications.tenantId")
+    .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+    .where("admin_users.id", "=", ctx.state.user.sub)
+    .where("tenants.id", "=", tenantId)
+    .where("applications.id", "=", id)
+    .select("applications.id")
+    .executeTakeFirst();
+
+  if (!application) {
+    // Application not found. Could be that the user has no access
+    throw new NotFoundError();
+  }
+}
 
 @Route("tenants/{tenantId}/applications")
 @Tags("applications")
@@ -29,11 +51,16 @@ export class ApplicationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string
   ): Promise<Application[]> {
-    const db = getDb(request.ctx.env);
+    const { ctx } = request;
+
+    const db = getDb(ctx.env);
     const applications = await db
       .selectFrom("applications")
-      .where("applications.tenantId", "=", tenantId)
-      .selectAll()
+      .innerJoin("tenants", "tenants.id", "applications.tenantId")
+      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+      .where("admin_users.id", "=", ctx.state.user.sub)
+      .where("tenants.id", "=", tenantId)
+      .selectAll("applications")
       .execute();
 
     return applications;
@@ -46,12 +73,17 @@ export class ApplicationsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenantId: string
   ): Promise<Application | string> {
-    const db = getDb(request.ctx.env);
+    const { ctx } = request;
+
+    const db = getDb(ctx.env);
     const application = await db
       .selectFrom("applications")
-      .where("applications.tenantId", "=", tenantId)
+      .innerJoin("tenants", "tenants.id", "applications.tenantId")
+      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+      .where("admin_users.id", "=", ctx.state.user.sub)
+      .where("tenants.id", "=", tenantId)
       .where("applications.id", "=", id)
-      .selectAll()
+      .selectAll("applications")
       .executeTakeFirst();
 
     if (!application) {
@@ -72,6 +104,9 @@ export class ApplicationsController extends Controller {
     const { env } = request.ctx;
 
     const db = getDb(env);
+
+    await checkAccess(request.ctx, tenantId, id);
+
     await db
       .deleteFrom("applications")
       .where("applications.tenantId", "=", tenantId)
@@ -97,6 +132,9 @@ export class ApplicationsController extends Controller {
     const { env } = request.ctx;
 
     const db = getDb(env);
+
+    await checkAccess(request.ctx, tenantId, id);
+
     const application = {
       ...body,
       tenantId,
@@ -123,13 +161,27 @@ export class ApplicationsController extends Controller {
     @Body()
     body: Omit<Application, "id" | "createdAt" | "modifiedAt">
   ): Promise<Application> {
-    const { env } = request.ctx;
+    const { ctx } = request;
+    const { env } = ctx;
 
     const db = getDb(env);
+
+    const tenant = await db
+      .selectFrom("tenants")
+      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+      .where("admin_users.id", "=", ctx.state.user.sub)
+      .where("tenants.id", "=", tenantId)
+      .select("tenants.id")
+      .executeTakeFirst();
+
+    if (!tenant) {
+      throw new UnauthorizedError();
+    }
+
     const application: Application = {
       ...body,
       tenantId,
-      id: uuidv4(),
+      id: nanoid(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };

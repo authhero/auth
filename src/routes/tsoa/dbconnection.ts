@@ -10,11 +10,7 @@ import {
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId, User } from "../../models/User";
-import sendEmail from "../../services/email";
-import { getDb } from "../../services/db";
 import { getClient } from "../../services/clients";
-import { v4 as uuidv4 } from "uuid";
-import { User as DbUser } from "../../types/sql";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -111,7 +107,7 @@ export class DbConnectionController extends Controller {
       ctx.env.USER,
       getId(clientId, body.email)
     );
-    const { code } = await user.validateEmailValidationCode.query(body.code);
+    await user.validateEmailValidationCode.query(body.code);
 
     return "ok";
   }

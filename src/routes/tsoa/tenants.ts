@@ -9,10 +9,10 @@ import {
   SuccessResponse,
   Security,
 } from "@tsoa/runtime";
-import { Tenant } from "../../types/sql/Tenant";
+import { Tenant, AdminUser } from "../../types/sql";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 
 @Route("tenants")
 @Tags("tenants")
@@ -22,8 +22,15 @@ export class TenantsController extends Controller {
   public async listTenants(
     @Request() request: RequestWithContext
   ): Promise<Tenant[]> {
-    const db = getDb(request.ctx.env);
-    const tenants = await db.selectFrom("tenants").selectAll().execute();
+    const { ctx } = request;
+    const db = getDb(ctx.env);
+
+    const tenants = await db
+      .selectFrom("tenants")
+      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+      .where("admin_users.id", "=", ctx.state.user.sub)
+      .selectAll("tenants")
+      .execute();
 
     return tenants;
   }
@@ -35,15 +42,29 @@ export class TenantsController extends Controller {
     @Request() request: RequestWithContext,
     @Body() body: Omit<Tenant, "id">
   ): Promise<Tenant> {
-    const db = getDb(request.ctx.env);
+    const { ctx } = request;
+
+    const db = getDb(ctx.env);
     const tenant = {
       ...body,
-      id: uuidv4(),
+      id: nanoid(),
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+    };
+
+    const adminUser: AdminUser = {
+      id: ctx.state.user.sub,
+      // TODO: Fetch this from the profile endpoint
+      email: "placeholder",
+      tenantId: tenant.id,
+      role: "admin",
+      status: "active",
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
 
     await db.insertInto("tenants").values(tenant).execute();
+    await db.insertInto("admin_users").values(adminUser).execute();
 
     this.setStatus(201);
     return tenant;

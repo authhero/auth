@@ -2,9 +2,23 @@ import { Kysely } from "kysely";
 
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
+    .createTable("tenants")
+    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
+    .addColumn("name", "varchar")
+    .addColumn("audience", "varchar")
+    .addColumn("issuer", "varchar")
+    .addColumn("sender_email", "varchar")
+    .addColumn("sender_name", "varchar")
+    .addColumn("created_at", "varchar")
+    .addColumn("modified_at", "varchar")
+    .execute();
+
+  await db.schema
     .createTable("users")
     .addColumn("id", "varchar", (col) => col.notNull())
-    .addColumn("tenant_id", "varchar", (col) => col.notNull())
+    .addColumn("tenant_id", "varchar", (col) =>
+      col.references("tenants.id").onDelete("cascade").notNull()
+    )
     .addColumn("email", "varchar", (col) => col.notNull())
     .addColumn("linked_to", "varchar")
     .addColumn("given_name", "varchar")
@@ -18,28 +32,19 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute();
 
   await db.schema
-    .createTable("users_tenants")
-    .addColumn("user_id", "varchar", (col) =>
-      col.references("users.id").onDelete("cascade").notNull()
-    )
+    .createTable("admin_users")
+    .addColumn("id", "varchar", (col) => col.notNull())
     .addColumn("tenant_id", "varchar", (col) =>
       col.references("tenants.id").onDelete("cascade").notNull()
     )
-    .addColumn("created_at", "varchar")
-    .addColumn("modified_at", "varchar")
-    .addPrimaryKeyConstraint("users_tenants", ["user_id", "tenant_id"])
-    .execute();
-
-  await db.schema
-    .createTable("tenants")
-    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
+    .addColumn("email", "varchar")
     .addColumn("name", "varchar")
-    .addColumn("audience", "varchar")
-    .addColumn("issuer", "varchar")
-    .addColumn("sender_email", "varchar")
-    .addColumn("sender_name", "varchar")
+    .addColumn("status", "varchar")
+    .addColumn("role", "varchar")
+    .addColumn("picture", "varchar")
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
+    .addPrimaryKeyConstraint("users_tenants", ["id", "tenant_id"])
     .execute();
 
   await db.schema
@@ -77,7 +82,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await db.schema.dropTable("users_tenants").execute();
+  await db.schema.dropTable("admin_users").execute();
   await db.schema.dropTable("users").execute();
   await db.schema.dropTable("connections").execute();
   await db.schema.dropTable("applications").execute();

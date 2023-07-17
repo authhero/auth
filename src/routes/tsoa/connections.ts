@@ -12,13 +12,35 @@ import {
   Security,
   Delete,
 } from "@tsoa/runtime";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import { UpdateResult } from "kysely";
 
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Connection } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
+import { Context } from "cloudworker-router";
+import { Env } from "../../types";
+import { NotFoundError, UnauthorizedError } from "../../errors";
+
+async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
+  const db = getDb(ctx.env);
+
+  const user = await db
+    .selectFrom("connections")
+    .innerJoin("tenants", "tenants.id", "connections.tenantId")
+    .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+    .where("admin_users.id", "=", ctx.state.user.sub)
+    .where("tenants.id", "=", tenantId)
+    .where("connections.id", "=", id)
+    .select("connections.id")
+    .executeTakeFirst();
+
+  if (!user) {
+    // Application not found. Could be that the user has no access
+    throw new NotFoundError();
+  }
+}
 
 @Route("tenants/{tenantId}/connections")
 @Tags("connections")
@@ -29,11 +51,16 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string
   ): Promise<Connection[]> {
-    const db = getDb(request.ctx.env);
+    const { ctx } = request;
+
+    const db = getDb(ctx.env);
     const connections = await db
       .selectFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
-      .selectAll()
+      .innerJoin("tenants", "tenants.id", "connections.tenantId")
+      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+      .where("admin_users.id", "=", ctx.state.user.sub)
+      .where("tenants.id", "=", tenantId)
+      .selectAll("connections")
       .execute();
 
     return connections;
@@ -46,12 +73,17 @@ export class ConnectionsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenantId: string
   ): Promise<Connection | string> {
-    const db = getDb(request.ctx.env);
+    const { ctx } = request;
+
+    const db = getDb(ctx.env);
     const connection = await db
       .selectFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
+      .innerJoin("tenants", "tenants.id", "connections.tenantId")
+      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+      .where("admin_users.id", "=", ctx.state.user.sub)
+      .where("tenants.id", "=", tenantId)
       .where("connections.id", "=", id)
-      .selectAll()
+      .selectAll("connections")
       .executeTakeFirst();
 
     if (!connection) {
@@ -70,6 +102,8 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenantId: string
   ): Promise<string> {
     const { env } = request.ctx;
+
+    await checkAccess(request.ctx, tenantId, id);
 
     const db = getDb(env);
     await db
@@ -95,6 +129,8 @@ export class ConnectionsController extends Controller {
     >
   ): Promise<UpdateResult[]> {
     const { env } = request.ctx;
+
+    await checkAccess(request.ctx, tenantId, id);
 
     const db = getDb(env);
     const connection = {
@@ -123,13 +159,27 @@ export class ConnectionsController extends Controller {
     @Body()
     body: Omit<Connection, "id" | "createdAt" | "modifiedAt">
   ): Promise<Connection> {
-    const { env } = request.ctx;
+    const { ctx } = request;
+    const { env } = ctx;
 
     const db = getDb(env);
+
+    const tenant = await db
+      .selectFrom("tenants")
+      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
+      .where("admin_users.id", "=", ctx.state.user.sub)
+      .where("tenants.id", "=", tenantId)
+      .select("tenants.id")
+      .executeTakeFirst();
+
+    if (!tenant) {
+      throw new UnauthorizedError();
+    }
+
     const connection: Connection = {
       ...body,
       tenantId,
-      id: uuidv4(),
+      id: nanoid(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };

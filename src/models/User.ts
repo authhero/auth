@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
 import { Context } from "trpc-durable-objects";
+import { nanoid } from "nanoid";
 
 import generateOTP from "../utils/otp";
 import {
@@ -14,7 +15,6 @@ import {
   NoCodeError,
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
-import { v4 as uuidv4 } from "uuid";
 import { Env } from "../types";
 import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
@@ -73,7 +73,7 @@ async function updateUser(
 
   if (!existingProfile || !existingProfile.id) {
     existingProfile = {
-      id: uuidv4(),
+      id: nanoid(),
       modified_at: "",
       connections: [],
       created_at: new Date().toISOString(),

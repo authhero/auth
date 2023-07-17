@@ -20,6 +20,16 @@ export class UnauthenticatedError extends Error {
   }
 }
 
+export class UnauthorizedError extends Error {
+  status = 403;
+
+  constructor(message = "Unauthorized") {
+    super();
+
+    this.message = message;
+  }
+}
+
 export class AuthenticationCodeExpiredError extends Error {
   status = 401;
 

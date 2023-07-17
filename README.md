@@ -1,28 +1,28 @@
 # Cloudworker auth
 
-This is work in progress and not yet ready for even testing.
+This is a work in progress and not yet ready for even testing.
 
-The plan is to make a oauth2 compatible auth solution with support for the following login methods:
+The plan is to make an oauth2 compatible auth solution with support for the following login methods:
 
 - Email/password
-- Social (google, facebook, apple)
+- Social (Google, Facebook, Apple)
 - Magic link
 - Code
 
-After having been burnt by several freemium model auth solutions that get too expensive once you start growing the user base I wanted a solution where you can get started with a hosted solution but alos easily can eject and host it yourself straight on Cloudflare.
+After having been burnt by several freemium model auth solutions that get too expensive once you start growing the user base I wanted a solution where you can get started with a hosted solution but also easily can eject and host it yourself straight on Cloudflare.
 
 It's based on the following tech stack
 
-- Cloudflare workers (with tsoa)
-- Durable objects (with trpc) for login logic and storage
+- Cloudflare workers (with TSOA)
+- Durable objects (with tRPC) for login logic and storage
 - Cloudflare queues for events
-- D1 sqlite database for admin API
+- D1 Sqlite database for admin API
 - KV storage for logs
-- Mailchannels for password reset and code/magic links
+- MailChannels for password reset and code/magic links
 
-It contains a hosted UI for the login forms that can be easily styled or modified using liquid templates. Or you can roll your own UI and just use the the API.
+It contains a hosted UI for the login forms that can be easily styled or modified using liquid templates. Or you can roll your own UI and just use the API.
 
-## Auth0 compability
+## Auth0 compatibility
 
 The goal is to keep the API compatible with the auth0 API so that all the client libraries from auth0 work. This way there's no need to maintain a separate set of client libraries and it makes the migration from auth0 very easy.
 
@@ -116,7 +116,7 @@ The users are stored in durable objects and contain the user profile and the log
 
 # Linking accounts
 
-Each user object is connected to one email, so for instance, there would be one common user object for a user that logged in with email/password, code and google. The user object will keep an array of the login methods and store separate profiles for syncing purposes.
+Each user object is connected to one email, so for instance, there would be one common user object for a user that logged in with email/password, code and Google. The user object will keep an array of the login methods and store separate profiles for syncing purposes.
 
 # API Authentication
 
@@ -138,9 +138,15 @@ The auth0-react uses the universal login with PKCE flow:
 
 This library currently doesn't work due to a missing state cookie
 
-The auth0-nextjs library uses the universal login with a Code Grant Flow.
+The `auth0-nextjs` library uses the universal login with a Code Grant Flow.
 
-- The client queries the open ID configuration endpoint (/.well-known/openid-configuration) to get information about the available endpoints.
+- The client queries the open ID configuration endpoint (`/.well-known/openid-configuration`) to get information about the available endpoints.
 - The browser is redirected to the universal auth login with a Code flow
-- After a successful authentication the browser is redirected back to the nextjs callback url (/api/auth/callback)
-- The nextjs api route calls the token endpoint (/token) to get a set of tokens. Nextjs generates a session cookie that is passed back to the client
+- After successful authentication, the browser is redirected back to the Nextjs callback URL (`/api/auth/callback`)
+- The Nextjs API route calls the token endpoint (/token) to get a set of tokens. Nextjs generates a session cookie that is passed back to the client
+
+# API authentication
+
+The management API can use any oauth2-compatible auth server that exposes public jwks-keys. You can either use a separate auth0 tenant or use one of the tenants created as part of this service. It should also work with for instance cognito from AWS.
+
+When a new tenant is created the current logged-in user will become an admin for that tenant.
