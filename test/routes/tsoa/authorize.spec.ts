@@ -106,7 +106,7 @@ describe("authorize", () => {
       });
     });
 
-    it.only("should return an iframe document with a new access and id-token", async () => {
+    it("should return an iframe document with a new access and id-token", async () => {
       // https://auth2.sesamy.dev/authorize
       //     ? client_id = VQy2yYCA9rIBJerZrUN0T
       //     & scope=openid+profile+email
@@ -196,10 +196,12 @@ describe("authorize", () => {
 
       const idToken = JSON.parse(response.id_token);
 
-      // how to actually parse out access_token and id_token?
-      // and then assert that they contain the right data?
-      // need a way to parse HTML... or at least, get the object from inside HTML... hmmmm
-      // mock the iframe template? not sure...
+      expect(idToken.aud).toBe("clientId");
+      expect(idToken.sub).toBe("tenantId|test@example.com");
+      expect(idToken.nonce).toBe("nonce");
+      expect(idToken.iss).toBe("https://auth.example.com");
+      expect(idToken.iat).toBeDefined();
+      expect(idToken.exp).toBeDefined();
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
