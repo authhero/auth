@@ -100,6 +100,7 @@ export async function socialAuthCallback({
     controller,
     userId,
     state.authParams,
+    profile,
   );
 
   if (!state.authParams.redirect_uri) {

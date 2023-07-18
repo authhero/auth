@@ -1,7 +1,7 @@
 import { serializeStateInCookie } from "../services/cookies";
 import { Controller } from "tsoa";
 import { headers, MONTH_IN_SECONDS } from "../constants";
-import { AuthParams, Env } from "../types";
+import { AuthParams, Env, Profile } from "../types";
 import { hexToBase64 } from "../utils/base64";
 
 export async function setSilentAuthCookies(
@@ -9,10 +9,12 @@ export async function setSilentAuthCookies(
   controller: Controller,
   userId: string,
   authParams: AuthParams,
+  user: Profile,
 ) {
   const payload = {
     userId,
     authParams,
+    user,
   };
 
   const stateId = env.STATE.newUniqueId().toString();
