@@ -412,7 +412,7 @@ describe("authorize", () => {
         iss: "https://auth.example.com",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
-        // I expected there to be emails and profile pics in here...
+        email: "foo@bar.com",
       });
     });
 
