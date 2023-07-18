@@ -357,19 +357,13 @@ describe("authorize", () => {
       const controller = new AuthorizeController();
 
       const stateData: { [key: string]: any } = {
-        // This id corresponds to the base64 token below
+        // This id corresponds to the base64 loginTicket below
         c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
           JSON.stringify({
             userId: "tenantId|test@example.com",
             authParams: {
-              redirect_uri: "https://example.com",
               scope: "openid profile email",
-              state:
-                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
               client_id: "clientId",
-              nonce:
-                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-              response_type: "token id_token",
             },
           }),
       };
