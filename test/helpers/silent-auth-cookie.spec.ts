@@ -3,7 +3,7 @@ import { setSilentAuthCookies } from "../../src/helpers/silent-auth-cookie";
 import { AuthParams, Profile } from "../../src/types";
 import { headers } from "../../src/constants";
 
-describe("silentAuthCookeie", () => {
+describe("silentAuthCookie", () => {
   it("should create a new state object and set a cookie with the id", async () => {
     const stateData: { [key: string]: any } = {};
     const ctx = contextFixture({ stateData });
