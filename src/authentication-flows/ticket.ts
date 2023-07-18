@@ -2,7 +2,7 @@ import { Controller } from "@tsoa/runtime";
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
 
 import { base64ToHex } from "../utils/base64";
-import { generateTokens } from "../helpers/generate-auth-response";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 
@@ -19,6 +19,7 @@ export async function ticketAuth(
   ticket: string,
   state: string,
   redirectUri: string,
+  responseType: AuthorizationResponseType,
 ) {
   const ticketInstance = env.stateFactory.getInstanceById(base64ToHex(ticket));
 
@@ -30,19 +31,29 @@ export async function ticketAuth(
   const ticketJson: PasswordlessState = JSON.parse(ticketString);
   const { userId, authParams } = ticketJson;
 
-  const tokenResponse = await generateTokens({
+  const user = await env.userFactory.getInstanceByName(userId);
+  const profile = await user.getProfile.query();
+
+  const sessionId = await setSilentAuthCookies(
+    env,
+    controller,
+    userId,
+    authParams,
+  );
+
+  const tokenResponse = await generateAuthResponse({
     env,
     userId,
     state,
     authParams,
-    sid: "sid",
-    responseType: AuthorizationResponseType.TOKEN,
+    sid: sessionId,
+    user: profile,
+    responseType,
   });
-
-  await setSilentAuthCookies(env, controller, userId, authParams);
 
   return applyTokenResponse(controller, tokenResponse, {
     ...authParams,
     redirect_uri: redirectUri,
+    state,
   });
 }
