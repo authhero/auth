@@ -3,7 +3,10 @@ import { contextFixture, controllerFixture } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
 import { base64ToHex } from "../../src/utils/base64";
-import { AuthorizationResponseMode } from "../../src/types";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "../../src/types";
 
 describe("passwordlessAuth", () => {
   const date = new Date();
@@ -42,6 +45,7 @@ describe("passwordlessAuth", () => {
       ticket,
       state,
       redirectUri,
+      AuthorizationResponseType.TOKEN,
     );
 
     const redirectHeader = controller.getHeader("location") as string;
