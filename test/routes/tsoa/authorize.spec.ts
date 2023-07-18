@@ -203,7 +203,6 @@ describe("authorize", () => {
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
 
-    // but cannot redirect in an iframe...?
     it("should redirect to the login form and pass the nonce an web_response in the state", async () => {
       const controller = new AuthorizeController();
 
@@ -272,8 +271,6 @@ describe("authorize", () => {
       expect(actual).toBe("Redirecting to google-oauth2");
       expect(controller.getStatus()).toBe(302);
     });
-
-    // TODO - facebook & apple - and tests!
 
     it("should return a 400 if the connections is not available", async () => {
       // https://auth2.sesamy.dev/authorize
