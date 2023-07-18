@@ -39,6 +39,7 @@ export async function ticketAuth(
     controller,
     userId,
     authParams,
+    profile,
   );
 
   const tokenResponse = await generateAuthResponse({
