@@ -5,8 +5,6 @@ import { base64ToHex } from "../utils/base64";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
-import { getId } from "../models";
-import { getClient } from "../services/clients";
 
 interface PasswordlessState {
   clientId: string;

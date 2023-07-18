@@ -27,7 +27,6 @@ describe("passwordlessAuth", () => {
         [ticketInstanceId]: JSON.stringify({
           authParams: {
             scope: "openid profile email",
-            redirect_uri: "https://example.com",
             response_mode: AuthorizationResponseMode.FRAGMENT,
             state: "state",
           },
