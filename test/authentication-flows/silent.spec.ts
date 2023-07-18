@@ -25,6 +25,7 @@ describe("silentAuth", () => {
     expect(actual.includes("login_required")).toBe(true);
   });
 
+  // these tests are duplicated on authorize.spec.ts
   it("should render an iframe with a code and state if the code challenge method is S256", async () => {
     // https://auth.example.com/authorize?
     //   client_id=0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW&
@@ -66,5 +67,36 @@ describe("silentAuth", () => {
         '{"code":"AAAAAA4","state":"RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ=="}',
       ),
     ).toBe(true);
+  });
+
+  it("should render an iframe with a new access and id-token", async () => {
+   
+
+    const stateInstanceId = base64ToHex("token-state");
+
+    const ctx = contextFixture({
+      stateData: {
+        [stateInstanceId]: JSON.stringify({
+          foo: "bar",
+        }),
+      },
+    });
+    const controller = controllerFixture();
+
+    const actual = await silentAuth({
+      env: ctx.env,
+      controller,
+      cookie_header: "auth-token=token-state",
+      redirect_uri: "https://example.com",
+      state: "RTdoMnEyWnRmdFFyR3RydG0ub3V4akNTSEQuV0RkVHZ0bVdPaXFVOXYxRQ==",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      nonce: "nonce",
+    });
+
+  
+    expect(actual).toContain('response: {"access_token');
+    expect(actual).toContain("id_token");
+
+    expect(actual).toContain('var targetOrigin = "https://example.com";');
   });
 });
