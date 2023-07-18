@@ -80,7 +80,7 @@ describe("Authenticated", () => {
   });
 
   describe("code", () => {
-    it("should login using a correct password", async () => {
+    it("should login using a correct code", async () => {
       const controller = new AuthenticateController();
 
       const body: CodeAuthenticateParams = {
@@ -112,7 +112,7 @@ describe("Authenticated", () => {
       expect(typeof actual.login_ticket).toBe("string");
     });
 
-    it("should send an error if the password is incorrect", async () => {
+    it("should send an error if the code is incorrect", async () => {
       const controller = new AuthenticateController();
 
       const body: CodeAuthenticateParams = {
