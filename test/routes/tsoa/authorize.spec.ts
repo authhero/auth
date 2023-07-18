@@ -166,9 +166,15 @@ describe("authorize", () => {
       expect(actual).toContain('response: {"access_token');
       expect(actual).toContain("id_token");
 
+      // how to actually parse out access_token and id_token?
+      // and then assert that they contain the right data?
+      // need a way to parse HTML... or at least, get the object from inside HTML... hmmmm
+      // mock the iframe template? not sure...
+
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
 
+    // but cannot redirect in an iframe...?
     it("should redirect to the login form and pass the nonce an web_response in the state", async () => {
       const controller = new AuthorizeController();
 
@@ -238,6 +244,8 @@ describe("authorize", () => {
       expect(controller.getStatus()).toBe(302);
     });
 
+    // TODO - facebook & apple - and tests!
+
     it("should return a 400 if the connections is not available", async () => {
       // https://auth2.sesamy.dev/authorize
       //   ?client_id=db296ac4-0e1a-4460-8731-8ad4f75c6ff4
@@ -268,7 +276,7 @@ describe("authorize", () => {
   });
 
   describe("ticket login", () => {
-    it("should login using a ticket and return tokens for response type token id_token", async () => {
+    it("should login using a ticket and return access_token for response type token", async () => {
       // https://auth2.sesamy.dev/authorize
       // ?client_id=clientId
       // &response_type=token
@@ -295,7 +303,6 @@ describe("authorize", () => {
               client_id: "clientId",
               nonce:
                 "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-              response_type: "code",
             },
           }),
       };
@@ -320,6 +327,8 @@ describe("authorize", () => {
 
       expect(redirectUrl.host).toBe("example.com");
 
+      expect(redirectUrl.searchParams.get("id_token")).not.toBeTruthy();
+
       const accessToken = JSON.parse(
         redirectUrl.searchParams.get("access_token") as string,
       );
@@ -340,6 +349,71 @@ describe("authorize", () => {
 
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
+    });
+
+    it("should login using a ticket and return id_token as well", async () => {
+      // https://auth2.sesamy.dev/authorize
+      // ?client_id=clientId
+      // &response_type=token%20id_token
+      // &redirect_uri=https%3A%2F%2Fexample.com%2Fcallback
+      // &scope=openid%20profile%20email
+      // &audience=https%3A%2F%2Fexample.com
+      // &realm=Username-Password-Authentication
+      // &state=o2GJk9-Gic6DoVYp_abmjl34GIKYLFbr
+      // &login_ticket=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc
+      // &auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMC4yIn0%3D
+
+      const controller = new AuthorizeController();
+
+      const stateData: { [key: string]: any } = {
+        // This id corresponds to the base64 token below
+        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
+          JSON.stringify({
+            userId: "tenantId|test@example.com",
+            authParams: {
+              redirect_uri: "https://example.com",
+              scope: "openid profile email",
+              state:
+                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
+              client_id: "clientId",
+              nonce:
+                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+            },
+          }),
+      };
+
+      const ctx = contextFixture({
+        stateData,
+      });
+
+      await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        redirect_uri: "https://example.com",
+        state: "state",
+        scope: "openid profile email",
+        loginTicket: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        realm: "Username-Password-Authentication",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      });
+
+      const locationHeader = controller.getHeader("location") as string;
+      const redirectUrl = new URL(locationHeader);
+
+      const idToken = JSON.parse(
+        redirectUrl.searchParams.get("id_token") as string,
+      );
+
+      expect(idToken).toEqual({
+        aud: "clientId",
+        sub: "tenantId|test@example.com",
+        nonce: "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+        sid: "AAAAAA4",
+        iss: "https://auth.example.com",
+        iat: Math.floor(date.getTime() / 1000),
+        exp: Math.floor(date.getTime() / 1000) + 86400,
+        // I expected there to be emails and profile pics in here...
+      });
     });
 
     it("should login using a ticket and return a code for response type code", async () => {
