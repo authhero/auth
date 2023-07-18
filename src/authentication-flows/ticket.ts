@@ -41,5 +41,8 @@ export async function ticketAuth(
 
   await setSilentAuthCookies(env, controller, userId, authParams);
 
-  return applyTokenResponse(controller, tokenResponse, authParams);
+  return applyTokenResponse(controller, tokenResponse, {
+    ...authParams,
+    redirect_uri: redirectUri,
+  });
 }
