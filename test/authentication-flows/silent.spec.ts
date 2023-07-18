@@ -70,8 +70,6 @@ describe("silentAuth", () => {
   });
 
   it("should render an iframe with a new access and id-token", async () => {
-   
-
     const stateInstanceId = base64ToHex("token-state");
 
     const ctx = contextFixture({
@@ -93,7 +91,6 @@ describe("silentAuth", () => {
       nonce: "nonce",
     });
 
-  
     expect(actual).toContain('response: {"access_token');
     expect(actual).toContain("id_token");
 
