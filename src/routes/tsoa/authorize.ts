@@ -39,6 +39,7 @@ export interface AuthorizeParams {
   loginTicket?: string;
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
+  realm?: string;
 }
 
 @Route("authorize")
@@ -90,6 +91,7 @@ export class AuthorizeController extends Controller {
     @Query("login_ticket") loginTicket?: string,
     @Query("code_challenge_method") code_challenge_method?: CodeChallengeMethod,
     @Query("code_challenge") code_challenge?: string,
+    @Query("realm") realm?: string,
   ): Promise<string> {
     const { ctx } = request;
     const { env } = ctx;
@@ -126,7 +128,14 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
-      return ticketAuth(env, this, loginTicket, state, redirect_uri);
+      return ticketAuth(
+        env,
+        this,
+        loginTicket,
+        state,
+        redirect_uri,
+        response_type,
+      );
     }
 
     return universalAuth({ env, controller: this, authParams });
@@ -150,6 +159,7 @@ export class AuthorizeController extends Controller {
       params.loginTicket,
       params.code_challenge_method,
       params.code_challenge,
+      params.realm,
     );
   }
 }

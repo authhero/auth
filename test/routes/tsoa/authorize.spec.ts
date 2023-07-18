@@ -9,6 +9,16 @@ import {
 import { InvalidConnectionError } from "../../../src/errors";
 
 describe("authorize", () => {
+  const date = new Date();
+
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(date);
+  });
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   describe("silent authentication", () => {
     it("should return an iframe document with a new code", async () => {
       // https://auth2.sesamy.dev/authorize
@@ -254,6 +264,139 @@ describe("authorize", () => {
           response_type: AuthorizationResponseType.TOKEN,
         }),
       ).rejects.toThrow(InvalidConnectionError);
+    });
+  });
+
+  describe("ticket login", () => {
+    it("should login using a ticket and return tokens for response type token id_token", async () => {
+      // https://auth2.sesamy.dev/authorize
+      // ?client_id=clientId
+      // &response_type=token
+      // &redirect_uri=https%3A%2F%2Fexample.com%2Fcallback
+      // &scope=openid%20profile%20email
+      // &audience=https%3A%2F%2Fexample.com
+      // &realm=Username-Password-Authentication
+      // &state=o2GJk9-Gic6DoVYp_abmjl34GIKYLFbr
+      // &login_ticket=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc
+      // &auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMC4yIn0%3D
+
+      const controller = new AuthorizeController();
+
+      const stateData: { [key: string]: any } = {
+        // This id corresponds to the base64 token below
+        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
+          JSON.stringify({
+            userId: "tenantId|test@example.com",
+            authParams: {
+              redirect_uri: "https://example.com",
+              scope: "openid profile email",
+              state:
+                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
+              client_id: "clientId",
+              nonce:
+                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+              response_type: "code",
+            },
+          }),
+      };
+
+      const ctx = contextFixture({
+        stateData,
+      });
+
+      const actual = await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        redirect_uri: "https://example.com",
+        state: "state",
+        scope: "openid profile email",
+        loginTicket: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        realm: "Username-Password-Authentication",
+        response_type: AuthorizationResponseType.TOKEN,
+      });
+
+      const locationHeader = controller.getHeader("location") as string;
+      const redirectUrl = new URL(locationHeader);
+
+      expect(redirectUrl.host).toBe("example.com");
+
+      const accessToken = JSON.parse(
+        redirectUrl.searchParams.get("access_token") as string,
+      );
+
+      expect(accessToken).toEqual({
+        aud: "default",
+        scope: "openid profile email",
+        sub: "tenantId|test@example.com",
+        kid: "s45bQJ933dwqmrB92ee-l",
+        iss: "https://auth.example.com",
+        iat: Math.floor(date.getTime() / 1000),
+        exp: Math.floor(date.getTime() / 1000) + 86400,
+      });
+
+      expect(redirectUrl.searchParams.get("state")).toBe("state");
+
+      expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
+
+      expect(actual).toBe("Redirecting");
+      expect(controller.getStatus()).toBe(302);
+    });
+
+    it("should login using a ticket and return a code for response type code", async () => {
+      // https://auth2.sesamy.dev/authorize
+      // ?client_id=clientId
+      // &response_type=code
+      // &redirect_uri=https%3A%2F%2Fexample.com%2Fcallback
+      // &scope=openid%20profile%20email
+      // &audience=https%3A%2F%2Fexample.com
+      // &realm=Username-Password-Authentication
+      // &state=o2GJk9-Gic6DoVYp_abmjl34GIKYLFbr
+      // &login_ticket=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc
+      // &auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMC4yIn0%3D
+
+      const controller = new AuthorizeController();
+
+      const stateData: { [key: string]: any } = {
+        // This id corresponds to the base64 token below
+        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
+          JSON.stringify({
+            userId: "tenantId|test@example.com",
+            authParams: {
+              redirect_uri: "https://example.com",
+              scope: "openid profile email",
+              state:
+                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
+              client_id: "clientId",
+              nonce:
+                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+              response_type: "token id_token",
+            },
+          }),
+      };
+
+      const ctx = contextFixture({
+        stateData,
+      });
+
+      const actual = await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        redirect_uri: "https://example.com",
+        state: "state",
+        scope: "openid profile email",
+        loginTicket: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        realm: "Username-Password-Authentication",
+        response_type: AuthorizationResponseType.CODE,
+      });
+
+      const locationHeader = controller.getHeader("location") as string;
+      const redirectUrl = new URL(locationHeader);
+
+      expect(redirectUrl.host).toBe("example.com");
+      expect(redirectUrl.searchParams.get("code")).toBe("AAAAAA4");
+      expect(redirectUrl.searchParams.get("state")).toBe("state");
+      expect(actual).toBe("Redirecting");
+      expect(controller.getStatus()).toBe(302);
     });
   });
 });
