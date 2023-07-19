@@ -59,7 +59,7 @@ describe("authorize", () => {
 
       ctx.headers.set(
         "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc"
+        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
       );
 
       const actual = await controller.authorizeWithParams({
@@ -147,7 +147,7 @@ describe("authorize", () => {
 
       ctx.headers.set(
         "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc"
+        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
       );
 
       const actual = await controller.authorizeWithParams({
@@ -228,7 +228,7 @@ describe("authorize", () => {
       });
 
       const locationHeader = `https://auth.example.com${controller.getHeader(
-        "location"
+        "location",
       )}`;
       const redirectUrl = new URL(locationHeader);
       const state = redirectUrl.searchParams.get("state");
@@ -269,7 +269,7 @@ describe("authorize", () => {
       const locationHeader = controller.getHeader("location") as string;
 
       expect(locationHeader).toBe(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.comcallback&client_id=googleClientId&response_type=code"
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.comcallback&client_id=googleClientId&response_type=code",
       );
 
       expect(actual).toBe("Redirecting to google-oauth2");
@@ -300,7 +300,7 @@ describe("authorize", () => {
           scope: "openid profile email",
           connection: "invalid connection",
           response_type: AuthorizationResponseType.TOKEN,
-        })
+        }),
       ).rejects.toThrow(InvalidConnectionError);
     });
   });
@@ -360,7 +360,7 @@ describe("authorize", () => {
       expect(redirectUrl.searchParams.get("id_token")).toBeNull();
 
       const accessToken = JSON.parse(
-        redirectUrl.searchParams.get("access_token") as string
+        redirectUrl.searchParams.get("access_token") as string,
       );
 
       expect(accessToken).toEqual({
