@@ -59,7 +59,7 @@ describe("authorize", () => {
 
       ctx.headers.set(
         "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc"
       );
 
       const actual = await controller.authorizeWithParams({
@@ -147,7 +147,7 @@ describe("authorize", () => {
 
       ctx.headers.set(
         "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc"
       );
 
       const actual = await controller.authorizeWithParams({
@@ -228,7 +228,7 @@ describe("authorize", () => {
       });
 
       const locationHeader = `https://auth.example.com${controller.getHeader(
-        "location",
+        "location"
       )}`;
       const redirectUrl = new URL(locationHeader);
       const state = redirectUrl.searchParams.get("state");
@@ -269,7 +269,7 @@ describe("authorize", () => {
       const locationHeader = controller.getHeader("location") as string;
 
       expect(locationHeader).toBe(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.comcallback&client_id=googleClientId&response_type=code",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.comcallback&client_id=googleClientId&response_type=code"
       );
 
       expect(actual).toBe("Redirecting to google-oauth2");
@@ -300,7 +300,7 @@ describe("authorize", () => {
           scope: "openid profile email",
           connection: "invalid connection",
           response_type: AuthorizationResponseType.TOKEN,
-        }),
+        })
       ).rejects.toThrow(InvalidConnectionError);
     });
   });
@@ -360,7 +360,7 @@ describe("authorize", () => {
       expect(redirectUrl.searchParams.get("id_token")).toBeNull();
 
       const accessToken = JSON.parse(
-        redirectUrl.searchParams.get("access_token") as string,
+        redirectUrl.searchParams.get("access_token") as string
       );
 
       expect(accessToken).toEqual({
@@ -496,6 +496,33 @@ describe("authorize", () => {
       expect(redirectUrl.searchParams.get("state")).toBe("state");
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
+    });
+  });
+
+  describe("universalAuth", () => {
+    it("should redirect to login using and packing the authParams in the state", async () => {
+      const ctx = contextFixture();
+      const controller = new AuthorizeController();
+
+      const actual = await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.CODE,
+        redirect_uri: "http://localhost:3000",
+        state: "state",
+        nonce: "Ykk2M0JNa2E1WnM5TUZwX2UxUjJtV2VITTlvbktGNnhCb1NmZG1idEJBdA==&",
+        response_mode: AuthorizationResponseMode.QUERY,
+        scope: "openid profile email",
+        code_challenge_method: CodeChallengeMethod.S265,
+        code_challenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
+      });
+
+      expect(actual).toBe("Redirect to login");
+      expect(controller.getStatus()).toBe(302);
+
+      const locationHeader = controller.getHeader("location") as string;
+      // The state is stored in a durable object
+      expect(locationHeader).toBe("/u/login?state=AAAAAA4");
     });
   });
 });
