@@ -193,12 +193,17 @@ describe("authorize", () => {
 
       const idToken = JSON.parse(response.id_token);
 
+      console.log(idToken)
+
       expect(idToken.aud).toBe("clientId");
       expect(idToken.sub).toBe("tenantId|test@example.com");
       expect(idToken.nonce).toBe("nonce");
       expect(idToken.iss).toBe("https://auth.example.com");
       expect(idToken.iat).toBeDefined();
       expect(idToken.exp).toBeDefined();
+
+      expect(idToken.email).toBe("foo@bar.com");
+
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
