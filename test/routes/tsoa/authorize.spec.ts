@@ -135,6 +135,9 @@ describe("authorize", () => {
               nonce:
                 "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
             },
+            user: {
+              email: "foo@bar.com"
+            }
           }),
       };
 
@@ -193,7 +196,6 @@ describe("authorize", () => {
 
       const idToken = JSON.parse(response.id_token);
 
-      console.log(idToken)
 
       expect(idToken.aud).toBe("clientId");
       expect(idToken.sub).toBe("tenantId|test@example.com");
@@ -201,7 +203,6 @@ describe("authorize", () => {
       expect(idToken.iss).toBe("https://auth.example.com");
       expect(idToken.iat).toBeDefined();
       expect(idToken.exp).toBeDefined();
-
       expect(idToken.email).toBe("foo@bar.com");
 
 
@@ -358,7 +359,7 @@ describe("authorize", () => {
 
       expect(redirectUrl.host).toBe("example.com");
 
-      expect(redirectUrl.searchParams.get("id_token")).toBeUndefined();
+      expect(redirectUrl.searchParams.get("id_token")).toBeNull();
 
       const accessToken = JSON.parse(
         redirectUrl.searchParams.get("access_token") as string,
