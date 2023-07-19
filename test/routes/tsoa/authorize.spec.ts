@@ -136,8 +136,8 @@ describe("authorize", () => {
                 "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
             },
             user: {
-              email: "foo@bar.com"
-            }
+              email: "foo@bar.com",
+            },
           }),
       };
 
@@ -196,7 +196,6 @@ describe("authorize", () => {
 
       const idToken = JSON.parse(response.id_token);
 
-
       expect(idToken.aud).toBe("clientId");
       expect(idToken.sub).toBe("tenantId|test@example.com");
       expect(idToken.nonce).toBe("nonce");
@@ -204,7 +203,6 @@ describe("authorize", () => {
       expect(idToken.iat).toBeDefined();
       expect(idToken.exp).toBeDefined();
       expect(idToken.email).toBe("foo@bar.com");
-
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
