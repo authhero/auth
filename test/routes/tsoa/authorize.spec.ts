@@ -358,7 +358,7 @@ describe("authorize", () => {
 
       expect(redirectUrl.host).toBe("example.com");
 
-      expect(redirectUrl.searchParams.get("id_token")).not.toBeTruthy();
+      expect(redirectUrl.searchParams.get("id_token")).toBeUndefined();
 
       const accessToken = JSON.parse(
         redirectUrl.searchParams.get("access_token") as string,
