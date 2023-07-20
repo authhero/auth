@@ -70,3 +70,6 @@ describe("passwordlessAuth", () => {
     expect(hashParams.get("scope")).toBe("openid profile email");
   });
 });
+
+// seems like the tests here are duplicating authorize.spec.ts, much like the tests in silent.spec.ts
+// Hmmmmm. I think we should put the tests here as there are so many...

@@ -63,7 +63,11 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
         getInstanceByName: () => ({
           getProfile: {
             query: async () => {
-              return "123";
+              const userProfile = {
+                email: "foo@bar.com",
+              };
+
+              return userProfile;
             },
           },
           createAuthenticationCode: {

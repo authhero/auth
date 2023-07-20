@@ -135,6 +135,9 @@ describe("authorize", () => {
               nonce:
                 "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
             },
+            user: {
+              email: "foo@bar.com",
+            },
           }),
       };
 
@@ -165,6 +168,41 @@ describe("authorize", () => {
 
       expect(actual).toContain('response: {"access_token');
       expect(actual).toContain("id_token");
+
+      // crude parsing of the iframe body
+      const lines = actual.split("\n");
+      const iframeAuthBody = lines.find((line) =>
+        line.trim().startsWith("response: "),
+      );
+      if (!iframeAuthBody) {
+        throw new Error("iframe auth body missing");
+      }
+
+      const response = JSON.parse(iframeAuthBody.replace("response: ", ""));
+
+      expect(response.token_type).toBe("Bearer");
+      expect(response.state).toBe("state");
+      expect(response.scope).toBe("openid profile email");
+      expect(response.expires_in).toBeDefined();
+
+      const accessToken = JSON.parse(response.access_token);
+
+      expect(accessToken.aud).toBe("default");
+      expect(accessToken.scope).toBe("openid profile email");
+      expect(accessToken.sub).toBe("tenantId|test@example.com");
+      expect(accessToken.iss).toBe("https://auth.example.com");
+      expect(accessToken.iat).toBeDefined();
+      expect(accessToken.exp).toBeDefined();
+
+      const idToken = JSON.parse(response.id_token);
+
+      expect(idToken.aud).toBe("clientId");
+      expect(idToken.sub).toBe("tenantId|test@example.com");
+      expect(idToken.nonce).toBe("nonce");
+      expect(idToken.iss).toBe("https://auth.example.com");
+      expect(idToken.iat).toBeDefined();
+      expect(idToken.exp).toBeDefined();
+      expect(idToken.email).toBe("foo@bar.com");
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
@@ -268,7 +306,7 @@ describe("authorize", () => {
   });
 
   describe("ticket login", () => {
-    it("should login using a ticket and return tokens for response type token id_token", async () => {
+    it("should login using a ticket and return access_token for response type token", async () => {
       // https://auth2.sesamy.dev/authorize
       // ?client_id=clientId
       // &response_type=token
@@ -295,7 +333,6 @@ describe("authorize", () => {
               client_id: "clientId",
               nonce:
                 "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-              response_type: "code",
             },
           }),
       };
@@ -320,6 +357,8 @@ describe("authorize", () => {
 
       expect(redirectUrl.host).toBe("example.com");
 
+      expect(redirectUrl.searchParams.get("id_token")).toBeNull();
+
       const accessToken = JSON.parse(
         redirectUrl.searchParams.get("access_token") as string,
       );
@@ -340,6 +379,71 @@ describe("authorize", () => {
 
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
+    });
+
+    it("should login using a ticket and return id_token as well", async () => {
+      // https://auth2.sesamy.dev/authorize
+      // ?client_id=clientId
+      // &response_type=token%20id_token
+      // &redirect_uri=https%3A%2F%2Fexample.com%2Fcallback
+      // &scope=openid%20profile%20email
+      // &audience=https%3A%2F%2Fexample.com
+      // &realm=Username-Password-Authentication
+      // &state=o2GJk9-Gic6DoVYp_abmjl34GIKYLFbr
+      // &login_ticket=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc
+      // &auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMC4yIn0%3D
+
+      const controller = new AuthorizeController();
+
+      const stateData: { [key: string]: any } = {
+        // This id corresponds to the base64 token below
+        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
+          JSON.stringify({
+            userId: "tenantId|test@example.com",
+            authParams: {
+              redirect_uri: "https://example.com",
+              scope: "openid profile email",
+              state:
+                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
+              client_id: "clientId",
+              nonce:
+                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+            },
+          }),
+      };
+
+      const ctx = contextFixture({
+        stateData,
+      });
+
+      await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        redirect_uri: "https://example.com",
+        state: "state",
+        scope: "openid profile email",
+        loginTicket: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        realm: "Username-Password-Authentication",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      });
+
+      const locationHeader = controller.getHeader("location") as string;
+      const redirectUrl = new URL(locationHeader);
+
+      const idToken = JSON.parse(
+        redirectUrl.searchParams.get("id_token") as string,
+      );
+
+      expect(idToken).toEqual({
+        aud: "clientId",
+        sub: "tenantId|test@example.com",
+        nonce: "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+        sid: "AAAAAA4",
+        iss: "https://auth.example.com",
+        iat: Math.floor(date.getTime() / 1000),
+        exp: Math.floor(date.getTime() / 1000) + 86400,
+        email: "foo@bar.com",
+      });
     });
 
     it("should login using a ticket and return a code for response type code", async () => {

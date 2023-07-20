@@ -30,7 +30,29 @@ describe("Passwordless", () => {
         logs,
       });
 
-      controller.startPasswordless(body, requestWithContext(ctx));
+      await controller.startPasswordless(body, requestWithContext(ctx));
+
+      expect(logs).toEqual([
+        {
+          content: [
+            {
+              type: "text/plain",
+              value: "Here's your login code: 123456",
+            },
+          ],
+          from: {
+            email: "senderEmail",
+            name: "senderName",
+          },
+          subject: "Login code",
+          to: [
+            {
+              email: "markus@ahlstrand.es",
+              name: "",
+            },
+          ],
+        },
+      ]);
     });
   });
 });
