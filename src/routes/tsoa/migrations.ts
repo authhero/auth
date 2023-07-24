@@ -16,7 +16,7 @@ import { nanoid } from "nanoid";
 
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { Connection } from "../../types/sql";
+import { Migration } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { Context } from "cloudworker-router";
 import { Env } from "../../types";
@@ -26,13 +26,13 @@ async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
   const db = getDb(ctx.env);
 
   const user = await db
-    .selectFrom("connections")
-    .innerJoin("tenants", "tenants.id", "connections.tenantId")
+    .selectFrom("migrations")
+    .innerJoin("tenants", "tenants.id", "migrations.tenantId")
     .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
     .where("admin_users.id", "=", ctx.state.user.sub)
     .where("tenants.id", "=", tenantId)
-    .where("connections.id", "=", id)
-    .select("connections.id")
+    .where("migrations.id", "=", id)
+    .select("migrations.id")
     .executeTakeFirst();
 
   if (!user) {
@@ -41,61 +41,61 @@ async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
   }
 }
 
-@Route("tenants/{tenantId}/connections")
-@Tags("connections")
-export class ConnectionsController extends Controller {
+@Route("tenants/{tenantId}/migrations")
+@Tags("migrations")
+export class MigrationsController extends Controller {
   @Get("")
   @Security("oauth2", [])
-  public async listConnections(
+  public async listMigrations(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
-  ): Promise<Connection[]> {
+  ): Promise<Migration[]> {
     const { ctx } = request;
 
     const db = getDb(ctx.env);
-    const connections = await db
-      .selectFrom("connections")
-      .innerJoin("tenants", "tenants.id", "connections.tenantId")
+    const migrations = await db
+      .selectFrom("migrations")
+      .innerJoin("tenants", "tenants.id", "migrations.tenantId")
       .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
       .where("admin_users.id", "=", ctx.state.user.sub)
       .where("tenants.id", "=", tenantId)
-      .selectAll("connections")
+      .selectAll("migrations")
       .execute();
 
-    return connections;
+    return migrations;
   }
 
   @Get("{id}")
   @Security("oauth2", [])
-  public async getConnection(
+  public async getMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
-  ): Promise<Connection | string> {
+  ): Promise<Migration | string> {
     const { ctx } = request;
 
     const db = getDb(ctx.env);
-    const connection = await db
-      .selectFrom("connections")
-      .innerJoin("tenants", "tenants.id", "connections.tenantId")
+    const migration = await db
+      .selectFrom("migrations")
+      .innerJoin("tenants", "tenants.id", "migrations.tenantId")
       .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
       .where("admin_users.id", "=", ctx.state.user.sub)
       .where("tenants.id", "=", tenantId)
-      .where("connections.id", "=", id)
-      .selectAll("connections")
+      .where("migrations.id", "=", id)
+      .selectAll("migrations")
       .executeTakeFirst();
 
-    if (!connection) {
+    if (!migration) {
       this.setStatus(404);
       return "Not found";
     }
 
-    return connection;
+    return migration;
   }
 
   @Delete("{id}")
   @Security("oauth2", [])
-  public async deleteConnection(
+  public async deleteMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
@@ -106,9 +106,9 @@ export class ConnectionsController extends Controller {
 
     const db = getDb(env);
     await db
-      .deleteFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
-      .where("connections.id", "=", id)
+      .deleteFrom("migrations")
+      .where("migrations.tenantId", "=", tenantId)
+      .where("migrations.id", "=", id)
       .execute();
 
     await updateTenantClientsInKV(env, tenantId);
@@ -118,13 +118,13 @@ export class ConnectionsController extends Controller {
 
   @Patch("{id}")
   @Security("oauth2", [])
-  public async patchConnection(
+  public async patchMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">
+      Omit<Migration, "id" | "tenantId" | "createdAt" | "modifiedAt">
     >,
   ) {
     const { env } = request.ctx;
@@ -132,15 +132,15 @@ export class ConnectionsController extends Controller {
     await checkAccess(request.ctx, tenantId, id);
 
     const db = getDb(env);
-    const connection = {
+    const migration = {
       ...body,
       tenantId,
       modifiedAt: new Date().toISOString(),
     };
 
     const results = await db
-      .updateTable("connections")
-      .set(connection)
+      .updateTable("migrations")
+      .set(migration)
       .where("id", "=", id)
       .execute();
 
@@ -152,12 +152,12 @@ export class ConnectionsController extends Controller {
   @Post("")
   @Security("oauth2", [])
   @SuccessResponse(201, "Created")
-  public async postConnections(
+  public async postMigrations(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
-  ): Promise<Connection> {
+    body: Omit<Migration, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<Migration> {
     const { ctx } = request;
     const { env } = ctx;
 
@@ -175,7 +175,7 @@ export class ConnectionsController extends Controller {
       throw new UnauthorizedError();
     }
 
-    const connection: Connection = {
+    const migration: Migration = {
       ...body,
       tenantId,
       id: nanoid(),
@@ -183,11 +183,11 @@ export class ConnectionsController extends Controller {
       modifiedAt: new Date().toISOString(),
     };
 
-    await db.insertInto("connections").values(connection).execute();
+    await db.insertInto("migrations").values(migration).execute();
 
     await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
-    return connection;
+    return migration;
   }
 }

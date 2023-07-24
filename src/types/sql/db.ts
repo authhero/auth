@@ -1,4 +1,11 @@
-import { Tenant, Application, User, Connection, AdminUser } from "./";
+import {
+  Tenant,
+  Application,
+  User,
+  Connection,
+  AdminUser,
+  Migration,
+} from "./";
 
 // Keys of this interface are table names.
 export interface Database {
@@ -6,5 +13,6 @@ export interface Database {
   admin_users: AdminUser;
   applications: Application;
   connections: Connection;
+  migrations: Migration;
   tenants: Tenant;
 }

@@ -18,6 +18,7 @@ import { AuthParams } from "../types/AuthParams";
 import { Env } from "../types";
 import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
+import { migratePasswordHook } from "../hooks/migrate-password";
 
 interface Code {
   authParams?: AuthParams;
@@ -354,10 +355,23 @@ export const userRouter = router({
       );
 
       if (!passwordHash) {
-        throw new NoUserFoundError();
-      }
-
-      if (!bcrypt.compareSync(input.password, passwordHash)) {
+        if (
+          await migratePasswordHook(
+            ctx.env,
+            input.tenantId,
+            input.email,
+            input.password,
+          )
+        ) {
+          // Hash and store the password used
+          await ctx.state.storage.put(
+            StorageKeys.passwordHash,
+            bcrypt.hashSync(input.password, 10),
+          );
+        } else {
+          throw new NoUserFoundError();
+        }
+      } else if (!bcrypt.compareSync(input.password, passwordHash)) {
         throw new UnauthenticatedError();
       }
 

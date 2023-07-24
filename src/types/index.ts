@@ -6,3 +6,4 @@ export * from "./Client";
 export * from "./Profile";
 export * from "./Token";
 export * from "./RequestWithContext";
+export * from "./sql";
