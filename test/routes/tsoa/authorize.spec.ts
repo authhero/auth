@@ -501,7 +501,8 @@ describe("authorize", () => {
 
   describe("universalAuth", () => {
     it("should redirect to login using and packing the authParams in the state", async () => {
-      const ctx = contextFixture();
+      const stateData: { [key: string]: any } = {};
+      const ctx = contextFixture({ stateData });
       const controller = new AuthorizeController();
 
       const actual = await controller.authorizeWithParams({
@@ -523,6 +524,22 @@ describe("authorize", () => {
       const locationHeader = controller.getHeader("location") as string;
       // The state is stored in a durable object
       expect(locationHeader).toBe("/u/login?state=AAAAAA4");
+
+      const authState = JSON.parse(stateData.newUniqueId);
+      expect(authState).toEqual({
+        authParams: {
+          client_id: "clientId",
+          code_challenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
+          code_challenge_method: "S256",
+          nonce:
+            "Ykk2M0JNa2E1WnM5TUZwX2UxUjJtV2VITTlvbktGNnhCb1NmZG1idEJBdA==&",
+          redirect_uri: "http://localhost:3000",
+          response_type: "code",
+          scope: "openid profile email",
+          state: "state",
+        },
+        state: "AAAAAA4",
+      });
     });
   });
 });
