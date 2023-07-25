@@ -374,8 +374,9 @@ describe("authorize", () => {
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
-
       expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
+      expect(redirectUrl.searchParams.get("id_token")).toBe(null);
+      expect(redirectUrl.searchParams.get("state")).toBe("state");
 
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
