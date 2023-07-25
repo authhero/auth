@@ -44,6 +44,7 @@ export interface ClientCredentialGrantTypeParams {
 
 export interface PasswordlessGrantTypeParams {
   grant_type: GrantType.Passwordless;
+  client_id: string;
   scope?: string;
   client_secret?: string;
   username: string;

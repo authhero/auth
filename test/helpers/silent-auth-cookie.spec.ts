@@ -21,17 +21,11 @@ describe("silentAuthCookie", () => {
       connections: [],
     };
 
-    await setSilentAuthCookies(
-      ctx.env,
-      controller,
-      "userId",
-      authParams,
-      profile,
-    );
+    await setSilentAuthCookies(ctx.env, controller, profile, authParams);
 
     const authState = JSON.parse(stateData.newUniqueId);
     expect(authState).toEqual({
-      userId: "userId",
+      userId: "id",
       authParams: {
         client_id: "clientId",
       },

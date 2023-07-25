@@ -11,6 +11,7 @@ import {
   SuccessResponse,
   Security,
   Delete,
+  Header,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
@@ -21,6 +22,8 @@ import { updateClientInKV } from "../../hooks/update-client";
 import { NotFoundError, UnauthorizedError } from "../../errors";
 import { Context } from "cloudworker-router";
 import { Env } from "../../types";
+import { parseRange } from "../../helpers/content-range";
+import { headers } from "../../constants";
 
 async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
   const db = getDb(ctx.env);
@@ -49,8 +52,11 @@ export class ApplicationsController extends Controller {
   public async listApplications(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
+    @Header("range") range?: string,
   ): Promise<Application[]> {
     const { ctx } = request;
+
+    const parsedRange = parseRange(range);
 
     const db = getDb(ctx.env);
     const applications = await db
@@ -60,7 +66,16 @@ export class ApplicationsController extends Controller {
       .where("admin_users.id", "=", ctx.state.user.sub)
       .where("tenants.id", "=", tenantId)
       .selectAll("applications")
+      .offset(parsedRange.from)
+      .limit(parsedRange.limit)
       .execute();
+
+    if (parsedRange.entity) {
+      this.setHeader(
+        headers.contentRange,
+        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
+      );
+    }
 
     return applications;
   }

@@ -9,8 +9,10 @@ export const headers = {
   accessControlAllowOrigin: "Access-Control-Allow-Origin",
   accessControlAllowMethod: "Access-Control-Allow-Methods",
   accessControlAllowCredentials: "Access-Control-Allow-Credentials",
+  accessControlExposeHeaders: "Access-Control-Expose-Headers",
   cacheControl: "cache-control",
   contentType: "content-type",
+  contentRange: "content-range",
   location: "location",
   setCookie: "set-cookie",
 };

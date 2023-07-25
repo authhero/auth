@@ -4,10 +4,11 @@ import "isomorphic-fetch";
 import { Env } from "../../src/types";
 import { oAuth2ClientFactory } from "./mocked-oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
-import { mockedKVStorage } from "./mocked-kv-storage";
+import { kvStorageFixture } from "./kv-storage";
 import { EmailOptions } from "../../src/services/email";
 import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
 import { userRouter } from "../../src/models/User";
+import { createHash } from "crypto";
 
 const caller = userRouter.createCaller({
   req: new Request("http://localhost:8787"),
@@ -22,6 +23,7 @@ type ValidateAuthenticationCodeParams = Parameters<
 
 export interface MockedContextParams {
   stateData?: { [key: string]: string };
+  clients?: KVNamespace;
   userData?: { [key: string]: string | boolean };
   logs?: any[];
 }
@@ -32,13 +34,13 @@ interface stateInput {
 }
 
 export function contextFixture(params?: MockedContextParams): Context<Env> {
-  const { stateData = {}, userData = {}, logs = [] } = params || {};
+  const { stateData = {}, userData = {}, logs = [], clients } = params || {};
 
   return {
     headers: new URLSearchParams(),
     env: {
       AUTH_TEMPLATES: mockedR2Bucket(),
-      ISSUER: "https://auth.example.com",
+      ISSUER: "https://auth.example.com/",
       oauth2ClientFactory: {
         create: oAuth2ClientFactory,
       },
@@ -101,27 +103,34 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
       STATE: {
         newUniqueId: () => "newUniqueId",
       },
-      CERTIFICATES: mockedKVStorage({
+      CERTIFICATES: kvStorageFixture({
         default: certificate,
       }),
-      CLIENTS: mockedKVStorage({
-        clientId: JSON.stringify({
-          tenantId: "tenantId",
-          senderEmail: "senderEmail",
-          senderName: "senderName",
-          allowedCallbackUrls: ["http://localhost:3000"],
-          connections: [
-            {
-              name: "google-oauth2",
-              clientId: "googleClientId",
-              clientSecret: "googleClientSecret",
-              authorizationEndpoint:
-                "https://accounts.google.com/o/oauth2/v2/auth",
-              tokenEndpoint: "https://oauth2.googleapis.com/token",
-            },
-          ],
+      CLIENTS:
+        clients ||
+        kvStorageFixture({
+          clientId: JSON.stringify({
+            tenantId: "tenantId",
+            senderEmail: "senderEmail",
+            senderName: "senderName",
+            allowedCallbackUrls: ["http://localhost:3000"],
+            connections: [
+              {
+                name: "google-oauth2",
+                clientId: "googleClientId",
+                clientSecret: "googleClientSecret",
+                authorizationEndpoint:
+                  "https://accounts.google.com/o/oauth2/v2/auth",
+                tokenEndpoint: "https://oauth2.googleapis.com/token",
+              },
+            ],
+          }),
         }),
-      }),
+      hash: async (data: string) => {
+        const hash = createHash("sha256");
+        hash.update(data);
+        return hash.digest("base64");
+      },
     },
   } as unknown as Context<Env>;
 }

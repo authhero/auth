@@ -301,7 +301,7 @@ export const userRouter = router({
         throw new AuthenticationCodeExpiredError();
       }
 
-      await updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+      const profile = await updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
         email: input.email,
         tenantId: input.tenantId,
         connections: [
@@ -314,7 +314,7 @@ export const userRouter = router({
       // Remove once used
       await ctx.state.storage.put(StorageKeys.authenticationCode, "");
 
-      return code.authParams;
+      return profile;
     }),
   validateEmailValidationCode: publicProcedure
     .input(z.string())

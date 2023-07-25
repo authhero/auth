@@ -8,11 +8,14 @@ import {
   Body,
   SuccessResponse,
   Security,
+  Header,
 } from "@tsoa/runtime";
 import { Tenant, AdminUser } from "../../types/sql";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
+import { headers } from "../../constants";
+import { parseRange } from "../../helpers/content-range";
 
 @Route("tenants")
 @Tags("tenants")
@@ -21,16 +24,28 @@ export class TenantsController extends Controller {
   @Security("oauth2", [])
   public async listTenants(
     @Request() request: RequestWithContext,
+    @Header("range") range?: string,
   ): Promise<Tenant[]> {
     const { ctx } = request;
     const db = getDb(ctx.env);
+
+    const parsedRange = parseRange(range);
 
     const tenants = await db
       .selectFrom("tenants")
       .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
       .where("admin_users.id", "=", ctx.state.user.sub)
       .selectAll("tenants")
+      .offset(parsedRange.from)
+      .limit(parsedRange.limit)
       .execute();
+
+    if (parsedRange.entity) {
+      this.setHeader(
+        headers.contentRange,
+        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
+      );
+    }
 
     return tenants;
   }

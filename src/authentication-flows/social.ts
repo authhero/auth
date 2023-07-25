@@ -98,9 +98,8 @@ export async function socialAuthCallback({
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
-    userId,
-    state.authParams,
     profile,
+    state.authParams,
   );
 
   if (!state.authParams.redirect_uri) {

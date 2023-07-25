@@ -11,6 +11,7 @@ import {
   SuccessResponse,
   Security,
   Delete,
+  Header,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
@@ -21,6 +22,8 @@ import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { Context } from "cloudworker-router";
 import { Env } from "../../types";
 import { NotFoundError, UnauthorizedError } from "../../errors";
+import { parseRange } from "../../helpers/content-range";
+import { headers } from "../../constants";
 
 async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
   const db = getDb(ctx.env);
@@ -49,8 +52,11 @@ export class MigrationsController extends Controller {
   public async listMigrations(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
+    @Header("range") range?: string,
   ): Promise<Migration[]> {
     const { ctx } = request;
+
+    const parsedRange = parseRange(range);
 
     const db = getDb(ctx.env);
     const migrations = await db
@@ -60,7 +66,16 @@ export class MigrationsController extends Controller {
       .where("admin_users.id", "=", ctx.state.user.sub)
       .where("tenants.id", "=", tenantId)
       .selectAll("migrations")
+      .offset(parsedRange.from)
+      .limit(parsedRange.limit)
       .execute();
+
+    if (parsedRange.entity) {
+      this.setHeader(
+        headers.contentRange,
+        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
+      );
+    }
 
     return migrations;
   }

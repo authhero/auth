@@ -10,7 +10,7 @@ import {
 } from "../../errors";
 import randomString from "../../utils/random-string";
 import { hexToBase64 } from "../../utils/base64";
-import { AuthParams, Env } from "../../types";
+import { AuthParams, AuthorizationResponseType, Env } from "../../types";
 
 export interface LoginError {
   error: string;
@@ -72,7 +72,7 @@ export class AuthenticateController extends Controller {
     try {
       switch (body.realm) {
         case "email":
-          authParams = await user.validateAuthenticationCode.mutate({
+          await user.validateAuthenticationCode.mutate({
             code: body.otp,
             email: body.username,
             tenantId: client.tenantId,

@@ -1,4 +1,3 @@
-import hash from "../utils/hash";
 import { CodeChallengeMethod, Env } from "../types";
 
 export async function computeCodeChallenge(
@@ -13,7 +12,7 @@ export async function computeCodeChallenge(
       codeChallenge = codeVerifier;
       break;
     case "S256":
-      const hashedVerifier = await hash(codeVerifier);
+      const hashedVerifier = await env.hash(codeVerifier);
       return hashedVerifier
         .replace(/\+/g, "-")
         .replace(/\//g, "_")

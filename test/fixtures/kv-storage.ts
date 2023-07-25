@@ -2,7 +2,7 @@ export interface MockedKVStorageData {
   [key: string]: string;
 }
 
-export function mockedKVStorage(initalData: MockedKVStorageData = {}) {
+export function kvStorageFixture(initalData: MockedKVStorageData = {}) {
   const data: MockedKVStorageData = initalData;
 
   return {

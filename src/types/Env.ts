@@ -26,6 +26,8 @@ export interface Env {
   CERTIFICATES: KVNamespace;
   CLIENTS: KVNamespace;
   AUTH_TEMPLATES: R2Bucket;
+  READ_PERMISSION?: string;
+  WRITE_PERMISSION?: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   stateFactory: ClientFactory<StateClient>;
   userFactory: ClientFactory<UserClient>;

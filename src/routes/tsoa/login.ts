@@ -8,6 +8,7 @@ import {
   Body,
   Query,
 } from "@tsoa/runtime";
+import { nanoid } from "nanoid";
 
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId } from "../../models/User";
@@ -23,9 +24,11 @@ import {
   renderLoginWithCode,
   renderEnterCode,
 } from "../../templates/render";
-import { AuthParams, Env } from "../../types";
+import { AuthParams, AuthorizationResponseType, Env } from "../../types";
 import { InvalidRequestError } from "../../errors";
 import { headers } from "../../constants";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { applyTokenResponse } from "../../helpers/apply-token-response";
 
 export interface LoginParams {
   username: string;
@@ -392,12 +395,28 @@ export class LoginController extends Controller {
     );
 
     try {
-      await user.validatePassword.mutate({
+      const profile = await user.validatePassword.mutate({
         password: loginParams.password,
         tenantId: client.tenantId,
         email: loginParams.username,
       });
 
+      if (loginState.authParams.redirect_uri) {
+        const responseType =
+          loginState.authParams.response_type ||
+          AuthorizationResponseType.TOKEN_ID_TOKEN;
+        const authResponse = await generateAuthResponse({
+          env,
+          userId: profile.id,
+          sid: nanoid(),
+          responseType,
+          authParams: loginState.authParams,
+          user: profile,
+        });
+        return applyTokenResponse(this, authResponse, loginState.authParams);
+      }
+
+      // This is just a fallback in case no redirect was present
       return renderMessage(env.AUTH_TEMPLATES, this, {
         ...loginState,
         page_title: "Logged in",

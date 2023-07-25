@@ -2,35 +2,34 @@ import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
 import { PasswordGrantTypeParams, TokenResponse } from "../types/Token";
 import { getCertificate } from "../models/Certificate";
+import { TokenFactory } from "../services/token-factory";
+import { getClient } from "../services/clients";
 
 export async function passwordGrant(
   ctx: Context<Env>,
   params: PasswordGrantTypeParams,
-): Promise<TokenResponse | null> {
+): Promise<TokenResponse> {
   const user = ctx.env.userFactory.getInstanceByName(params.username);
 
-  const validatePassword = await user.validatePassword.mutate(params.password);
+  const client = await getClient(ctx.env, params.client_id);
 
-  if (!validatePassword) {
-    throw new Error("Incorrect password");
-  }
+  const profile = await user.validatePassword.mutate({
+    password: params.password,
+    tenantId: client.tenantId,
+    email: params.username,
+  });
 
-  // TODO: clean this up and use the genrate-auth-response function
   const certificate = await getCertificate(ctx.env);
-  const tokenFactory = new ctx.env.TokenFactory(
+  const tokenFactory = new TokenFactory(
     certificate.privateKey,
     certificate.kid,
   );
 
   const token = await tokenFactory.createAccessToken({
-    scopes: params.scope?.split(" ") ?? [],
-    userId: params.username,
+    scope: params.scope || "",
+    sub: profile.id,
     iss: ctx.env.ISSUER,
   });
-
-  if (!token) {
-    return null;
-  }
 
   return {
     access_token: token,

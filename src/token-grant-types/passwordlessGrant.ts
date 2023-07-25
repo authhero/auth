@@ -1,34 +1,34 @@
 import { Env } from "../types/Env";
 import { PasswordlessGrantTypeParams, TokenResponse } from "../types/Token";
 import { getCertificate } from "../models/Certificate";
+import { TokenFactory } from "../services/token-factory";
+import { getClient } from "../services/clients";
 
 export async function passwordlessGrant(
   env: Env,
   params: PasswordlessGrantTypeParams,
-): Promise<TokenResponse | null> {
+): Promise<TokenResponse> {
   const user = env.userFactory.getInstanceByName(params.username);
 
-  const validCode = await user.validateAuthenticationCode.mutate(params.otp);
+  const client = await getClient(env, params.client_id);
 
-  if (!validCode) {
-    throw new Error("Invalid code");
-  }
+  const profile = await user.validateAuthenticationCode.mutate({
+    code: params.otp,
+    tenantId: client.tenantId,
+    email: params.username,
+  });
 
   const certificate = await getCertificate(env);
-  const tokenFactory = new env.TokenFactory(
+  const tokenFactory = new TokenFactory(
     certificate.privateKey,
     certificate.kid,
   );
 
   const token = await tokenFactory.createAccessToken({
-    scopes: params.scope?.split(" ") ?? [],
-    userId: params.username,
+    scope: params.scope || "",
+    sub: profile.id,
     iss: env.ISSUER,
   });
-
-  if (!token) {
-    return null;
-  }
 
   return {
     access_token: token,

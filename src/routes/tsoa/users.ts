@@ -10,6 +10,7 @@ import {
   Body,
   Path,
   Security,
+  Header,
 } from "@tsoa/runtime";
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
@@ -22,6 +23,8 @@ import {
 import { getId } from "../../models";
 import { Env, Profile } from "../../types";
 import { Context } from "cloudworker-router";
+import { parseRange } from "../../helpers/content-range";
+import { headers } from "../../constants";
 
 async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
   const db = getDb(ctx.env);
@@ -50,8 +53,11 @@ export class UsersController extends Controller {
   public async listUsers(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
+    @Header("range") range?: string,
   ): Promise<User[]> {
     const { ctx } = request;
+
+    const parsedRange = parseRange(range);
 
     const db = getDb(ctx.env);
     const users = await db
@@ -61,7 +67,16 @@ export class UsersController extends Controller {
       .where("admin_users.id", "=", ctx.state.user.sub)
       .where("tenants.id", "=", tenantId)
       .selectAll("users")
+      .offset(parsedRange.from)
+      .limit(parsedRange.limit)
       .execute();
+
+    if (parsedRange.entity) {
+      this.setHeader(
+        headers.contentRange,
+        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
+      );
+    }
 
     return users;
   }

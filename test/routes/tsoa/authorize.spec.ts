@@ -190,7 +190,7 @@ describe("authorize", () => {
       expect(accessToken.aud).toBe("default");
       expect(accessToken.scope).toBe("openid profile email");
       expect(accessToken.sub).toBe("tenantId|test@example.com");
-      expect(accessToken.iss).toBe("https://auth.example.com");
+      expect(accessToken.iss).toBe("https://auth.example.com/");
       expect(accessToken.iat).toBeDefined();
       expect(accessToken.exp).toBeDefined();
 
@@ -199,7 +199,7 @@ describe("authorize", () => {
       expect(idToken.aud).toBe("clientId");
       expect(idToken.sub).toBe("tenantId|test@example.com");
       expect(idToken.nonce).toBe("nonce");
-      expect(idToken.iss).toBe("https://auth.example.com");
+      expect(idToken.iss).toBe("https://auth.example.com/");
       expect(idToken.iat).toBeDefined();
       expect(idToken.exp).toBeDefined();
       expect(idToken.email).toBe("foo@bar.com");
@@ -269,7 +269,7 @@ describe("authorize", () => {
       const locationHeader = controller.getHeader("location") as string;
 
       expect(locationHeader).toBe(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.comcallback&client_id=googleClientId&response_type=code",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=googleClientId&response_type=code",
       );
 
       expect(actual).toBe("Redirecting to google-oauth2");
@@ -368,7 +368,7 @@ describe("authorize", () => {
         scope: "openid profile email",
         sub: "tenantId|test@example.com",
         kid: "s45bQJ933dwqmrB92ee-l",
-        iss: "https://auth.example.com",
+        iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
       });
@@ -440,7 +440,7 @@ describe("authorize", () => {
         sub: "tenantId|test@example.com",
         nonce: "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
         sid: "AAAAAA4",
-        iss: "https://auth.example.com",
+        iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
         email: "foo@bar.com",

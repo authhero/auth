@@ -37,9 +37,8 @@ export async function ticketAuth(
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
-    userId,
-    authParams,
     profile,
+    authParams,
   );
 
   const tokenResponse = await generateAuthResponse({

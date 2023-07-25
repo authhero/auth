@@ -76,7 +76,8 @@ export class DbConnectionController extends Controller {
       throw new Error("Client not found");
     }
 
-    const message = `Click this link to reset your password: ${client.loginBaseUrl}/reset-password?email=${body.email}&code=${code}`;
+    const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?email=${body.email}&code=${code}`;
+
     await env.sendEmail({
       to: [{ email: body.email, name: "" }],
       from: {
