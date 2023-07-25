@@ -374,8 +374,9 @@ describe("authorize", () => {
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
-
       expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
+      expect(redirectUrl.searchParams.get("id_token")).toBe(null);
+      expect(redirectUrl.searchParams.get("state")).toBe("state");
 
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
@@ -495,6 +496,50 @@ describe("authorize", () => {
       expect(redirectUrl.searchParams.get("state")).toBe("state");
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
+    });
+  });
+
+  describe("universalAuth", () => {
+    it("should redirect to login using and packing the authParams in the state", async () => {
+      const stateData: { [key: string]: any } = {};
+      const ctx = contextFixture({ stateData });
+      const controller = new AuthorizeController();
+
+      const actual = await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.CODE,
+        redirect_uri: "http://localhost:3000",
+        state: "state",
+        nonce: "Ykk2M0JNa2E1WnM5TUZwX2UxUjJtV2VITTlvbktGNnhCb1NmZG1idEJBdA==&",
+        response_mode: AuthorizationResponseMode.QUERY,
+        scope: "openid profile email",
+        code_challenge_method: CodeChallengeMethod.S265,
+        code_challenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
+      });
+
+      expect(actual).toBe("Redirect to login");
+      expect(controller.getStatus()).toBe(302);
+
+      const locationHeader = controller.getHeader("location") as string;
+      // The state is stored in a durable object
+      expect(locationHeader).toBe("/u/login?state=AAAAAA4");
+
+      const authState = JSON.parse(stateData.newUniqueId);
+      expect(authState).toEqual({
+        authParams: {
+          client_id: "clientId",
+          code_challenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
+          code_challenge_method: "S256",
+          nonce:
+            "Ykk2M0JNa2E1WnM5TUZwX2UxUjJtV2VITTlvbktGNnhCb1NmZG1idEJBdA==&",
+          redirect_uri: "http://localhost:3000",
+          response_type: "code",
+          scope: "openid profile email",
+          state: "state",
+        },
+        state: "AAAAAA4",
+      });
     });
   });
 });
