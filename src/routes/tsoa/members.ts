@@ -12,35 +12,34 @@ import {
   Security,
   Delete,
   Header,
+  Put,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { Connection } from "../../types/sql";
-import { updateTenantClientsInKV } from "../../hooks/update-client";
-import { UnauthorizedError } from "../../errors";
+import { Member } from "../../types/sql";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 
-@Route("tenants/{tenantId}/connections")
-@Tags("connections")
-export class ConnectionsController extends Controller {
+@Route("tenants/{tenantId}/members")
+@Tags("members")
+export class MembersController extends Controller {
   @Get("")
   @Security("oauth2", [])
-  public async listConnections(
+  public async listMembers(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Header("range") range?: string,
-  ): Promise<Connection[]> {
+  ): Promise<Member[]> {
     const { ctx } = request;
 
     const parsedRange = parseRange(range);
 
     const db = getDb(ctx.env);
-    const connections = await db
-      .selectFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
+    const members = await db
+      .selectFrom("members")
+      .where("members.tenantId", "=", tenantId)
       .selectAll()
       .offset(parsedRange.from)
       .limit(parsedRange.limit)
@@ -53,37 +52,37 @@ export class ConnectionsController extends Controller {
       );
     }
 
-    return connections;
+    return members;
   }
 
   @Get("{id}")
   @Security("oauth2", [])
-  public async getConnection(
+  public async getMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
-  ): Promise<Connection | string> {
+  ): Promise<Member | string> {
     const { ctx } = request;
 
     const db = getDb(ctx.env);
-    const connection = await db
-      .selectFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
-      .where("connections.id", "=", id)
+    const member = await db
+      .selectFrom("members")
+      .where("members.id", "=", id)
+      .where("members.tenantId", "=", tenantId)
       .selectAll()
       .executeTakeFirst();
 
-    if (!connection) {
+    if (!member) {
       this.setStatus(404);
       return "Not found";
     }
 
-    return connection;
+    return member;
   }
 
   @Delete("{id}")
   @Security("oauth2", [])
-  public async deleteConnection(
+  public async deleteMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
@@ -92,43 +91,37 @@ export class ConnectionsController extends Controller {
 
     const db = getDb(env);
     await db
-      .deleteFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
-      .where("connections.id", "=", id)
+      .deleteFrom("members")
+      .where("members.tenantId", "=", tenantId)
+      .where("members.id", "=", id)
       .execute();
-
-    await updateTenantClientsInKV(env, tenantId);
 
     return "OK";
   }
 
   @Patch("{id}")
   @Security("oauth2", [])
-  public async patchConnection(
+  public async patchMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Partial<
-      Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">
-    >,
+    body: Partial<Omit<Member, "id" | "tenantId" | "createdAt" | "modifiedAt">>,
   ) {
     const { env } = request.ctx;
 
     const db = getDb(env);
-    const connection = {
+    const member = {
       ...body,
       tenantId,
       modifiedAt: new Date().toISOString(),
     };
 
     const results = await db
-      .updateTable("connections")
-      .set(connection)
+      .updateTable("members")
+      .set(member)
       .where("id", "=", id)
       .execute();
-
-    await updateTenantClientsInKV(env, tenantId);
 
     return Number(results[0].numUpdatedRows);
   }
@@ -136,17 +129,18 @@ export class ConnectionsController extends Controller {
   @Post("")
   @Security("oauth2", [])
   @SuccessResponse(201, "Created")
-  public async postConnections(
+  public async postMember(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
-  ): Promise<Connection> {
+    body: Omit<Member, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<Member> {
     const { ctx } = request;
     const { env } = ctx;
 
     const db = getDb(env);
-    const connection: Connection = {
+
+    const member: Member = {
       ...body,
       tenantId,
       id: nanoid(),
@@ -154,11 +148,41 @@ export class ConnectionsController extends Controller {
       modifiedAt: new Date().toISOString(),
     };
 
-    await db.insertInto("connections").values(connection).execute();
-
-    await updateTenantClientsInKV(env, tenantId);
+    await db.insertInto("members").values(member).execute();
 
     this.setStatus(201);
-    return connection;
+    return member;
+  }
+
+  @Put("{id}")
+  @Security("oauth2", [])
+  public async putMember(
+    @Request() request: RequestWithContext,
+    @Path("tenantId") tenantId: string,
+    @Path("id") id: string,
+    @Body()
+    body: Omit<Member, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<Member> {
+    const { ctx } = request;
+    const { env } = ctx;
+
+    const db = getDb(env);
+
+    const member: Member = {
+      ...body,
+      tenantId,
+      id,
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+    };
+
+    await db
+      .insertInto("members")
+      .values(member)
+      .onConflict((oc) => oc.column("id").doUpdateSet(body))
+      .execute();
+
+    this.setStatus(200);
+    return member;
   }
 }

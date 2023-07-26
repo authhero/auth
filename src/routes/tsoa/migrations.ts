@@ -25,25 +25,6 @@ import { NotFoundError, UnauthorizedError } from "../../errors";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 
-async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
-  const db = getDb(ctx.env);
-
-  const user = await db
-    .selectFrom("migrations")
-    .innerJoin("tenants", "tenants.id", "migrations.tenantId")
-    .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-    .where("admin_users.id", "=", ctx.state.user.sub)
-    .where("tenants.id", "=", tenantId)
-    .where("migrations.id", "=", id)
-    .select("migrations.id")
-    .executeTakeFirst();
-
-  if (!user) {
-    // Application not found. Could be that the user has no access
-    throw new NotFoundError();
-  }
-}
-
 @Route("tenants/{tenantId}/migrations")
 @Tags("migrations")
 export class MigrationsController extends Controller {
@@ -61,11 +42,8 @@ export class MigrationsController extends Controller {
     const db = getDb(ctx.env);
     const migrations = await db
       .selectFrom("migrations")
-      .innerJoin("tenants", "tenants.id", "migrations.tenantId")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
-      .selectAll("migrations")
+      .where("migrations.tenantId", "=", tenantId)
+      .selectAll()
       .offset(parsedRange.from)
       .limit(parsedRange.limit)
       .execute();
@@ -92,12 +70,9 @@ export class MigrationsController extends Controller {
     const db = getDb(ctx.env);
     const migration = await db
       .selectFrom("migrations")
-      .innerJoin("tenants", "tenants.id", "migrations.tenantId")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
+      .where("migrations.tenantId", "=", tenantId)
       .where("migrations.id", "=", id)
-      .selectAll("migrations")
+      .selectAll()
       .executeTakeFirst();
 
     if (!migration) {
@@ -116,8 +91,6 @@ export class MigrationsController extends Controller {
     @Path("tenantId") tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
-
-    await checkAccess(request.ctx, tenantId, id);
 
     const db = getDb(env);
     await db
@@ -143,8 +116,6 @@ export class MigrationsController extends Controller {
     >,
   ) {
     const { env } = request.ctx;
-
-    await checkAccess(request.ctx, tenantId, id);
 
     const db = getDb(env);
     const migration = {
@@ -177,18 +148,6 @@ export class MigrationsController extends Controller {
     const { env } = ctx;
 
     const db = getDb(env);
-
-    const tenant = await db
-      .selectFrom("tenants")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
-      .select("tenants.id")
-      .executeTakeFirst();
-
-    if (!tenant) {
-      throw new UnauthorizedError();
-    }
 
     const migration: Migration = {
       ...body,

@@ -21,29 +21,9 @@ import {
   UnauthorizedError,
 } from "../../errors";
 import { getId } from "../../models";
-import { Env, Profile } from "../../types";
-import { Context } from "cloudworker-router";
+import { Profile } from "../../types";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
-
-async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
-  const db = getDb(ctx.env);
-
-  const user = await db
-    .selectFrom("users")
-    .innerJoin("tenants", "tenants.id", "users.tenantId")
-    .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-    .where("admin_users.id", "=", ctx.state.user.sub)
-    .where("tenants.id", "=", tenantId)
-    .where("users.id", "=", id)
-    .select("users.id")
-    .executeTakeFirst();
-
-  if (!user) {
-    // Application not found. Could be that the user has no access
-    throw new NotFoundError();
-  }
-}
 
 @Route("tenants/{tenantId}/users")
 @Security("oauth2", [])
@@ -62,11 +42,8 @@ export class UsersController extends Controller {
     const db = getDb(ctx.env);
     const users = await db
       .selectFrom("users")
-      .innerJoin("tenants", "tenants.id", "users.tenantId")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
-      .selectAll("users")
+      .where("users.tenantId", "=", tenantId)
+      .selectAll()
       .offset(parsedRange.from)
       .limit(parsedRange.limit)
       .execute();
@@ -93,10 +70,7 @@ export class UsersController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .innerJoin("tenants", "tenants.id", "users.tenantId")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
+      .where("users.tenantId", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -124,8 +98,6 @@ export class UsersController extends Controller {
     @Path("tenantId") tenantId: string,
   ): Promise<Profile> {
     const { env } = request.ctx;
-
-    await checkAccess(request.ctx, tenantId, userId);
 
     const db = getDb(request.ctx.env);
     const user = await db
@@ -161,18 +133,6 @@ export class UsersController extends Controller {
     const { ctx } = request;
 
     const db = getDb(ctx.env);
-
-    const tenant = await db
-      .selectFrom("tenants")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
-      .select("tenants.id")
-      .executeTakeFirst();
-
-    if (!tenant) {
-      throw new UnauthorizedError();
-    }
 
     const doId = `${tenantId}|${user.email}`;
     const userInstance = ctx.env.userFactory.getInstanceByName(doId);

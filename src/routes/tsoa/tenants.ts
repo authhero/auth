@@ -10,7 +10,7 @@ import {
   Security,
   Header,
 } from "@tsoa/runtime";
-import { Tenant, AdminUser } from "../../types/sql";
+import { Tenant, AdminUser, Member } from "../../types/sql";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
@@ -33,8 +33,8 @@ export class TenantsController extends Controller {
 
     const tenants = await db
       .selectFrom("tenants")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
+      .innerJoin("members", "tenants.id", "members.tenantId")
+      .where("members.sub", "=", ctx.state.user.sub)
       .selectAll("tenants")
       .offset(parsedRange.from)
       .limit(parsedRange.limit)
@@ -67,9 +67,9 @@ export class TenantsController extends Controller {
       modifiedAt: new Date().toISOString(),
     };
 
-    const adminUser: AdminUser = {
-      id: ctx.state.user.sub,
-      // TODO: Fetch this from the profile endpoint
+    const adminUser: Member = {
+      id: nanoid(),
+      sub: ctx.state.user.sub,
       email: "placeholder",
       tenantId: tenant.id,
       role: "admin",
@@ -79,7 +79,7 @@ export class TenantsController extends Controller {
     };
 
     await db.insertInto("tenants").values(tenant).execute();
-    await db.insertInto("admin_users").values(adminUser).execute();
+    await db.insertInto("members").values(adminUser).execute();
 
     this.setStatus(201);
     return tenant;

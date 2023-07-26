@@ -1,6 +1,6 @@
-// Deprecated
-export interface AdminUser {
+export interface Member {
   id: string;
+  sub?: string;
   email?: string;
   tenantId: string;
   createdAt: string;

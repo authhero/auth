@@ -4,6 +4,7 @@ import {
   User,
   Connection,
   AdminUser,
+  Member,
   Migration,
 } from "./";
 
@@ -11,6 +12,7 @@ import {
 export interface Database {
   users: User;
   admin_users: AdminUser;
+  members: Member;
   applications: Application;
   connections: Connection;
   migrations: Migration;

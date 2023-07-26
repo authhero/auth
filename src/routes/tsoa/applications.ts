@@ -19,30 +19,9 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
-import { NotFoundError, UnauthorizedError } from "../../errors";
-import { Context } from "cloudworker-router";
-import { Env } from "../../types";
+import { UnauthorizedError } from "../../errors";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
-
-async function checkAccess(ctx: Context<Env>, tenantId: string, id: string) {
-  const db = getDb(ctx.env);
-
-  const application = await db
-    .selectFrom("applications")
-    .innerJoin("tenants", "tenants.id", "applications.tenantId")
-    .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-    .where("admin_users.id", "=", ctx.state.user.sub)
-    .where("tenants.id", "=", tenantId)
-    .where("applications.id", "=", id)
-    .select("applications.id")
-    .executeTakeFirst();
-
-  if (!application) {
-    // Application not found. Could be that the user has no access
-    throw new NotFoundError();
-  }
-}
 
 @Route("tenants/{tenantId}/applications")
 @Tags("applications")
@@ -61,11 +40,8 @@ export class ApplicationsController extends Controller {
     const db = getDb(ctx.env);
     const applications = await db
       .selectFrom("applications")
-      .innerJoin("tenants", "tenants.id", "applications.tenantId")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
-      .selectAll("applications")
+      .where("applications.tenantId", "=", tenantId)
+      .selectAll()
       .offset(parsedRange.from)
       .limit(parsedRange.limit)
       .execute();
@@ -92,12 +68,8 @@ export class ApplicationsController extends Controller {
     const db = getDb(ctx.env);
     const application = await db
       .selectFrom("applications")
-      .innerJoin("tenants", "tenants.id", "applications.tenantId")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
-      .where("applications.id", "=", id)
-      .selectAll("applications")
+      .where("applications.tenantId", "=", tenantId)
+      .selectAll()
       .executeTakeFirst();
 
     if (!application) {
@@ -118,8 +90,6 @@ export class ApplicationsController extends Controller {
     const { env } = request.ctx;
 
     const db = getDb(env);
-
-    await checkAccess(request.ctx, tenantId, id);
 
     await db
       .deleteFrom("applications")
@@ -147,8 +117,6 @@ export class ApplicationsController extends Controller {
 
     const db = getDb(env);
 
-    await checkAccess(request.ctx, tenantId, id);
-
     const application = {
       ...body,
       tenantId,
@@ -173,8 +141,10 @@ export class ApplicationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt"> & {
-      id?: string;
+    body: Partial<
+      Omit<Application, "tenantId" | "createdAt" | "modifiedAt">
+    > & {
+      name: string;
     },
   ): Promise<Application> {
     const { ctx } = request;
@@ -182,22 +152,14 @@ export class ApplicationsController extends Controller {
 
     const db = getDb(env);
 
-    const tenant = await db
-      .selectFrom("tenants")
-      .innerJoin("admin_users", "tenants.id", "admin_users.tenantId")
-      .where("admin_users.id", "=", ctx.state.user.sub)
-      .where("tenants.id", "=", tenantId)
-      .select("tenants.id")
-      .executeTakeFirst();
-
-    if (!tenant) {
-      throw new UnauthorizedError();
-    }
-
     const application: Application = {
+      allowedWebOrigins: "",
+      allowedCallbackUrls: "",
+      allowedLogoutUrls: "",
+      clientSecret: nanoid(),
+      id: nanoid(),
       ...body,
       tenantId,
-      id: body.id || nanoid(),
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
