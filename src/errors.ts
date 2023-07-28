@@ -81,7 +81,7 @@ export class NoUserFoundError extends Error {
 export class UserConflictError extends Error {
   status = 404;
 
-  constructor(message = "User Alredy Exists") {
+  constructor(message = "User Already Exists") {
     super();
 
     this.message = message;

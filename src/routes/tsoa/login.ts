@@ -297,7 +297,7 @@ export class LoginController extends Controller {
 
     const { code } = await user.createPasswordResetCode.mutate();
 
-    const message = `Click this link to reset your password: ${env.ISSUER}u / reset - password ? state = ${state} & code=${code}`;
+    const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
     await env.sendEmail({
       to: [{ email: params.username, name: "" }],
       from: {
