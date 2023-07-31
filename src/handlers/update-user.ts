@@ -1,6 +1,6 @@
 import { getId, User } from "../models";
 import { getDb } from "../services/db";
-import { Env } from "../types";
+import { Env, SqlUser, UserTag } from "../types";
 
 export async function updateUser(env: Env, tenantId: string, email: string) {
   const userId = getId(tenantId, email);
@@ -14,7 +14,12 @@ export async function updateUser(env: Env, tenantId: string, email: string) {
 
   const db = getDb(env);
 
-  const user = {
+  const tags: UserTag[] = profile.connections.map((connection) => ({
+    category: "connection",
+    name: connection.name,
+  }));
+
+  const user: SqlUser = {
     id: profile.id,
     email: profile.email,
     givenName: profile.given_name || "",
@@ -24,6 +29,7 @@ export async function updateUser(env: Env, tenantId: string, email: string) {
     picture: profile.picture || "",
     createdAt: profile.created_at,
     modifiedAt: profile.modified_at,
+    tags: JSON.stringify(tags),
     tenantId,
   };
 

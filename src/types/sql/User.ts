@@ -32,7 +32,12 @@
 //   "family_name": ""
 // }
 
-export interface User {
+export interface UserTag {
+  name: string;
+  category: string;
+}
+
+export interface BaseUser {
   id: string;
   email: string;
   tenantId: string;
@@ -44,4 +49,12 @@ export interface User {
   name?: string;
   picture?: string;
   locale?: string;
+}
+
+export interface User extends BaseUser {
+  tags: UserTag[];
+}
+
+export interface SqlUser extends BaseUser {
+  tags: string;
 }

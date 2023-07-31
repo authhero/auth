@@ -1,4 +1,12 @@
-import { CamelCasePlugin, Kysely } from "kysely";
+import {
+  CamelCasePlugin,
+  Kysely,
+  PluginTransformQueryArgs,
+  PluginTransformResultArgs,
+  QueryResult,
+  RootOperationNode,
+  UnknownRow,
+} from "kysely";
 import { D1Dialect } from "kysely-d1";
 import { Database } from "../types/sql/db";
 import { Env } from "../types/Env";

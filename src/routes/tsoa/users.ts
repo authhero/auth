@@ -15,11 +15,7 @@ import {
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import {
-  NoUserFoundError,
-  NotFoundError,
-  UnauthorizedError,
-} from "../../errors";
+import { NoUserFoundError, NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { Profile } from "../../types";
 import { parseRange } from "../../helpers/content-range";
@@ -55,7 +51,10 @@ export class UsersController extends Controller {
       );
     }
 
-    return users;
+    return users.map((user) => ({
+      ...user,
+      tags: JSON.parse(user.tags || "[]"),
+    }));
   }
 
   @Get("{userId}")
