@@ -20,6 +20,8 @@ route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2
 ISSUER = "https://auth2.sesamy.dev/"
 JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
 OAUTH2_CLIENT_ID = '0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW'
+READ_PERMISSION = 'auth:read'
+WRITE_PERMISSION = 'auth:write'
 
 [[r2_buckets]]
 binding = 'AUTH_TEMPLATES'

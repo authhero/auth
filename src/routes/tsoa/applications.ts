@@ -12,6 +12,7 @@ import {
   Security,
   Delete,
   Header,
+  Put,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
@@ -19,7 +20,6 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
-import { UnauthorizedError } from "../../errors";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 
@@ -169,6 +169,40 @@ export class ApplicationsController extends Controller {
     await updateClientInKV(env, application.id);
 
     this.setStatus(201);
+    return application;
+  }
+
+  @Put("{id}")
+  @Security("oauth2", [])
+  public async putConnection(
+    @Request() request: RequestWithContext,
+    @Path("tenantId") tenantId: string,
+    @Path("id") id: string,
+    @Body()
+    body: Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<Application> {
+    const { ctx } = request;
+    const { env } = ctx;
+
+    const db = getDb(env);
+
+    const application: Application = {
+      ...body,
+      tenantId,
+      id,
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+    };
+
+    await db
+      .insertInto("applications")
+      .values(application)
+      .onConflict((oc) => oc.column("id").doUpdateSet(body))
+      .execute();
+
+    await updateClientInKV(env, application.id);
+
+    this.setStatus(200);
     return application;
   }
 }

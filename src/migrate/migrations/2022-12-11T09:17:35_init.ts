@@ -32,11 +32,12 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute();
 
   await db.schema
-    .createTable("admin_users")
-    .addColumn("id", "varchar", (col) => col.notNull())
+    .createTable("members")
+    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
     .addColumn("tenant_id", "varchar", (col) =>
       col.references("tenants.id").onDelete("cascade").notNull(),
     )
+    .addColumn("sub", "varchar")
     .addColumn("email", "varchar")
     .addColumn("name", "varchar")
     .addColumn("status", "varchar")
@@ -44,7 +45,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("picture", "varchar")
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
-    .addPrimaryKeyConstraint("users_tenants", ["id", "tenant_id"])
     .execute();
 
   await db.schema
@@ -79,12 +79,27 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("created_at", "varchar")
     .addColumn("modified_at", "varchar")
     .execute();
+
+  await db.schema
+    .createTable("migrations")
+    .addColumn("id", "varchar", (col) => col.notNull().primaryKey())
+    .addColumn("tenant_id", "varchar", (col) =>
+      col.references("tenants.id").onDelete("cascade").notNull(),
+    )
+    .addColumn("provider", "varchar")
+    .addColumn("client_id", "varchar")
+    .addColumn("origin", "varchar")
+    .addColumn("domain", "varchar")
+    .addColumn("created_at", "varchar")
+    .addColumn("modified_at", "varchar")
+    .execute();
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await db.schema.dropTable("admin_users").execute();
+  await db.schema.dropTable("members").execute();
   await db.schema.dropTable("users").execute();
   await db.schema.dropTable("connections").execute();
   await db.schema.dropTable("applications").execute();
+  await db.schema.dropTable("migrations").execute();
   await db.schema.dropTable("tenants").execute();
 }

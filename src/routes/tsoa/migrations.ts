@@ -19,9 +19,6 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Migration } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
-import { Context } from "cloudworker-router";
-import { Env } from "../../types";
-import { NotFoundError, UnauthorizedError } from "../../errors";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 
@@ -130,8 +127,6 @@ export class MigrationsController extends Controller {
       .where("id", "=", id)
       .execute();
 
-    await updateTenantClientsInKV(env, tenantId);
-
     return Number(results[0].numUpdatedRows);
   }
 
@@ -158,8 +153,6 @@ export class MigrationsController extends Controller {
     };
 
     await db.insertInto("migrations").values(migration).execute();
-
-    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
     return migration;

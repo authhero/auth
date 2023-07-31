@@ -9,8 +9,9 @@ import {
   SuccessResponse,
   Security,
   Header,
+  Path,
 } from "@tsoa/runtime";
-import { Tenant, AdminUser, Member } from "../../types/sql";
+import { Tenant, Member } from "../../types/sql";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
@@ -31,14 +32,26 @@ export class TenantsController extends Controller {
 
     const parsedRange = parseRange(range);
 
-    const tenants = await db
-      .selectFrom("tenants")
-      .innerJoin("members", "tenants.id", "members.tenantId")
-      .where("members.sub", "=", ctx.state.user.sub)
-      .selectAll("tenants")
-      .offset(parsedRange.from)
-      .limit(parsedRange.limit)
-      .execute();
+    let tenants;
+
+    const permissions: string[] = ctx.state.user.permissions || [];
+    if (permissions.includes(ctx.env.READ_PERMISSION as string)) {
+      tenants = await db
+        .selectFrom("tenants")
+        .offset(parsedRange.from)
+        .limit(parsedRange.limit)
+        .selectAll()
+        .execute();
+    } else {
+      tenants = await db
+        .selectFrom("tenants")
+        .innerJoin("members", "tenants.id", "members.tenantId")
+        .where("members.sub", "=", ctx.state.user.sub)
+        .offset(parsedRange.from)
+        .limit(parsedRange.limit)
+        .selectAll("tenants")
+        .execute();
+    }
 
     if (parsedRange.entity) {
       this.setHeader(
@@ -48,6 +61,33 @@ export class TenantsController extends Controller {
     }
 
     return tenants;
+  }
+
+  @Get("{id}")
+  @Security("oauth2", [])
+  public async getTenant(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+  ): Promise<Tenant | string> {
+    const { ctx } = request;
+
+    console.log("id: " + id);
+
+    const db = getDb(ctx.env);
+    const tenant = await db
+      .selectFrom("tenants")
+      .where("tenants.id", "=", id)
+      .selectAll()
+      .executeTakeFirst();
+
+    console.log("tenant: " + JSON.stringify(tenant));
+
+    if (!tenant) {
+      this.setStatus(404);
+      return "Not found";
+    }
+
+    return tenant;
   }
 
   @Post("")

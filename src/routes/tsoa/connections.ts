@@ -4,6 +4,7 @@ import {
   Post,
   Patch,
   Path,
+  Put,
   Request,
   Route,
   Tags,
@@ -159,6 +160,40 @@ export class ConnectionsController extends Controller {
     await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
+    return connection;
+  }
+
+  @Put("{id}")
+  @Security("oauth2", [])
+  public async putConnection(
+    @Request() request: RequestWithContext,
+    @Path("tenantId") tenantId: string,
+    @Path("id") id: string,
+    @Body()
+    body: Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<Connection> {
+    const { ctx } = request;
+    const { env } = ctx;
+
+    const db = getDb(env);
+
+    const connection: Connection = {
+      ...body,
+      tenantId,
+      id,
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+    };
+
+    await db
+      .insertInto("connections")
+      .values(connection)
+      .onConflict((oc) => oc.column("id").doUpdateSet(body))
+      .execute();
+
+    await updateTenantClientsInKV(env, tenantId);
+
+    this.setStatus(200);
     return connection;
   }
 }
