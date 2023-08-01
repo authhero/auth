@@ -30,11 +30,6 @@ describe("User", () => {
     jest.useRealTimers();
   });
 
-  it("use jsdom in this test file", () => {
-    const element = document.createElement("div");
-    expect(element).not.toBeNull();
-  });
-
   describe("validate password", () => {
     it("should throw an invalid password error if a user has no password", async () => {
       try {
@@ -77,6 +72,40 @@ describe("User", () => {
         email: "test@example.com",
         tenantId: "tenantId",
       });
+    });
+  });
+
+  describe("register password", () => {
+    it("should register a new password, store a new unverified connection", async () => {
+      let profile: any = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "profile":
+              return null;
+          }
+        },
+        put: async (key: string, value: string) => {
+          switch (key) {
+            case "profile":
+              profile = JSON.parse(value);
+              break;
+          }
+          return;
+        },
+      });
+
+      await caller.registerPassword({
+        password: "password",
+        email: "test@example.com",
+        tenantId: "tenantId",
+      });
+
+      const emailConnection = profile.connections.find(
+        (connection) => connection.name === "auth",
+      );
+      expect(emailConnection.profile.validated).toBe(false);
     });
   });
 
