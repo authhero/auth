@@ -29,6 +29,10 @@ import { InvalidRequestError } from "../../errors";
 import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
+import {
+  sendEmailValidation,
+  sendResetPassword,
+} from "../../controllers/email";
 
 export interface LoginParams {
   username: string;
@@ -233,7 +237,14 @@ export class LoginController extends Controller {
     }
 
     try {
-      await user.registerPassword.mutate(loginParams.password);
+      await user.registerPassword.mutate({
+        email: loginParams.username,
+        tenantId: client.tenantId,
+        password: loginParams.password,
+      });
+
+      const { code } = await user.createValidationCode.mutate();
+      sendEmailValidation(env, client, loginParams.username, code);
     } catch (err: any) {
       return renderSignup(env.AUTH_TEMPLATES, this, {
         ...loginState,
@@ -297,21 +308,7 @@ export class LoginController extends Controller {
 
     const { code } = await user.createPasswordResetCode.mutate();
 
-    const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
-    await env.sendEmail({
-      to: [{ email: params.username, name: "" }],
-      from: {
-        email: client.senderEmail,
-        name: client.senderName,
-      },
-      content: [
-        {
-          type: "text/plain",
-          value: message,
-        },
-      ],
-      subject: "Reset password",
-    });
+    await sendResetPassword(env, client, params.username, code);
 
     return renderMessage(env.AUTH_TEMPLATES, this, {
       ...loginState,

@@ -36,7 +36,6 @@ const router = t.router;
 enum StorageKeys {
   authenticationCode = "authentication-code",
   emailValidationCode = "email-validation-code",
-  emailValidated = "email-validated",
   passwordResetCode = "password-reset-code",
   passwordHash = "password-hash",
   profile = "profile",
@@ -137,7 +136,7 @@ export const userRouter = router({
     }),
   createValidationCode: publicProcedure
     .input(z.string().nullish())
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + 300 * 1000,
@@ -171,11 +170,14 @@ export const userRouter = router({
 
     return profile;
   }),
-  isEmailValidated: publicProcedure.query(async ({ ctx }) => {
-    return ctx.state.storage.get<boolean>(StorageKeys.emailValidated);
-  }),
   registerPassword: publicProcedure
-    .input(z.string())
+    .input(
+      z.object({
+        tenantId: z.string(),
+        email: z.string(),
+        password: z.string(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
       const passwordHash = await ctx.state.storage.get<string>(
         StorageKeys.passwordHash,
@@ -187,8 +189,21 @@ export const userRouter = router({
 
       await ctx.state.storage.put(
         StorageKeys.passwordHash,
-        bcrypt.hashSync(input, 10),
+        bcrypt.hashSync(input.password, 10),
       );
+
+      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+        email: input.email,
+        tenantId: input.tenantId,
+        connections: [
+          {
+            name: "auth",
+            profile: {
+              validated: false,
+            },
+          },
+        ],
+      });
     }),
   resetPasswordWithCode: publicProcedure
     .input(
@@ -227,9 +242,26 @@ export const userRouter = router({
       ctx.state.storage.delete(StorageKeys.passwordResetCode);
     }),
   setEmailValidated: publicProcedure
-    .input(z.boolean())
+    .input(
+      z.object({
+        email: z.string(),
+        tenantId: z.string(),
+        validated: z.boolean(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
-      await ctx.state.storage.put(StorageKeys.emailValidated, input);
+      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+        email: input.email,
+        tenantId: input.tenantId,
+        connections: [
+          {
+            name: "auth",
+            profile: {
+              validated: input.validated,
+            },
+          },
+        ],
+      });
     }),
   setPassword: publicProcedure
     .input(z.string())
@@ -317,29 +349,46 @@ export const userRouter = router({
       return profile;
     }),
   validateEmailValidationCode: publicProcedure
-    .input(z.string())
+    .input(
+      z.object({
+        email: z.string(),
+        tenantId: z.string(),
+        code: z.string(),
+      }),
+    )
     .query(async ({ input, ctx }) => {
-      const code = await ctx.state.storage.get<Code>(
+      const emailValidation = await ctx.state.storage.get<Code>(
         StorageKeys.emailValidationCode,
       );
 
-      if (!code) {
+      if (!emailValidation) {
         throw new UnauthenticatedError();
       }
 
-      if (input !== code.code) {
+      if (input.code !== emailValidation.code) {
         throw new InvalidCodeError();
       }
 
-      if (!code.expireAt || Date.now() > code.expireAt) {
+      if (!emailValidation.expireAt || Date.now() > emailValidation.expireAt) {
         throw new AuthenticationCodeExpiredError();
       }
 
-      // Set the email to validated
-      await ctx.state.storage.put(StorageKeys.emailValidated, true);
-
       // Remove once used
       await ctx.state.storage.delete(StorageKeys.emailValidationCode);
+
+      // Set the email to validated
+      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+        email: input.email,
+        tenantId: input.tenantId,
+        connections: [
+          {
+            name: "email",
+            profile: {
+              validated: true,
+            },
+          },
+        ],
+      });
     }),
   validatePassword: publicProcedure
     .input(
