@@ -11,6 +11,7 @@ import {
   Path,
   Security,
   Header,
+  Put,
 } from "@tsoa/runtime";
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
@@ -120,7 +121,7 @@ export class UsersController extends Controller {
     return userInstance.getProfile.query();
   }
 
-  @Patch("{userId}")
+  @Put("{userId}")
   public async putUser(
     @Request() request: RequestWithContext,
     @Body()

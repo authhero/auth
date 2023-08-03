@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 // Entity from auth0
 // {
@@ -34,12 +34,30 @@ import { z } from "zod";
 //   "family_name": ""
 // }
 
+interface Connection {
+  name: string;
+  profile?: { [key: string]: string | boolean | number };
+}
+
+export interface Profile {
+  id: string;
+  tenantId: string;
+  email: string;
+  created_at: string;
+  modified_at: string;
+  given_name?: string;
+  family_name?: string;
+  nickname?: string;
+  name?: string;
+  picture?: string;
+  locale?: string;
+  connections: Connection[];
+}
+
 const ConnectionSchema = z.object({
   name: z.string(),
   profile: z.record(z.union([z.string(), z.boolean(), z.number()])).optional(),
 });
-
-export type Profile = z.infer<typeof ProfileSchema>;
 
 export const ProfileSchema = z.object({
   id: z.string(),
