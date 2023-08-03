@@ -85,16 +85,16 @@ export class UsersController extends Controller {
       getId(tenantId, dbUser.email),
     );
 
-    const profile: Profile = await user.getProfile.query();
-
-    return profile;
+    return user.getProfile.query();
   }
 
   @Patch("{userId}")
   public async updateUser(
     @Request() request: RequestWithContext,
     @Body()
-    body: Partial<Omit<User, "id" | "createdAt" | "modifiedAt">> & {
+    body: Partial<
+      Omit<Profile, "id" | "createdAt" | "modifiedAt" | "tenantId">
+    > & {
       password?: string;
     },
     @Path("userId") userId: string,
@@ -128,7 +128,7 @@ export class UsersController extends Controller {
   public async putUser(
     @Request() request: RequestWithContext,
     @Body()
-    body: Omit<User, "id" | "createdAt" | "modifiedAt">,
+    body: Omit<Profile, "id" | "createdAt" | "modifiedAt" | "tenantId">,
     @Path("userId") userId: string,
     @Path("tenantId") tenantId: string,
   ): Promise<Profile> {

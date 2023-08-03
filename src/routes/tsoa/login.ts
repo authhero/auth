@@ -462,11 +462,12 @@ export class LoginController extends Controller {
     );
 
     try {
-      const profile = await user.validatePassword.mutate({
+      await user.validatePassword.mutate({
         password: loginParams.password,
         tenantId: client.tenantId,
         email: loginParams.username,
       });
+      const profile = await user.getProfile.query();
 
       const authConnection = profile.connections.find((c) => c.name === "auth");
       if (

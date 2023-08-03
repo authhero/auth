@@ -218,6 +218,92 @@ describe("User", () => {
       expect(profile.id).toBe("id");
       expect(profile.connections[0].name).toBe("google-oauth2");
     });
+
+    it("should validate a connection to an existing user", async () => {
+      let profile: any = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "profile":
+              return JSON.stringify({
+                id: "id",
+                name: "Test",
+                email: "test@example.com",
+                tenantId: "tenantId",
+                created_at: "2021-01-01T00:00:00.000Z",
+                modified_at: "2021-01-01T00:00:00.000Z",
+                connections: [
+                  {
+                    name: "auth",
+                    profile: {
+                      validated: false,
+                    },
+                  },
+                ],
+              });
+          }
+        },
+        put: async (key: string, value: string) => {
+          profile = JSON.parse(value);
+          return;
+        },
+      });
+
+      await caller.patchProfile({
+        tenantId: "tenantId",
+        email: "test@example.com",
+        connections: [
+          {
+            name: "auth",
+            profile: {
+              validated: true,
+            },
+          },
+        ],
+      });
+
+      expect(profile.name).toEqual("Test");
+      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
+      expect(profile.id).toBe("id");
+      expect(profile.connections[0].profile.validated).toBe(true);
+    });
+
+    it("should add a a name to an existing user", async () => {
+      let profile: any = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "profile":
+              return JSON.stringify({
+                id: "id",
+                email: "test@example.com",
+                tenantId: "tenantId",
+                created_at: "2021-01-01T00:00:00.000Z",
+                modified_at: "2021-01-01T00:00:00.000Z",
+                connections: [],
+              });
+          }
+        },
+        put: async (key: string, value: string) => {
+          profile = JSON.parse(value);
+          return;
+        },
+      });
+
+      await caller.patchProfile({
+        tenantId: "tenantId",
+        email: "test@example.com",
+        name: "Test",
+      });
+
+      expect(profile.name).toEqual("Test");
+      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
+      expect(profile.id).toBe("id");
+    });
   });
 
   describe("validate authentication code", () => {
@@ -313,6 +399,58 @@ describe("User", () => {
       const profile = JSON.parse(storage.profile);
 
       expect(profile.email).toBe("test@example.com");
+    });
+  });
+
+  describe("validate email", () => {
+    it("should add a validated true to the auth connection", async () => {
+      const storage: { [key: string]: string } = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "profile":
+              return JSON.stringify({
+                email: "test@example.com",
+                tenantId: "tenantId",
+                id: "id",
+                created_at: ".",
+                modified_at: ".",
+                connections: [
+                  {
+                    name: "auth",
+                    profile: {
+                      id: "2345",
+                      validated: false,
+                    },
+                  },
+                ],
+              });
+            case "email-validation-code":
+              return JSON.stringify({
+                code: "123456",
+                expireAt: 1784757783145,
+                authParams: {
+                  client_id: "clientId",
+                },
+              });
+          }
+        },
+        put: async (key: string, value: string) => {
+          storage[key] = value;
+        },
+        delete: async () => {},
+      });
+
+      await caller.validateEmailValidationCode({
+        code: "123456",
+        email: "test@example.com",
+        tenantId: "tenantId",
+      });
+
+      const profile = JSON.parse(storage.profile);
+
+      expect(profile.connections[0].profile.validated).toBe(true);
     });
   });
 });

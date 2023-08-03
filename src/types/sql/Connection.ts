@@ -1,4 +1,4 @@
-export interface Connection {
+export interface SqlConnection {
   id: string;
   name: string;
   tenantId: string;

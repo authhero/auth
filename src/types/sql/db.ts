@@ -1,7 +1,7 @@
 import {
   Tenant,
   Application,
-  Connection,
+  SqlConnection,
   Member,
   Migration,
   SqlUser,
@@ -12,7 +12,7 @@ export interface Database {
   users: SqlUser;
   members: Member;
   applications: Application;
-  connections: Connection;
+  connections: SqlConnection;
   migrations: Migration;
   tenants: Tenant;
 }

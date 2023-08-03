@@ -18,7 +18,7 @@ import { nanoid } from "nanoid";
 
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { Connection } from "../../types/sql";
+import { SqlConnection } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { UnauthorizedError } from "../../errors";
 import { parseRange } from "../../helpers/content-range";
@@ -33,7 +33,7 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Header("range") range?: string,
-  ): Promise<Connection[]> {
+  ): Promise<SqlConnection[]> {
     const { ctx } = request;
 
     const parsedRange = parseRange(range);
@@ -63,7 +63,7 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
-  ): Promise<Connection | string> {
+  ): Promise<SqlConnection | string> {
     const { ctx } = request;
 
     const db = getDb(ctx.env);
@@ -111,7 +111,7 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">
+      Omit<SqlConnection, "id" | "tenantId" | "createdAt" | "modifiedAt">
     >,
   ) {
     const { env } = request.ctx;
@@ -141,13 +141,13 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
-  ): Promise<Connection> {
+    body: Omit<SqlConnection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;
 
     const db = getDb(env);
-    const connection: Connection = {
+    const connection: SqlConnection = {
       ...body,
       tenantId,
       id: nanoid(),
@@ -170,14 +170,14 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Connection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
-  ): Promise<Connection> {
+    body: Omit<SqlConnection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;
 
     const db = getDb(env);
 
-    const connection: Connection = {
+    const connection: SqlConnection = {
       ...body,
       tenantId,
       id,

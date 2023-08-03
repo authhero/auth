@@ -1,4 +1,4 @@
-import { Connection } from "./sql";
+import { SqlConnection } from "./sql";
 
 export interface Client {
   id: string;
@@ -6,7 +6,7 @@ export interface Client {
   audience: string;
   senderEmail: string;
   senderName: string;
-  connections: Connection[];
+  connections: SqlConnection[];
   allowedCallbackUrls: string[];
   allowedLogoutUrls: string[];
   allowedWebOrigins: string[];

@@ -13,11 +13,13 @@ export async function passwordGrant(
 
   const client = await getClient(ctx.env, params.client_id);
 
-  const profile = await user.validatePassword.mutate({
+  await user.validatePassword.mutate({
     password: params.password,
     tenantId: client.tenantId,
     email: params.username,
   });
+
+  const profile = await user.getProfile.query();
 
   const certificate = await getCertificate(ctx.env);
   const tokenFactory = new TokenFactory(

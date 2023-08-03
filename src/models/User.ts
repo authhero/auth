@@ -1,7 +1,7 @@
 import { createProxy } from "trpc-durable-objects";
 import bcrypt from "bcryptjs";
 import { initTRPC } from "@trpc/server";
-import { z } from "zod";
+import { z, ZodSchema } from "zod";
 import { Context } from "trpc-durable-objects";
 import { nanoid } from "nanoid";
 
@@ -20,12 +20,14 @@ import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
 import { migratePasswordHook } from "../hooks/migrate-password";
 
-interface Code {
-  authParams?: AuthParams;
-  code: string;
-  expireAt?: number;
-  password?: string;
-}
+const CodeSchema = z.object({
+  authParams: z.custom<AuthParams>().optional(),
+  code: z.string(),
+  expireAt: z.number().optional(),
+  password: z.string().optional(),
+});
+
+type Code = z.infer<typeof CodeSchema>;
 
 const t = initTRPC.context<Context>().create();
 
@@ -39,7 +41,7 @@ enum StorageKeys {
   passwordResetCode = "password-reset-code",
   passwordHash = "password-hash",
   profile = "profile",
-  socialConnections = "social-connections",
+  logs = "logs",
 }
 
 const PROFILE_FIELDS = [
@@ -52,18 +54,40 @@ const PROFILE_FIELDS = [
   "locale",
 ];
 
+function parseStringToType<T>(schema: ZodSchema<T>, input?: string): T | null {
+  if (!input) {
+    return null;
+  }
+
+  return schema.parse(JSON.parse(input));
+}
+
 async function getProfile(storage: DurableObjectStorage) {
   const jsonData = await storage.get<string>(StorageKeys.profile);
 
-  try {
-    return ProfileSchema.parse(JSON.parse(jsonData as string));
-  } catch (err) {
-    return null;
-  }
+  return parseStringToType<Profile>(ProfileSchema, jsonData);
+}
+
+async function getPasswordResetCode(storage: DurableObjectStorage) {
+  const jsonData = await storage.get<string>(StorageKeys.passwordResetCode);
+
+  return parseStringToType<Code>(CodeSchema, jsonData);
+}
+
+async function getAuthenticationCode(storage: DurableObjectStorage) {
+  const jsonData = await storage.get<string>(StorageKeys.authenticationCode);
+
+  return parseStringToType<Code>(CodeSchema, jsonData);
+}
+
+async function getEmailValidationCode(storage: DurableObjectStorage) {
+  const jsonData = await storage.get<string>(StorageKeys.emailValidationCode);
+
+  return parseStringToType<Code>(CodeSchema, jsonData);
 }
 
 // Stores information about the current operation and ensures that the user has an id.
-async function updateUser(
+async function updateProfile(
   storage: DurableObjectStorage,
   queue: Queue<QueueMessage>,
   profile: Partial<Profile> & Pick<Profile, "tenantId" | "email">,
@@ -82,6 +106,8 @@ async function updateUser(
 
   const updatedProfile: Profile = {
     ...existingProfile,
+    ...profile,
+    connections: existingProfile.connections,
     modified_at: new Date().toISOString(),
   };
 
@@ -176,9 +202,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const passwordHash = await ctx.state.storage.get<string>(
-        StorageKeys.passwordHash,
-      );
+      const passwordHash = await getPasswordResetCode(ctx.state.storage);
 
       if (passwordHash) {
         throw new UserConflictError();
@@ -189,13 +213,14 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
-      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+      return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
         email: input.email,
         tenantId: input.tenantId,
         connections: [
           {
             name: "auth",
             profile: {
+              email: input.email,
               validated: false,
             },
           },
@@ -210,15 +235,11 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const passwordResetCodeString = await ctx.state.storage.get<string>(
-        StorageKeys.passwordResetCode,
-      );
+      const passwordResetCode = await getPasswordResetCode(ctx.state.storage);
 
-      if (!passwordResetCodeString) {
+      if (!passwordResetCode) {
         throw new InvalidCodeError("No code set");
       }
-
-      const passwordResetCode: Code = JSON.parse(passwordResetCodeString);
 
       if (input.code !== passwordResetCode.code) {
         throw new InvalidCodeError();
@@ -247,13 +268,14 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+      return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
         email: input.email,
         tenantId: input.tenantId,
         connections: [
           {
             name: "auth",
             profile: {
+              email: input.email,
               validated: input.validated,
             },
           },
@@ -295,7 +317,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const profile = await updateUser(
+      const profile = await updateProfile(
         ctx.state.storage,
         ctx.env.USERS_QUEUE,
         input,
@@ -312,15 +334,11 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const codeString = await ctx.state.storage.get<string>(
-        StorageKeys.authenticationCode,
-      );
+      const code = await getAuthenticationCode(ctx.state.storage);
 
-      if (!codeString) {
+      if (!code) {
         throw new NoCodeError();
       }
-
-      const code: Code = JSON.parse(codeString);
 
       if (input.code !== code.code) {
         throw new InvalidCodeError();
@@ -330,15 +348,23 @@ export const userRouter = router({
         throw new AuthenticationCodeExpiredError();
       }
 
-      const profile = await updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
-        email: input.email,
-        tenantId: input.tenantId,
-        connections: [
-          {
-            name: "email",
-          },
-        ],
-      });
+      const profile = await updateProfile(
+        ctx.state.storage,
+        ctx.env.USERS_QUEUE,
+        {
+          email: input.email,
+          tenantId: input.tenantId,
+          connections: [
+            {
+              name: "email",
+              profile: {
+                email: input.email,
+                validated: true,
+              },
+            },
+          ],
+        },
+      );
 
       // Remove once used
       await ctx.state.storage.put(StorageKeys.authenticationCode, "");
@@ -354,15 +380,11 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const emailValidationJson = await ctx.state.storage.get<string>(
-        StorageKeys.emailValidationCode,
-      );
+      const emailValidation = await getEmailValidationCode(ctx.state.storage);
 
-      if (!emailValidationJson) {
+      if (!emailValidation) {
         throw new UnauthenticatedError();
       }
-
-      const emailValidation: Code = JSON.parse(emailValidationJson);
 
       if (input.code !== emailValidation.code) {
         throw new InvalidCodeError();
@@ -376,13 +398,14 @@ export const userRouter = router({
       await ctx.state.storage.delete(StorageKeys.emailValidationCode);
 
       // Set the email to validated
-      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
+      return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
         email: input.email,
         tenantId: input.tenantId,
         connections: [
           {
-            name: "email",
+            name: "auth",
             profile: {
+              email: input.email,
               validated: true,
             },
           },
@@ -422,19 +445,6 @@ export const userRouter = router({
       } else if (!bcrypt.compareSync(input.password, passwordHash)) {
         throw new UnauthenticatedError();
       }
-
-      return updateUser(ctx.state.storage, ctx.env.USERS_QUEUE, {
-        email: input.email,
-        tenantId: input.tenantId,
-        connections: [
-          {
-            name: "auth",
-            profile: {
-              email: input.email,
-            },
-          },
-        ],
-      });
     }),
 });
 
