@@ -120,6 +120,25 @@ export class UsersController extends Controller {
     return userInstance.getProfile.query();
   }
 
+  @Patch("{userId}")
+  public async putUser(
+    @Request() request: RequestWithContext,
+    @Body()
+    body: Omit<User, "id" | "createdAt" | "modifiedAt">,
+    @Path("userId") userId: string,
+    @Path("tenantId") tenantId: string,
+  ): Promise<Profile> {
+    const { env } = request.ctx;
+
+    const doId = `${tenantId}|${body.email}`;
+    const userInstance = env.userFactory.getInstanceByName(doId);
+
+    return userInstance.patchProfile.mutate({
+      ...body,
+      tenantId,
+    });
+  }
+
   @Post("")
   @SuccessResponse(201, "Created")
   public async postUser(

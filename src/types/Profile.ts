@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // Entity from auth0
 // {
 //   "email": "jane@exampleco.com",
@@ -32,23 +34,24 @@
 //   "family_name": ""
 // }
 
-interface Connection {
-  name: string;
-  profile?: { [key: string]: string | boolean | number };
-}
+const ConnectionSchema = z.object({
+  name: z.string(),
+  profile: z.record(z.union([z.string(), z.boolean(), z.number()])).optional(),
+});
 
-export interface Profile {
-  id: string;
-  // TODO: this should probably be snake cased as well. Or maybe stored somewhere else
-  tenantId: string;
-  email: string;
-  created_at: string;
-  modified_at: string;
-  given_name?: string;
-  family_name?: string;
-  nickname?: string;
-  name?: string;
-  picture?: string;
-  locale?: string;
-  connections: Connection[];
-}
+export type Profile = z.infer<typeof ProfileSchema>;
+
+export const ProfileSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  email: z.string(),
+  created_at: z.string(),
+  modified_at: z.string(),
+  given_name: z.string().optional(),
+  family_name: z.string().optional(),
+  nickname: z.string().optional(),
+  name: z.string().optional(),
+  picture: z.string().optional(),
+  locale: z.string().optional(),
+  connections: z.array(ConnectionSchema),
+});
