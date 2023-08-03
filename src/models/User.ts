@@ -52,9 +52,7 @@ const PROFILE_FIELDS = [
   "locale",
 ];
 
-async function getProfile(
-  storage: DurableObjectStorage,
-): Promise<Profile | null> {
+async function getProfile(storage: DurableObjectStorage) {
   const jsonData = await storage.get<string>(StorageKeys.profile);
 
   try {

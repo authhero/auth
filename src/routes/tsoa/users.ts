@@ -21,6 +21,7 @@ import { getId } from "../../models";
 import { Profile } from "../../types";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
+import { profile } from "console";
 
 @Route("tenants/{tenantId}/users")
 @Security("oauth2", [])
@@ -84,7 +85,9 @@ export class UsersController extends Controller {
       getId(tenantId, dbUser.email),
     );
 
-    return user.getProfile.query();
+    const profile: Profile = await user.getProfile.query();
+
+    return profile;
   }
 
   @Patch("{userId}")
@@ -156,12 +159,12 @@ export class UsersController extends Controller {
     const doId = `${tenantId}|${user.email}`;
     const userInstance = ctx.env.userFactory.getInstanceByName(doId);
 
-    const result = await userInstance.patchProfile.mutate({
+    const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       connections: [],
       tenantId,
     });
 
-    return result as Profile;
+    return result;
   }
 }
