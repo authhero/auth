@@ -134,21 +134,19 @@ export const userRouter = router({
 
       return result;
     }),
-  createValidationCode: publicProcedure
-    .input(z.string().nullish())
-    .mutation(async ({ input, ctx }) => {
-      const result: Code = {
-        code: generateOTP(),
-        expireAt: Date.now() + 300 * 1000,
-      };
+  createEmailValidationCode: publicProcedure.mutation(async ({ ctx }) => {
+    const result: Code = {
+      code: generateOTP(),
+      expireAt: Date.now() + 300 * 1000,
+    };
 
-      await ctx.state.storage.put(
-        StorageKeys.emailValidationCode,
-        JSON.stringify(result),
-      );
+    await ctx.state.storage.put(
+      StorageKeys.emailValidationCode,
+      JSON.stringify(result),
+    );
 
-      return result;
-    }),
+    return result;
+  }),
   createPasswordResetCode: publicProcedure.mutation(async ({ ctx }) => {
     const result: Code = {
       code: generateOTP(),
@@ -356,14 +354,16 @@ export const userRouter = router({
         code: z.string(),
       }),
     )
-    .query(async ({ input, ctx }) => {
-      const emailValidation = await ctx.state.storage.get<Code>(
+    .mutation(async ({ input, ctx }) => {
+      const emailValidationJson = await ctx.state.storage.get<string>(
         StorageKeys.emailValidationCode,
       );
 
-      if (!emailValidation) {
+      if (!emailValidationJson) {
         throw new UnauthenticatedError();
       }
+
+      const emailValidation: Code = JSON.parse(emailValidationJson);
 
       if (input.code !== emailValidation.code) {
         throw new InvalidCodeError();

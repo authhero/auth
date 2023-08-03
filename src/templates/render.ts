@@ -128,6 +128,26 @@ export async function renderEnterCode(
   });
 }
 
+export async function renderEmailValidation(
+  bucket: R2Bucket,
+  controller: Controller,
+  context: LoginState,
+) {
+  const layoutTemplate = await getTemplate(bucket, "layout");
+
+  const template = await getTemplate(bucket, "email-validation");
+
+  controller.setHeader("content-type", "text/html");
+  controller.setStatus(200);
+
+  const content = await engine.render(template, context);
+
+  return engine.render(layoutTemplate, {
+    context,
+    content,
+  });
+}
+
 export async function renderSignup(
   bucket: R2Bucket,
   controller: Controller,

@@ -23,13 +23,20 @@ import {
   renderLogin,
   renderLoginWithCode,
   renderEnterCode,
+  renderEmailValidation,
 } from "../../templates/render";
-import { AuthParams, AuthorizationResponseType, Env } from "../../types";
+import {
+  AuthParams,
+  AuthorizationResponseType,
+  Env,
+  Profile,
+} from "../../types";
 import { InvalidRequestError } from "../../errors";
 import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import {
+  sendCode,
   sendEmailValidation,
   sendResetPassword,
 } from "../../controllers/email";
@@ -60,6 +67,35 @@ async function getLoginState(env: Env, state: string): Promise<LoginState> {
 async function setLoginState(env: Env, state: string, data: LoginState) {
   const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
   await stateInstance.setState.mutate({ state: JSON.stringify(data) });
+}
+
+async function handleLogin(
+  env: Env,
+  controller: Controller,
+  profile: Profile,
+  loginState: LoginState,
+) {
+  if (loginState.authParams.redirect_uri) {
+    const responseType =
+      loginState.authParams.response_type ||
+      AuthorizationResponseType.TOKEN_ID_TOKEN;
+    const authResponse = await generateAuthResponse({
+      env,
+      userId: profile.id,
+      sid: nanoid(),
+      responseType,
+      authParams: loginState.authParams,
+      user: profile,
+    });
+    return applyTokenResponse(controller, authResponse, loginState.authParams);
+  }
+
+  // This is just a fallback in case no redirect was present
+  return renderMessage(env.AUTH_TEMPLATES, controller, {
+    ...loginState,
+    page_title: "Logged in",
+    message: "You are logged in",
+  });
 }
 
 @Route("u")
@@ -96,7 +132,7 @@ export class LoginController extends Controller {
   }
 
   /**
-   * Renders a code login form
+   * Validates a code entered in the code form
    * @param request
    */
   @Post("code")
@@ -119,21 +155,7 @@ export class LoginController extends Controller {
     loginState.authParams.username = params.username;
     await setLoginState(env, state, loginState);
 
-    const message = `Here is your login code: ${code}`;
-    await env.sendEmail({
-      to: [{ email: params.username, name: "" }],
-      from: {
-        email: client.senderEmail,
-        name: client.senderName,
-      },
-      content: [
-        {
-          type: "text/plain",
-          value: message,
-        },
-      ],
-      subject: "Login Code",
-    });
+    await sendCode(env, client, params.username, code);
 
     this.setHeader(
       headers.location,
@@ -203,6 +225,45 @@ export class LoginController extends Controller {
   }
 
   /**
+   * Validates a code entered in the validate-email form
+   * @param request
+   */
+  @Post("validate-email")
+  public async postValidateEmail(
+    @Request() request: RequestWithContext,
+    @Body() params: { code: string },
+    @Query("state") state: string,
+  ): Promise<string> {
+    const { env } = request.ctx;
+    const loginState = await getLoginState(env, state);
+
+    const email = loginState.authParams.username;
+    if (!email) {
+      throw new InvalidRequestError("Username not found in state");
+    }
+
+    const client = await getClient(env, loginState.authParams.client_id);
+    const user = env.userFactory.getInstanceByName(
+      getId(client.tenantId, email),
+    );
+
+    try {
+      const profile = await user.validateEmailValidationCode.mutate({
+        code: params.code,
+        email,
+        tenantId: client.tenantId,
+      });
+
+      return handleLogin(env, this, profile, loginState);
+    } catch (err: any) {
+      return renderEmailValidation(env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        errorMessage: err.message,
+      });
+    }
+  }
+
+  /**
    * Renders a signup user form
    * @param request
    */
@@ -237,26 +298,35 @@ export class LoginController extends Controller {
     }
 
     try {
-      await user.registerPassword.mutate({
+      const profile = await user.registerPassword.mutate({
         email: loginParams.username,
         tenantId: client.tenantId,
         password: loginParams.password,
       });
 
-      const { code } = await user.createValidationCode.mutate();
-      sendEmailValidation(env, client, loginParams.username, code);
+      const { code } = await user.createEmailValidationCode.mutate();
+      await sendEmailValidation(env, client, loginParams.username, code);
+
+      if (client.emailValidation === "enforced") {
+        // Update the username in the state
+        await setLoginState(env, state, {
+          ...loginState,
+          authParams: {
+            ...loginState.authParams,
+            username: loginParams.username,
+          },
+        });
+
+        return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+      }
+
+      return handleLogin(env, this, profile, loginState);
     } catch (err: any) {
       return renderSignup(env.AUTH_TEMPLATES, this, {
         ...loginState,
         errorMessage: err.message,
       });
     }
-
-    return renderMessage(env.AUTH_TEMPLATES, this, {
-      ...loginState,
-      page_title: "User created",
-      message: "Your user has been created",
-    });
   }
 
   /**
@@ -308,7 +378,7 @@ export class LoginController extends Controller {
 
     const { code } = await user.createPasswordResetCode.mutate();
 
-    await sendResetPassword(env, client, params.username, code);
+    await sendResetPassword(env, client, params.username, code, state);
 
     return renderMessage(env.AUTH_TEMPLATES, this, {
       ...loginState,
@@ -398,27 +468,27 @@ export class LoginController extends Controller {
         email: loginParams.username,
       });
 
-      if (loginState.authParams.redirect_uri) {
-        const responseType =
-          loginState.authParams.response_type ||
-          AuthorizationResponseType.TOKEN_ID_TOKEN;
-        const authResponse = await generateAuthResponse({
-          env,
-          userId: profile.id,
-          sid: nanoid(),
-          responseType,
-          authParams: loginState.authParams,
-          user: profile,
+      const authConnection = profile.connections.find((c) => c.name === "auth");
+      if (
+        !authConnection?.profile?.validated &&
+        client.emailValidation === "enforced"
+      ) {
+        // Update the username in the state
+        await setLoginState(env, state, {
+          ...loginState,
+          authParams: {
+            ...loginState.authParams,
+            username: loginParams.username,
+          },
         });
-        return applyTokenResponse(this, authResponse, loginState.authParams);
+
+        const { code } = await user.createEmailValidationCode.mutate();
+        await sendEmailValidation(env, client, profile.email, code);
+
+        return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
       }
 
-      // This is just a fallback in case no redirect was present
-      return renderMessage(env.AUTH_TEMPLATES, this, {
-        ...loginState,
-        page_title: "Logged in",
-        message: "You are logged in",
-      });
+      return handleLogin(env, this, profile, loginState);
     } catch (err: any) {
       return renderLogin(env.AUTH_TEMPLATES, this, {
         ...loginState,
@@ -438,25 +508,21 @@ export class LoginController extends Controller {
     @Query("state") state: string,
     @Query("code") code: string,
   ): Promise<string> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const stateInstance = ctx.env.stateFactory.getInstanceById(
-      base64ToHex(code),
-    );
+    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(code));
     const stateString = await stateInstance.getState.query();
     if (!stateString) {
       throw new Error("Code not found");
     }
 
-    const stateObj: { userId: string; authParams: AuthParams } =
+    const stateObj: { userId: string; user: Profile; authParams: AuthParams } =
       JSON.parse(stateString);
+    const userProfile = stateObj.user;
 
-    const userInstance = ctx.env.userFactory.getInstanceByName(stateObj.userId);
-    const userProfile = await userInstance.getProfile.query();
-
-    return renderMessage(ctx.env.AUTH_TEMPLATES, this, {
+    return renderMessage(env.AUTH_TEMPLATES, this, {
       page_title: "User info",
-      message: `Welcome ${userProfile?.name}`,
+      message: `Welcome ${userProfile?.name || userProfile.email}`,
     });
   }
 }

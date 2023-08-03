@@ -28,6 +28,6 @@ export default async function loggerMiddleware(ctx: Context<Env>, next: Next) {
     return response;
   } catch (error: any) {
     ctx.event.waitUntil(logError(ctx, error as Error));
-    return new Response(error.message, { status: 500 });
+    throw error;
   }
 }

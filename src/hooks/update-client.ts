@@ -28,10 +28,10 @@ export async function updateClientInKV(env: Env, applicationId: string) {
       "applications.allowedCallbackUrls",
       "applications.allowedLogoutUrls",
       "applications.clientSecret",
+      "applications.emailValidation",
       "tenants.senderEmail",
       "tenants.senderName",
       "tenants.audience",
-      "tenants.issuer",
     ])
     .where("applications.id", "=", applicationId)
     .executeTakeFirst();
@@ -51,13 +51,13 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     name: application.name,
     audience: application.audience,
     connections,
-    issuer: application.issuer,
     senderEmail: application.senderEmail,
     senderName: application.senderName,
     tenantId: application.tenantId,
     allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
     allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
     allowedWebOrigins: application.allowedWebOrigins?.split(",") || [],
+    emailValidation: application.emailValidation,
     clientSecret: application.clientSecret,
   };
 

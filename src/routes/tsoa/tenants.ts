@@ -10,6 +10,7 @@ import {
   Security,
   Header,
   Path,
+  Put,
 } from "@tsoa/runtime";
 import { Tenant, Member } from "../../types/sql";
 import { getDb } from "../../services/db";
@@ -71,8 +72,6 @@ export class TenantsController extends Controller {
   ): Promise<Tenant | string> {
     const { ctx } = request;
 
-    console.log("id: " + id);
-
     const db = getDb(ctx.env);
     const tenant = await db
       .selectFrom("tenants")
@@ -87,6 +86,32 @@ export class TenantsController extends Controller {
       return "Not found";
     }
 
+    return tenant;
+  }
+
+  @Put("{id}")
+  @Security("oauth2", [])
+  public async putTenant(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+    @Body() body: Omit<Tenant, "id">,
+  ): Promise<Tenant | string> {
+    const { ctx } = request;
+
+    const db = getDb(ctx.env);
+    const tenant = {
+      ...body,
+      id,
+      modifiedAt: new Date().toISOString(),
+    };
+
+    await db
+      .insertInto("tenants")
+      .values(tenant)
+      .onConflict((oc) => oc.column("id").doUpdateSet(tenant))
+      .execute();
+
+    this.setStatus(201);
     return tenant;
   }
 
