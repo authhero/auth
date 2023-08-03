@@ -1,6 +1,6 @@
 {
   "name": "cloudworker-auth",
-  "version": "1.15.3",
+  "version": "1.15.4",
   "description": "",
   "main": "build/src/server.js",
   "scripts": {
