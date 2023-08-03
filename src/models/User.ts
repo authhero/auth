@@ -15,7 +15,7 @@ import {
   NoCodeError,
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
-import { Env } from "../types";
+import { Env, ProfileSchema } from "../types";
 import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
 import { migratePasswordHook } from "../hooks/migrate-password";
@@ -52,15 +52,14 @@ const PROFILE_FIELDS = [
   "locale",
 ];
 
-async function getProfile(
-  storage: DurableObjectStorage,
-): Promise<Profile | null> {
-  const profilesString = await storage.get<string>(StorageKeys.profile);
-  if (!profilesString) {
+async function getProfile(storage: DurableObjectStorage) {
+  const jsonData = await storage.get<string>(StorageKeys.profile);
+
+  try {
+    return ProfileSchema.parse(JSON.parse(jsonData as string));
+  } catch (err) {
     return null;
   }
-
-  return JSON.parse(profilesString);
 }
 
 // Stores information about the current operation and ensures that the user has an id.

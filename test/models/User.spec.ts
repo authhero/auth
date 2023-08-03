@@ -181,6 +181,8 @@ describe("User", () => {
               return JSON.stringify({
                 id: "id",
                 name: "Test",
+                email: "test@example.com",
+                tenantId: "tenantId",
                 created_at: "2021-01-01T00:00:00.000Z",
                 modified_at: "2021-01-01T00:00:00.000Z",
                 connections: [],

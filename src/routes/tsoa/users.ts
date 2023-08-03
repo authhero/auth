@@ -11,6 +11,7 @@ import {
   Path,
   Security,
   Header,
+  Put,
 } from "@tsoa/runtime";
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
@@ -20,6 +21,7 @@ import { getId } from "../../models";
 import { Profile } from "../../types";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
+import { profile } from "console";
 
 @Route("tenants/{tenantId}/users")
 @Security("oauth2", [])
@@ -83,7 +85,9 @@ export class UsersController extends Controller {
       getId(tenantId, dbUser.email),
     );
 
-    return user.getProfile.query();
+    const profile: Profile = await user.getProfile.query();
+
+    return profile;
   }
 
   @Patch("{userId}")
@@ -120,6 +124,25 @@ export class UsersController extends Controller {
     return userInstance.getProfile.query();
   }
 
+  @Put("{userId}")
+  public async putUser(
+    @Request() request: RequestWithContext,
+    @Body()
+    body: Omit<User, "id" | "createdAt" | "modifiedAt">,
+    @Path("userId") userId: string,
+    @Path("tenantId") tenantId: string,
+  ): Promise<Profile> {
+    const { env } = request.ctx;
+
+    const doId = `${tenantId}|${body.email}`;
+    const userInstance = env.userFactory.getInstanceByName(doId);
+
+    return userInstance.patchProfile.mutate({
+      ...body,
+      tenantId,
+    });
+  }
+
   @Post("")
   @SuccessResponse(201, "Created")
   public async postUser(
@@ -136,12 +159,12 @@ export class UsersController extends Controller {
     const doId = `${tenantId}|${user.email}`;
     const userInstance = ctx.env.userFactory.getInstanceByName(doId);
 
-    const result = await userInstance.patchProfile.mutate({
+    const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       connections: [],
       tenantId,
     });
 
-    return result as Profile;
+    return result;
   }
 }
