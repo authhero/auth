@@ -6,4 +6,5 @@ module.exports = {
   testEnvironment: "jest-environment-jsdom",
   testRegex: "/test/.*\\.spec\\.ts$",
   collectCoverageFrom: ["src/**/*.{ts,js}"],
+  setupFilesAfterEnv: ["./jest.setup.js"],
 };

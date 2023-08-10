@@ -33,9 +33,16 @@ export async function updateUser(env: Env, tenantId: string, email: string) {
     tenantId,
   };
 
-  await db
-    .insertInto("users")
-    .values(user)
-    .onConflict((oc) => oc.columns(["id", "tenantId"]).doUpdateSet(user))
-    .execute();
+  try {
+    await db
+      .insertInto("users")
+      .values(user)
+      // .onConflict((oc) => oc.columns(["id", "tenantId"]).doUpdateSet(user))
+      .execute();
+  } catch (err: any) {
+    if (!err.message.includes("AlreadyExists")) {
+      throw err;
+    }
+    await db.updateTable("users").set(user).where("id", "=", user.id).execute();
+  }
 }

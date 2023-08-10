@@ -156,6 +156,7 @@ export class MembersController extends Controller {
 
   @Put("{id}")
   @Security("oauth2", [])
+  @SuccessResponse(201, "Created")
   public async putMember(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
@@ -176,11 +177,20 @@ export class MembersController extends Controller {
       modifiedAt: new Date().toISOString(),
     };
 
-    await db
-      .insertInto("members")
-      .values(member)
-      .onConflict((oc) => oc.column("id").doUpdateSet(body))
-      .execute();
+    try {
+      await db.insertInto("members").values(member).execute();
+    } catch (err: any) {
+      if (!err.message.includes("AlreadyExists")) {
+        throw err;
+      }
+
+      const { id, createdAt, tenantId, ...memberUpdate } = member;
+      await db
+        .updateTable("members")
+        .set(memberUpdate)
+        .where("id", "=", member.id)
+        .execute();
+    }
 
     this.setStatus(200);
     return member;

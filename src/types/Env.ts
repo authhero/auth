@@ -18,6 +18,9 @@ export interface Env {
   DD_API_KEY: string;
   JWKS_URL: string;
   OAUTH2_CLIENT_ID: string;
+  DATABASE_HOST: string;
+  DATABASE_PASSWORD: string;
+  DATABASE_USERNAME: string;
   TOKEN_SERVICE: Fetcher;
   USER: DurableObjectNamespace;
   STATE: DurableObjectNamespace;

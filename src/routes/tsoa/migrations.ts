@@ -12,6 +12,7 @@ import {
   Security,
   Delete,
   Header,
+  Put,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
@@ -151,6 +152,54 @@ export class MigrationsController extends Controller {
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
+
+    await db.insertInto("migrations").values(migration).execute();
+
+    this.setStatus(201);
+    return migration;
+  }
+
+  @Put("{id}")
+  @Security("oauth2", [])
+  @SuccessResponse(201, "Created")
+  public async putMigration(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+    @Path("tenantId") tenantId: string,
+    @Body()
+    body: Omit<Migration, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+  ): Promise<Migration> {
+    const { ctx } = request;
+    const { env } = ctx;
+
+    const db = getDb(env);
+
+    const migration: Migration = {
+      ...body,
+      tenantId,
+      id,
+      createdAt: new Date().toISOString(),
+      modifiedAt: new Date().toISOString(),
+    };
+
+    try {
+      await db
+        .insertInto("migrations")
+        .values(migration)
+        // .onConflict((oc) => oc.column("id").doUpdateSet(body))
+        .execute();
+    } catch (err: any) {
+      if (!err.message.includes("AlreadyExists")) {
+        throw err;
+      }
+
+      const { id, createdAt, tenantId, ...migrationUpdate } = migration;
+      await db
+        .updateTable("migrations")
+        .set(migrationUpdate)
+        .where("id", "=", migration.id)
+        .execute();
+    }
 
     await db.insertInto("migrations").values(migration).execute();
 

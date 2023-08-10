@@ -1,15 +1,13 @@
-import { D1Dialect } from "kysely-d1";
-import { Kysely, Migrator } from "kysely";
+import { Migrator } from "kysely";
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
 import migrations from "./migrations";
 import ReferenceMigrationProvider from "./ReferenceMigrationProvider";
+import { getDb } from "../services/db";
 
 export async function migrateToLatest(ctx: Context<Env>) {
   const provider = new ReferenceMigrationProvider(migrations);
-  const db = new Kysely<any>({
-    dialect: new D1Dialect({ database: ctx.env.AUTH_DB }),
-  });
+  const db = getDb(ctx.env);
 
   const migrator = new Migrator({
     db,
@@ -37,9 +35,7 @@ export async function migrateToLatest(ctx: Context<Env>) {
 
 export async function migrateDown(ctx: Context<Env>) {
   const provider = new ReferenceMigrationProvider(migrations);
-  const db = new Kysely<D1Dialect>({
-    dialect: new D1Dialect({ database: ctx.env.AUTH_DB }),
-  });
+  const db = getDb(ctx.env);
 
   const migrator = new Migrator({
     db,

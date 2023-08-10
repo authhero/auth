@@ -4,4 +4,6 @@ export interface Tenant {
   audience: string;
   senderEmail: string;
   senderName: string;
+  createdAt: string;
+  modifiedAt: string;
 }
