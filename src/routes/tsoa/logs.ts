@@ -30,8 +30,8 @@ function applySort(logs: LogMessage[], sort?: string) {
 
   logs.sort((a, b) =>
     order === "DESC"
-      ? a[column]?.localeCompare(b[column])
-      : b[column]?.localeCompare(a[column])
+      ? b[column]?.localeCompare(a[column])
+      : a[column]?.localeCompare(b[column]),
   );
 
   return logs;
@@ -59,7 +59,7 @@ export class LogsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Query("filter") filterJson: string,
     @Query("range") range?: string,
-    @Query("sort") sort?: string
+    @Query("sort") sort?: string,
   ) {
     const { ctx } = request;
     const { env } = ctx;
@@ -80,7 +80,7 @@ export class LogsController extends Controller {
 
     // Fetch the user from durable object
     const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email)
+      getId(tenantId, dbUser.email),
     );
 
     const logs = await user.getLogs.query();
