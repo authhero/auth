@@ -128,6 +128,8 @@ export class MigrationsController extends Controller {
       .where("id", "=", id)
       .execute();
 
+    await updateTenantClientsInKV(env, tenantId);
+
     return Number(results[0].numUpdatedRows);
   }
 
@@ -154,6 +156,8 @@ export class MigrationsController extends Controller {
     };
 
     await db.insertInto("migrations").values(migration).execute();
+
+    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
     return migration;
@@ -183,11 +187,7 @@ export class MigrationsController extends Controller {
     };
 
     try {
-      await db
-        .insertInto("migrations")
-        .values(migration)
-        // .onConflict((oc) => oc.column("id").doUpdateSet(body))
-        .execute();
+      await db.insertInto("migrations").values(migration).execute();
     } catch (err: any) {
       if (!err.message.includes("AlreadyExists")) {
         throw err;
@@ -202,6 +202,8 @@ export class MigrationsController extends Controller {
     }
 
     await db.insertInto("migrations").values(migration).execute();
+
+    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
     return migration;

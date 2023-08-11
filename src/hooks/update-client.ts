@@ -15,6 +15,13 @@ export async function updateTenantClientsInKV(env: Env, tenantId: string) {
   }
 }
 
+function splitUrls(value?: string) {
+  if (!value?.length) {
+    return [];
+  }
+  return value.split(",").map((key) => key.trim());
+}
+
 export async function updateClientInKV(env: Env, applicationId: string) {
   const db = getDb(env);
   const application = await db
@@ -54,9 +61,9 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     senderEmail: application.senderEmail,
     senderName: application.senderName,
     tenantId: application.tenantId,
-    allowedCallbackUrls: application.allowedCallbackUrls?.split(",") || [],
-    allowedLogoutUrls: application.allowedLogoutUrls?.split(",") || [],
-    allowedWebOrigins: application.allowedWebOrigins?.split(",") || [],
+    allowedCallbackUrls: splitUrls(application.allowedCallbackUrls),
+    allowedLogoutUrls: splitUrls(application.allowedLogoutUrls),
+    allowedWebOrigins: splitUrls(application.allowedWebOrigins),
     emailValidation: application.emailValidation,
     clientSecret: application.clientSecret,
   };
