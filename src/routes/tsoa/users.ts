@@ -21,7 +21,6 @@ import { getId } from "../../models";
 import { Profile } from "../../types";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
-import { profile } from "console";
 
 @Route("tenants/{tenantId}/users")
 @Security("oauth2", [])

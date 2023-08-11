@@ -121,7 +121,10 @@ describe("User", () => {
           }
         },
         put: async (key: string, value: string) => {
-          profile = JSON.parse(value);
+          switch (key) {
+            case "profile":
+              profile = JSON.parse(value);
+          }
           return;
         },
       });
@@ -149,7 +152,10 @@ describe("User", () => {
           }
         },
         put: async (key: string, value: string) => {
-          profile = JSON.parse(value);
+          switch (key) {
+            case "profile":
+              profile = JSON.parse(value);
+          }
           return;
         },
       });
@@ -190,7 +196,10 @@ describe("User", () => {
           }
         },
         put: async (key: string, value: string) => {
-          profile = JSON.parse(value);
+          switch (key) {
+            case "profile":
+              profile = JSON.parse(value);
+          }
           return;
         },
       });
@@ -245,7 +254,10 @@ describe("User", () => {
           }
         },
         put: async (key: string, value: string) => {
-          profile = JSON.parse(value);
+          switch (key) {
+            case "profile":
+              profile = JSON.parse(value);
+          }
           return;
         },
       });
@@ -288,7 +300,10 @@ describe("User", () => {
           }
         },
         put: async (key: string, value: string) => {
-          profile = JSON.parse(value);
+          switch (key) {
+            case "profile":
+              profile = JSON.parse(value);
+          }
           return;
         },
       });

@@ -102,28 +102,14 @@ export class TenantsController extends Controller {
     const tenant = {
       ...body,
       id,
-      createddAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
 
-    try {
-      await db
-        .insertInto("tenants")
-        .values(tenant)
-        // .onConflict((oc) => oc.column("id").doUpdateSet(tenant))
-        .execute();
-    } catch (err: any) {
-      if (!err.message.includes("AlreadyExists")) {
-        throw err;
-      }
-
-      const { id, createdAt, ...tenantUpdate } = tenant;
-      await db
-        .updateTable("tenants")
-        .set(tenantUpdate)
-        .where("id", "=", tenant.id)
-        .execute();
-    }
+    await db
+      .insertInto("tenants")
+      .values(tenant)
+      .onConflict((oc) => oc.column("id").doUpdateSet(tenant))
+      .execute();
 
     this.setStatus(201);
     return tenant;
@@ -134,7 +120,7 @@ export class TenantsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postTenants(
     @Request() request: RequestWithContext,
-    @Body() body: Omit<Tenant, "id">,
+    @Body() body: Omit<Tenant, "id" | "createdAt" | "modifiedAt">,
   ): Promise<Tenant> {
     const { ctx } = request;
 

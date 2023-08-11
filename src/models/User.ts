@@ -19,6 +19,7 @@ import { Env, ProfileSchema } from "../types";
 import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
 import { migratePasswordHook } from "../hooks/migrate-password";
+import { LogMessage, LogMessageSchemaList } from "../types/LogMessage";
 
 const CodeSchema = z.object({
   authParams: z.custom<AuthParams>().optional(),
@@ -26,6 +27,8 @@ const CodeSchema = z.object({
   expireAt: z.number().optional(),
   password: z.string().optional(),
 });
+
+const MAX_LOGS_LENGTH = 500;
 
 type Code = z.infer<typeof CodeSchema>;
 
@@ -84,6 +87,32 @@ async function getEmailValidationCode(storage: DurableObjectStorage) {
   const jsonData = await storage.get<string>(StorageKeys.emailValidationCode);
 
   return parseStringToType<Code>(CodeSchema, jsonData);
+}
+
+async function getLogs(storage: DurableObjectStorage) {
+  const jsonData = await storage.get<string>(StorageKeys.logs);
+  if (!jsonData) {
+    return [];
+  }
+
+  // return parseStringToType<LogMessage[]>(LogMessageSchemaList, jsonData) || [];
+  return JSON.parse(jsonData) as LogMessage[];
+}
+
+async function writeLog(
+  storage: DurableObjectStorage,
+  message: Omit<LogMessage, "timestamp" | "id">,
+) {
+  // Make space for the new log row
+  const logs = (await getLogs(storage)).slice(-MAX_LOGS_LENGTH + 1);
+
+  logs.push({
+    ...message,
+    id: nanoid(),
+    timestamp: new Date().toISOString(),
+  });
+
+  await storage.put(StorageKeys.logs, JSON.stringify(logs));
 }
 
 // Stores information about the current operation and ensures that the user has an id.
@@ -157,6 +186,11 @@ export const userRouter = router({
         JSON.stringify(result),
       );
 
+      await writeLog(ctx.state.storage, {
+        category: "login",
+        message: "Create authentication code",
+      });
+
       return result;
     }),
   createEmailValidationCode: publicProcedure.mutation(async ({ ctx }) => {
@@ -169,6 +203,11 @@ export const userRouter = router({
       StorageKeys.emailValidationCode,
       JSON.stringify(result),
     );
+
+    await writeLog(ctx.state.storage, {
+      category: "login",
+      message: "Create email validation code",
+    });
 
     return result;
   }),
@@ -183,8 +222,14 @@ export const userRouter = router({
       JSON.stringify(result),
     );
 
+    await writeLog(ctx.state.storage, {
+      category: "login",
+      message: "Send password reset",
+    });
+
     return result;
   }),
+  getLogs: publicProcedure.query(async ({ ctx }) => getLogs(ctx.state.storage)),
   getProfile: publicProcedure.query(async ({ ctx }) => {
     const profile = await getProfile(ctx.state.storage);
     if (!profile) {
@@ -212,6 +257,11 @@ export const userRouter = router({
         StorageKeys.passwordHash,
         bcrypt.hashSync(input.password, 10),
       );
+
+      await writeLog(ctx.state.storage, {
+        category: "login",
+        message: "User created with password",
+      });
 
       return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
         email: input.email,
@@ -257,6 +307,11 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
+      await writeLog(ctx.state.storage, {
+        category: "update",
+        message: "Reset password with code",
+      });
+
       ctx.state.storage.delete(StorageKeys.passwordResetCode);
     }),
   setEmailValidated: publicProcedure
@@ -268,6 +323,11 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      await writeLog(ctx.state.storage, {
+        category: "update",
+        message: "Set email validated",
+      });
+
       return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
         email: input.email,
         tenantId: input.tenantId,
@@ -285,6 +345,11 @@ export const userRouter = router({
   setPassword: publicProcedure
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
+      await writeLog(ctx.state.storage, {
+        category: "update",
+        message: "Set password",
+      });
+
       await ctx.state.storage.put(
         StorageKeys.passwordHash,
         bcrypt.hashSync(input, 10),
@@ -322,6 +387,11 @@ export const userRouter = router({
         ctx.env.USERS_QUEUE,
         input,
       );
+
+      await writeLog(ctx.state.storage, {
+        category: "update",
+        message: "User profile",
+      });
 
       return profile;
     }),
@@ -366,6 +436,11 @@ export const userRouter = router({
         },
       );
 
+      await writeLog(ctx.state.storage, {
+        category: "login",
+        message: "Login with code",
+      });
+
       // Remove once used
       await ctx.state.storage.put(StorageKeys.authenticationCode, "");
 
@@ -393,6 +468,11 @@ export const userRouter = router({
       if (!emailValidation.expireAt || Date.now() > emailValidation.expireAt) {
         throw new AuthenticationCodeExpiredError();
       }
+
+      await writeLog(ctx.state.storage, {
+        category: "validation",
+        message: "Validate with code",
+      });
 
       // Remove once used
       await ctx.state.storage.delete(StorageKeys.emailValidationCode);
@@ -445,6 +525,11 @@ export const userRouter = router({
       } else if (!bcrypt.compareSync(input.password, passwordHash)) {
         throw new UnauthenticatedError();
       }
+
+      await writeLog(ctx.state.storage, {
+        category: "login",
+        message: "Login with password",
+      });
     }),
 });
 

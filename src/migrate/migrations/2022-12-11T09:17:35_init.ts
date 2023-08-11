@@ -55,7 +55,6 @@ export async function up(db: Kysely<Database>): Promise<void> {
       col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("name", "varchar(255)", (col) => col.notNull())
-    .addColumn("client_id", "varchar(255)")
     .addColumn("client_secret", "varchar(255)")
     .addColumn("allowed_callback_urls", "varchar(255)")
     .addColumn("allowed_logout_urls", "varchar(255)")

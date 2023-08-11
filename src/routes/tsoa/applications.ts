@@ -69,6 +69,7 @@ export class ApplicationsController extends Controller {
     const application = await db
       .selectFrom("applications")
       .where("applications.tenantId", "=", tenantId)
+      .where("applications.id", "=", id)
       .selectAll()
       .executeTakeFirst();
 
