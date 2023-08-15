@@ -7,19 +7,16 @@ account_id = "0c8c22bdcd98c3dc6a35190650ef7906"
 
 kv_namespaces = [
     { binding = "CERTIFICATES", id = "2a5901d369d441bba149bb236af71c27", preview_id = "2a5901d369d441bba149bb236af71c27" },
-    { binding = "CLIENTS", id = "7e3153d8585547fdb67ee342c8592de0", preview_id = "7e3153d8585547fdb67ee342c8592de0" }    
+    { binding = "CLIENTS", id = "7e3153d8585547fdb67ee342c8592de0", preview_id = "7e3153d8585547fdb67ee342c8592de0" },
 ]
 
-services = [  
-    { binding = "TOKEN_SERVICE", service = "token-service-dev" }
-]
+services = [{ binding = "TOKEN_SERVICE", service = "token-service-dev" }]
 
 route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" }
 
 [vars]
 ISSUER = "https://auth2.sesamy.dev/"
 JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
-OAUTH2_CLIENT_ID = '0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW'
 READ_PERMISSION = 'auth:read'
 WRITE_PERMISSION = 'auth:write'
 
@@ -34,7 +31,10 @@ database_name = "auth2"
 database_id = "872f055e-d401-46a3-a0d0-fa00e66868b5"
 
 [durable_objects]
-bindings = [{name = "USER", class_name = "User"}, {name = "STATE", class_name = "State"}]
+bindings = [
+    { name = "USER", class_name = "User" },
+    { name = "STATE", class_name = "State" },
+]
 
 [[queues.producers]]
 queue = "users"
@@ -48,5 +48,47 @@ max_retries = 10
 dead_letter_queue = "users-dlq"
 
 [[migrations]]
+tag = "v1"
+new_classes = ["User", "State"]
+
+[env.production]
+account_id = "d684d0f34602a66c97de230566a2fa87"
+workers_dev = true
+route = "auth2.sesamy.com/*"
+
+[env.production.vars]
+ISSUER = "https://auth2.sesamy.com/"
+JWKS_URL = "https://token.sesamy.com/.well-known/jwks.json"
+READ_PERMISSION = 'auth:read'
+WRITE_PERMISSION = 'auth:write'
+
+[[env.production.r2_buckets]]
+binding = 'AUTH_TEMPLATES'
+preview_bucket_name = 'auth-templates'
+bucket_name = 'auth-templates'
+
+[[env.production.d1_databases]]
+binding = "AUTH_DB"
+database_name = "auth2"
+database_id = "921e31d7-63d0-441d-b60c-df2d6756db44"
+
+[env.production.durable_objects]
+bindings = [
+    { name = "USER", class_name = "User" },
+    { name = "STATE", class_name = "State" },
+]
+
+[[env.production.queues.producers]]
+queue = "users"
+binding = "USERS_QUEUE"
+
+[[env.production.queues.consumers]]
+queue = "users"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 10
+dead_letter_queue = "users-dlq"
+
+[[env.production.migrations]]
 tag = "v1"
 new_classes = ["User", "State"]

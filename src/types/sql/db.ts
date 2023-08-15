@@ -5,10 +5,12 @@ import {
   Member,
   Migration,
   SqlUser,
+  SqlDomain,
 } from "./";
 
 // Keys of this interface are table names.
 export interface Database {
+  domains: SqlDomain;
   users: SqlUser;
   members: Member;
   applications: Application;

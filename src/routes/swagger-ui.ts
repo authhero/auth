@@ -61,7 +61,7 @@ function getSwaggerHtml(env: Env) {
 
 
         if (ui.hasOwnProperty("initOAuth")) {
-          ui.initOAuth({"clientId":"${env.OAUTH2_CLIENT_ID}","appName":"sesamy"})
+          ui.initOAuth({"clientId":"auth-admin","appName":"sesamy"})
         }
 
         window.ui = ui;
