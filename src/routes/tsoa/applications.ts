@@ -27,7 +27,7 @@ import { headers } from "../../constants";
 @Tags("applications")
 export class ApplicationsController extends Controller {
   @Get("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async listApplications(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
@@ -57,7 +57,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Get("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async getApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -82,7 +82,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Delete("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async deleteApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -104,7 +104,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async patchApplication(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -136,7 +136,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Post("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async postApplications(
     @Request() request: RequestWithContext,
@@ -177,7 +177,7 @@ export class ApplicationsController extends Controller {
   }
 
   @Put("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async putApplication(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,

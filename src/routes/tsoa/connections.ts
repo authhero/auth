@@ -28,7 +28,7 @@ import { headers } from "../../constants";
 @Tags("connections")
 export class ConnectionsController extends Controller {
   @Get("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async listConnections(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
@@ -58,7 +58,7 @@ export class ConnectionsController extends Controller {
   }
 
   @Get("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async getConnection(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -83,7 +83,7 @@ export class ConnectionsController extends Controller {
   }
 
   @Delete("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async deleteConnection(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -104,7 +104,7 @@ export class ConnectionsController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async patchConnection(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -135,7 +135,7 @@ export class ConnectionsController extends Controller {
   }
 
   @Post("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async postConnections(
     @Request() request: RequestWithContext,
@@ -164,7 +164,7 @@ export class ConnectionsController extends Controller {
   }
 
   @Put("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async putConnection(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,

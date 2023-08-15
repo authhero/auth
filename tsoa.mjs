@@ -10,12 +10,26 @@ import { readFile, writeFile } from "fs/promises";
     outputDirectory: "./build",
     controllerPathGlobs: ["src/routes/tsoa/*.ts"],
     securityDefinitions: {
-      oauth2: {
+      oauth2managementApi: {
         type: "oauth2",
         description: "This API uses OAuth 2 with the implicit flow",
         flows: {
           implicit: {
             authorizationUrl: "https://token.sesamy.dev/authorize",
+            scopes: {
+              openid: "Basic user information",
+              email: "User email",
+              profile: "User profile information",
+            },
+          },
+        },
+      },
+      oauth2: {
+        type: "oauth2",
+        description: "This API uses OAuth 2 with the implicit flow",
+        flows: {
+          implicit: {
+            authorizationUrl: "https://auth2.sesamy.dev/authorize",
             scopes: {
               openid: "Basic user information",
               email: "User email",

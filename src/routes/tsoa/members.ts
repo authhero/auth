@@ -26,7 +26,7 @@ import { headers } from "../../constants";
 @Tags("members")
 export class MembersController extends Controller {
   @Get("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async listMembers(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
@@ -56,7 +56,7 @@ export class MembersController extends Controller {
   }
 
   @Get("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async getMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -81,7 +81,7 @@ export class MembersController extends Controller {
   }
 
   @Delete("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async deleteMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -100,7 +100,7 @@ export class MembersController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async patchMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -127,7 +127,7 @@ export class MembersController extends Controller {
   }
 
   @Post("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async postMember(
     @Request() request: RequestWithContext,
@@ -155,7 +155,7 @@ export class MembersController extends Controller {
   }
 
   @Put("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async putMember(
     @Request() request: RequestWithContext,

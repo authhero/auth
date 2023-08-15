@@ -23,7 +23,7 @@ import { parseRange } from "../../helpers/content-range";
 @Tags("tenants")
 export class TenantsController extends Controller {
   @Get("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async listTenants(
     @Request() request: RequestWithContext,
     @Header("range") range?: string,
@@ -65,7 +65,7 @@ export class TenantsController extends Controller {
   }
 
   @Get("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async getTenant(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -90,7 +90,7 @@ export class TenantsController extends Controller {
   }
 
   @Put("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async putTenant(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -116,7 +116,7 @@ export class TenantsController extends Controller {
   }
 
   @Post("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async postTenants(
     @Request() request: RequestWithContext,

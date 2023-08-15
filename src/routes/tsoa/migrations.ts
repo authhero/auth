@@ -27,7 +27,7 @@ import { headers } from "../../constants";
 @Tags("migrations")
 export class MigrationsController extends Controller {
   @Get("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async listMigrations(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
@@ -57,7 +57,7 @@ export class MigrationsController extends Controller {
   }
 
   @Get("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async getMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -82,7 +82,7 @@ export class MigrationsController extends Controller {
   }
 
   @Delete("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async deleteMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -103,7 +103,7 @@ export class MigrationsController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async patchMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -134,7 +134,7 @@ export class MigrationsController extends Controller {
   }
 
   @Post("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async postMigrations(
     @Request() request: RequestWithContext,
@@ -164,7 +164,7 @@ export class MigrationsController extends Controller {
   }
 
   @Put("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async putMigration(
     @Request() request: RequestWithContext,

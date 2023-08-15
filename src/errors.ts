@@ -38,6 +38,30 @@ export class UnauthorizedError extends Error {
   }
 }
 
+export class ExpiredTokenError extends UnauthorizedError {
+  constructor(message = "Token Expired") {
+    super();
+
+    this.message = message;
+  }
+}
+
+export class InvalidScopesError extends UnauthorizedError {
+  constructor(message = "Invalid Scopes") {
+    super();
+
+    this.message = message;
+  }
+}
+
+export class InvalidSignatureError extends UnauthorizedError {
+  constructor(message = "Invalid Signature") {
+    super();
+
+    this.message = message;
+  }
+}
+
 export class AuthenticationCodeExpiredError extends Error {
   status = 401;
 

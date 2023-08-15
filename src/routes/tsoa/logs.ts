@@ -39,7 +39,7 @@ function applySort(logs: LogMessage[], sort?: string) {
 
 @Route("tenants/{tenantId}/logs")
 @Tags("logs")
-@Security("oauth2", [])
+@Security("oauth2managementApi", [""])
 export class LogsController extends Controller {
   applyRange(logs: LogMessage[], range?: string) {
     if (!range) {

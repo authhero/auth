@@ -27,7 +27,7 @@ import { SqlDomain } from "../../types/sql/Domain";
 @Tags("domains")
 export class DomainsController extends Controller {
   @Get("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async listDomains(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
@@ -57,7 +57,7 @@ export class DomainsController extends Controller {
   }
 
   @Get("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async getDomain(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -82,7 +82,7 @@ export class DomainsController extends Controller {
   }
 
   @Delete("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async deleteDomain(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -101,7 +101,7 @@ export class DomainsController extends Controller {
   }
 
   @Patch("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   public async patchDomain(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -130,7 +130,7 @@ export class DomainsController extends Controller {
   }
 
   @Post("")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async postDomain(
     @Request() request: RequestWithContext,
@@ -158,7 +158,7 @@ export class DomainsController extends Controller {
   }
 
   @Put("{id}")
-  @Security("oauth2", [])
+  @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
   public async putDomain(
     @Request() request: RequestWithContext,

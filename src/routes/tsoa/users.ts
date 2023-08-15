@@ -23,7 +23,7 @@ import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 
 @Route("tenants/{tenantId}/users")
-@Security("oauth2", [])
+@Security("oauth2managementApi", [""])
 @Tags("users")
 export class UsersController extends Controller {
   @Get("")
