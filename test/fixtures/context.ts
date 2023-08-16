@@ -113,7 +113,10 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
             tenantId: "tenantId",
             senderEmail: "senderEmail",
             senderName: "senderName",
-            allowedCallbackUrls: ["http://localhost:3000"],
+            allowedCallbackUrls: [
+              "http://localhost:3000",
+              "https://example.com",
+            ],
             connections: [
               {
                 name: "google-oauth2",

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Query,
+  Header,
   Request,
   Route,
   Tags,
@@ -21,6 +22,7 @@ import {
   socialAuth,
   universalAuth,
 } from "../../authentication-flows";
+import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 
 export interface AuthorizeParams {
   request: RequestWithContext;
@@ -92,6 +94,7 @@ export class AuthorizeController extends Controller {
     @Query("code_challenge_method") code_challenge_method?: CodeChallengeMethod,
     @Query("code_challenge") code_challenge?: string,
     @Query("realm") realm?: string,
+    @Header("referer") referer?: string,
   ): Promise<string> {
     const { ctx } = request;
     const { env } = ctx;
@@ -108,6 +111,12 @@ export class AuthorizeController extends Controller {
       code_challenge,
       code_challenge_method,
     };
+
+    if (referer) {
+      validateRedirectUrl(client.allowedWebOrigins, authParams.redirect_uri);
+    }
+
+    validateRedirectUrl(client.allowedCallbackUrls, authParams.redirect_uri);
 
     // Silent authentication
     if (prompt == "none") {

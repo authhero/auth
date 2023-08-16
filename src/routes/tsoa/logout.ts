@@ -11,6 +11,7 @@ import {
 import { getClient } from "../../services/clients";
 import { serializeClearCookie } from "../../services/cookies";
 import { headers } from "../../constants";
+import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 
 @Route("v2/logout")
 @Tags("logout")
@@ -32,14 +33,7 @@ export class LogoutController extends Controller {
       throw new Error("No return to url found");
     }
 
-    if (
-      !client.allowedCallbackUrls.some((callbackUrl) => {
-        const regex = new RegExp(callbackUrl, "i");
-        return regex.test(redirectUri);
-      })
-    ) {
-      throw new Error("Invalid return to url");
-    }
+    validateRedirectUrl(client.allowedCallbackUrls, redirectUri);
 
     this.setStatus(302);
     serializeClearCookie().forEach((cookie) => {

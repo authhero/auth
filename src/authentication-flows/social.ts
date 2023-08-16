@@ -15,6 +15,7 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/jwt";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 import { InvalidConnectionError } from "../errors";
+import { validateRedirectUrl } from "../utils/validate-redirect-url";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -76,6 +77,15 @@ export async function socialAuthCallback({
     throw new Error("Connection not found");
   }
 
+  if (!state.authParams.redirect_uri) {
+    throw new Error("Redirect URI not defined");
+  }
+
+  validateRedirectUrl(
+    client.allowedCallbackUrls,
+    state.authParams.redirect_uri,
+  );
+
   const oauth2Client = env.oauth2ClientFactory.create(
     connection,
     `${env.ISSUER}callback`,
@@ -102,11 +112,6 @@ export async function socialAuthCallback({
     state.authParams,
   );
 
-  if (!state.authParams.redirect_uri) {
-    throw new Error("Redirect URI not defined");
-  }
-
-  // TODO: This is quick and dirty.. we should validate the values.
   const tokenResponse = await generateAuthResponse({
     env,
     userId,
