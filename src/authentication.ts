@@ -1,4 +1,5 @@
 import { Context, Next } from "cloudworker-router";
+import { z } from "zod";
 import {
   ExpiredTokenError,
   InvalidScopesError,
@@ -7,7 +8,6 @@ import {
 } from "./errors";
 import { getDb } from "./services/db";
 import { Env } from "./types/Env";
-import swagger from "../build/swagger.json";
 
 export enum SecuritySchemeName {
   oauth2 = "oauth2",
@@ -38,16 +38,21 @@ interface TokenData {
   };
 }
 
-interface JwkKey {
-  alg: "RS256";
-  kty: "RSA";
-  use: "sig";
-  n: string;
-  e: string;
-  kid: string;
-  x5t: string;
-  x5c: string[];
-}
+const JwksKeySchema = z.object({
+  alg: z.literal("RS256"),
+  kty: z.literal("RSA"),
+  use: z.literal("sig"),
+  n: z.string(),
+  e: z.string(),
+  kid: z.string(),
+  x5t: z.string(),
+  x5c: z.array(z.string()),
+});
+type JwksKey = z.infer<typeof JwksKeySchema>;
+
+const JwksKeysSchema = z.object({
+  keys: z.array(JwksKeySchema),
+});
 
 /**
  * Parse and decode a JWT.
@@ -74,7 +79,7 @@ function decodeJwt(token: string): TokenData {
   };
 }
 
-const jwksUrls: { [key: string]: JwkKey[] } = {};
+const jwksUrls: { [key: string]: JwksKey[] } = {};
 
 async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   const jwksUrl =
@@ -83,7 +88,7 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
       : env.JWKS_URL;
 
   if (!jwksUrls[jwksUrl]) {
-    // If we're using this service for authenticating
+    // If we're using the auth service itself for authenticating
     if (jwksUrl.startsWith(env.ISSUER)) {
       const certificatesString = await env.CERTIFICATES.get("default");
       const keys = (
@@ -92,18 +97,20 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
         return { kid: cert.kid, ...cert.publicKey };
       });
 
-      return keys;
+      jwksUrls[jwksUrl] = keys;
+    } else {
+      const response = env.TOKEN_SERVICE
+        ? await env.TOKEN_SERVICE.fetch(jwksUrl)
+        : await fetch(jwksUrl);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch jwks");
+      }
+
+      const responseBody = JwksKeysSchema.parse(await response.json());
+
+      jwksUrls[jwksUrl] = responseBody.keys;
     }
-
-    const response = env.TOKEN_SERVICE
-      ? await env.TOKEN_SERVICE.fetch(jwksUrl)
-      : await fetch(jwksUrl);
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch jwks");
-    }
-
-    jwksUrls[jwksUrl] = await response.json();
   }
 
   return jwksUrls[jwksUrl];
@@ -131,18 +138,18 @@ async function isValidJwtSignature(
   const signature = new Uint8Array(
     Array.from(token.signature).map((c) => c.charCodeAt(0)),
   );
-  const jwkKeys = await getJwks(ctx.env, securitySchemeName);
+  const jwksKeys = await getJwks(ctx.env, securitySchemeName);
 
-  const jwkKey = jwkKeys.find((key) => key.kid === token.header.kid);
+  const jwksKey = jwksKeys.find((key) => key.kid === token.header.kid);
 
-  if (!jwkKey) {
+  if (!jwksKey) {
     console.log("No matching kid found");
     return false;
   }
 
   const key = await crypto.subtle.importKey(
     "jwk",
-    jwkKey,
+    jwksKey,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
     ["verify"],
