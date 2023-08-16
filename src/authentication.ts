@@ -251,7 +251,7 @@ export function authenticationHandler(
   const securitySchemeName: SecuritySchemeName =
     "oauth2" in authProvider
       ? SecuritySchemeName.oauth2
-      : SecuritySchemeName.oauth2managmentApi;
+      : SecuritySchemeName.oauth2managementApi;
 
   const [scope] = authProvider[securitySchemeName];
   return async function jwtMiddleware(

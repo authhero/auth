@@ -1,5 +1,8 @@
 import { Controller, Get, Request, Route, Security, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
+import { getDb } from "../../services/db";
+import { NotFoundError } from "src/errors";
+import { getId } from "src/models";
 
 @Route("")
 @Tags("userinfo")
@@ -10,9 +13,24 @@ export class UserinfoController extends Controller {
     @Request() request: RequestWithContext,
   ): Promise<{ id: string }> {
     const { ctx } = request;
+    const { env } = ctx;
 
-    return {
-      id: ctx.state.user.sub,
-    };
+    const db = getDb(env);
+    const dbUser = await db
+      .selectFrom("users")
+      .where("users.id", "=", ctx.state.user.sub)
+      .selectAll()
+      .executeTakeFirst();
+
+    if (!dbUser) {
+      throw new NotFoundError();
+    }
+
+    // Fetch the user from durable object
+    const user = env.userFactory.getInstanceByName(
+      getId(dbUser.tenantId, dbUser.email),
+    );
+
+    return user.getProfile.query();
   }
 }
