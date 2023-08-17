@@ -1,7 +1,7 @@
 import { Context } from "cloudworker-router";
 // This is to make Request and other browser stuff work
 import "isomorphic-fetch";
-import { Env } from "../../src/types";
+import { Client, Env } from "../../src/types";
 import { oAuth2ClientFactory } from "./mocked-oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { kvStorageFixture } from "./kv-storage";
@@ -32,6 +32,29 @@ interface stateInput {
   state: string;
   ttl?: number;
 }
+
+const client: Client = {
+  id: "id",
+  name: "clientName",
+  clientSecret: "clientSecret",
+  tenantId: "tenantId",
+  senderEmail: "senderEmail",
+  senderName: "senderName",
+  allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
+  allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
+  allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
+  emailValidation: "enabled",
+  audience: "audience",
+  connections: [
+    {
+      name: "google-oauth2",
+      clientId: "googleClientId",
+      clientSecret: "googleClientSecret",
+      authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+      tokenEndpoint: "https://oauth2.googleapis.com/token",
+    },
+  ],
+};
 
 export function contextFixture(params?: MockedContextParams): Context<Env> {
   const { stateData = {}, userData = {}, logs = [], clients } = params || {};
@@ -109,25 +132,7 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
       CLIENTS:
         clients ||
         kvStorageFixture({
-          clientId: JSON.stringify({
-            tenantId: "tenantId",
-            senderEmail: "senderEmail",
-            senderName: "senderName",
-            allowedCallbackUrls: [
-              "http://localhost:3000",
-              "https://example.com",
-            ],
-            connections: [
-              {
-                name: "google-oauth2",
-                clientId: "googleClientId",
-                clientSecret: "googleClientSecret",
-                authorizationEndpoint:
-                  "https://accounts.google.com/o/oauth2/v2/auth",
-                tokenEndpoint: "https://oauth2.googleapis.com/token",
-              },
-            ],
-          }),
+          clientId: JSON.stringify(client),
         }),
       hash: async (data: string) => {
         const hash = createHash("sha256");

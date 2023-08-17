@@ -6,6 +6,7 @@ import { TokenRoutes } from "../../../src/routes/tsoa/token";
 import { CreateAccessTokenParams } from "../../../src/services/token-factory";
 import {
   AuthorizationResponseType,
+  Client,
   CodeChallengeMethod,
   PKCEAuthorizationCodeGrantTypeParams,
   RequestWithContext,
@@ -26,6 +27,29 @@ describe("token", () => {
     jest.useRealTimers();
   });
 
+  const client: Client = {
+    id: "publisherClientId",
+    name: "clientName",
+    clientSecret: "clientSecret",
+    tenantId: "tenantId",
+    senderEmail: "senderEmail",
+    senderName: "senderName",
+    allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
+    allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
+    allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
+    emailValidation: "enabled",
+    audience: "audience",
+    connections: [
+      {
+        name: "google-oauth2",
+        clientId: "googleClientId",
+        clientSecret: "googleClientSecret",
+        authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+        tokenEndpoint: "https://oauth2.googleapis.com/token",
+      },
+    ],
+  };
+
   describe("code grant with PKCE", () => {
     it("should return tokens as querystring for a valid code and response_type query using actual params", async () => {
       const code = "m78fmbZ-WAiH9ZjzM_-9xTUBFTLtGOSmhikcK7mGmv8";
@@ -33,17 +57,7 @@ describe("token", () => {
 
       const ctx = contextFixture({
         clients: kvStorageFixture({
-          publisherClientId: JSON.stringify({
-            id: "publisherClientId",
-            callbackUrls: ["https://example.com"],
-            scopes: ["profile", "email", "openid"],
-            secrets: [
-              {
-                id: "secretId",
-                hash: "clientSecret",
-              },
-            ],
-          }),
+          publisherClientId: JSON.stringify(client),
         }),
         stateData: {
           [stateId]: JSON.stringify({
@@ -115,18 +129,7 @@ describe("token", () => {
 
       const ctx = contextFixture({
         clients: kvStorageFixture({
-          publisherClientId: JSON.stringify({
-            id: "publisherClientId",
-            vendorId: "vendorId",
-            callbackUrls: ["https://example.com"],
-            scopes: ["profile", "email", "openid"],
-            secrets: [
-              {
-                id: "secretId",
-                hash: "clientSecret",
-              },
-            ],
-          }),
+          publisherClientId: JSON.stringify(client),
         }),
         stateData: {
           [stateId]: JSON.stringify({
@@ -172,17 +175,7 @@ describe("token", () => {
 
       const ctx = contextFixture({
         clients: kvStorageFixture({
-          publisherClientId: JSON.stringify({
-            id: "publisherClientId",
-            callbackUrls: ["https://example.com"],
-            scopes: ["profile", "email", "openid"],
-            secrets: [
-              {
-                id: "secretId",
-                hash: "clientSecret",
-              },
-            ],
-          }),
+          publisherClientId: JSON.stringify(client),
         }),
         stateData: {
           [stateId]: JSON.stringify({
