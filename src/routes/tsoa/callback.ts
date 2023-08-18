@@ -22,9 +22,9 @@ export class CallbackController extends Controller {
   public async callback(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
-    @Query("scope") scope: string,
     @Query("code") code: string,
-    @Query("prompt") prompt: string,
+    @Query("scope") scope?: string,
+    @Query("prompt") prompt?: string,
     @Query("authuser") authUser?: string,
     @Query("hd") hd?: string,
   ): Promise<string> {
