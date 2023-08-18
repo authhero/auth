@@ -52,7 +52,15 @@ const client: Client = {
       clientSecret: "googleClientSecret",
       authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
       tokenEndpoint: "https://oauth2.googleapis.com/token",
-      scope: "email profile openid",
+      scope: "openid profile email",
+    },
+    {
+      name: "facebook",
+      clientId: "facebookClientId",
+      clientSecret: "facebookClientSecret",
+      authorizationEndpoint: "https://graph.facebook.com/oauth/access_token",
+      tokenEndpoint: "https://www.facebook.com/dialog/oauth",
+      scope: "email public_profile",
     },
   ],
 };

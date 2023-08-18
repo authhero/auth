@@ -276,6 +276,31 @@ describe("authorize", () => {
       expect(controller.getStatus()).toBe(302);
     });
 
+    it("should login use the scopes from the client", async () => {
+      const controller = new AuthorizeController();
+
+      const ctx = contextFixture({});
+
+      const actual = await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        redirect_uri: "https://example.com",
+        state: "state",
+        scope: "openid profile email",
+        connection: "facebook",
+        response_type: AuthorizationResponseType.TOKEN,
+      });
+
+      const locationHeader = controller.getHeader("location") as string;
+
+      expect(locationHeader).toBe(
+        "https://graph.facebook.com/oauth/access_token?scope=email+public_profile&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=facebookClientId&response_type=code",
+      );
+
+      expect(actual).toBe("Redirecting to facebook");
+      expect(controller.getStatus()).toBe(302);
+    });
+
     it("should return a 400 if the connections is not available", async () => {
       // https://auth2.sesamy.dev/authorize
       //   ?client_id=db296ac4-0e1a-4460-8731-8ad4f75c6ff4

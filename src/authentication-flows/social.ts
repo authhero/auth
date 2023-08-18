@@ -44,7 +44,7 @@ export async function socialAuth(
 
   const oauthLoginUrl = new URL(connectionInstance.authorizationEndpoint);
   if (authParams.scope) {
-    oauthLoginUrl.searchParams.set("scope", authParams.scope);
+    oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
   oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
   oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
