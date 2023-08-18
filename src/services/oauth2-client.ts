@@ -21,7 +21,7 @@ export interface IOAuth2ClientFactory {
 
 export function oAuth2ClientFactory(
   params: OAuthProviderParams,
-  redirectUri: string
+  redirectUri: string,
 ): IOAuth2Client {
   return new OAuth2Client(params, redirectUri);
 }
@@ -40,7 +40,7 @@ export class OAuth2Client implements IOAuth2Client {
   constructor(
     params: OAuthProviderParams,
     rediectUri: string,
-    scopes: string[] = []
+    scopes: string[] = [],
   ) {
     this.params = params;
     this.redirectUri = rediectUri;
@@ -78,7 +78,7 @@ export class OAuth2Client implements IOAuth2Client {
 
     if (!response.ok) {
       throw new Error(
-        `Error exchanging code for token: ${await response.text()}`
+        `Error exchanging code for token: ${await response.text()}`,
       );
     }
 
@@ -86,7 +86,7 @@ export class OAuth2Client implements IOAuth2Client {
   }
 
   async getUserProfile(
-    accessToken: string
+    accessToken: string,
   ): Promise<{ [key: string]: string }> {
     if (!this.params.profileEndpoint) {
       throw new Error("No profile endpoint configured");

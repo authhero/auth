@@ -27,10 +27,10 @@ export async function socialAuth(
   controller: Controller,
   client: Client,
   connection: string,
-  authParams: AuthParams
+  authParams: AuthParams,
 ) {
   const connectionInstance = client.connections.find(
-    (p) => p.name === connection
+    (p) => p.name === connection,
   );
   if (!connectionInstance) {
     throw new InvalidConnectionError("Connection not found");
@@ -70,7 +70,7 @@ export async function socialAuthCallback({
 }: socialAuthCallbackParams) {
   const client = await getClient(env, state.authParams.client_id);
   const connection = client.connections.find(
-    (p) => p.name === state.connection
+    (p) => p.name === state.connection,
   );
 
   if (!connection) {
@@ -83,12 +83,12 @@ export async function socialAuthCallback({
 
   validateRedirectUrl(
     client.allowedCallbackUrls,
-    state.authParams.redirect_uri
+    state.authParams.redirect_uri,
   );
 
   const oauth2Client = env.oauth2ClientFactory.create(
     connection,
-    `${env.ISSUER}callback`
+    `${env.ISSUER}callback`,
   );
 
   const token = await oauth2Client.exchangeCodeForTokenResponse(code);
@@ -108,7 +108,7 @@ export async function socialAuthCallback({
     env,
     controller,
     profile,
-    state.authParams
+    state.authParams,
   );
 
   const tokenResponse = await generateAuthResponse({
