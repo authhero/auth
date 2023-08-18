@@ -8,10 +8,10 @@ const oauth2ClientParams: OAuthProviderParams = {
   tokenEndpoint: "https://example.com/oauth2/token",
   clientId: "your_client_id",
   clientSecret: "your_client_secret",
+  scope: "scope1 scope2",
 };
 
 const redirectUri = "https://your-redirect-uri.com/callback";
-const scopes = ["scope1", "scope2"];
 
 // Mock the fetch function to return a successful response with a JSON body
 const mockFetch = (data: unknown, status = 200): jest.Mock => {
@@ -21,7 +21,7 @@ const mockFetch = (data: unknown, status = 200): jest.Mock => {
       status,
       json: () => Promise.resolve(data),
       text: () => Promise.resolve(data),
-    }),
+    })
   );
 };
 (global as any).fetch = mockFetch({ access_token: "some_access_token" });
@@ -30,7 +30,7 @@ describe("OAuth2Client", () => {
   let client: OAuth2Client;
 
   beforeEach(() => {
-    client = new OAuth2Client(oauth2ClientParams, redirectUri, scopes);
+    client = new OAuth2Client(oauth2ClientParams, redirectUri);
   });
 
   describe("getAuthorizationUrl", () => {
@@ -41,7 +41,7 @@ describe("OAuth2Client", () => {
       expect(url).toContain("response_type=code");
       expect(url).toContain(`client_id=${oauth2ClientParams.clientId}`);
       expect(url).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
-      expect(url).toContain(`scope=${scopes.join("+")}`);
+      expect(url).toContain(`scope=scope1+scope2`);
       expect(url).toContain(`state=${encodeURIComponent(state)}`);
     });
   });
@@ -59,7 +59,7 @@ describe("OAuth2Client", () => {
 
       const code = "some_authorization_code";
       await expect(client.exchangeCodeForTokenResponse(code)).rejects.toThrow(
-        "Error exchanging code for token: invalid_grant",
+        "Error exchanging code for token: invalid_grant"
       );
     });
   });

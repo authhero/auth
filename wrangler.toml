@@ -25,10 +25,10 @@ binding = 'AUTH_TEMPLATES'
 preview_bucket_name = 'auth-templates'
 bucket_name = 'auth-templates'
 
-[[d1_databases]]
-binding = "AUTH_DB"
-database_name = "auth2"
-database_id = "872f055e-d401-46a3-a0d0-fa00e66868b5"
+# [[d1_databases]]
+# binding = "AUTH_DB"
+# database_name = "auth2"
+# database_id = "872f055e-d401-46a3-a0d0-fa00e66868b5"
 
 [durable_objects]
 bindings = [
@@ -56,6 +56,13 @@ account_id = "d684d0f34602a66c97de230566a2fa87"
 workers_dev = true
 route = "auth2.sesamy.com/*"
 
+kv_namespaces = [
+    { binding = "CERTIFICATES", id = "a20d5fe5b4f44ed5b7fdce7a087e9ea6", preview_id = "a20d5fe5b4f44ed5b7fdce7a087e9ea6" },
+    { binding = "CLIENTS", id = "97fe2422f50347598b069de26e8f4dfb", preview_id = "97fe2422f50347598b069de26e8f4dfb" },
+]
+
+services = [{ binding = "TOKEN_SERVICE", service = "token-service-prod" }]
+
 [env.production.vars]
 ISSUER = "https://auth2.sesamy.com/"
 JWKS_URL = "https://token.sesamy.com/.well-known/jwks.json"
@@ -67,10 +74,10 @@ binding = 'AUTH_TEMPLATES'
 preview_bucket_name = 'auth-templates'
 bucket_name = 'auth-templates'
 
-[[env.production.d1_databases]]
-binding = "AUTH_DB"
-database_name = "auth2"
-database_id = "921e31d7-63d0-441d-b60c-df2d6756db44"
+# [[env.production.d1_databases]]
+# binding = "AUTH_DB"
+# database_name = "auth2"
+# database_id = "921e31d7-63d0-441d-b60c-df2d6756db44"
 
 [env.production.durable_objects]
 bindings = [
