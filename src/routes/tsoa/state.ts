@@ -7,12 +7,14 @@ import {
   Route,
   Tags,
   Path,
+  Security,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { base64ToHex, hexToBase64 } from "../../utils/base64";
+import { base64ToHex } from "../../utils/base64";
 
 @Route("state")
 @Tags("state")
+@Security("oauth2managementApi", ["read:state"])
 export class StateController extends Controller {
   @Get("{id}")
   public async getState(
@@ -30,21 +32,5 @@ export class StateController extends Controller {
 
     this.setStatus(404);
     return "Not found";
-  }
-
-  @Post("")
-  public async setState(
-    @Request() request: RequestWithContext,
-    @Body() body: any,
-  ): Promise<any> {
-    const id = request.ctx.env.STATE.newUniqueId();
-    const stateInstance = request.ctx.env.stateFactory.getInstanceById(
-      id.toString(),
-    );
-    await stateInstance.createState.mutate({
-      state: JSON.stringify(body),
-    });
-
-    return hexToBase64(id.toString());
   }
 }

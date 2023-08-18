@@ -11,23 +11,19 @@ export interface OAuthProviderParams {
   clientSecret: string;
   authorizationEndpoint: string;
   tokenEndpoint: string;
+  scope: string;
   profileEndpoint?: string;
 }
 
 export interface IOAuth2ClientFactory {
-  create(
-    params: OAuthProviderParams,
-    rediectUri: string,
-    scopes?: string[],
-  ): IOAuth2Client;
+  create(params: OAuthProviderParams, rediectUri: string): IOAuth2Client;
 }
 
 export function oAuth2ClientFactory(
   params: OAuthProviderParams,
   redirectUri: string,
-  scopes?: string[],
 ): IOAuth2Client {
-  return new OAuth2Client(params, redirectUri, scopes);
+  return new OAuth2Client(params, redirectUri);
 }
 
 export interface IOAuth2Client {
@@ -56,7 +52,7 @@ export class OAuth2Client implements IOAuth2Client {
       client_id: this.params.clientId,
       redirect_uri: this.redirectUri,
       response_type: "code",
-      scope: this.scopes.join(" "),
+      scope: this.params.scope,
       state,
     });
 

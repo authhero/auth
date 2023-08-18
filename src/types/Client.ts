@@ -11,6 +11,7 @@ export const ClientSchema = z.object({
       name: z.string(),
       clientId: z.string(),
       clientSecret: z.string(),
+      scope: z.string(),
       authorizationEndpoint: z.string(),
       tokenEndpoint: z.string(),
     }),

@@ -8,6 +8,7 @@ export const SqlConnectionSchema = z.object({
   clientSecret: z.string(),
   authorizationEndpoint: z.string(),
   tokenEndpoint: z.string(),
+  scope: z.string(),
   createdAt: z.string(),
   modifiedAt: z.string(),
 });
@@ -20,6 +21,7 @@ export interface SqlConnection {
   clientSecret: string;
   authorizationEndpoint: string;
   tokenEndpoint: string;
+  scope: string;
   createdAt: string;
   modifiedAt: string;
 }
