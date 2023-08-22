@@ -58,7 +58,6 @@ describe("passwordlessAuth", () => {
     expect(accessToken).toEqual({
       aud: "default",
       scope: "openid profile email",
-      kid: "s45bQJ933dwqmrB92ee-l",
       iss: "https://auth.example.com/",
       iat: Math.floor(date.getTime() / 1000),
       exp: Math.floor(date.getTime() / 1000) + 86400,

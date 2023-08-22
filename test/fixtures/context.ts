@@ -1,8 +1,13 @@
 import { Context } from "cloudworker-router";
 // This is to make Request and other browser stuff work
 import "isomorphic-fetch";
-import { Client, Env } from "../../src/types";
-import { oAuth2ClientFactory } from "./mocked-oauth2Client";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+  Client,
+  Env,
+} from "../../src/types";
+import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { kvStorageFixture } from "./kv-storage";
 import { EmailOptions } from "../../src/services/email";
@@ -52,6 +57,8 @@ const client: Client = {
       clientSecret: "googleClientSecret",
       authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
       tokenEndpoint: "https://oauth2.googleapis.com/token",
+      responseMode: AuthorizationResponseMode.QUERY,
+      responseType: AuthorizationResponseType.CODE,
       scope: "openid profile email",
     },
     {
@@ -60,6 +67,8 @@ const client: Client = {
       clientSecret: "facebookClientSecret",
       authorizationEndpoint: "https://graph.facebook.com/oauth/access_token",
       tokenEndpoint: "https://www.facebook.com/dialog/oauth",
+      responseMode: AuthorizationResponseMode.QUERY,
+      responseType: AuthorizationResponseType.CODE,
       scope: "email public_profile",
     },
   ],

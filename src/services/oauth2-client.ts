@@ -1,3 +1,5 @@
+import { createToken } from "../utils/jwt";
+
 export interface TokenResponse {
   access_token: string;
   id_token?: string;
@@ -5,10 +7,12 @@ export interface TokenResponse {
   expires_in: number;
   refresh_token: string;
 }
-
 export interface OAuthProviderParams {
   clientId: string;
-  clientSecret: string;
+  clientSecret?: string;
+  kid?: string;
+  teamId?: string;
+  privateKey?: string;
   authorizationEndpoint: string;
   tokenEndpoint: string;
   scope: string;
@@ -16,7 +20,7 @@ export interface OAuthProviderParams {
 }
 
 export interface IOAuth2ClientFactory {
-  create(params: OAuthProviderParams, rediectUri: string): IOAuth2Client;
+  create(params: OAuthProviderParams, redirectUrl: string): IOAuth2Client;
 }
 
 export function oAuth2ClientFactory(
@@ -34,17 +38,11 @@ export interface IOAuth2Client {
 
 export class OAuth2Client implements IOAuth2Client {
   private readonly params: OAuthProviderParams;
-  private readonly scopes: string[];
   private readonly redirectUri: string;
 
-  constructor(
-    params: OAuthProviderParams,
-    rediectUri: string,
-    scopes: string[] = [],
-  ) {
+  constructor(params: OAuthProviderParams, redirectUri: string) {
     this.params = params;
-    this.redirectUri = rediectUri;
-    this.scopes = scopes;
+    this.redirectUri = redirectUri;
   }
 
   async getAuthorizationUrl(state: string): Promise<string> {
@@ -59,12 +57,45 @@ export class OAuth2Client implements IOAuth2Client {
     return `${this.params.authorizationEndpoint}?${params.toString()}`;
   }
 
+  async generateAppleClientSecret() {
+    if (!(this.params.privateKey && this.params.kid && this.params.teamId)) {
+      throw new Error("Private key, kid, and teamId required");
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    const DAY_IN_SECONDS = 60 * 60 * 24;
+
+    return createToken({
+      pemKey: this.params.privateKey,
+      alg: "ES256",
+      payload: {
+        iss: this.params.teamId,
+        aud: "https://appleid.apple.com",
+        sub: this.params.clientId,
+        iat: now,
+        exp: now + DAY_IN_SECONDS,
+      },
+      headerAdditions: {
+        kid: this.params.kid,
+      },
+    });
+  }
+
   async exchangeCodeForTokenResponse(code: string): Promise<TokenResponse> {
+    const clientSecret = this.params.privateKey
+      ? await this.generateAppleClientSecret()
+      : this.params.clientSecret;
+
+    if (!clientSecret) {
+      throw new Error("Client secret  or private key required");
+    }
+
     const params = new URLSearchParams({
       grant_type: "authorization_code",
       code,
       client_id: this.params.clientId,
-      client_secret: this.params.clientSecret,
+      client_secret: clientSecret,
       redirect_uri: this.redirectUri,
     });
 

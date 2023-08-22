@@ -1,11 +1,13 @@
 import {
   Controller,
   Get,
+  Body,
   Query,
   Request,
   Route,
   Tags,
   SuccessResponse,
+  Post,
 } from "@tsoa/runtime";
 import { socialAuthCallback } from "../../authentication-flows";
 import { base64ToHex } from "../../utils/base64";
@@ -19,7 +21,7 @@ export class CallbackController extends Controller {
    */
   @Get("")
   @SuccessResponse("302", "Redirect")
-  public async callback(
+  public async getCallback(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
     @Query("code") code: string,
@@ -29,6 +31,34 @@ export class CallbackController extends Controller {
     @Query("hd") hd?: string,
   ): Promise<string> {
     const { env } = request.ctx;
+    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
+    const loginString = await stateInstance.getState.query();
+    if (!loginString) {
+      throw new Error("State not found");
+    }
+
+    const loginState: LoginState = JSON.parse(loginString);
+
+    return socialAuthCallback({
+      env,
+      controller: this,
+      state: loginState,
+      code,
+    });
+  }
+
+  /**
+   * A callback endpoint with post used for some oauth2 providers such as apple.
+   */
+  @Post("")
+  @SuccessResponse("302", "Redirect")
+  public async postCallback(
+    @Request() request: RequestWithContext,
+    @Body() body: { state: string; code: string },
+  ): Promise<string> {
+    const { env } = request.ctx;
+
+    const { code, state } = body;
     const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
     const loginString = await stateInstance.getState.query();
     if (!loginString) {

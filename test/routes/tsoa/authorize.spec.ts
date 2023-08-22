@@ -269,7 +269,7 @@ describe("authorize", () => {
       const locationHeader = controller.getHeader("location") as string;
 
       expect(locationHeader).toBe(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=googleClientId&response_type=code",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=googleClientId&response_type=code&response_mode=query",
       );
 
       expect(actual).toBe("Redirecting to google-oauth2");
@@ -294,7 +294,7 @@ describe("authorize", () => {
       const locationHeader = controller.getHeader("location") as string;
 
       expect(locationHeader).toBe(
-        "https://graph.facebook.com/oauth/access_token?scope=email+public_profile&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=facebookClientId&response_type=code",
+        "https://graph.facebook.com/oauth/access_token?scope=email+public_profile&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=facebookClientId&response_type=code&response_mode=query",
       );
 
       expect(actual).toBe("Redirecting to facebook");
@@ -392,7 +392,6 @@ describe("authorize", () => {
         aud: "default",
         scope: "openid profile email",
         sub: "tenantId|test@example.com",
-        kid: "s45bQJ933dwqmrB92ee-l",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,

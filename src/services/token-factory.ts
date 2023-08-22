@@ -17,8 +17,7 @@ export interface GetTokenParams {
 interface AccessTokenPayload {
   aud: string;
   azp?: string;
-  kid: string;
-  scope: string;
+  scope?: string;
   sub: string;
   iss: string;
 }
@@ -40,9 +39,10 @@ export interface IDTokenPayload {
 }
 
 export interface CreateAccessTokenParams {
-  scope: string;
   sub: string;
   iss: string;
+  scope?: string;
+  aud?: string;
   azp?: string;
 }
 
@@ -74,7 +74,7 @@ export class TokenFactory {
     this.keyId = keyId;
   }
 
-  async getJwt(payload: any): Promise<string> {
+  async getJwt(payload: AccessTokenPayload): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
 
     return getToken({
@@ -95,13 +95,13 @@ export class TokenFactory {
     scope,
     sub,
     iss,
+    aud = "default",
     azp,
   }: CreateAccessTokenParams): Promise<string> {
     const payload: AccessTokenPayload = {
-      aud: "default",
+      aud,
       scope,
       sub,
-      kid: this.keyId,
       iss,
       azp,
     };

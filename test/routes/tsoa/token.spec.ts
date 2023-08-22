@@ -5,6 +5,7 @@ import {
 import { TokenRoutes } from "../../../src/routes/tsoa/token";
 import { CreateAccessTokenParams } from "../../../src/services/token-factory";
 import {
+  AuthorizationResponseMode,
   AuthorizationResponseType,
   Client,
   CodeChallengeMethod,
@@ -46,6 +47,8 @@ describe("token", () => {
         clientSecret: "googleClientSecret",
         authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
         tokenEndpoint: "https://oauth2.googleapis.com/token",
+        responseMode: AuthorizationResponseMode.QUERY,
+        responseType: AuthorizationResponseType.CODE,
         scope: "openid email profile",
       },
     ],

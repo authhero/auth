@@ -12,7 +12,7 @@ import { getClient } from "../services/clients";
 import { getId } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
-import { parseJwt } from "../utils/jwt";
+import { parseJwt } from "../utils/parse-jwt";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 import { InvalidConnectionError } from "../errors";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
@@ -49,7 +49,18 @@ export async function socialAuth(
   oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
   oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
   oauthLoginUrl.searchParams.set("client_id", connectionInstance.clientId);
-  oauthLoginUrl.searchParams.set("response_type", "code");
+  if (connectionInstance.responseType) {
+    oauthLoginUrl.searchParams.set(
+      "response_type",
+      connectionInstance.responseType,
+    );
+  }
+  if (connectionInstance.responseMode) {
+    oauthLoginUrl.searchParams.set(
+      "response_mode",
+      connectionInstance.responseMode,
+    );
+  }
   controller.setHeader(headers.location, oauthLoginUrl.href);
   controller.setStatus(302);
   return `Redirecting to ${connection}`;
@@ -69,6 +80,7 @@ export async function socialAuthCallback({
   code,
 }: socialAuthCallbackParams) {
   const client = await getClient(env, state.authParams.client_id);
+
   const connection = client.connections.find(
     (p) => p.name === state.connection,
   );
