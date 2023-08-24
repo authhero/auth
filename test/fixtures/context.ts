@@ -25,7 +25,7 @@ type ValidateAuthenticationCodeParams = Parameters<
   typeof caller.validateAuthenticationCode
 >[0];
 
-export interface MockedContextParams {
+export interface ContextFixtureParams {
   stateData?: { [key: string]: string };
   clients?: KVNamespace;
   userData?: { [key: string]: string | boolean };
@@ -51,6 +51,7 @@ const client: Client = {
   audience: "audience",
   connections: [
     {
+      id: "connectionId1",
       name: "google-oauth2",
       clientId: "googleClientId",
       clientSecret: "googleClientSecret",
@@ -59,8 +60,11 @@ const client: Client = {
       responseMode: AuthorizationResponseMode.QUERY,
       responseType: AuthorizationResponseType.CODE,
       scope: "openid profile email",
+      createdAt: "createdAt",
+      modifiedAt: "modifiedAt",
     },
     {
+      id: "connectionId2",
       name: "facebook",
       clientId: "facebookClientId",
       clientSecret: "facebookClientSecret",
@@ -69,12 +73,14 @@ const client: Client = {
       responseMode: AuthorizationResponseMode.QUERY,
       responseType: AuthorizationResponseType.CODE,
       scope: "email public_profile",
+      createdAt: "createdAt",
+      modifiedAt: "modifiedAt",
     },
   ],
   domains: [],
 };
 
-export function contextFixture(params?: MockedContextParams): Context<Env> {
+export function contextFixture(params?: ContextFixtureParams): Context<Env> {
   const { stateData = {}, userData = {}, logs = [], clients } = params || {};
 
   return {

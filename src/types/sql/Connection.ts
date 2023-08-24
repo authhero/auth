@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "../AuthParams";
 
 export const SqlConnectionSchema = z.object({
   id: z.string(),
@@ -7,8 +11,8 @@ export const SqlConnectionSchema = z.object({
   clientId: z.string(),
   clientSecret: z.string().optional(),
   authorizationEndpoint: z.string(),
-  responseType: z.string().optional(),
-  responseMode: z.string().optional(),
+  responseType: z.custom<AuthorizationResponseType>().optional(),
+  responseMode: z.custom<AuthorizationResponseMode>().optional(),
   privateKey: z.string().optional(),
   kid: z.string().optional(),
   teamId: z.string().optional(),

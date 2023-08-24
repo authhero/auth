@@ -29,6 +29,7 @@ export interface Env {
   AUTH_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
   WRITE_PERMISSION?: string;
+  DEFAULT_SETTINGS?: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   stateFactory: ClientFactory<StateClient>;
   userFactory: ClientFactory<UserClient>;
