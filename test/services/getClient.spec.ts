@@ -9,10 +9,6 @@ import {
 import { kvStorageFixture } from "../fixtures/kv-storage";
 
 describe("getClient", () => {
-  afterEach(() => {
-    delete process.env.detaultSettings;
-  });
-
   it("should fallback the connections to the defaultSettings", async () => {
     const clientInKV: PartialClient = {
       id: "id",
