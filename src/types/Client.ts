@@ -21,6 +21,12 @@ export const ClientSchema = z.object({
       responseMode: z.string().optional(),
     }),
   ),
+  domains: z.array(
+    z.object({
+      domain: z.string(),
+      dkimPrivateKey: z.string(),
+    }),
+  ),
   allowedCallbackUrls: z.array(z.string()),
   allowedLogoutUrls: z.array(z.string()),
   allowedWebOrigins: z.array(z.string()),

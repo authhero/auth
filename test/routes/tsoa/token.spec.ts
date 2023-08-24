@@ -52,6 +52,7 @@ describe("token", () => {
         scope: "openid email profile",
       },
     ],
+    domains: [],
   };
 
   describe("code grant with PKCE", () => {

@@ -53,6 +53,12 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     .selectAll()
     .execute();
 
+  const domains = await db
+    .selectFrom("domains")
+    .where("tenantId", "=", application.tenantId)
+    .select(["domain", "dkimPrivateKey"])
+    .execute();
+
   const client: Client = {
     id: application.id,
     name: application.name,
@@ -66,6 +72,7 @@ export async function updateClientInKV(env: Env, applicationId: string) {
       responseType: connection.responseType ?? undefined,
       responseMode: connection.responseMode ?? undefined,
     })),
+    domains,
     senderEmail: application.senderEmail,
     senderName: application.senderName,
     tenantId: application.tenantId,

@@ -97,6 +97,8 @@ export class DomainsController extends Controller {
       .where("domains.id", "=", id)
       .execute();
 
+    await updateTenantClientsInKV(env, tenantId);
+
     return "OK";
   }
 
@@ -126,6 +128,8 @@ export class DomainsController extends Controller {
       .where("id", "=", id)
       .execute();
 
+    await updateTenantClientsInKV(env, tenantId);
+
     return Number(results[0].numUpdatedRows);
   }
 
@@ -136,7 +140,7 @@ export class DomainsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<SqlDomain, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: { domain: string },
   ): Promise<SqlDomain> {
     const { ctx } = request;
     const { env } = ctx;
@@ -147,11 +151,16 @@ export class DomainsController extends Controller {
       ...body,
       tenantId,
       id: nanoid(),
+      // TODO: generate keys
+      dkimPrivateKey: "",
+      dkimPublicKey: "",
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
     };
 
     await db.insertInto("domains").values(domain).execute();
+
+    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
     return domain;
@@ -194,6 +203,8 @@ export class DomainsController extends Controller {
         .where("id", "=", domain.id)
         .execute();
     }
+
+    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(200);
     return domain;

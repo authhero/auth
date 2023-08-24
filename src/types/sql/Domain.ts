@@ -4,4 +4,6 @@ export interface SqlDomain {
   createdAt: string;
   modifiedAt: string;
   domain: string;
+  dkimPrivateKey: string;
+  dkimPublicKey: string;
 }

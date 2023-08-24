@@ -13,6 +13,7 @@ export async function sendEmailValidation(
   const message = `Here is the code to validate your email: ${code}`;
   await env.sendEmail({
     to: [{ email: to, name: to }],
+    dkim: client.domains[0],
     from: {
       email: client.senderEmail,
       name: client.senderName,
@@ -36,6 +37,7 @@ export async function sendCode(
   const message = `Here is your login code: ${code}`;
   await env.sendEmail({
     to: [{ email: to, name: to }],
+    dkim: client.domains[0],
     from: {
       email: client.senderEmail,
       name: client.senderName,
@@ -60,6 +62,7 @@ export async function sendResetPassword(
   const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
   await env.sendEmail({
     to: [{ email: to, name: to }],
+    dkim: client.domains[0],
     from: {
       email: client.senderEmail,
       name: client.senderName,

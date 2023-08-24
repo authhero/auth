@@ -72,6 +72,7 @@ const client: Client = {
       scope: "email public_profile",
     },
   ],
+  domains: [],
 };
 
 export function contextFixture(params?: MockedContextParams): Context<Env> {
