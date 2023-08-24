@@ -9,11 +9,8 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
     throw new Error("Client not found");
   }
 
-  console.log("got here");
   const client = PartialClientSchema.parse(JSON.parse(clientString));
-  console.log("got client: " + JSON.stringify(client));
   const defaultSettings = getDefaultSettings(env);
-  console.log("got defaultSettings: " + JSON.stringify(defaultSettings));
 
   const connections = client.connections.map((connection) => {
     const defaultConnection =
@@ -25,15 +22,6 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
       ...connection,
     };
   });
-
-  console.log(
-    "Client: " +
-      JSON.stringify({
-        ...client,
-        connections,
-        domains: [...client.domains, ...(defaultSettings.domains || [])],
-      }),
-  );
 
   return ClientSchema.parse({
     ...client,
