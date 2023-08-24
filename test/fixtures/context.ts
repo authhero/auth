@@ -13,7 +13,6 @@ import { kvStorageFixture } from "./kv-storage";
 import { EmailOptions } from "../../src/services/email";
 import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
 import { userRouter } from "../../src/models/User";
-import { createHash } from "crypto";
 
 const caller = userRouter.createCaller({
   req: new Request("http://localhost:8787"),
@@ -153,11 +152,6 @@ export function contextFixture(params?: MockedContextParams): Context<Env> {
         kvStorageFixture({
           clientId: JSON.stringify(client),
         }),
-      hash: async (data: string) => {
-        const hash = createHash("sha256");
-        hash.update(data);
-        return hash.digest("base64");
-      },
     },
   } as unknown as Context<Env>;
 }

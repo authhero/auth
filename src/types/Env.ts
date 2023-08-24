@@ -2,7 +2,6 @@ import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { StateClient, UserClient } from "../models";
 import { QueueMessage } from "../services/events";
 import { SendEmail } from "../services/email";
-import hash from "../utils/hash";
 
 export interface StateRouterFactory {
   (name: string): StateClient;
@@ -34,5 +33,4 @@ export interface Env {
   stateFactory: ClientFactory<StateClient>;
   userFactory: ClientFactory<UserClient>;
   sendEmail: SendEmail;
-  hash: typeof hash;
 }
