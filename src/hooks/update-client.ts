@@ -1,4 +1,4 @@
-import { Env, Client } from "../types";
+import { Env, SqlConnectionSchema, PartialClient } from "../types";
 import { getDb } from "../services/db";
 
 export async function updateTenantClientsInKV(env: Env, tenantId: string) {
@@ -59,19 +59,21 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     .select(["domain", "dkimPrivateKey"])
     .execute();
 
-  const client: Client = {
+  const client: PartialClient = {
     id: application.id,
     name: application.name,
     audience: application.audience,
-    connections: connections.map((connection) => ({
-      ...connection,
-      clientSecret: connection.clientSecret ?? undefined,
-      privateKey: connection.privateKey ?? undefined,
-      kid: connection.kid ?? undefined,
-      teamId: connection.teamId ?? undefined,
-      responseType: connection.responseType ?? undefined,
-      responseMode: connection.responseMode ?? undefined,
-    })),
+    connections: connections.map((connection) =>
+      SqlConnectionSchema.parse({
+        ...connection,
+        clientSecret: connection.clientSecret ?? undefined,
+        privateKey: connection.privateKey ?? undefined,
+        kid: connection.kid ?? undefined,
+        teamId: connection.teamId ?? undefined,
+        responseType: connection.responseType ?? undefined,
+        responseMode: connection.responseMode ?? undefined,
+      }),
+    ),
     domains,
     senderEmail: application.senderEmail,
     senderName: application.senderName,

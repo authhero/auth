@@ -42,6 +42,7 @@ describe("token", () => {
     audience: "audience",
     connections: [
       {
+        id: "connectionId",
         name: "google-oauth2",
         clientId: "googleClientId",
         clientSecret: "googleClientSecret",
@@ -50,6 +51,8 @@ describe("token", () => {
         responseMode: AuthorizationResponseMode.QUERY,
         responseType: AuthorizationResponseType.CODE,
         scope: "openid email profile",
+        createdAt: "createdAt",
+        modifiedAt: "modifiedAt",
       },
     ],
     domains: [],
