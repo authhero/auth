@@ -22,6 +22,18 @@ function splitUrls(value?: string) {
   return value.split(",").map((key) => key.trim());
 }
 
+function removeNullProperties(obj: Record<string, any>) {
+  const clone = { ...obj };
+
+  for (const key in clone) {
+    if (clone[key] === null) {
+      delete clone[key];
+    }
+  }
+
+  return clone;
+}
+
 export async function updateClientInKV(env: Env, applicationId: string) {
   const db = getDb(env);
   const application = await db
@@ -64,15 +76,7 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     name: application.name,
     audience: application.audience,
     connections: connections.map((connection) =>
-      SqlConnectionSchema.parse({
-        ...connection,
-        clientSecret: connection.clientSecret ?? undefined,
-        privateKey: connection.privateKey ?? undefined,
-        kid: connection.kid ?? undefined,
-        teamId: connection.teamId ?? undefined,
-        responseType: connection.responseType ?? undefined,
-        responseMode: connection.responseMode ?? undefined,
-      }),
+      SqlConnectionSchema.parse(removeNullProperties(connection)),
     ),
     domains,
     senderEmail: application.senderEmail,
