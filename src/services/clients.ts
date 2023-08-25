@@ -1,5 +1,10 @@
 import { Env } from "../types";
-import { Client, ClientSchema, PartialClientSchema } from "../types/Client";
+import {
+  Client,
+  ClientSchema,
+  ConnectionSchema,
+  PartialClientSchema,
+} from "../types/Client";
 import { getDefaultSettings } from "../models/DefaultSettings";
 
 export async function getClient(env: Env, clientId: string): Promise<Client> {
@@ -12,16 +17,25 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
   const client = PartialClientSchema.parse(JSON.parse(clientString));
   const defaultSettings = getDefaultSettings(env);
 
-  const connections = client.connections.map((connection) => {
-    const defaultConnection =
-      defaultSettings?.connections?.find((c) => c.name === connection.name) ||
-      {};
+  const connections = client.connections
+    .map((connection) => {
+      const defaultConnection =
+        defaultSettings?.connections?.find((c) => c.name === connection.name) ||
+        {};
 
-    return {
-      ...defaultConnection,
-      ...connection,
-    };
-  });
+      try {
+        return ConnectionSchema.parse({
+          ...defaultConnection,
+          ...connection,
+        });
+      } catch (err) {
+        if (err instanceof Error) {
+          console.log(err.message);
+        }
+        return null;
+      }
+    })
+    .filter((c) => c);
 
   return ClientSchema.parse({
     ...client,
