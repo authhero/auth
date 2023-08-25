@@ -43,7 +43,7 @@ export async function socialAuth(
   });
 
   const oauthLoginUrl = new URL(connectionInstance.authorizationEndpoint);
-  if (authParams.scope) {
+  if (connectionInstance.scope) {
     oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
   oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
