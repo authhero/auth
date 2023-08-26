@@ -12,3 +12,4 @@ coverage/
 wrangler/
 .dev.vars
 .env
+yarn-error.log

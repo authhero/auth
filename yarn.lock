@@ -309,18 +309,6 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@borderless/base64@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@borderless/base64/-/base64-1.0.1.tgz#659b910e8ab8a0a148279aef3bceca1495649ee4"
-  integrity sha512-ASOEDT6lzSLRq4RHA28zp7+YLm97Q+KjQON63MzM6sC1sREbaNAGSUNZwzN19B7y/CYqB/2ns+8oroIg+xTcWw==
-
-"@borderless/web-jwt@^2.1.2":
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/@borderless/web-jwt/-/web-jwt-2.1.2.tgz#2165f0211af95534fa489b5c3b115816ac72baa9"
-  integrity sha512-n81Cn9438JHfYEJD+GxtXUrvjcT4t5h+8xx1DZFKHqNEFfx1QdsxkwbMPjYnxRf/lhqhePhYN9l5HFR6Xg6s0w==
-  dependencies:
-    "@borderless/base64" "^1.0.1"
-
 "@cloudflare/kv-asset-handler@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@cloudflare/kv-asset-handler/-/kv-asset-handler-0.2.0.tgz#c9959bbd7a1c40bd7c674adae98aa8c8d0e5ca68"
