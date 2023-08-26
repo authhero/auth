@@ -40,10 +40,12 @@ export async function sendCode(
   // here goes the MJML template into liquidJS!  8-0
 
   console.log("loading template");
-  // what is this bucket?
-  // bucket: R2Bucket,
-  let response = await env.EMAIL_TEMPLATES.get(`code.liquid`);
+
+  // this is what is blowing up and giving a 500... TODO - call this locally somehow in one script to check it works... can do this in my demo app?
+  let response = await env.EMAIL_TEMPLATES.get("code.liquid");
   if (!response) {
+    console.log("email template not found");
+
     throw new Error("Code template not found");
   }
 

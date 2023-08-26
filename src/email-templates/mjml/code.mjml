@@ -1,10 +1,15 @@
 <mjml>
-  <mj-body>
+  <mj-body background-color="#F5F5F7">
     <mj-section>
-      <mj-column>
-        <mj-image width="100px" src="{{logo}}"></mj-image>
-        <mj-divider border-color="#F45E43"></mj-divider>
-        <mj-text font-size="20px" color="#F45E43" font-family="helvetica">This is your {{code}}</mj-text>
+      <mj-column background-color="#fff">
+        <!-- TODO - env var for this logo once can send -->
+        <!-- <mj-image width="100px" src="{{logo}}"></mj-image> -->
+        <mj-image width="100px" src="https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/b1/2c/c2/b12cc2d1-abb0-d466-fbc1-26c3c78d44ce/mza_18401164291992568755.jpeg/300x300bb-75.jpg"></mj-image>        
+        <mj-divider border-color="#B36A8A"></mj-divider>
+        <mj-text align="center" font-size="20px" font-family="helvetica">This is your {{code}}</mj-text>
+        <mj-text align="center" font-size="16px" line-height="19.2px">
+          Some smaller text here?
+        </mj-text>
       </mj-column>
     </mj-section>
   </mj-body>
