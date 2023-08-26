@@ -38,7 +38,29 @@ export async function sendCode(
   code: string,
 ) {
   // here goes the MJML template into liquidJS!  8-0
-  const message = `Here is your login code: ${code}`;
+
+
+  // what is this bucket?
+  // bucket: R2Bucket,
+  let response = await env.AUTH_TEMPLATES.get(`email-templates/code.liquid`);
+  if(!response) {
+    throw new Error("Code template not found");
+  }
+
+  const templateString = await response.text();
+
+
+  const sendCodeTemplate = engine.parse(templateString);
+
+  const codeEmailBody = await engine.render(sendCodeTemplate, {
+    code,
+    // TODO
+    // i. host somewhere proper
+    // ii. store client logo in KV store
+    logo: 'https://checkout.sesamy.com/images/kvartal-logo.svg'
+  });
+
+
   await env.sendEmail({
     to: [{ email: to, name: to }],
     dkim: client.domains[0],
@@ -48,27 +70,16 @@ export async function sendCode(
     },
     content: [
       {
+        // what to do here? it's HTML but need to ALSO send text/plain?
         type: "text/plain",
-        value: message,
+        // can I just put the rendered output into here? TRY IT OUT! push to dev
+        value: codeEmailBody,
       },
     ],
-    subject: "Login Code",
+    // this will improve things a lot BUT what copy?
+    subject: `Login Code - ${code}`,
   });
 
-  // what is this bucket?
-  // bucket: R2Bucket,
-  let response = await bucket.get(`email-templates/code.liquid`);
-  const templateString = await response.text();
-
-  const sendCodeTemplate = engine.parse(templateString);
-
-  const renderedCodeEmail = await engine.render(sendCodeTemplate, {
-    code,
-    // TODO
-    // i. host somewhere proper
-    // ii. store client logo in KV store
-    logo: 'https://checkout.sesamy.com/images/kvartal-logo.svg'
-  });
 
 
 }
