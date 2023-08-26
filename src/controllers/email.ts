@@ -7,7 +7,7 @@ export async function sendEmailValidation(
   env: Env,
   client: Client,
   to: string,
-  code: string,
+  code: string
 ) {
   if (client.emailValidation === "disabled") {
     return;
@@ -35,31 +35,35 @@ export async function sendCode(
   env: Env,
   client: Client,
   to: string,
-  code: string,
+  code: string
 ) {
   // here goes the MJML template into liquidJS!  8-0
 
-
+  console.log("loading template");
   // what is this bucket?
   // bucket: R2Bucket,
-  let response = await env.AUTH_TEMPLATES.get(`email-templates/code.liquid`);
-  if(!response) {
+  let response = await env.EMAIL_TEMPLATES.get(`email-templates/code.liquid`);
+  if (!response) {
     throw new Error("Code template not found");
   }
 
   const templateString = await response.text();
 
+  console.log("template string ok");
 
   const sendCodeTemplate = engine.parse(templateString);
+
+  console.log("parse template ok");
 
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
     // TODO
     // i. host somewhere proper
     // ii. store client logo in KV store
-    logo: 'https://checkout.sesamy.com/images/kvartal-logo.svg'
+    logo: "https://checkout.sesamy.com/images/kvartal-logo.svg",
   });
 
+  console.log("render template ok");
 
   await env.sendEmail({
     to: [{ email: to, name: to }],
@@ -80,8 +84,7 @@ export async function sendCode(
     subject: `Login Code - ${code}`,
   });
 
-
-
+  console.log("send email ok");
 }
 
 export async function sendResetPassword(
@@ -89,7 +92,7 @@ export async function sendResetPassword(
   client: Client,
   to: string,
   code: string,
-  state: string,
+  state: string
 ) {
   const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
   await env.sendEmail({
