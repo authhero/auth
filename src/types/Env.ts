@@ -27,6 +27,7 @@ export interface Env {
   CERTIFICATES: KVNamespace;
   CLIENTS: KVNamespace;
   AUTH_TEMPLATES: R2Bucket;
+  EMAIL_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
   WRITE_PERMISSION?: string;
   DEFAULT_SETTINGS?: string;
