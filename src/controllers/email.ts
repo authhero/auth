@@ -1,4 +1,7 @@
 import { Client, Env } from "../types";
+import { Liquid } from "liquidjs";
+
+const engine = new Liquid();
 
 export async function sendEmailValidation(
   env: Env,
@@ -51,6 +54,23 @@ export async function sendCode(
     ],
     subject: "Login Code",
   });
+
+  // what is this bucket?
+  // bucket: R2Bucket,
+  let response = await bucket.get(`email-templates/code.liquid`);
+  const templateString = await response.text();
+
+  const sendCodeTemplate = engine.parse(templateString);
+
+  const renderedCodeEmail = await engine.render(sendCodeTemplate, {
+    code,
+    // TODO
+    // i. host somewhere proper
+    // ii. store client logo in KV store
+    logo: 'https://checkout.sesamy.com/images/kvartal-logo.svg'
+  });
+
+
 }
 
 export async function sendResetPassword(
