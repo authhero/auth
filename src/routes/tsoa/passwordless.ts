@@ -4,6 +4,9 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import { AuthParams } from "../../types/AuthParams";
 import { Env } from "../../types";
+import {
+  sendCode,
+} from "../../controllers/email";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -50,21 +53,7 @@ export class PasswordlessController extends Controller {
       },
     });
 
-    const message = `Here's your login code: ${code}`;
-    await env.sendEmail({
-      to: [{ email: body.email, name: "" }],
-      from: {
-        email: client.senderEmail,
-        name: client.senderName,
-      },
-      content: [
-        {
-          type: "text/plain",
-          value: message,
-        },
-      ],
-      subject: "Login code",
-    });
+      await sendCode(env, client, body.email, code);
 
     return "ok";
   }
