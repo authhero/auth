@@ -42,7 +42,7 @@ export async function sendCode(
   console.log("loading template");
   // what is this bucket?
   // bucket: R2Bucket,
-  let response = await env.EMAIL_TEMPLATES.get(`email-templates/code.liquid`);
+  let response = await env.EMAIL_TEMPLATES.get(`code.liquid`);
   if (!response) {
     throw new Error("Code template not found");
   }
