@@ -117,11 +117,10 @@ async function writeLog(
 
 // Stores information about the current operation and ensures that the user has an id.
 async function updateProfile(
-  storage: DurableObjectStorage,
-  queue: Queue<QueueMessage>,
+  ctx: Context,
   profile: Partial<Profile> & Pick<Profile, "tenantId" | "email">,
 ) {
-  let existingProfile = await getProfile(storage);
+  let existingProfile = await getProfile(ctx.state.storage);
 
   if (!existingProfile || !existingProfile.id) {
     existingProfile = {
@@ -156,10 +155,13 @@ async function updateProfile(
     });
   });
 
-  await storage.put(StorageKeys.profile, JSON.stringify(updatedProfile));
+  await ctx.state.storage.put(
+    StorageKeys.profile,
+    JSON.stringify(updatedProfile),
+  );
 
   await sendUserEvent(
-    queue,
+    ctx.env,
     `${profile.tenantId}|${profile.email}`,
     existingProfile ? UserEvent.userUpdated : UserEvent.userCreated,
   );
@@ -263,7 +265,7 @@ export const userRouter = router({
         message: "User created with password",
       });
 
-      return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
+      return updateProfile(ctx, {
         email: input.email,
         tenantId: input.tenantId,
         connections: [
@@ -328,7 +330,7 @@ export const userRouter = router({
         message: "Set email validated",
       });
 
-      return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
+      return updateProfile(ctx, {
         email: input.email,
         tenantId: input.tenantId,
         connections: [
@@ -382,11 +384,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const profile = await updateProfile(
-        ctx.state.storage,
-        ctx.env.USERS_QUEUE,
-        input,
-      );
+      const profile = await updateProfile(ctx, input);
 
       await writeLog(ctx.state.storage, {
         category: "update",
@@ -418,23 +416,19 @@ export const userRouter = router({
         throw new AuthenticationCodeExpiredError();
       }
 
-      const profile = await updateProfile(
-        ctx.state.storage,
-        ctx.env.USERS_QUEUE,
-        {
-          email: input.email,
-          tenantId: input.tenantId,
-          connections: [
-            {
-              name: "email",
-              profile: {
-                email: input.email,
-                validated: true,
-              },
+      const profile = await updateProfile(ctx, {
+        email: input.email,
+        tenantId: input.tenantId,
+        connections: [
+          {
+            name: "email",
+            profile: {
+              email: input.email,
+              validated: true,
             },
-          ],
-        },
-      );
+          },
+        ],
+      });
 
       await writeLog(ctx.state.storage, {
         category: "login",
@@ -478,7 +472,7 @@ export const userRouter = router({
       await ctx.state.storage.delete(StorageKeys.emailValidationCode);
 
       // Set the email to validated
-      return updateProfile(ctx.state.storage, ctx.env.USERS_QUEUE, {
+      return updateProfile(ctx, {
         email: input.email,
         tenantId: input.tenantId,
         connections: [

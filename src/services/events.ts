@@ -1,3 +1,4 @@
+import { updateUser } from "../handlers/update-user";
 import { Env } from "../types/Env";
 
 export enum UserEvent {
@@ -9,25 +10,25 @@ export enum UserEvent {
 
 export interface UserMessage {
   queueName: "users";
-  userId: string;
+  email: string;
   event: UserEvent;
 }
 
 export type QueueMessage = { tenantId: string } & UserMessage;
 
-export async function sendUserEvent(
-  queue: Queue<QueueMessage>,
-  doId: string,
-  event: UserEvent,
-) {
-  const [tenantId, userId] = doId.split("|");
+export async function sendUserEvent(env: Env, doId: string, event: UserEvent) {
+  const [tenantId, email] = doId.split("|");
 
-  const message: QueueMessage = {
-    userId,
-    tenantId,
-    queueName: "users",
-    event,
-  };
+  if (env.USERS_QUEUE) {
+    const message: QueueMessage = {
+      email,
+      tenantId,
+      queueName: "users",
+      event,
+    };
 
-  await queue.send(message);
+    await env.USERS_QUEUE.send(message);
+  } else {
+    await updateUser(env, tenantId, email);
+  }
 }
