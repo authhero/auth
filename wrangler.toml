@@ -36,16 +36,16 @@ bindings = [
     { name = "STATE", class_name = "State" },
 ]
 
-[[queues.producers]]
-queue = "users"
-binding = "USERS_QUEUE"
+# [[queues.producers]]
+# queue = "users"
+# binding = "USERS_QUEUE"
 
-[[queues.consumers]]
-queue = "users"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 10
-dead_letter_queue = "users-dlq"
+# [[queues.consumers]]
+# queue = "users"
+# max_batch_size = 10
+# max_batch_timeout = 30
+# max_retries = 10
+# dead_letter_queue = "users-dlq"
 
 [[migrations]]
 tag = "v1"
@@ -85,16 +85,16 @@ bindings = [
     { name = "STATE", class_name = "State" },
 ]
 
-[[env.production.queues.producers]]
-queue = "users"
-binding = "USERS_QUEUE"
+# [[env.production.queues.producers]]
+# queue = "users"
+# binding = "USERS_QUEUE"
 
-[[env.production.queues.consumers]]
-queue = "users"
-max_batch_size = 10
-max_batch_timeout = 30
-max_retries = 10
-dead_letter_queue = "users-dlq"
+# [[env.production.queues.consumers]]
+# queue = "users"
+# max_batch_size = 10
+# max_batch_timeout = 30
+# max_retries = 10
+# dead_letter_queue = "users-dlq"
 
 [[env.production.migrations]]
 tag = "v1"
