@@ -10,7 +10,7 @@
         ></mj-image>
         <mj-divider border-color="#B36A8A"></mj-divider>
         <mj-text align="center" font-size="20px" font-family="helvetica"
-          >Välkommen till ditt {{vendorName}}-konto!</mj-text
+          >{{codeEmailWelcometoYourAccount}}</mj-text
         >
         <mj-text align="center" font-size="16px" line-height="19.2px">
           Skriv in koden i {{vendorName}} för att slutföra inloggningen.

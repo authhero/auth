@@ -1,6 +1,6 @@
 # Cloudworker auth
 
-This is a work in progress and not yet ready for even testing.
+This is a work in progress and not yet ready for testing.
 
 The plan is to make an oauth2 compatible auth solution with support for the following login methods:
 
