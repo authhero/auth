@@ -179,6 +179,19 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      // get current code from storage
+      const code = await getAuthenticationCode(ctx.state.storage);
+
+      if (code) {
+        // check expiration on current code is < THIRTY_MINUTES
+        // either the above false?
+        if (code.expireAt && Date.now() > code.expireAt) {
+          // no? how to then resend email? where is this being called?
+          console.log("reuse same code now!");
+        }
+      }
+      // Y - continue with same code here
+
       const result: Code = {
         code: generateOTP(),
         expireAt: Date.now() + THIRTY_MINUTES_IN_MS,
