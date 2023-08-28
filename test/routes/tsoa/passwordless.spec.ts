@@ -34,7 +34,7 @@ describe("Passwordless", () => {
       await controller.startPasswordless(body, requestWithContext(ctx));
 
       expect(logs[0].subject).toEqual(
-        "Welcome to clientName! 123456 is the login code"
+        "Welcome to clientName! 123456 is the login code",
       );
     });
   });
