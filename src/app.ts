@@ -15,6 +15,7 @@ import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { Liquid } from "liquidjs";
 import { getClient } from "./services/clients";
+import { translate } from "./utils/i18n";
 
 export const app = new Router<Env>();
 
@@ -35,59 +36,53 @@ app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
 });
 
-app.get("/email", async (ctx: Context<Env>) => {
-  const response = await ctx.env.AUTH_TEMPLATES.get("code.liquid");
+// TODO: Remove once we are confident that it's working
+// app.get("/send-email", async (ctx: Context<Env>) => {
+//   let response = await ctx.env.AUTH_TEMPLATES.get("code.liquid");
+//   if (!response) {
+//     throw new Error("Code template not found");
+//   }
 
-  if (!response) {
-    return new Response("Template not found");
-  }
+//   const templateString = await response.text();
 
-  return new Response(await response.text());
-});
+//   const engine = new Liquid();
+//   const sendCodeTemplate = engine.parse(templateString);
 
-app.get("/send-email", async (ctx: Context<Env>) => {
-  let response = await ctx.env.AUTH_TEMPLATES.get("code.liquid");
-  if (!response) {
-    throw new Error("Code template not found");
-  }
+//   const code = "1234";
+//   const client = await getClient(ctx.env, "kvartal");
 
-  const templateString = await response.text();
+//   const codeEmailBody = await engine.render(sendCodeTemplate, {
+//     code,
+//     // i. host somewhere proper
+//     // ii. store client logo in KV store
+//     logo: "https://checkout.sesamy.com/images/kvartal-logo.svg",
+//     vendorName: "Kvartal",
+//   });
 
-  const engine = new Liquid();
-  const sendCodeTemplate = engine.parse(templateString);
+//   const emailResponse = await ctx.env.sendEmail({
+//     to: [{ email: "markus@ahlstrand.es", name: "Markus" }],
+//     dkim: client.domains[0],
+//     from: {
+//       email: client.senderEmail,
+//       name: client.senderName,
+//     },
+//     content: [
+//       {
+//         type: "text/plain",
+//         value: `Välkommen till SVT Play! ${code} är koden för att logga in`,
+//       },
+//       {
+//         type: "text/html",
+//         value: codeEmailBody,
+//       },
+//     ],
+//     subject: translate("sv", "codeEmailTitle")
+//       .replace("{{vendorName}}", client.name)
+//       .replace("{{code}}", code),
+//   });
 
-  const code = "1234";
-
-  const codeEmailBody = await engine.render(sendCodeTemplate, {
-    code,
-    // i. host somewhere proper
-    // ii. store client logo in KV store
-    logo: "https://checkout.sesamy.com/images/kvartal-logo.svg",
-  });
-
-  const client = await getClient(ctx.env, "demo");
-  const emailResponse = await ctx.env.sendEmail({
-    to: [{ email: "markus@ahlstrand.es", name: "Markus" }],
-    dkim: client.domains[0],
-    from: {
-      email: client.senderEmail,
-      name: client.senderName,
-    },
-    content: [
-      {
-        type: "text/plain",
-        value: `Välkommen till SVT Play! ${code} är koden för att logga in`,
-      },
-      {
-        type: "text/html",
-        value: codeEmailBody,
-      },
-    ],
-    subject: `Välkommen till SVT Play! ${code} är koden för att logga in`,
-  });
-
-  return new Response(await emailResponse.text());
-});
+//   return new Response(await emailResponse.text());
+// });
 
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);

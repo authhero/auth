@@ -3,7 +3,6 @@ import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import { AuthParams } from "../../types/AuthParams";
-import { Env } from "../../types";
 import { sendCode } from "../../controllers/email";
 
 export interface PasswordlessOptions {

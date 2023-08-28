@@ -4,11 +4,22 @@
       <mj-column background-color="#fff">
         <!-- TODO - env var for this logo once can send -->
         <!-- <mj-image width="100px" src="{{logo}}"></mj-image> -->
-        <mj-image width="100px" src="https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/b1/2c/c2/b12cc2d1-abb0-d466-fbc1-26c3c78d44ce/mza_18401164291992568755.jpeg/300x300bb-75.jpg"></mj-image>        
+        <mj-image
+          width="100px"
+          src="https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/b1/2c/c2/b12cc2d1-abb0-d466-fbc1-26c3c78d44ce/mza_18401164291992568755.jpeg/300x300bb-75.jpg"
+        ></mj-image>
         <mj-divider border-color="#B36A8A"></mj-divider>
-        <mj-text align="center" font-size="20px" font-family="helvetica">This is your {{code}}</mj-text>
+        <mj-text align="center" font-size="20px" font-family="helvetica"
+          >Välkommen till ditt {{vendorName}}-konto!</mj-text
+        >
         <mj-text align="center" font-size="16px" line-height="19.2px">
-          Some smaller text here?
+          Skriv in koden i {{vendorName}} för att slutföra inloggningen.
+        </mj-text>
+        <mj-text align="center" font-size="25px" line-height="19.2px">
+          {{code}}
+        </mj-text>
+        <mj-text align="center" font-size="16px" line-height="19.2px">
+          Koden är giltig i 30 minuter.
         </mj-text>
       </mj-column>
     </mj-section>
