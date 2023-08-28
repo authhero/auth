@@ -39,17 +39,9 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
 
   return ClientSchema.parse({
     ...client,
-
-    allowedWebOrigins: [
-      ...client.allowedLogoutUrls,
-      env.ISSUER,
-      "http://localhost:8787",
-    ],
-    allowedCallbackUrls: [
-      ...client.allowedCallbackUrls,
-      `${env.ISSUER}u/info`,
-      "http://localhost:8787/u/info",
-    ],
+    allowedWebOrigins: [...client.allowedWebOrigins, `${env.ISSUER}u/login`],
+    allowedLogoutUrls: [...client.allowedLogoutUrls, env.ISSUER],
+    allowedCallbackUrls: [...client.allowedCallbackUrls, `${env.ISSUER}u/info`],
     connections,
     domains: [...client.domains, ...(defaultSettings.domains || [])],
   });

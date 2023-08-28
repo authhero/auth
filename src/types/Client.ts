@@ -47,7 +47,7 @@ export const BaseClientSchema = z.object({
   senderName: z.string(),
   language: z.string().length(2).optional(),
   logo: z.string().optional(),
-  primmaryColor: z.string().optional(),
+  primaryColor: z.string().optional(),
   secondaryColor: z.string().optional(),
   domains: z.array(
     z.object({

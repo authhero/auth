@@ -20,10 +20,10 @@ JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
 READ_PERMISSION = 'auth:read'
 WRITE_PERMISSION = 'auth:write'
 
-r2_buckets = [
-    { binding = 'AUTH_TEMPLATES', preview_bucket_name = 'auth-templates', bucket_name = 'auth-templates' },
-    { binding = 'EMAIL_TEMPLATES', preview_bucket_name = 'email-templates', bucket_name = 'email-templates' },
-]
+[[r2_buckets]]
+binding = 'AUTH_TEMPLATES'
+preview_bucket_name = 'auth-templates'
+bucket_name = 'auth-templates'
 
 
 # [[d1_databases]]
