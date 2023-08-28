@@ -242,6 +242,69 @@ export const userRouter = router({
 
     return profile;
   }),
+  loginWithConnection: publicProcedure
+    .input(
+      z.object({
+        email: z.string(),
+        tenantId: z.string(),
+        connection: z.object({
+          name: z.string(),
+          profile: z
+            .record(z.union([z.string(), z.boolean(), z.number()]))
+            .optional(),
+        }),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const profile = await updateProfile(ctx, {
+        email: input.email,
+        tenantId: input.tenantId,
+        connections: [input.connection],
+      });
+
+      await writeLog(ctx.state.storage, {
+        category: "login",
+        message: `Login with ${input.connection.name}`,
+      });
+
+      return profile;
+    }),
+  patchProfile: publicProcedure
+    .input(
+      z.object({
+        email: z.string(),
+        tenantId: z.string(),
+        id: z.string().optional(),
+        created_at: z.string().optional(),
+        modified_at: z.string().optional(),
+        given_name: z.string().optional(),
+        family_name: z.string().optional(),
+        nickname: z.string().optional(),
+        name: z.string().optional(),
+        picture: z.string().optional(),
+        locale: z.string().optional(),
+        connections: z
+          .array(
+            z.object({
+              name: z.string(),
+              profile: z
+                .record(z.union([z.string(), z.boolean(), z.number()]))
+                .optional(),
+            }),
+          )
+          .optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const profile = await updateProfile(ctx, input);
+
+      await writeLog(ctx.state.storage, {
+        category: "update",
+        message: "User profile",
+      });
+
+      return profile;
+    }),
   registerPassword: publicProcedure
     .input(
       z.object({
@@ -358,42 +421,6 @@ export const userRouter = router({
         StorageKeys.passwordHash,
         bcrypt.hashSync(input, 10),
       );
-    }),
-  patchProfile: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        tenantId: z.string(),
-        id: z.string().optional(),
-        created_at: z.string().optional(),
-        modified_at: z.string().optional(),
-        given_name: z.string().optional(),
-        family_name: z.string().optional(),
-        nickname: z.string().optional(),
-        name: z.string().optional(),
-        picture: z.string().optional(),
-        locale: z.string().optional(),
-        connections: z
-          .array(
-            z.object({
-              name: z.string(),
-              profile: z
-                .record(z.union([z.string(), z.boolean(), z.number()]))
-                .optional(),
-            }),
-          )
-          .optional(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const profile = await updateProfile(ctx, input);
-
-      await writeLog(ctx.state.storage, {
-        category: "update",
-        message: "User profile",
-      });
-
-      return profile;
     }),
   validateAuthenticationCode: publicProcedure
     .input(

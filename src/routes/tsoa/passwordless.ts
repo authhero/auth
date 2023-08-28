@@ -50,10 +50,6 @@ export class PasswordlessController extends Controller {
       },
     });
 
-    console.log("created code ok");
-
-    console.log("sending email");
-
     await sendCode(env, client, body.email, code);
 
     return "ok";

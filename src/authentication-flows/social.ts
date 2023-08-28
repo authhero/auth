@@ -110,10 +110,10 @@ export async function socialAuthCallback({
   const userId = getId(client.tenantId, oauth2Profile.email);
   const user = env.userFactory.getInstanceByName(userId);
 
-  const profile = await user.patchProfile.mutate({
+  const profile = await user.loginWithConnection.mutate({
     email: oauth2Profile.email,
     tenantId: client.tenantId,
-    connections: [{ name: connection.name, profile: oauth2Profile }],
+    connection: { name: connection.name, profile: oauth2Profile },
   });
 
   const sessionId = await setSilentAuthCookies(
