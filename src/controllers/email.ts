@@ -42,7 +42,7 @@ export async function sendCode(
   console.log("loading template");
 
   // this is what is blowing up and giving a 500... TODO - call this locally somehow in one script to check it works... can do this in my demo app?
-  let response = await env.EMAIL_TEMPLATES.get("code.liquid");
+  let response = await env.AUTH_TEMPLATES.get("code.liquid");
   if (!response) {
     console.log("email template not found");
 

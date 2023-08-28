@@ -13,6 +13,8 @@ import corsMiddleware from "./middlewares/cors";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
+import { Liquid } from "liquidjs";
+import { getClient } from "./services/clients";
 
 export const app = new Router<Env>();
 
@@ -25,12 +27,66 @@ app.get("/", async () => {
     JSON.stringify({
       name: packageJson.name,
       version: packageJson.version,
-    }),
+    })
   );
 });
 
 app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
+});
+
+app.get("/email", async (ctx: Context<Env>) => {
+  const response = await ctx.env.AUTH_TEMPLATES.get("code.liquid");
+
+  if (!response) {
+    return new Response("Template not found");
+  }
+
+  return new Response(await response.text());
+});
+
+app.get("/send-email", async (ctx: Context<Env>) => {
+  let response = await ctx.env.AUTH_TEMPLATES.get("code.liquid");
+  if (!response) {
+    throw new Error("Code template not found");
+  }
+
+  const templateString = await response.text();
+
+  const engine = new Liquid();
+  const sendCodeTemplate = engine.parse(templateString);
+
+  const code = "1234";
+
+  const codeEmailBody = await engine.render(sendCodeTemplate, {
+    code,
+    // i. host somewhere proper
+    // ii. store client logo in KV store
+    logo: "https://checkout.sesamy.com/images/kvartal-logo.svg",
+  });
+
+  const client = await getClient(ctx.env, "demo");
+  const emailResponse = await ctx.env.sendEmail({
+    to: [{ email: "markus@ahlstrand.es", name: "Markus" }],
+    dkim: client.domains[0],
+    from: {
+      email: client.senderEmail,
+      name: client.senderName,
+    },
+    content: [
+      {
+        type: "text/plain",
+        value: `Välkommen till SVT Play! ${code} är koden för att logga in`,
+      },
+      {
+        type: "text/html",
+        value: codeEmailBody,
+      },
+    ],
+    subject: `Välkommen till SVT Play! ${code} är koden för att logga in`,
+  });
+
+  return new Response(await emailResponse.text());
 });
 
 app.get("/docs", swaggerUi);
@@ -51,7 +107,7 @@ app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
         headers: {
           "content-type": "application/json",
         },
-      },
+      }
     );
   }
 });
@@ -71,7 +127,7 @@ app.post("/migrate-down", async (ctx: Context<Env>) => {
         headers: {
           "content-type": "application/json",
         },
-      },
+      }
     );
   }
 });
