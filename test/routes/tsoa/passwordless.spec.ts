@@ -6,7 +6,7 @@ import { requestWithContext } from "../../fixtures/requestWithContext";
 describe("Passwordless", () => {
   describe("start", () => {
     // This fails as the fixtures tries to load the code.liquid from the auth-templates folder.
-    it.skip("should send a code to the user", async () => {
+    it("should send a code to the user", async () => {
       const controller = new PasswordlessController();
 
       const body = {
@@ -24,7 +24,7 @@ describe("Passwordless", () => {
         },
       };
 
-      const logs = [];
+      const logs: { subject: string }[] = [];
 
       const ctx = contextFixture({
         stateData: {},
@@ -33,27 +33,9 @@ describe("Passwordless", () => {
 
       await controller.startPasswordless(body, requestWithContext(ctx));
 
-      expect(logs).toEqual([
-        {
-          content: [
-            {
-              type: "text/plain",
-              value: "Here's your login code: 123456",
-            },
-          ],
-          from: {
-            email: "senderEmail",
-            name: "senderName",
-          },
-          subject: "Login code",
-          to: [
-            {
-              email: "markus@ahlstrand.es",
-              name: "",
-            },
-          ],
-        },
-      ]);
+      expect(logs[0].subject).toEqual(
+        "Welcome to clientName! 123456 is the login code",
+      );
     });
   });
 });

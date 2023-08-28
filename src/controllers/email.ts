@@ -42,7 +42,7 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  let response = await env.AUTH_TEMPLATES.get("code.liquid");
+  let response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
   if (!response) {
     throw new Error("Code template not found");
   }
