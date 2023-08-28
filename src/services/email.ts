@@ -20,7 +20,7 @@ export interface EmailOptions {
 }
 
 export interface SendEmail {
-  (emailOptions: EmailOptions): Promise<Response>;
+  (emailOptions: EmailOptions): Promise<void>;
 }
 
 export default async function send(emailOptions: EmailOptions) {
@@ -53,5 +53,7 @@ export default async function send(emailOptions: EmailOptions) {
     body,
   });
 
-  return response;
+  if (!response.ok) {
+    throw new Error("Failed to send email: " + (await response.text()));
+  }
 }
