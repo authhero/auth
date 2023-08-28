@@ -11,7 +11,7 @@ import {
 import { nanoid } from "nanoid";
 
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getId } from "../../models/User";
+import { getId, getAuthenticationCode } from "../../models/User";
 import { LoginState } from "../../types/LoginState";
 import { base64ToHex } from "../../utils/base64";
 import { getClient } from "../../services/clients";
@@ -98,6 +98,28 @@ async function handleLogin(
   });
 }
 
+async function getExistingCodeOrGenerateNewCode(
+  request: RequestWithContext,
+  user: any, // no idea what this is!
+  loginState: LoginState,
+) {
+  const existingCode = await getAuthenticationCode(request.ctx.state.storage);
+
+  if (
+    existingCode &&
+    existingCode.expireAt &&
+    Date.now() > existingCode.expireAt
+  ) {
+    console.log("reuse same code now!");
+    return existingCode.code;
+  } else {
+  }
+
+  const { code } = await user.createAuthenticationCode.mutate(loginState);
+
+  return code;
+}
+
 @Route("u")
 @Tags("login ui")
 export class LoginController extends Controller {
@@ -149,9 +171,13 @@ export class LoginController extends Controller {
       getId(client.tenantId, params.username),
     );
 
-    const { code } = await user.createAuthenticationCode.mutate(loginState);
+    const code = await getExistingCodeOrGenerateNewCode(
+      request,
+      user,
+      loginState,
+    );
 
-    // Add the usernmane to the state
+    // Add the username to the state
     loginState.authParams.username = params.username;
     await setLoginState(env, state, loginState);
 
