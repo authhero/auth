@@ -14,13 +14,13 @@ export interface EmailOptions {
   subject: string;
   dkim?: DKIM;
   content: {
-    type: "text/plain";
+    type: "text/plain" | "text/html";
     value: string;
   }[];
 }
 
 export interface SendEmail {
-  (emailOptions: EmailOptions): Promise<void>;
+  (emailOptions: EmailOptions): Promise<Response>;
 }
 
 export default async function send(emailOptions: EmailOptions) {
@@ -53,7 +53,5 @@ export default async function send(emailOptions: EmailOptions) {
     body,
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to send email: " + (await response.text()));
-  }
+  return response;
 }

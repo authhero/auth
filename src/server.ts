@@ -44,7 +44,7 @@ const server = {
 
       switch (body.queueName) {
         case "users":
-          await updateUser(env, body.tenantId, body.userId);
+          await updateUser(env, body.tenantId, body.email);
           break;
         default:
           console.log(`Unknown message: ${JSON.stringify(message.body)}`);
