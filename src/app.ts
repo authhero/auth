@@ -25,7 +25,7 @@ app.get("/", async () => {
     JSON.stringify({
       name: packageJson.name,
       version: packageJson.version,
-    }),
+    })
   );
 });
 
@@ -41,7 +41,7 @@ app.get("/spec", async () => {
 // app.get("/send-email", async (ctx: Context<Env>) => {
 //   const { env } = ctx;
 
-//   let response = await env.AUTH_TEMPLATES.get("code.liquid");
+//   let response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
 //   if (!response) {
 //     throw new Error("Code template not found");
 //   }
@@ -103,7 +103,7 @@ app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
         headers: {
           "content-type": "application/json",
         },
-      },
+      }
     );
   }
 });
@@ -123,7 +123,7 @@ app.post("/migrate-down", async (ctx: Context<Env>) => {
         headers: {
           "content-type": "application/json",
         },
-      },
+      }
     );
   }
 });
