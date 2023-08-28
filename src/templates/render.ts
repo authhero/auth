@@ -6,7 +6,6 @@ import { LoginState } from "../types";
 const engine = new Liquid();
 
 async function getTemplate(bucket: R2Bucket, templateName: string) {
-  console.log("Bucket: " + bucket);
   let response = await bucket.get(`templates/${templateName}.liquid`);
 
   if (!response) {
@@ -44,7 +43,6 @@ export async function renderLogin(
   controller: Controller,
   context: LoginState,
 ) {
-  console.log("Render template");
   const layoutTemplate = await getTemplate(bucket, "layout");
 
   const template = await getTemplate(bucket, "login");
