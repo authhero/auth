@@ -169,6 +169,8 @@ async function updateProfile(
   return updatedProfile;
 }
 
+const THIRY_MINUTES_IN_MS = 30 * 60 * 1000;
+
 export const userRouter = router({
   createAuthenticationCode: publicProcedure
     .input(
@@ -179,7 +181,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const result: Code = {
         code: generateOTP(),
-        expireAt: Date.now() + 300 * 1000,
+        expireAt: Date.now() + THIRY_MINUTES_IN_MS,
         authParams: input.authParams,
       };
 
