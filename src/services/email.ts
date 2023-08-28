@@ -53,8 +53,6 @@ export default async function send(emailOptions: EmailOptions) {
     body,
   });
 
-  console.log("Status: " + response.status);
-
   if (!response.ok) {
     throw new Error("Failed to send email: " + (await response.text()));
   }
