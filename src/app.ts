@@ -13,9 +13,6 @@ import corsMiddleware from "./middlewares/cors";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
-import { Liquid } from "liquidjs";
-import { getClient } from "./services/clients";
-import { translate } from "./utils/i18n";
 
 export const app = new Router<Env>();
 
@@ -37,8 +34,14 @@ app.get("/spec", async () => {
 });
 
 // TODO: Remove once we are confident that it's working
+// import { Liquid } from "liquidjs";
+// import { getClient } from "./services/clients";
+// import { translate } from "./utils/i18n";
+
 // app.get("/send-email", async (ctx: Context<Env>) => {
-//   let response = await ctx.env.AUTH_TEMPLATES.get("code.liquid");
+//   const { env } = ctx;
+
+//   let response = await env.AUTH_TEMPLATES.get("code.liquid");
 //   if (!response) {
 //     throw new Error("Code template not found");
 //   }
@@ -46,21 +49,23 @@ app.get("/spec", async () => {
 //   const templateString = await response.text();
 
 //   const engine = new Liquid();
+
+//   const code = Date.now().toString();
+//   const client = await getClient(env, "kvartal");
+
+//   const language = client.language || "en";
+
 //   const sendCodeTemplate = engine.parse(templateString);
-
-//   const code = "1234";
-//   const client = await getClient(ctx.env, "kvartal");
-
 //   const codeEmailBody = await engine.render(sendCodeTemplate, {
 //     code,
-//     // i. host somewhere proper
-//     // ii. store client logo in KV store
-//     logo: "https://checkout.sesamy.com/images/kvartal-logo.svg",
-//     vendorName: "Kvartal",
+//     vendorName: client.name,
+//     logo:
+//       client.logo ||
+//       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
 //   });
 
-//   const emailResponse = await ctx.env.sendEmail({
-//     to: [{ email: "markus@ahlstrand.es", name: "Markus" }],
+//   await env.sendEmail({
+//     to: [{ email: "markus@sesamy.com", name: "Markus" }],
 //     dkim: client.domains[0],
 //     from: {
 //       email: client.senderEmail,
@@ -68,20 +73,16 @@ app.get("/spec", async () => {
 //     },
 //     content: [
 //       {
-//         type: "text/plain",
-//         value: `Välkommen till SVT Play! ${code} är koden för att logga in`,
-//       },
-//       {
 //         type: "text/html",
 //         value: codeEmailBody,
 //       },
 //     ],
-//     subject: translate("sv", "codeEmailTitle")
+//     subject: translate(language, "codeEmailTitle")
 //       .replace("{{vendorName}}", client.name)
 //       .replace("{{code}}", code),
 //   });
 
-//   return new Response(await emailResponse.text());
+//   return new Response("OK");
 // });
 
 app.get("/docs", swaggerUi);

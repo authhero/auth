@@ -69,12 +69,6 @@ export async function sendCode(
     },
     content: [
       {
-        type: "text/plain",
-        value: translate(language, "codeEmailTitle")
-          .replace("{{vendorName}}", client.name)
-          .replace("{{code}}", code),
-      },
-      {
         type: "text/html",
         value: codeEmailBody,
       },
