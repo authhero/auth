@@ -51,6 +51,10 @@ export async function updateClientInKV(env: Env, applicationId: string) {
       "tenants.senderEmail",
       "tenants.senderName",
       "tenants.audience",
+      "tenants.language",
+      "tenants.logo",
+      "tenants.primaryColor",
+      "tenants.secondaryColor",
     ])
     .where("applications.id", "=", applicationId)
     .executeTakeFirst();
