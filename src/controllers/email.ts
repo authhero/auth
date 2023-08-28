@@ -7,7 +7,7 @@ export async function sendEmailValidation(
   env: Env,
   client: Client,
   to: string,
-  code: string
+  code: string,
 ) {
   if (client.emailValidation === "disabled") {
     return;
@@ -35,7 +35,7 @@ export async function sendCode(
   env: Env,
   client: Client,
   to: string,
-  code: string
+  code: string,
 ) {
   // here goes the MJML template into liquidJS!  8-0
 
@@ -94,7 +94,7 @@ export async function sendResetPassword(
   client: Client,
   to: string,
   code: string,
-  state: string
+  state: string,
 ) {
   const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
   await env.sendEmail({

@@ -27,7 +27,7 @@ app.get("/", async () => {
     JSON.stringify({
       name: packageJson.name,
       version: packageJson.version,
-    })
+    }),
   );
 });
 
@@ -107,7 +107,7 @@ app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
         headers: {
           "content-type": "application/json",
         },
-      }
+      },
     );
   }
 });
@@ -127,7 +127,7 @@ app.post("/migrate-down", async (ctx: Context<Env>) => {
         headers: {
           "content-type": "application/json",
         },
-      }
+      },
     );
   }
 });

@@ -4,9 +4,7 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import { AuthParams } from "../../types/AuthParams";
 import { Env } from "../../types";
-import {
-  sendCode,
-} from "../../controllers/email";
+import { sendCode } from "../../controllers/email";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -53,11 +51,11 @@ export class PasswordlessController extends Controller {
       },
     });
 
-    console.log('created code ok');
+    console.log("created code ok");
 
-    console.log('sending email')
+    console.log("sending email");
 
-      await sendCode(env, client, body.email, code);
+    await sendCode(env, client, body.email, code);
 
     return "ok";
   }
