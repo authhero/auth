@@ -1,4 +1,8 @@
+import { Liquid } from "liquidjs";
+import { translate } from "../utils/i18n";
 import { Client, Env } from "../types";
+
+const engine = new Liquid();
 
 export async function sendEmailValidation(
   env: Env,
@@ -23,6 +27,10 @@ export async function sendEmailValidation(
         type: "text/plain",
         value: message,
       },
+      {
+        type: "text/html",
+        value: message,
+      },
     ],
     subject: "Validate email",
   });
@@ -34,7 +42,24 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  const message = `Here is your login code: ${code}`;
+  let response = await env.AUTH_TEMPLATES.get("code.liquid");
+  if (!response) {
+    throw new Error("Code template not found");
+  }
+
+  const templateString = await response.text();
+
+  const language = client.language || "en";
+
+  const sendCodeTemplate = engine.parse(templateString);
+  const codeEmailBody = await engine.render(sendCodeTemplate, {
+    code,
+    vendorName: client.name,
+    logo:
+      client.logo ||
+      "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
+  });
+
   await env.sendEmail({
     to: [{ email: to, name: to }],
     dkim: client.domains[0],
@@ -45,10 +70,18 @@ export async function sendCode(
     content: [
       {
         type: "text/plain",
-        value: message,
+        value: translate(language, "codeEmailTitle")
+          .replace("{{vendorName}}", client.name)
+          .replace("{{code}}", code),
+      },
+      {
+        type: "text/html",
+        value: codeEmailBody,
       },
     ],
-    subject: "Login Code",
+    subject: translate(language, "codeEmailTitle")
+      .replace("{{vendorName}}", client.name)
+      .replace("{{code}}", code),
   });
 }
 
