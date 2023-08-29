@@ -501,6 +501,8 @@ describe("User", () => {
     });
 
     it("should overwrite existing code if expired, and return new code", async () => {
+      const THIRTY_MINUTES = 30 * 60 * 1000;
+
       const storage: { [key: string]: string } = {};
 
       const caller = createCaller({
@@ -533,12 +535,12 @@ describe("User", () => {
 
       expect(code.code).toHaveLength(6);
       expect(code.code).not.toBe("123456");
-      // assert is 30 mins greater?
-      expect(code.expireAt).toBeGreaterThan(date.getTime());
+      expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
       expect(code.authParams.client_id).toBe("clientId");
     });
 
     it("should return same code if still valid, and bump expiry time", async () => {
+      const THIRTY_MINUTES = 30 * 60 * 1000;
       const storage: { [key: string]: string } = {};
 
       const caller = createCaller({
@@ -570,8 +572,8 @@ describe("User", () => {
 
       // code should be the same
       expect(code.code).toBe("123456");
-      // this should be bumped 30 mins into the future - ASSERT THIS!
-      expect(code.expireAt).toBeGreaterThan(date.getTime());
+      // expire should be bumped 30 mins into the future
+      expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
       expect(code.authParams.client_id).toBe("clientId");
     });
   });
