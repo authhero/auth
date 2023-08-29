@@ -468,4 +468,39 @@ describe("User", () => {
       expect(profile.connections[0].profile.validated).toBe(true);
     });
   });
+
+  describe("createAuthenticationCode", () => {
+    it("should write code to storage", async () => {
+      const storage: { [key: string]: string } = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return null;
+          }
+        },
+        put: async (key: string, value: string) => {
+          storage[key] = value;
+        },
+        delete: async () => {},
+      });
+
+      await caller.createAuthenticationCode({
+        authParams: {
+          client_id: "clientId",
+        },
+      });
+
+      const code = JSON.parse(storage["authentication-code"]);
+
+      expect(code.code).toHaveLength(6);
+      // assert is 30 mins greater?
+      expect(code.expireAt).toBeGreaterThan(date.getTime());
+      expect(code.authParams.client_id).toBe("clientId");
+    });
+
+    // TODO
+    // - should return same code if still valid, and bump expiry time
+  });
 });
