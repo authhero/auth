@@ -470,6 +470,8 @@ describe("User", () => {
   });
 
   describe("createAuthenticationCode", () => {
+    const THIRTY_MINUTES = 30 * 60 * 1000;
+
     it("should create new code and write this to storage", async () => {
       const storage: { [key: string]: string } = {};
 
@@ -495,14 +497,11 @@ describe("User", () => {
       const code = JSON.parse(storage["authentication-code"]);
 
       expect(code.code).toHaveLength(6);
-      // assert is 30 mins greater?
-      expect(code.expireAt).toBeGreaterThan(date.getTime());
+      expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
       expect(code.authParams.client_id).toBe("clientId");
     });
 
     it("should overwrite existing code if expired, and return new code", async () => {
-      const THIRTY_MINUTES = 30 * 60 * 1000;
-
       const storage: { [key: string]: string } = {};
 
       const caller = createCaller({
@@ -511,7 +510,7 @@ describe("User", () => {
             case "authentication-code":
               return JSON.stringify({
                 code: "123456",
-                // Mon May 22nd 2023
+                // this date is in the past
                 expireAt: 1684757783145,
                 authParams: {
                   client_id: "clientId",
@@ -534,13 +533,13 @@ describe("User", () => {
       const code = JSON.parse(storage["authentication-code"]);
 
       expect(code.code).toHaveLength(6);
+      // code should be different
       expect(code.code).not.toBe("123456");
       expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
       expect(code.authParams.client_id).toBe("clientId");
     });
 
     it("should return same code if still valid, and bump expiry time", async () => {
-      const THIRTY_MINUTES = 30 * 60 * 1000;
       const storage: { [key: string]: string } = {};
 
       const caller = createCaller({
@@ -572,7 +571,6 @@ describe("User", () => {
 
       // code should be the same
       expect(code.code).toBe("123456");
-      // expire should be bumped 30 mins into the future
       expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
       expect(code.authParams.client_id).toBe("clientId");
     });
