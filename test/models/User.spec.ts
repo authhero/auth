@@ -470,7 +470,7 @@ describe("User", () => {
   });
 
   describe("createAuthenticationCode", () => {
-    it("should write code to storage", async () => {
+    it("should create new code and write this to storage", async () => {
       const storage: { [key: string]: string } = {};
 
       const caller = createCaller({
@@ -500,7 +500,45 @@ describe("User", () => {
       expect(code.authParams.client_id).toBe("clientId");
     });
 
-    it.only("should return same code if still valid, and bump expiry time", async () => {
+    it("should overwrite existing code if expired, and return new code", async () => {
+      const storage: { [key: string]: string } = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return JSON.stringify({
+                code: "123456",
+                // Mon May 22nd 2023
+                expireAt: 1684757783145,
+                authParams: {
+                  client_id: "clientId",
+                },
+              });
+          }
+        },
+        put: async (key: string, value: string) => {
+          storage[key] = value;
+        },
+        delete: async () => {},
+      });
+
+      await caller.createAuthenticationCode({
+        authParams: {
+          client_id: "clientId",
+        },
+      });
+
+      const code = JSON.parse(storage["authentication-code"]);
+
+      expect(code.code).toHaveLength(6);
+      expect(code.code).not.toBe("123456");
+      // assert is 30 mins greater?
+      expect(code.expireAt).toBeGreaterThan(date.getTime());
+      expect(code.authParams.client_id).toBe("clientId");
+    });
+
+    it("should return same code if still valid, and bump expiry time", async () => {
       const storage: { [key: string]: string } = {};
 
       const caller = createCaller({
