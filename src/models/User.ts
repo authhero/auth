@@ -175,7 +175,7 @@ function getNewCodeOrUseExisting(existingCode?: Code | null) {
   if (
     existingCode &&
     existingCode.expireAt &&
-    Date.now() > existingCode.expireAt
+    Date.now() <= existingCode.expireAt
   ) {
     return existingCode.code;
   }
@@ -193,6 +193,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const existingCode = await getAuthenticationCode(ctx.state.storage);
 
+      // need to test this!
       const code = getNewCodeOrUseExisting(existingCode);
 
       const result: Code = {
