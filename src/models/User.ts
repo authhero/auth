@@ -77,7 +77,7 @@ async function getPasswordResetCode(storage: DurableObjectStorage) {
   return parseStringToType<Code>(CodeSchema, jsonData);
 }
 
-export async function getAuthenticationCode(storage: DurableObjectStorage) {
+async function getAuthenticationCode(storage: DurableObjectStorage) {
   const jsonData = await storage.get<string>(StorageKeys.authenticationCode);
 
   return parseStringToType<Code>(CodeSchema, jsonData);
@@ -171,6 +171,18 @@ async function updateProfile(
 
 const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
 
+function getNewCodeOrUseExisting(existingCode?: Code | null) {
+  if (
+    existingCode &&
+    existingCode.expireAt &&
+    Date.now() > existingCode.expireAt
+  ) {
+    return existingCode.code;
+  }
+
+  return generateOTP();
+}
+
 export const userRouter = router({
   createAuthenticationCode: publicProcedure
     .input(
@@ -179,8 +191,12 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const existingCode = await getAuthenticationCode(ctx.state.storage);
+
+      const code = getNewCodeOrUseExisting(existingCode);
+
       const result: Code = {
-        code: generateOTP(),
+        code,
         expireAt: Date.now() + THIRTY_MINUTES_IN_MS,
         authParams: input.authParams,
       };
