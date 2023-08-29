@@ -151,7 +151,7 @@ export class LoginController extends Controller {
 
     const { code } = await user.createAuthenticationCode.mutate(loginState);
 
-    // Add the usernmane to the state
+    // Add the username to the state
     loginState.authParams.username = params.username;
     await setLoginState(env, state, loginState);
 
