@@ -468,4 +468,111 @@ describe("User", () => {
       expect(profile.connections[0].profile.validated).toBe(true);
     });
   });
+
+  describe("createAuthenticationCode", () => {
+    const THIRTY_MINUTES = 30 * 60 * 1000;
+
+    it("should create new code and write this to storage", async () => {
+      const storage: { [key: string]: string } = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return null;
+          }
+        },
+        put: async (key: string, value: string) => {
+          storage[key] = value;
+        },
+        delete: async () => {},
+      });
+
+      await caller.createAuthenticationCode({
+        authParams: {
+          client_id: "clientId",
+        },
+      });
+
+      const code = JSON.parse(storage["authentication-code"]);
+
+      expect(code.code).toHaveLength(6);
+      expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
+      expect(code.authParams.client_id).toBe("clientId");
+    });
+
+    it("should overwrite existing code if expired, and return new code", async () => {
+      const storage: { [key: string]: string } = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return JSON.stringify({
+                code: "123456",
+                // this date is in the past
+                expireAt: 1684757783145,
+                authParams: {
+                  client_id: "clientId",
+                },
+              });
+          }
+        },
+        put: async (key: string, value: string) => {
+          storage[key] = value;
+        },
+        delete: async () => {},
+      });
+
+      await caller.createAuthenticationCode({
+        authParams: {
+          client_id: "clientId",
+        },
+      });
+
+      const code = JSON.parse(storage["authentication-code"]);
+
+      expect(code.code).toHaveLength(6);
+      // code should be different
+      expect(code.code).not.toBe("123456");
+      expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
+      expect(code.authParams.client_id).toBe("clientId");
+    });
+
+    it("should return same code if still valid, and bump expiry time", async () => {
+      const storage: { [key: string]: string } = {};
+
+      const caller = createCaller({
+        get: async (key: string) => {
+          switch (key) {
+            case "authentication-code":
+              return JSON.stringify({
+                code: "123456",
+                expireAt: date.getTime() + 1000,
+                authParams: {
+                  client_id: "clientId",
+                },
+              });
+          }
+        },
+        put: async (key: string, value: string) => {
+          storage[key] = value;
+        },
+        delete: async () => {},
+      });
+
+      await caller.createAuthenticationCode({
+        authParams: {
+          client_id: "clientId",
+        },
+      });
+
+      const code = JSON.parse(storage["authentication-code"]);
+
+      // code should be the same
+      expect(code.code).toBe("123456");
+      expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
+      expect(code.authParams.client_id).toBe("clientId");
+    });
+  });
 });

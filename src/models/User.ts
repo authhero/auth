@@ -175,7 +175,7 @@ function getNewCodeOrUseExisting(existingCode?: Code | null) {
   if (
     existingCode &&
     existingCode.expireAt &&
-    Date.now() > existingCode.expireAt
+    Date.now() <= existingCode.expireAt
   ) {
     return existingCode.code;
   }
