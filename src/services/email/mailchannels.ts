@@ -1,27 +1,4 @@
-export interface EmailUser {
-  email: string;
-  name: string;
-}
-
-export interface DKIM {
-  domain: string;
-  dkimPrivateKey: string;
-}
-
-export interface EmailOptions {
-  to: EmailUser[];
-  from: EmailUser;
-  subject: string;
-  dkim?: DKIM;
-  content: {
-    type: "text/plain" | "text/html";
-    value: string;
-  }[];
-}
-
-export interface SendEmail {
-  (emailOptions: EmailOptions): Promise<void>;
-}
+import { EmailOptions } from "./EmailOptions";
 
 export default async function send(emailOptions: EmailOptions) {
   const { to, from, dkim, subject, content } = emailOptions;

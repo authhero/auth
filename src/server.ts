@@ -5,7 +5,7 @@ import { User, State } from "./models";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { QueueMessage } from "./services/events";
 import { updateUser } from "./handlers/update-user";
-import sendEmail from "./services/email";
+import sendEmail from "./services/email/mailchannels";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.

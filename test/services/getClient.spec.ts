@@ -9,7 +9,7 @@ import {
 import { kvStorageFixture } from "../fixtures/kv-storage";
 
 describe("getClient", () => {
-  it("should fallback the connections to the defaultSettings", async () => {
+  it("should fallback the connections to the envDefaultSettings", async () => {
     const clientInKV: PartialClient = {
       id: "id",
       name: "clientName",
@@ -39,7 +39,7 @@ describe("getClient", () => {
       }),
     });
 
-    const defaultSettings: DefaultSettings = {
+    const envDefaultSettings: DefaultSettings = {
       connections: [
         {
           name: "facebook",
@@ -54,7 +54,7 @@ describe("getClient", () => {
       ],
     };
 
-    ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
+    ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
     const client = await getClient(ctx.env, "clientId");
     const facebookConnection = client.connections.find(
@@ -64,7 +64,7 @@ describe("getClient", () => {
     expect(facebookConnection?.clientId).toBe("facebookClientId");
   });
 
-  it("should add a domain from the defaultSettings to the client domains", async () => {
+  it("should add a domain from the envDefaultSettings to the client domains", async () => {
     const ctx = contextFixture();
 
     const defaultSettings: DefaultSettings = {
@@ -87,5 +87,58 @@ describe("getClient", () => {
         dkimPrivateKey: "dkimKey",
       },
     ]);
+  });
+
+  it("should use the connection settings form the defaultSettins and the clientId from envDefaultSettings", async () => {
+    const clientInKV: PartialClient = {
+      id: "id",
+      name: "clientName",
+      clientSecret: "clientSecret",
+      tenantId: "tenantId",
+      senderEmail: "senderEmail",
+      senderName: "senderName",
+      allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
+      allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
+      allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
+      emailValidation: "enabled",
+      audience: "audience",
+      connections: [
+        {
+          id: "connectionId",
+          name: "facebook",
+          createdAt: "createdAt",
+          modifiedAt: "modifiedAt",
+        },
+      ],
+      domains: [],
+    };
+
+    const ctx = contextFixture({
+      clients: kvStorageFixture({
+        clientId: JSON.stringify(clientInKV),
+      }),
+    });
+
+    const envDefaultSettings: DefaultSettings = {
+      connections: [
+        {
+          name: "facebook",
+          clientId: "facebookClientId",
+          clientSecret: "facebookClientSecret",
+        },
+      ],
+    };
+
+    ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
+
+    const client = await getClient(ctx.env, "clientId");
+    const facebookConnection = client.connections.find(
+      (c) => c.name === "facebook",
+    );
+
+    expect(facebookConnection?.clientId).toBe("facebookClientId");
+    expect(facebookConnection?.authorizationEndpoint).toBe(
+      "https://www.facebook.com/dialog/oauth",
+    );
   });
 });

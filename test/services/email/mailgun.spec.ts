@@ -1,0 +1,52 @@
+import send from "../../../src/services/email/mailgun";
+import { EmailOptions } from "../../../src/services/email/EmailOptions";
+import fetchMock from "jest-fetch-mock";
+
+beforeEach(() => {
+  fetchMock.resetMocks();
+});
+
+describe("send", () => {
+  it("should correctly call Mailgun API", async () => {
+    const testEmailOptions: EmailOptions = {
+      to: [{ email: "test@example.com", name: "Test User" }],
+      from: { email: "sender@mydomain.com", name: "Sender" },
+      subject: "Test Subject",
+      apiKey: "test-api-key",
+      content: [
+        { type: "text/plain", value: "Test plain content" },
+        { type: "text/html", value: "<p>Test HTML content</p>" },
+      ],
+    };
+
+    fetchMock.mockResponse(JSON.stringify({ message: "Queued. Thank you." }), {
+      status: 200, // or whatever status you expect for success
+      headers: { "content-type": "application/json" },
+    });
+
+    await send(testEmailOptions);
+
+    expect(fetchMock.mock.calls.length).toEqual(1);
+    expect(fetchMock.mock.calls[0][0]).toEqual(
+      "https://api.mailgun.net/v3/mydomain.com/messages",
+    );
+    expect(fetchMock.mock.calls?.[0]?.[1]?.method).toEqual("POST");
+  });
+
+  it("should throw an error for bad responses", async () => {
+    const testEmailOptions: EmailOptions = {
+      to: [{ email: "test@example.com", name: "Test User" }],
+      from: { email: "sender@mydomain.com", name: "Sender" },
+      subject: "Test Subject",
+      apiKey: "test-api-key",
+      content: [
+        { type: "text/plain", value: "Test plain content" },
+        { type: "text/html", value: "<p>Test HTML content</p>" },
+      ],
+    };
+
+    fetchMock.mockReject(new Error("API call failed"));
+
+    await expect(send(testEmailOptions)).rejects.toThrow("API call failed");
+  });
+});
