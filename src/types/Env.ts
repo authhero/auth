@@ -15,6 +15,7 @@ export interface Env {
   ISSUER: string;
   DD_API_KEY: string;
   JWKS_URL: string;
+  IMAGE_PROXY_URL: string;
   DATABASE_HOST: string;
   DATABASE_PASSWORD: string;
   DATABASE_USERNAME: string;

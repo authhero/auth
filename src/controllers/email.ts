@@ -2,6 +2,7 @@ import { Liquid } from "liquidjs";
 import { translate } from "../utils/i18n";
 import { Client, Env } from "../types";
 import sendEmail from "../services/email";
+import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 
 const engine = new Liquid();
 
@@ -52,13 +53,17 @@ export async function sendCode(
 
   const language = client.language || "en";
 
+  const logo = getClientLogoPngGreyBg(
+    client.logo ||
+      "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
+    env.IMAGE_PROXY_URL,
+  );
+
   const sendCodeTemplate = engine.parse(templateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
     vendorName: client.name,
-    logo:
-      client.logo ||
-      "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
+    logo,
   });
 
   await sendEmail(client, {
