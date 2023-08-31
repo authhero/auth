@@ -1,3 +1,5 @@
+import { Env } from "../types/Env";
+
 const SESAMY_LOGO = {
   client_id: "sesamy",
   // TODO - needs to be SVG!
@@ -25,14 +27,12 @@ function getClientLogo(client_id: string) {
   return SESAMY_LOGO.logo;
 }
 
-const IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud";
-
-export function getClientLogoPngGreyBg(client_id: string) {
+export function getClientLogoPngGreyBg(client_id: string, env: Env) {
   const svgLogo = getClientLogo(client_id);
 
   const svgLogoBase64 = btoa(svgLogo);
 
-  const pngLogo = `${IMAGE_PROXY_URL}/unsafe/format:png/rs:fill:166/${svgLogoBase64}`;
+  const pngLogo = `${env.IMAGE_PROXY_URL}/unsafe/format:png/rs:fill:166/${svgLogoBase64}`;
 
   return pngLogo;
 }

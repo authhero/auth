@@ -15,10 +15,12 @@ services = [{ binding = "TOKEN_SERVICE", service = "token-service-dev" }]
 route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" }
 
 [vars]
+IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"
 ISSUER = "https://auth2.sesamy.dev/"
 JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
-READ_PERMISSION = 'auth:read'
-WRITE_PERMISSION = 'auth:write'
+READ_PERMISSION = "auth:read"
+WRITE_PERMISSION = "auth:write"
+
 
 [[r2_buckets]]
 binding = 'AUTH_TEMPLATES'
