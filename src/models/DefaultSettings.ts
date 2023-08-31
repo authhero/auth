@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Env, SqlConnectionSchema } from "../types";
+import { Env } from "../types";
 
 const DefaultSettingsSchema = z.object({
   connections: z
@@ -24,7 +24,11 @@ const DefaultSettingsSchema = z.object({
     .array(
       z.object({
         domain: z.string(),
-        dkimPrivateKey: z.string(),
+        dkimPrivateKey: z.string().optional(),
+        emailService: z
+          .union([z.literal("mailchannels"), z.literal("mailgun")])
+          .optional(),
+        emailApiKey: z.string().optional(),
       }),
     )
     .optional(),

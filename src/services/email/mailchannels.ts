@@ -1,7 +1,10 @@
+import { getDomainFromEmail } from "../../utils/email";
 import { EmailOptions } from "./EmailOptions";
 
 export default async function send(emailOptions: EmailOptions) {
   const { to, from, dkim, subject, content } = emailOptions;
+
+  const domain = getDomainFromEmail(from.email);
 
   const body = JSON.stringify({
     personalizations: [
@@ -10,9 +13,9 @@ export default async function send(emailOptions: EmailOptions) {
         // Add dkim if configured
         ...(dkim
           ? {
-              dkim_domain: dkim.domain,
+              dkim_domain: domain,
               dkim_selector: "mailchannels",
-              dkim_private_key: dkim.dkimPrivateKey,
+              dkim_private_key: dkim,
             }
           : {}),
       },

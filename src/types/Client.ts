@@ -4,6 +4,16 @@ import {
   AuthorizationResponseType,
 } from "./AuthParams";
 
+export const ClientDomainSchema = z.object({
+  domain: z.string(),
+  dkimPrivateKey: z.string().optional(),
+  dkimPublicKey: z.string().optional(),
+  apiKey: z.string().optional(),
+  mailService: z
+    .union([z.literal("mailgun"), z.literal("mailchannels")])
+    .optional(),
+});
+
 export const PartialConnectionSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -49,12 +59,7 @@ export const BaseClientSchema = z.object({
   logo: z.string().optional(),
   primaryColor: z.string().optional(),
   secondaryColor: z.string().optional(),
-  domains: z.array(
-    z.object({
-      domain: z.string(),
-      dkimPrivateKey: z.string(),
-    }),
-  ),
+  domains: z.array(ClientDomainSchema),
   allowedCallbackUrls: z.array(z.string()),
   allowedLogoutUrls: z.array(z.string()),
   allowedWebOrigins: z.array(z.string()),

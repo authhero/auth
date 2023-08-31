@@ -2,11 +2,11 @@ import send from "../../../src/services/email/mailgun";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import fetchMock from "jest-fetch-mock";
 
-beforeEach(() => {
-  fetchMock.resetMocks();
-});
-
 describe("send", () => {
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+
   it("should correctly call Mailgun API", async () => {
     const testEmailOptions: EmailOptions = {
       to: [{ email: "test@example.com", name: "Test User" }],

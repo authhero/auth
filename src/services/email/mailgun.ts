@@ -1,9 +1,5 @@
+import { getDomainFromEmail } from "../../utils/email";
 import { EmailOptions } from "./EmailOptions";
-
-function getDomainFromEmail(email: string): string {
-  const domainMatch = email.match(/@([\w.-]+)/);
-  return domainMatch ? domainMatch[1] : "";
-}
 
 export default async function send(emailOptions: EmailOptions) {
   const API_URL = `https://api.mailgun.net/v3/${getDomainFromEmail(

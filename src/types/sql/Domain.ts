@@ -4,6 +4,8 @@ export interface SqlDomain {
   createdAt: string;
   modifiedAt: string;
   domain: string;
-  dkimPrivateKey: string;
-  dkimPublicKey: string;
+  dkimPrivateKey?: string;
+  dkimPublicKey?: string;
+  apiKey?: string;
+  mailService?: "mailgun" | "mailchannels";
 }
