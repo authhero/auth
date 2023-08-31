@@ -27,12 +27,15 @@ function getClientLogo(client_id: string) {
   return SESAMY_LOGO.logo;
 }
 
-export function getClientLogoPngGreyBg(client_id: string, env: Env) {
+export function getClientLogoPngGreyBg(
+  client_id: string,
+  imageProxyUrl: string,
+) {
   const svgLogo = getClientLogo(client_id);
 
   const svgLogoBase64 = btoa(svgLogo);
 
-  const pngLogo = `${env.IMAGE_PROXY_URL}/unsafe/format:png/rs:fill:166/${svgLogoBase64}`;
+  const pngLogo = `${imageProxyUrl}/unsafe/format:png/rs:fill:166/${svgLogoBase64}`;
 
   return pngLogo;
 }
