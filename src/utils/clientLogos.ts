@@ -27,7 +27,7 @@ function getClientLogo(client_id: string) {
   return SESAMY_LOGO.logo;
 }
 
-const IMAGE_PROXY_URL = "https://image-proxy.sesamy.com";
+const IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud";
 
 // this is what we're doing currently on the checkout_v2 emails
 // https://imgproxy.prod.sesamy.cloud/unsafe/format:png/rs:fill:166/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmNvbS9sb2dvcy9icmVha2l0LnN2Zw==
