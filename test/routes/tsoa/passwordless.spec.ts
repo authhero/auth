@@ -1,13 +1,26 @@
+import fetchMock from "jest-fetch-mock";
 import { contextFixture } from "../../fixtures";
 import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
 import { AuthorizationResponseType } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 
 describe("Passwordless", () => {
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  });
+
   describe("start", () => {
     // This fails as the fixtures tries to load the code.liquid from the auth-templates folder.
     it("should send a code to the user", async () => {
       const controller = new PasswordlessController();
+
+      fetchMock.mockResponse(
+        JSON.stringify({ message: "Queued. Thank you." }),
+        {
+          status: 200, // or whatever status you expect for success
+          headers: { "content-type": "application/json" },
+        },
+      );
 
       const body = {
         client_id: "clientId",
@@ -33,7 +46,11 @@ describe("Passwordless", () => {
 
       await controller.startPasswordless(body, requestWithContext(ctx));
 
-      expect(logs[0].subject).toEqual(
+      const mailRequest = JSON.parse(
+        fetchMock.mock.calls?.[0]?.[1]?.body as string,
+      );
+
+      expect(mailRequest.subject).toEqual(
         "Welcome to clientName! 123456 is the login code",
       );
     });

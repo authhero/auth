@@ -1,6 +1,7 @@
 import { Liquid } from "liquidjs";
 import { translate } from "../utils/i18n";
 import { Client, Env } from "../types";
+import sendEmail from "../services/email";
 
 const engine = new Liquid();
 
@@ -15,9 +16,9 @@ export async function sendEmailValidation(
   }
 
   const message = `Here is the code to validate your email: ${code}`;
-  await env.sendEmail({
+  await sendEmail(client, {
     to: [{ email: to, name: to }],
-    dkim: client.domains[0],
+    dkim: client.domains[0]?.dkimPrivateKey,
     from: {
       email: client.senderEmail,
       name: client.senderName,
@@ -60,9 +61,9 @@ export async function sendCode(
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
   });
 
-  await env.sendEmail({
+  await sendEmail(client, {
     to: [{ email: to, name: to }],
-    dkim: client.domains[0],
+    dkim: client.domains[0]?.dkimPrivateKey,
     from: {
       email: client.senderEmail,
       name: client.senderName,
@@ -87,9 +88,9 @@ export async function sendResetPassword(
   state: string,
 ) {
   const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
-  await env.sendEmail({
+  await sendEmail(client, {
     to: [{ email: to, name: to }],
-    dkim: client.domains[0],
+    dkim: client.domains[0]?.dkimPrivateKey,
     from: {
       email: client.senderEmail,
       name: client.senderName,

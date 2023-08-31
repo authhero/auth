@@ -3,17 +3,13 @@ export interface EmailUser {
   name: string;
 }
 
-export interface DKIM {
-  domain: string;
-  dkimPrivateKey: string;
-}
-
 export interface EmailOptions {
   to: EmailUser[];
   from: EmailUser;
   subject: string;
-  dkim?: DKIM;
+  dkim?: string;
   apiKey?: string;
+  emailService?: "mailgun" | "mailchannels";
   content: {
     type: "text/plain" | "text/html";
     value: string;
