@@ -17,8 +17,6 @@ const CLIENT_LOGOS = [
   },
 ];
 
-// I think we'll still want to do this clientside?
-
 function getClientLogo(client_id: string) {
   const client = CLIENT_LOGOS.find((c) => c.client_id === client_id);
   if (client) {
@@ -28,9 +26,6 @@ function getClientLogo(client_id: string) {
 }
 
 const IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud";
-
-// this is what we're doing currently on the checkout_v2 emails
-// https://imgproxy.prod.sesamy.cloud/unsafe/format:png/rs:fill:166/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmNvbS9sb2dvcy9icmVha2l0LnN2Zw==
 
 export function getClientLogoPngGreyBg(client_id: string) {
   const svgLogo = getClientLogo(client_id);
