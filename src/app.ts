@@ -33,58 +33,6 @@ app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
 });
 
-// TODO: Remove once we are confident that it's working
-// import { Liquid } from "liquidjs";
-// import { getClient } from "./services/clients";
-// import { translate } from "./utils/i18n";
-
-// app.get("/send-email", async (ctx: Context<Env>) => {
-//   const { env } = ctx;
-
-//   let response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
-//   if (!response) {
-//     throw new Error("Code template not found");
-//   }
-
-//   const templateString = await response.text();
-
-//   const engine = new Liquid();
-
-//   const code = Date.now().toString();
-//   const client = await getClient(env, "kvartal");
-
-//   const language = client.language || "en";
-
-//   const sendCodeTemplate = engine.parse(templateString);
-//   const codeEmailBody = await engine.render(sendCodeTemplate, {
-//     code,
-//     vendorName: client.name,
-//     logo:
-//       client.logo ||
-//       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
-//   });
-
-//   await env.sendEmail({
-//     to: [{ email: "markus@sesamy.com", name: "Markus" }],
-//     dkim: client.domains[0],
-//     from: {
-//       email: client.senderEmail,
-//       name: client.senderName,
-//     },
-//     content: [
-//       {
-//         type: "text/html",
-//         value: codeEmailBody,
-//       },
-//     ],
-//     subject: translate(language, "codeEmailTitle")
-//       .replace("{{vendorName}}", client.name)
-//       .replace("{{code}}", code),
-//   });
-
-//   return new Response("OK");
-// });
-
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 
