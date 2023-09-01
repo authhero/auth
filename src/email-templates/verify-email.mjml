@@ -59,10 +59,9 @@
       <mj-column>
         <mj-image
           alt="Sesamy"
-          href="https://sesamy.com"
           target="_blank"
           width="166px"
-          src="https://assets.sesamy.dev/static/images/email/sesamy-logo.png"
+                    src={logo}
         />
       </mj-column>
     </mj-section>
