@@ -22,7 +22,7 @@ function splitUrls(value?: string) {
   return value.split(",").map((key) => key.trim());
 }
 
-function removeNullProperties(obj: Record<string, any>) {
+function removeNullProperties<T = any>(obj: Record<string, any>) {
   const clone = { ...obj };
 
   for (const key in clone) {
@@ -31,7 +31,7 @@ function removeNullProperties(obj: Record<string, any>) {
     }
   }
 
-  return clone;
+  return clone as T;
 }
 
 export async function updateClientInKV(env: Env, applicationId: string) {
@@ -89,13 +89,13 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     allowedWebOrigins: splitUrls(application.allowedWebOrigins),
     emailValidation: application.emailValidation,
     clientSecret: application.clientSecret,
-    tenant: {
+    tenant: removeNullProperties({
       logo: application.logo,
       primaryColor: application.primaryColor,
       secondaryColor: application.secondaryColor,
       senderEmail: application.senderEmail,
       senderName: application.senderName,
-    },
+    }),
   };
 
   await env.CLIENTS.put(applicationId, JSON.stringify(client));
