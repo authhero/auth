@@ -57,12 +57,11 @@
   <mj-body background-color="#F5F5F7">
     <mj-section>
       <mj-column>
-        <mj-image
-          alt="Sesamy"
-          href="https://sesamy.com"
+      <mj-image
+          alt={{vendorName}}
           target="_blank"
           width="166px"
-          src="https://assets.sesamy.dev/static/images/email/sesamy-logo.png"
+          src={{logo}}
         />
       </mj-column>
     </mj-section>
