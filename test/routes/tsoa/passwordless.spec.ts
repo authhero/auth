@@ -10,7 +10,6 @@ describe("Passwordless", () => {
   });
 
   describe("start", () => {
-    // This fails as the fixtures tries to load the code.liquid from the auth-templates folder.
     it("should send a code to the user", async () => {
       const controller = new PasswordlessController();
 
@@ -52,6 +51,31 @@ describe("Passwordless", () => {
 
       expect(mailRequest.subject).toEqual(
         "Welcome to clientName! 123456 is the login code",
+      );
+
+      expect(mailRequest.from).toEqual({
+        email: "senderEmail",
+        name: "senderName",
+      });
+
+      expect(mailRequest.personalizations[0].to).toEqual([
+        {
+          email: "markus@ahlstrand.es",
+          name: "markus@ahlstrand.es",
+        },
+      ]);
+
+      expect(mailRequest.content).toHaveLength(1);
+      expect(mailRequest.content[0].type).toEqual("text/html");
+
+      const emailBody = mailRequest.content[0].value;
+
+      expect(emailBody).toContain('alt="clientName"');
+
+      // nice! notice the undefined here at least! missing env var
+      // how to assert that the image is base64 encoded correctly?  hmmmm
+      expect(emailBody).toContain(
+        'src="undefined/unsafe/format:png/rs:fill:166/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmNvbS9zdGF0aWMvaW1hZ2VzL3Nlc2FteS9sb2dvLXRyYW5zbHVjZW50LnBuZw=="',
       );
     });
   });
