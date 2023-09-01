@@ -61,7 +61,7 @@
           alt="Sesamy"
           target="_blank"
           width="166px"
-                    src={logo}
+          src={logo}
         />
       </mj-column>
     </mj-section>
