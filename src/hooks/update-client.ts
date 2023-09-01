@@ -83,14 +83,19 @@ export async function updateClientInKV(env: Env, applicationId: string) {
       SqlConnectionSchema.parse(removeNullProperties(connection)),
     ),
     domains,
-    senderEmail: application.senderEmail,
-    senderName: application.senderName,
     tenantId: application.tenantId,
     allowedCallbackUrls: splitUrls(application.allowedCallbackUrls),
     allowedLogoutUrls: splitUrls(application.allowedLogoutUrls),
     allowedWebOrigins: splitUrls(application.allowedWebOrigins),
     emailValidation: application.emailValidation,
     clientSecret: application.clientSecret,
+    tenant: {
+      logo: application.logo,
+      primaryColor: application.primaryColor,
+      secondaryColor: application.secondaryColor,
+      senderEmail: application.senderEmail,
+      senderName: application.senderName,
+    },
   };
 
   await env.CLIENTS.put(applicationId, JSON.stringify(client));

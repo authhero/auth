@@ -53,8 +53,6 @@ export const BaseClientSchema = z.object({
   id: z.string(),
   name: z.string(),
   audience: z.string(),
-  senderEmail: z.string(),
-  senderName: z.string(),
   language: z.string().length(2).optional(),
   logo: z.string().optional(),
   primaryColor: z.string().optional(),
@@ -70,6 +68,13 @@ export const BaseClientSchema = z.object({
   ]),
   tenantId: z.string(),
   clientSecret: z.string(),
+  tenant: z.object({
+    logo: z.string().optional(),
+    primaryColor: z.string().optional(),
+    secondaryColor: z.string().optional(),
+    senderEmail: z.string(),
+    senderName: z.string(),
+  }),
 });
 
 export const ClientSchema = BaseClientSchema.extend({

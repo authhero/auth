@@ -33,13 +33,15 @@ describe("token", () => {
     name: "clientName",
     clientSecret: "clientSecret",
     tenantId: "tenantId",
-    senderEmail: "senderEmail",
-    senderName: "senderName",
     allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
     allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
     allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
     emailValidation: "enabled",
     audience: "audience",
+    tenant: {
+      senderEmail: "senderEmail",
+      senderName: "senderName",
+    },
     connections: [
       {
         id: "connectionId",

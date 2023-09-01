@@ -32,6 +32,15 @@ const DefaultSettingsSchema = z.object({
       }),
     )
     .optional(),
+  tenant: z
+    .object({
+      logo: z.string().optional(),
+      primaryColor: z.string().optional(),
+      secondaryColor: z.string().optional(),
+      senderEmail: z.string(),
+      senderName: z.string(),
+    })
+    .optional(),
 });
 
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;

@@ -78,5 +78,9 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
     allowedCallbackUrls: [...client.allowedCallbackUrls, `${env.ISSUER}u/info`],
     connections,
     domains: [...client.domains, ...(envDefaultSettings.domains || [])],
+    tenant: {
+      ...envDefaultSettings.tenant,
+      ...client.tenant,
+    },
   });
 }

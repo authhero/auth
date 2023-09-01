@@ -16,25 +16,46 @@ export async function sendEmailValidation(
     return;
   }
 
-  const message = `Here is the code to validate your email: ${code}`;
+  let response = await env.AUTH_TEMPLATES.get(
+    "templates/email/email-validation.liquid",
+  );
+  if (!response) {
+    throw new Error("Code template not found");
+  }
+
+  const templateString = await response.text();
+
+  const language = client.language || "en";
+
+  const logo = getClientLogoPngGreyBg(
+    client.logo ||
+      "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
+    env.IMAGE_PROXY_URL,
+  );
+
+  const sendCodeTemplate = engine.parse(templateString);
+  const codeEmailBody = await engine.render(sendCodeTemplate, {
+    code,
+    vendorName: client.name,
+    logo,
+  });
+
   await sendEmail(client, {
     to: [{ email: to, name: to }],
     dkim: client.domains[0]?.dkimPrivateKey,
     from: {
-      email: client.senderEmail,
-      name: client.senderName,
+      email: client.tenant.senderEmail,
+      name: client.tenant.senderName,
     },
     content: [
       {
-        type: "text/plain",
-        value: message,
-      },
-      {
         type: "text/html",
-        value: message,
+        value: codeEmailBody,
       },
     ],
-    subject: "Validate email",
+    subject: translate(language, "codeEmailTitle")
+      .replace("{{vendorName}}", client.name)
+      .replace("{{code}}", code),
   });
 }
 
@@ -70,8 +91,8 @@ export async function sendCode(
     to: [{ email: to, name: to }],
     dkim: client.domains[0]?.dkimPrivateKey,
     from: {
-      email: client.senderEmail,
-      name: client.senderName,
+      email: client.tenant.senderEmail,
+      name: client.tenant.senderName,
     },
     content: [
       {
@@ -97,8 +118,8 @@ export async function sendResetPassword(
     to: [{ email: to, name: to }],
     dkim: client.domains[0]?.dkimPrivateKey,
     from: {
-      email: client.senderEmail,
-      name: client.senderName,
+      email: client.tenant.senderEmail,
+      name: client.tenant.senderName,
     },
     content: [
       {
