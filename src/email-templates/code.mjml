@@ -58,10 +58,10 @@
     <mj-section>
       <mj-column>
         <mj-image
-          alt={vendorName}
+          alt={{vendorName}}
           target="_blank"
           width="166px"
-          src={logo}
+          src={{logo}}
         />
       </mj-column>
     </mj-section>
