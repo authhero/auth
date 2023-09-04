@@ -37,7 +37,7 @@ interface stateInput {
   ttl?: number;
 }
 
-const client: Client = {
+export const client: Client = {
   id: "id",
   name: "clientName",
   clientSecret: "clientSecret",

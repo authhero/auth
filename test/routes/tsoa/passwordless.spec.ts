@@ -1,11 +1,7 @@
 import fetchMock from "jest-fetch-mock";
-import { contextFixture } from "../../fixtures";
+import { contextFixture, client } from "../../fixtures";
 import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
-import {
-  Client,
-  AuthorizationResponseMode,
-  AuthorizationResponseType,
-} from "../../../src/types";
+import { Client, AuthorizationResponseType } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 import { kvStorageFixture } from "../../fixtures/kv-storage";
 
@@ -131,51 +127,8 @@ describe("Passwordless", () => {
       )}`;
 
       const clientWithLogo: Client = {
-        id: "id",
-        name: "clientName",
-        clientSecret: "clientSecret",
-        tenantId: "tenantId",
-        allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
-        allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
-        allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
-        emailValidation: "enabled",
-        audience: "audience",
-        tenant: {
-          senderEmail: "senderEmail",
-          senderName: "senderName",
-        },
+        ...client,
         logo,
-        connections: [
-          {
-            id: "connectionId1",
-            name: "google-oauth2",
-            clientId: "googleClientId",
-            clientSecret: "googleClientSecret",
-            authorizationEndpoint:
-              "https://accounts.google.com/o/oauth2/v2/auth",
-            tokenEndpoint: "https://oauth2.googleapis.com/token",
-            responseMode: AuthorizationResponseMode.QUERY,
-            responseType: AuthorizationResponseType.CODE,
-            scope: "openid profile email",
-            createdAt: "createdAt",
-            modifiedAt: "modifiedAt",
-          },
-          {
-            id: "connectionId2",
-            name: "facebook",
-            clientId: "facebookClientId",
-            clientSecret: "facebookClientSecret",
-            authorizationEndpoint:
-              "https://graph.facebook.com/oauth/access_token",
-            tokenEndpoint: "https://www.facebook.com/dialog/oauth",
-            responseMode: AuthorizationResponseMode.QUERY,
-            responseType: AuthorizationResponseType.CODE,
-            scope: "email public_profile",
-            createdAt: "createdAt",
-            modifiedAt: "modifiedAt",
-          },
-        ],
-        domains: [],
       };
 
       const logs: { subject: string }[] = [];
