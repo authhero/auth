@@ -4,8 +4,16 @@ import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
 import { AuthorizationResponseType } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 
+// TODO - assemble this manually
 const SESAMY_FOOTER_LOGO_URL =
   "https://imgproxy.dev.sesamy.cloud/unsafe/format:png/size:28:28/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmRldi9zdGF0aWMvaW1hZ2VzL2VtYWlsL3F1ZXN0aW9uLnBuZw&#x3D;&#x3D";
+
+const SESAMY_HEADER_LOGO =
+  "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png";
+const SESAMY_HEADER_LOGO_IMG_PROXY = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/${btoa(
+  SESAMY_HEADER_LOGO,
+)}`;
+// https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmNvbS9zdGF0aWMvaW1hZ2VzL3Nlc2FteS9sb2dvLXRyYW5zbHVjZW50LnBuZw==
 
 describe("Passwordless", () => {
   beforeEach(() => {
@@ -77,9 +85,7 @@ describe("Passwordless", () => {
       expect(emailBody).toContain('alt="clientName"');
 
       // assert - default sesamy fallback logo is used because no logo is set for this client
-      expect(emailBody).toContain(
-        'src="https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmNvbS9zdGF0aWMvaW1hZ2VzL3Nlc2FteS9sb2dvLXRyYW5zbHVjZW50LnBuZw=="',
-      );
+      expect(emailBody).toContain(`src="${SESAMY_HEADER_LOGO_IMG_PROXY}"`);
 
       expect(emailBody).toContain(SESAMY_FOOTER_LOGO_URL);
 
