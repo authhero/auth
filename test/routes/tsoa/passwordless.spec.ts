@@ -124,7 +124,10 @@ describe("Passwordless", () => {
 
       const clientWithLogo: Client = {
         ...client,
-        logo,
+        tenant: {
+          ...client.tenant,
+          logo,
+        },
       };
 
       const logs: { subject: string }[] = [];

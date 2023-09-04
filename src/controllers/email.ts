@@ -28,7 +28,7 @@ export async function sendEmailValidation(
   const language = client.language || "en";
 
   const logo = getClientLogoPngGreyBg(
-    client.logo ||
+    client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
     env.IMAGE_PROXY_URL,
   );
@@ -75,7 +75,7 @@ export async function sendCode(
   const language = client.language || "en";
 
   const logo = getClientLogoPngGreyBg(
-    client.logo ||
+    client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
     env.IMAGE_PROXY_URL,
   );
