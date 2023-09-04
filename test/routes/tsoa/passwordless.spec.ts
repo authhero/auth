@@ -4,24 +4,28 @@ import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
 import { AuthorizationResponseType } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 
-// TODO - assemble this manually
-const SESAMY_FOOTER_LOGO_URL =
-  "https://imgproxy.dev.sesamy.cloud/unsafe/format:png/size:28:28/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmRldi9zdGF0aWMvaW1hZ2VzL2VtYWlsL3F1ZXN0aW9uLnBuZw&#x3D;&#x3D";
-
-const SESAMY_HEADER_LOGO =
+const SESAMY_LOGO =
   "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png";
-const SESAMY_HEADER_LOGO_IMG_PROXY = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/${btoa(
-  SESAMY_HEADER_LOGO,
+
+// looks the same to me! hmmmm. why fetch same asset twice
+const SESAMY_FOOTER_LOGO =
+  "https://assets.sesamy.dev/static/images/email/sesamy-logo-translucent.png";
+
+const SESAMY_FOOTER_LOGO_URL = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/size:225/${btoa(
+  SESAMY_FOOTER_LOGO,
+).replace(/=/g, "&#x3D;")}`; // footer logo is html encoded....
+
+const SESAMY_HEADER_LOGO_URL = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/${btoa(
+  SESAMY_LOGO,
 )}`;
-// https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmNvbS9zdGF0aWMvaW1hZ2VzL3Nlc2FteS9sb2dvLXRyYW5zbHVjZW50LnBuZw==
 
 describe("Passwordless", () => {
   beforeEach(() => {
     fetchMock.resetMocks();
   });
 
-  describe("start", () => {
-    it.only("should send a code to the user", async () => {
+  describe(".start() should send a code to the user", () => {
+    it("should use the fallback sesamy logo if client does not have a logo set", async () => {
       const controller = new PasswordlessController();
 
       fetchMock.mockResponse(
@@ -85,7 +89,7 @@ describe("Passwordless", () => {
       expect(emailBody).toContain('alt="clientName"');
 
       // assert - default sesamy fallback logo is used because no logo is set for this client
-      expect(emailBody).toContain(`src="${SESAMY_HEADER_LOGO_IMG_PROXY}"`);
+      expect(emailBody).toContain(`src="${SESAMY_HEADER_LOGO_URL}"`);
 
       expect(emailBody).toContain(SESAMY_FOOTER_LOGO_URL);
 
@@ -101,5 +105,6 @@ describe("Passwordless", () => {
     // how? base64 the client logo and check it appears in the body!
     // create a new context with a new client that has Logo set
     // base64 this and check it appears in the body
+    it("should use the client logo if set", async () => {});
   });
 });
