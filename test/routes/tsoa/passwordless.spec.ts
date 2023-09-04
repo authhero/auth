@@ -98,10 +98,6 @@ describe("Passwordless", () => {
       );
     });
 
-    // TODO - need to do a similar test but assert that the correct logo is entered...
-    // how? base64 the client logo and check it appears in the body!
-    // create a new context with a new client that has Logo set
-    // base64 this and check it appears in the body
     it("should use the client logo if set", async () => {
       const controller = new PasswordlessController();
 
