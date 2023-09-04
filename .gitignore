@@ -14,3 +14,4 @@ wrangler/
 .env
 yarn-error.log
 .DS-Store
+data/

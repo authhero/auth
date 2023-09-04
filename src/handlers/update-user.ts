@@ -1,8 +1,42 @@
+import { UserEvent } from "../services/events";
 import { getId, User } from "../models";
 import { getDb } from "../services/db";
 import { Env, SqlUser, UserTag } from "../types";
 
-export async function updateUser(env: Env, tenantId: string, email: string) {
+export async function handleUserEvent(
+  env: Env,
+  tenantId: string,
+  email: string,
+  event: UserEvent,
+) {
+  switch (event) {
+    case UserEvent.userDeleted:
+      return deleteUser(env, tenantId, email);
+    default:
+      return updateUser(env, tenantId, email);
+  }
+}
+
+async function deleteUser(env: Env, tenantId: string, email: string) {
+  const userId = getId(tenantId, email);
+  const userInstance = User.getInstanceByName(env.USER, userId);
+  const profile = await userInstance.getProfile.query();
+
+  if (!profile || !profile.email) {
+    console.log("No profile found for user", userId);
+    return;
+  }
+
+  const db = getDb(env);
+
+  await db
+    .deleteFrom("users")
+    .where("tenantId", "=", tenantId)
+    .where("email", "=", email)
+    .execute();
+}
+
+async function updateUser(env: Env, tenantId: string, email: string) {
   const userId = getId(tenantId, email);
   const userInstance = User.getInstanceByName(env.USER, userId);
   const profile = await userInstance.getProfile.query();
@@ -34,15 +68,12 @@ export async function updateUser(env: Env, tenantId: string, email: string) {
   };
 
   try {
-    await db
-      .insertInto("users")
-      .values(user)
-      // .onConflict((oc) => oc.columns(["id", "tenantId"]).doUpdateSet(user))
-      .execute();
+    await db.insertInto("users").values(user).execute();
   } catch (err: any) {
     if (!err.message.includes("AlreadyExists")) {
       throw err;
     }
+
     await db.updateTable("users").set(user).where("id", "=", user.id).execute();
   }
 }

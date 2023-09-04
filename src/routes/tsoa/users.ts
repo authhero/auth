@@ -12,6 +12,7 @@ import {
   Security,
   Header,
   Put,
+  Delete,
 } from "@tsoa/runtime";
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
@@ -153,17 +154,46 @@ export class UsersController extends Controller {
   ): Promise<Profile> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
-
     const doId = `${tenantId}|${user.email}`;
     const userInstance = ctx.env.userFactory.getInstanceByName(doId);
 
-    const result: Profile = await userInstance.patchProfile.mutate({
-      ...user,
-      connections: [],
-      tenantId,
-    });
+    try {
+      const result: Profile = await userInstance.patchProfile.mutate({
+        ...user,
+        connections: [],
+        tenantId,
+      });
+      return result;
+    } catch (err) {}
+  }
 
-    return result;
+  @Delete("{userId}")
+  @SuccessResponse(201, "Created")
+  public async deleteUser(
+    @Request() request: RequestWithContext,
+    @Path("tenantId") tenantId: string,
+    @Path("userId") userId: string,
+  ): Promise<Profile> {
+    const { ctx } = request;
+    const { env } = ctx;
+
+    const db = getDb(env);
+    const dbUser = await db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .where("users.id", "=", userId)
+      .select("users.email")
+      .executeTakeFirst();
+
+    if (!dbUser) {
+      throw new NotFoundError();
+    }
+
+    // Fetch the user from durable object
+    const user = env.userFactory.getInstanceByName(
+      getId(tenantId, dbUser.email),
+    );
+
+    return user.delete.mutate();
   }
 }

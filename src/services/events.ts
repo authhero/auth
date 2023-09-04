@@ -1,4 +1,4 @@
-import { updateUser } from "../handlers/update-user";
+import { handleUserEvent } from "../handlers/update-user";
 import { Env } from "../types/Env";
 
 export enum UserEvent {
@@ -6,6 +6,7 @@ export enum UserEvent {
   loginFailed = "LOGIN_FAILED",
   userCreated = "USER_CREATED",
   userUpdated = "USER_UPDATED",
+  userDeleted = "USER_DELETED",
 }
 
 export interface UserMessage {
@@ -29,6 +30,6 @@ export async function sendUserEvent(env: Env, doId: string, event: UserEvent) {
 
     await env.USERS_QUEUE.send(message);
   } else {
-    await updateUser(env, tenantId, email);
+    await handleUserEvent(env, tenantId, email, event);
   }
 }

@@ -4,8 +4,7 @@ import rotateKeys from "./routes/rotate-keys";
 import { User, State } from "./models";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { QueueMessage } from "./services/events";
-import { updateUser } from "./handlers/update-user";
-import sendEmail from "./services/email/mailchannels";
+import { handleUserEvent } from "./handlers/update-user";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -23,7 +22,6 @@ const server = {
       {
         ...env,
         oauth2ClientFactory: { create: oAuth2ClientFactory },
-        sendEmail,
         stateFactory: State.getFactory(env.STATE, env),
         userFactory: User.getFactory(env.USER, env),
       },
@@ -44,7 +42,7 @@ const server = {
 
       switch (body.queueName) {
         case "users":
-          await updateUser(env, body.tenantId, body.email);
+          await handleUserEvent(env, body.tenantId, body.email);
           break;
         default:
           console.log(`Unknown message: ${JSON.stringify(message.body)}`);

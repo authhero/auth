@@ -13,13 +13,14 @@ import {
   InvalidCodeError,
   AuthenticationCodeExpiredError,
   NoCodeError,
+  NotFoundError,
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
 import { Env, ProfileSchema } from "../types";
-import { QueueMessage, sendUserEvent, UserEvent } from "../services/events";
+import { sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
 import { migratePasswordHook } from "../hooks/migrate-password";
-import { LogMessage, LogMessageSchemaList } from "../types/LogMessage";
+import { LogMessage } from "../types/LogMessage";
 
 const CodeSchema = z.object({
   authParams: z.custom<AuthParams>().optional(),
@@ -248,6 +249,21 @@ export const userRouter = router({
     });
 
     return result;
+  }),
+  delete: publicProcedure.mutation(async ({ ctx }) => {
+    const profile = await getProfile(ctx.env.storage);
+
+    if (!profile?.tenantId) {
+      throw new NotFoundError();
+    }
+
+    await ctx.state.storage.deleteAll();
+
+    await sendUserEvent(
+      ctx.env,
+      `${profile.tenantId}|${profile.email}`,
+      UserEvent.userDeleted,
+    );
   }),
   getLogs: publicProcedure.query(async ({ ctx }) => getLogs(ctx.state.storage)),
   getProfile: publicProcedure.query(async ({ ctx }) => {
