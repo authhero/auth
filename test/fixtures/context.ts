@@ -37,7 +37,7 @@ interface stateInput {
   ttl?: number;
 }
 
-const client: Client = {
+export const client: Client = {
   id: "id",
   name: "clientName",
   clientSecret: "clientSecret",
@@ -160,6 +160,7 @@ export function contextFixture(params?: ContextFixtureParams): Context<Env> {
         kvStorageFixture({
           clientId: JSON.stringify(client),
         }),
+      IMAGE_PROXY_URL: "https://imgproxy.dev.sesamy.cloud",
     },
   } as unknown as Context<Env>;
 }
