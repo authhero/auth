@@ -1,8 +1,13 @@
 import fetchMock from "jest-fetch-mock";
 import { contextFixture } from "../../fixtures";
 import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
-import { AuthorizationResponseType } from "../../../src/types";
+import {
+  Client,
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
+import { kvStorageFixture } from "../../fixtures/kv-storage";
 
 const SESAMY_LOGO =
   "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png";
@@ -22,19 +27,15 @@ const SESAMY_HEADER_LOGO_URL = `https://imgproxy.dev.sesamy.cloud/unsafe/format:
 describe("Passwordless", () => {
   beforeEach(() => {
     fetchMock.resetMocks();
+    fetchMock.mockResponse(JSON.stringify({ message: "Queued. Thank you." }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
   });
 
   describe(".start() should send a code to the user", () => {
     it("should use the fallback sesamy logo if client does not have a logo set", async () => {
       const controller = new PasswordlessController();
-
-      fetchMock.mockResponse(
-        JSON.stringify({ message: "Queued. Thank you." }),
-        {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        },
-      );
 
       const body = {
         client_id: "clientId",
@@ -105,6 +106,102 @@ describe("Passwordless", () => {
     // how? base64 the client logo and check it appears in the body!
     // create a new context with a new client that has Logo set
     // base64 this and check it appears in the body
-    it("should use the client logo if set", async () => {});
+    it("should use the client logo if set", async () => {
+      const controller = new PasswordlessController();
+
+      const body = {
+        client_id: "clientId",
+        connection: "email",
+        send: "code",
+        email: "markus@ahlstrand.es",
+        authParams: {
+          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+          redirect_uri: "http://localhost:3000/callback",
+          scope: "openid profile email",
+          audience: "https://sesamy.com",
+          state: "spstFO05XU5R-fhzQSLnuHnYVhyd5-GP",
+          nonce: "~9y0-hSpK3ATR6Fo0NJ.v3kMro3cfA.p",
+        },
+      };
+
+      const logo = "https://example.com/logo.png";
+
+      const clientLogoUrl = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/${btoa(
+        logo,
+      )}`;
+
+      const clientWithLogo: Client = {
+        id: "id",
+        name: "clientName",
+        clientSecret: "clientSecret",
+        tenantId: "tenantId",
+        allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
+        allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
+        allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
+        emailValidation: "enabled",
+        audience: "audience",
+        tenant: {
+          senderEmail: "senderEmail",
+          senderName: "senderName",
+        },
+        logo,
+        connections: [
+          {
+            id: "connectionId1",
+            name: "google-oauth2",
+            clientId: "googleClientId",
+            clientSecret: "googleClientSecret",
+            authorizationEndpoint:
+              "https://accounts.google.com/o/oauth2/v2/auth",
+            tokenEndpoint: "https://oauth2.googleapis.com/token",
+            responseMode: AuthorizationResponseMode.QUERY,
+            responseType: AuthorizationResponseType.CODE,
+            scope: "openid profile email",
+            createdAt: "createdAt",
+            modifiedAt: "modifiedAt",
+          },
+          {
+            id: "connectionId2",
+            name: "facebook",
+            clientId: "facebookClientId",
+            clientSecret: "facebookClientSecret",
+            authorizationEndpoint:
+              "https://graph.facebook.com/oauth/access_token",
+            tokenEndpoint: "https://www.facebook.com/dialog/oauth",
+            responseMode: AuthorizationResponseMode.QUERY,
+            responseType: AuthorizationResponseType.CODE,
+            scope: "email public_profile",
+            createdAt: "createdAt",
+            modifiedAt: "modifiedAt",
+          },
+        ],
+        domains: [],
+      };
+
+      const logs: { subject: string }[] = [];
+
+      const clients = kvStorageFixture({
+        clientId: JSON.stringify(clientWithLogo),
+      });
+
+      const ctx = contextFixture({
+        stateData: {},
+        logs,
+        clients,
+      });
+
+      await controller.startPasswordless(body, requestWithContext(ctx));
+
+      const mailRequest = JSON.parse(
+        fetchMock.mock.calls?.[0]?.[1]?.body as string,
+      );
+      const emailBody = mailRequest.content[0].value;
+
+      // should not have default sesamy logo
+      expect(emailBody).not.toContain(`src="${SESAMY_HEADER_LOGO_URL}"`);
+
+      // but should have client logo
+      expect(emailBody).toContain(`src="${clientLogoUrl}"`);
+    });
   });
 });
