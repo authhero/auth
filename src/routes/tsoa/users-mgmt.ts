@@ -2,6 +2,7 @@
 import {
   Controller,
   Get,
+  Query,
   Request,
   Route,
   Tags,
@@ -50,5 +51,31 @@ export class UsersMgmtController extends Controller {
   }
 
   // "https://auth2.sesamy.dev/api/v2/users-by-email?email=dan%2B456%40sesamy.com",
-  //
+  @Get("users-by-email")
+  public async getUserByEmail(
+    @Request() request: RequestWithContext,
+    @Query("email") userEmail: string,
+  ): Promise<Profile> {
+    const { ctx } = request;
+    const { env } = ctx;
+
+    const db = getDb(env);
+    const dbUser = await db
+      .selectFrom("users")
+      .where("users.email", "=", userEmail)
+      .selectAll()
+      .executeTakeFirst();
+
+    if (!dbUser) {
+      throw new NotFoundError();
+    }
+
+    const user = env.userFactory.getInstanceByName(
+      getId(dbUser.tenantId, dbUser.email),
+    );
+
+    const userResult = user.getProfile.query();
+
+    return userResult;
+  }
 }
