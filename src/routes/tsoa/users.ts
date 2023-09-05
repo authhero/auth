@@ -23,6 +23,7 @@ import { getId } from "../../models";
 import { Profile } from "../../types";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
+import { FilterSchema } from "../../types/Filter";
 
 @Route("tenants/{tenantId}/users")
 @Security("oauth2managementApi", [""])
@@ -33,12 +34,26 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Header("range") rangeRequest?: string,
+    @Query("filter") filterQuerystring?: string,
   ): Promise<User[]> {
     const { ctx } = request;
 
     const db = getDb(ctx.env);
 
-    const query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
+    let query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
+
+    if (filterQuerystring) {
+      const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
+
+      if (filter.q) {
+        query = query.where((eb) =>
+          eb.or([
+            eb("name", "like", `%${filter.q}%`),
+            eb("email", "like", `%${filter.q}%`),
+          ]),
+        );
+      }
+    }
 
     const { data, range } = await executeQuery(query, rangeRequest);
 
