@@ -13,6 +13,7 @@ import {
   Header,
   Put,
   Delete,
+  Query,
 } from "@tsoa/runtime";
 import { User } from "../../types/sql/User";
 import { getDb } from "../../services/db";
@@ -20,8 +21,8 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { NoUserFoundError, NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { Profile } from "../../types";
-import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
+import { executeQuery } from "../../helpers/sql";
 
 @Route("tenants/{tenantId}/users")
 @Security("oauth2managementApi", [""])
@@ -31,29 +32,21 @@ export class UsersController extends Controller {
   public async listUsers(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
-    @Header("range") range?: string,
+    @Header("range") rangeRequest?: string,
   ): Promise<User[]> {
     const { ctx } = request;
 
-    const parsedRange = parseRange(range);
-
     const db = getDb(ctx.env);
-    const users = await db
-      .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
-      .selectAll()
-      .offset(parsedRange.from)
-      .limit(parsedRange.limit)
-      .execute();
 
-    if (parsedRange.entity) {
-      this.setHeader(
-        headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
-      );
+    const query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
+
+    const { data, range } = await executeQuery(query, rangeRequest);
+
+    if (range) {
+      this.setHeader(headers.contentRange, range);
     }
 
-    return users.map((user) => ({
+    return data.map((user) => ({
       ...user,
       tags: JSON.parse(user.tags || "[]"),
     }));
@@ -157,14 +150,12 @@ export class UsersController extends Controller {
     const doId = `${tenantId}|${user.email}`;
     const userInstance = ctx.env.userFactory.getInstanceByName(doId);
 
-    try {
-      const result: Profile = await userInstance.patchProfile.mutate({
-        ...user,
-        connections: [],
-        tenantId,
-      });
-      return result;
-    } catch (err) {}
+    const result: Profile = await userInstance.patchProfile.mutate({
+      ...user,
+      connections: [],
+      tenantId,
+    });
+    return result;
   }
 
   @Delete("{userId}")

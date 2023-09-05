@@ -17,7 +17,7 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
 import { headers } from "../../constants";
-import { parseRange } from "../../helpers/content-range";
+import { executeQuery } from "../../helpers/sql";
 
 @Route("tenants")
 @Tags("tenants")
@@ -26,42 +26,31 @@ export class TenantsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async listTenants(
     @Request() request: RequestWithContext,
-    @Header("range") range?: string,
+    @Header("range") rangeRequest?: string,
   ): Promise<Tenant[]> {
     const { ctx } = request;
     const db = getDb(ctx.env);
 
-    const parsedRange = parseRange(range);
-
-    let tenants;
+    let query;
 
     const permissions: string[] = ctx.state.user.permissions || [];
     if (permissions.includes(ctx.env.READ_PERMISSION as string)) {
-      tenants = await db
-        .selectFrom("tenants")
-        .offset(parsedRange.from)
-        .limit(parsedRange.limit)
-        .selectAll()
-        .execute();
+      query = db.selectFrom("tenants");
     } else {
-      tenants = await db
+      query = db
         .selectFrom("tenants")
         .innerJoin("members", "tenants.id", "members.tenantId")
         .where("members.sub", "=", ctx.state.user.sub)
-        .offset(parsedRange.from)
-        .limit(parsedRange.limit)
-        .selectAll("tenants")
-        .execute();
+        .selectAll("tenants");
     }
 
-    if (parsedRange.entity) {
-      this.setHeader(
-        headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
-      );
+    const { data, range } = await executeQuery<"tenants">(query, rangeRequest);
+
+    if (range) {
+      this.setHeader(headers.contentRange, range);
     }
 
-    return tenants;
+    return data;
   }
 
   @Get("{id}")

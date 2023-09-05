@@ -38,18 +38,24 @@ export class DomainsController extends Controller {
     const parsedRange = parseRange(range);
 
     const db = getDb(ctx.env);
-    const domains = await db
+    const query = db
       .selectFrom("domains")
-      .where("domains.tenantId", "=", tenantId)
+      .where("domains.tenantId", "=", tenantId);
+
+    const domains = await query
       .selectAll()
       .offset(parsedRange.from)
       .limit(parsedRange.limit)
       .execute();
 
     if (parsedRange.entity) {
+      const [{ count }] = await query
+        .select((eb) => eb.fn.countAll().as("count"))
+        .execute();
+
       this.setHeader(
         headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
+        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${count}`,
       );
     }
 

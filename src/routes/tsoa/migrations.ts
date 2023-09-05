@@ -22,6 +22,7 @@ import { Migration } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
+import { executeQuery } from "../../helpers/sql";
 
 @Route("tenants/{tenantId}/migrations")
 @Tags("migrations")
@@ -31,29 +32,22 @@ export class MigrationsController extends Controller {
   public async listMigrations(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
-    @Header("range") range?: string,
+    @Header("range") rangeRequest?: string,
   ): Promise<Migration[]> {
     const { ctx } = request;
 
-    const parsedRange = parseRange(range);
-
     const db = getDb(ctx.env);
-    const migrations = await db
+    const query = db
       .selectFrom("migrations")
-      .where("migrations.tenantId", "=", tenantId)
-      .selectAll()
-      .offset(parsedRange.from)
-      .limit(parsedRange.limit)
-      .execute();
+      .where("migrations.tenantId", "=", tenantId);
 
-    if (parsedRange.entity) {
-      this.setHeader(
-        headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
-      );
+    const { data, range } = await executeQuery(query, rangeRequest);
+
+    if (range) {
+      this.setHeader(headers.contentRange, range);
     }
 
-    return migrations;
+    return data;
   }
 
   @Get("{id}")
