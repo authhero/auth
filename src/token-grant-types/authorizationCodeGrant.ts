@@ -58,7 +58,6 @@ export async function authorizeCodeGrant(
 export async function clientCredentialsGrant(
   env: Env,
   params: ClientCredentialGrantTypeParams,
-  // on token service this is | Null instead...
 ): Promise<TokenResponse | CodeResponse> {
   const client = await getClient(env, params.client_id);
 
@@ -84,29 +83,6 @@ export async function clientCredentialsGrant(
 
   // same... we don't have this right?
   // const permissions = await getPermissions({ env, client });
-
-  // no idea here!
-  // return generateTokens({
-  //   env,
-  //   userId: client.id,
-  //   authParams: {
-  //     client_id: client.id,
-  //     vendorId: client.vendorId,
-  //     // permissions,
-  //     // this will just echo back whatever we request?
-  //     scope: params.scope,
-  //     redirect_uri: "",
-  //   },
-  //   sid: nanoid(),
-  //   responseType: AuthorizationResponseType.TOKEN,
-  // });
-
-  // const state: {
-  //   userId: string;
-  //   authParams: AuthParams;
-  //   user: Profile;
-  //   sid: string;
-  // } = JSON.parse(stateString);
 
   const authParams: AuthParams = {
     client_id: client.id,
