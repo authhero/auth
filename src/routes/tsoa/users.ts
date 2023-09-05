@@ -165,7 +165,7 @@ export class UsersController extends Controller {
     const doId = `${tenantId}|${user.email}`;
     const userInstance = ctx.env.userFactory.getInstanceByName(doId);
 
-    const result: Profile = await userInstance.patchProfile.mutate({
+    const result: Profile = await userInstance.createUser.mutate({
       ...user,
       connections: [],
       tenantId,
