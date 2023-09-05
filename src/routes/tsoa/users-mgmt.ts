@@ -8,6 +8,8 @@ import { Profile } from "../../types";
 
 @Route("api/v2/users")
 @Tags("users-mgmt") // what is tags?
+// TODO - need security!
+// @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
   @Get("")
   public async helloHello(
@@ -23,7 +25,7 @@ export class UsersMgmtController extends Controller {
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
-  ): Promise<string> {
+  ): Promise<Profile> {
     // not actually hitting this! is already 404ing... not getting any log
     console.log("in getUser");
     const { ctx } = request;
@@ -39,18 +41,33 @@ export class UsersMgmtController extends Controller {
       .executeTakeFirst();
 
     if (!dbUser) {
+      console.log("no dbUser");
       throw new NotFoundError();
     }
 
-    // Fetch the user from durable object
-    // const user = env.userFactory.getInstanceByName(
-    //   getId(tenantId, dbUser.email),
-    // );
+    // I can find the user by querying the planetscale database
+    const tenantId = "breakit";
 
-    // return user.getProfile.query();
+    console.log("dbUser", dbUser);
+    // Fetch the user from durable object
+    const user = env.userFactory.getInstanceByName(
+      getId(tenantId, dbUser.email),
+      // userId,
+    );
+
+    // Invalid Durable Object ID. Durable Object IDs must be 64 hex digits.
+    // const user = env.userFactory.getInstanceById(userId);
+
+    console.log("user", user);
+
+    const userResult = user.getProfile.query();
+
+    console.log("userResult", userResult);
+
+    return userResult;
 
     // return "success";
 
-    return dbUser.email;
+    // return dbUser.email;
   }
 }
