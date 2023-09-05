@@ -7,7 +7,6 @@ import { getId } from "../../models";
 import { Profile } from "../../types";
 
 @Route("api/v2/users")
-// @Security("oauth2managementApi", [""])
 @Tags("users-mgmt") // what is tags?
 export class UsersMgmtController extends Controller {
   @Get("")
@@ -15,6 +14,8 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
   ): Promise<string> {
     console.log("in helloHello");
+
+    // nice! this route works
     return "hello hello";
   }
 
@@ -22,7 +23,6 @@ export class UsersMgmtController extends Controller {
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
-    // ): Promise<Profile> {
   ): Promise<string> {
     // not actually hitting this! is already 404ing... not getting any log
     console.log("in getUser");
@@ -49,6 +49,8 @@ export class UsersMgmtController extends Controller {
 
     // return user.getProfile.query();
 
-    return "success";
+    // return "success";
+
+    return dbUser.email;
   }
 }
