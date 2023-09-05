@@ -11,6 +11,7 @@ import {
   CodeChallengeMethod,
   PKCEAuthorizationCodeGrantTypeParams,
   RequestWithContext,
+  ClientCredentialGrantTypeParams,
 } from "../../../src/types";
 import { GrantType } from "../../../src/types";
 import { base64ToHex } from "../../../src/utils/base64";
@@ -286,6 +287,38 @@ describe("token", () => {
       await expect(
         controller.token({ ctx } as RequestWithContext, tokenParams),
       ).rejects.toThrowError(InvalidClientError);
+    });
+  });
+
+  describe("client credentials", () => {
+    it("should return a token for a sesamy api client", async () => {
+      const ctx = contextFixture();
+
+      const controller = new TokenRoutes();
+
+      const tokenParams: ClientCredentialGrantTypeParams = {
+        grant_type: GrantType.ClientCredential,
+        scope: "profile",
+        client_secret: "clientSecret",
+        client_id: "clientId",
+      };
+
+      const body = await controller.token(
+        { ctx } as RequestWithContext,
+        tokenParams,
+      );
+
+      if (!("access_token" in body)) {
+        throw new Error("Should be Token");
+      }
+
+      // This is a debug token with just json
+      const tokenData: CreateAccessTokenParams = JSON.parse(body.access_token);
+
+      expect(tokenData.iss).toBe("https://auth.example.com/");
+      expect(tokenData.scope).toEqual("profile");
+      expect(tokenData.azp).toBe(undefined);
+      expect(tokenData.sub).toBe("id");
     });
   });
 });

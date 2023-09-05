@@ -1,6 +1,7 @@
 import { base64ToHex } from "../utils/base64";
 import {
   AuthorizationCodeGrantTypeParams,
+  ClientCredentialGrantTypeParams,
   AuthorizationResponseType,
   AuthParams,
   CodeResponse,
@@ -12,6 +13,7 @@ import { InvalidClientError } from "../errors";
 import { getClient } from "../services/clients";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import hash from "../utils/hash";
+import { nanoid } from "nanoid";
 
 export async function authorizeCodeGrant(
   env: Env,
@@ -50,5 +52,30 @@ export async function authorizeCodeGrant(
     env,
     ...state,
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
+  });
+}
+
+export async function clientCredentialsGrant(
+  env: Env,
+  params: ClientCredentialGrantTypeParams,
+): Promise<TokenResponse | CodeResponse> {
+  const client = await getClient(env, params.client_id);
+
+  if (client.clientSecret !== params.client_secret) {
+    throw new Error("Invalid secret");
+  }
+
+  const authParams: AuthParams = {
+    client_id: client.id,
+    scope: params.scope,
+    redirect_uri: "",
+  };
+
+  return generateAuthResponse({
+    env,
+    responseType: AuthorizationResponseType.TOKEN,
+    userId: client.id,
+    sid: nanoid(),
+    authParams,
   });
 }
