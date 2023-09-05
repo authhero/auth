@@ -14,12 +14,12 @@ import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { Profile } from "../../types";
 
-@Route("api/v2/users")
+@Route("api/v2")
 @Tags("users-mgmt") // what is tags?
 // TODO - need security!
 // @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
-  @Get("{userId}")
+  @Get("users/{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
@@ -48,4 +48,7 @@ export class UsersMgmtController extends Controller {
 
     return userResult;
   }
+
+  // "https://auth2.sesamy.dev/api/v2/users-by-email?email=dan%2B456%40sesamy.com",
+  //
 }
