@@ -9,13 +9,23 @@ import { Profile } from "../../types";
 @Route("api/v2/users")
 // @Security("oauth2managementApi", [""])
 @Tags("users-mgmt") // what is tags?
-export class UsersController extends Controller {
+export class UsersMgmtController extends Controller {
+  @Get("")
+  public async helloHello(
+    @Request() request: RequestWithContext,
+  ): Promise<string> {
+    console.log("in helloHello");
+    return "hello hello";
+  }
+
   @Get("{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
     // ): Promise<Profile> {
   ): Promise<string> {
+    // not actually hitting this! is already 404ing... not getting any log
+    console.log("in getUser");
     const { ctx } = request;
     const { env } = ctx;
 
