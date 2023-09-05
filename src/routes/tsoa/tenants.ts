@@ -31,17 +31,21 @@ export class TenantsController extends Controller {
     const { ctx } = request;
     const db = getDb(ctx.env);
 
-    let query;
+    let query = db.selectFrom("tenants");
 
     const permissions: string[] = ctx.state.user.permissions || [];
-    if (permissions.includes(ctx.env.READ_PERMISSION as string)) {
-      query = db.selectFrom("tenants");
-    } else {
-      query = db
-        .selectFrom("tenants")
-        .innerJoin("members", "tenants.id", "members.tenantId")
-        .where("members.sub", "=", ctx.state.user.sub)
-        .selectAll("tenants");
+    if (!permissions.includes(ctx.env.READ_PERMISSION as string)) {
+      const memberTenants = await db
+        .selectFrom("members")
+        .where("sub", "=", ctx.state.user.sub)
+        .select("tenantId")
+        .execute();
+
+      query = query.where(
+        "id",
+        "in",
+        memberTenants.map((mt) => mt.tenantId),
+      );
     }
 
     const { data, range } = await executeQuery<"tenants">(query, rangeRequest);
