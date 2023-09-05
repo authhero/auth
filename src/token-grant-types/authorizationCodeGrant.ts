@@ -63,11 +63,14 @@ export async function clientCredentialsGrant(
   const client = await getClient(env, params.client_id);
 
   // Validate the secret
-  const secretHash = await hash(params.client_secret);
+  // const secretHash = await hash(params.client_secret);
+  // surely we should do that? what are we actually storing in the db? unhashed?
+
   // this is what the token service has...
   // if (!client.secrets?.some((secret) => secret.hash === secretHash)) {
   // I'm guessing this!
-  if (client.clientSecret !== secretHash) {
+  // if (client.clientSecret !== secretHash) {
+  if (client.clientSecret !== params.client_secret) {
     throw new Error("Invalid secret");
   }
 
