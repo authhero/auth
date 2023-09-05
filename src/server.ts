@@ -42,7 +42,7 @@ const server = {
 
       switch (body.queueName) {
         case "users":
-          await handleUserEvent(env, body.tenantId, body.email);
+          await handleUserEvent(env, body.tenantId, body.email, body.event);
           break;
         default:
           console.log(`Unknown message: ${JSON.stringify(message.body)}`);

@@ -20,9 +20,8 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { SqlConnection } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
-import { UnauthorizedError } from "../../errors";
-import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
+import { executeQuery } from "../../helpers/sql";
 
 @Route("tenants/{tenantId}/connections")
 @Tags("connections")
@@ -32,29 +31,22 @@ export class ConnectionsController extends Controller {
   public async listConnections(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
-    @Header("range") range?: string,
+    @Header("range") rangeRequest?: string,
   ): Promise<SqlConnection[]> {
     const { ctx } = request;
 
-    const parsedRange = parseRange(range);
-
     const db = getDb(ctx.env);
-    const connections = await db
+    const query = db
       .selectFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
-      .selectAll()
-      .offset(parsedRange.from)
-      .limit(parsedRange.limit)
-      .execute();
+      .where("connections.tenantId", "=", tenantId);
 
-    if (parsedRange.entity) {
-      this.setHeader(
-        headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
-      );
+    const { data, range } = await executeQuery(query, rangeRequest);
+
+    if (range) {
+      this.setHeader(headers.contentRange, range);
     }
 
-    return connections;
+    return data;
   }
 
   @Get("{id}")

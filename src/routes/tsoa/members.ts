@@ -21,6 +21,7 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { Member } from "../../types/sql";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
+import { executeQuery } from "../../helpers/sql";
 
 @Route("tenants/{tenantId}/members")
 @Tags("members")
@@ -30,29 +31,22 @@ export class MembersController extends Controller {
   public async listMembers(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
-    @Header("range") range?: string,
+    @Header("range") rangeRequest?: string,
   ): Promise<Member[]> {
     const { ctx } = request;
 
-    const parsedRange = parseRange(range);
-
     const db = getDb(ctx.env);
-    const members = await db
+    const query = db
       .selectFrom("members")
-      .where("members.tenantId", "=", tenantId)
-      .selectAll()
-      .offset(parsedRange.from)
-      .limit(parsedRange.limit)
-      .execute();
+      .where("members.tenantId", "=", tenantId);
 
-    if (parsedRange.entity) {
-      this.setHeader(
-        headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
-      );
+    const { data, range } = await executeQuery(query, rangeRequest);
+
+    if (range) {
+      this.setHeader(headers.contentRange, range);
     }
 
-    return members;
+    return data;
   }
 
   @Get("{id}")

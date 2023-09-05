@@ -20,8 +20,8 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
-import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
+import { executeQuery } from "../../helpers/sql";
 
 @Route("tenants/{tenantId}/applications")
 @Tags("applications")
@@ -31,29 +31,22 @@ export class ApplicationsController extends Controller {
   public async listApplications(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
-    @Header("range") range?: string,
+    @Header("range") rangeRequest?: string,
   ): Promise<Application[]> {
     const { ctx } = request;
 
-    const parsedRange = parseRange(range);
-
     const db = getDb(ctx.env);
-    const applications = await db
+    const query = db
       .selectFrom("applications")
-      .where("applications.tenantId", "=", tenantId)
-      .selectAll()
-      .offset(parsedRange.from)
-      .limit(parsedRange.limit)
-      .execute();
+      .where("applications.tenantId", "=", tenantId);
 
-    if (parsedRange.entity) {
-      this.setHeader(
-        headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${parsedRange.limit}`,
-      );
+    const { data, range } = await executeQuery(query, rangeRequest);
+
+    if (range) {
+      this.setHeader(headers.contentRange, range);
     }
 
-    return applications;
+    return data;
   }
 
   @Get("{id}")
