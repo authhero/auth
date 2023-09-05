@@ -40,6 +40,7 @@ export interface ClientCredentialGrantTypeParams {
   scope: string;
   client_secret: string;
   client_id: string;
+  audience?: string;
 }
 
 export interface PasswordlessGrantTypeParams {
