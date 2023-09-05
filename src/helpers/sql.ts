@@ -1,4 +1,4 @@
-import { SelectQueryBuilder } from "kysely";
+import { Kysely, SelectQueryBuilder } from "kysely";
 import { parseRange } from "./content-range";
 import { Database } from "../types";
 
