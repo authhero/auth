@@ -61,28 +61,9 @@ export async function clientCredentialsGrant(
 ): Promise<TokenResponse | CodeResponse> {
   const client = await getClient(env, params.client_id);
 
-  // Validate the secret
-  // const secretHash = await hash(params.client_secret);
-  // surely we should do that? what are we actually storing in the db? unhashed?
-
-  // this is what the token service has...
-  // if (!client.secrets?.some((secret) => secret.hash === secretHash)) {
-  // I'm guessing this!
-  // if (client.clientSecret !== secretHash) {
   if (client.clientSecret !== params.client_secret) {
     throw new Error("Invalid secret");
   }
-
-  // Validate the scopes
-  // we don't have scopes on auth2 do we?
-  // await checkScopes({
-  //   env,
-  //   client,
-  //   requestedScopes: params.scope.split(" "),
-  // });
-
-  // same... we don't have this right?
-  // const permissions = await getPermissions({ env, client });
 
   const authParams: AuthParams = {
     client_id: client.id,
