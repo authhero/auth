@@ -10,20 +10,20 @@ import { Profile } from "../../types";
 // @Security("oauth2managementApi", [""])
 @Tags("users-mgmt") // what is tags?
 export class UsersController extends Controller {
-  @Get("")
   @Get("{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
     @Path("userId") userId: string,
-  ): Promise<Profile> {
+    // ): Promise<Profile> {
+  ): Promise<string> {
     const { ctx } = request;
     const { env } = ctx;
 
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      // we do not get sent a tenant id
+      // .where("users.tenantId", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -33,10 +33,12 @@ export class UsersController extends Controller {
     }
 
     // Fetch the user from durable object
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
+    // const user = env.userFactory.getInstanceByName(
+    //   getId(tenantId, dbUser.email),
+    // );
 
-    return user.getProfile.query();
+    // return user.getProfile.query();
+
+    return "success";
   }
 }
