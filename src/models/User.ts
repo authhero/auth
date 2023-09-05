@@ -14,6 +14,7 @@ import {
   AuthenticationCodeExpiredError,
   NoCodeError,
   NotFoundError,
+  ConflictError,
 } from "../errors";
 import { AuthParams } from "../types/AuthParams";
 import { Env, ProfileSchema } from "../types";
@@ -27,6 +28,30 @@ const CodeSchema = z.object({
   code: z.string(),
   expireAt: z.number().optional(),
   password: z.string().optional(),
+});
+
+const UserSchema = z.object({
+  email: z.string(),
+  tenantId: z.string(),
+  id: z.string().optional(),
+  created_at: z.string().optional(),
+  modified_at: z.string().optional(),
+  given_name: z.string().optional(),
+  family_name: z.string().optional(),
+  nickname: z.string().optional(),
+  name: z.string().optional(),
+  picture: z.string().optional(),
+  locale: z.string().optional(),
+  connections: z
+    .array(
+      z.object({
+        name: z.string(),
+        profile: z
+          .record(z.union([z.string(), z.boolean(), z.number()]))
+          .optional(),
+      }),
+    )
+    .optional(),
 });
 
 const MAX_LOGS_LENGTH = 500;
@@ -250,6 +275,24 @@ export const userRouter = router({
 
     return result;
   }),
+  createUser: publicProcedure
+    .input(UserSchema)
+    .mutation(async ({ input, ctx }) => {
+      let existingProfile = await getProfile(ctx.state.storage);
+
+      if (existingProfile) {
+        throw new ConflictError();
+      }
+
+      const profile = await updateProfile(ctx, input);
+
+      await writeLog(ctx.state.storage, {
+        category: "update",
+        message: "User created",
+      });
+
+      return profile;
+    }),
   delete: publicProcedure.mutation(async ({ ctx }) => {
     const profile = await getProfile(ctx.env.storage);
 
@@ -302,31 +345,7 @@ export const userRouter = router({
       return profile;
     }),
   patchProfile: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        tenantId: z.string(),
-        id: z.string().optional(),
-        created_at: z.string().optional(),
-        modified_at: z.string().optional(),
-        given_name: z.string().optional(),
-        family_name: z.string().optional(),
-        nickname: z.string().optional(),
-        name: z.string().optional(),
-        picture: z.string().optional(),
-        locale: z.string().optional(),
-        connections: z
-          .array(
-            z.object({
-              name: z.string(),
-              profile: z
-                .record(z.union([z.string(), z.boolean(), z.number()]))
-                .optional(),
-            }),
-          )
-          .optional(),
-      }),
-    )
+    .input(UserSchema)
     .mutation(async ({ input, ctx }) => {
       const profile = await updateProfile(ctx, input);
 
