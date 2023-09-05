@@ -10,6 +10,7 @@ import {
   passwordGrant,
   passwordlessGrant,
   pkceAuthorizeCodeGrant,
+  clientCredentialsGrant,
 } from "../../token-grant-types";
 import { RequestWithContext } from "../../types";
 
@@ -37,7 +38,7 @@ export class TokenRoutes extends Controller {
           return pkceAuthorizeCodeGrant(ctx.env, this, body);
         }
       case GrantType.ClientCredential:
-        throw new Error("Not implemented");
+        return clientCredentialsGrant(ctx.env, body);
       case GrantType.Password:
         return passwordGrant(ctx, body);
       case GrantType.Passwordless:

@@ -1,6 +1,7 @@
 import { base64ToHex } from "../utils/base64";
 import {
   AuthorizationCodeGrantTypeParams,
+  ClientCredentialGrantTypeParams,
   AuthorizationResponseType,
   AuthParams,
   CodeResponse,
@@ -12,6 +13,7 @@ import { InvalidClientError } from "../errors";
 import { getClient } from "../services/clients";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import hash from "../utils/hash";
+import { nanoid } from "nanoid";
 
 export async function authorizeCodeGrant(
   env: Env,
@@ -50,5 +52,70 @@ export async function authorizeCodeGrant(
     env,
     ...state,
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
+  });
+}
+
+export async function clientCredentialsGrant(
+  env: Env,
+  params: ClientCredentialGrantTypeParams,
+  // on token service this is | Null instead...
+): Promise<TokenResponse | CodeResponse> {
+  const client = await getClient(env, params.client_id);
+
+  // Validate the secret
+  const secretHash = await hash(params.client_secret);
+  // this is what the token service has...
+  // if (!client.secrets?.some((secret) => secret.hash === secretHash)) {
+  // I'm guessing this!
+  if (client.clientSecret !== secretHash) {
+    throw new Error("Invalid secret");
+  }
+
+  // Validate the scopes
+  // we don't have scopes on auth2 do we?
+  // await checkScopes({
+  //   env,
+  //   client,
+  //   requestedScopes: params.scope.split(" "),
+  // });
+
+  // same... we don't have this right?
+  // const permissions = await getPermissions({ env, client });
+
+  // no idea here!
+  // return generateTokens({
+  //   env,
+  //   userId: client.id,
+  //   authParams: {
+  //     client_id: client.id,
+  //     vendorId: client.vendorId,
+  //     // permissions,
+  //     // this will just echo back whatever we request?
+  //     scope: params.scope,
+  //     redirect_uri: "",
+  //   },
+  //   sid: nanoid(),
+  //   responseType: AuthorizationResponseType.TOKEN,
+  // });
+
+  // const state: {
+  //   userId: string;
+  //   authParams: AuthParams;
+  //   user: Profile;
+  //   sid: string;
+  // } = JSON.parse(stateString);
+
+  const authParams: AuthParams = {
+    client_id: client.id,
+    scope: params.scope,
+    redirect_uri: "",
+  };
+
+  return generateAuthResponse({
+    env,
+    responseType: AuthorizationResponseType.TOKEN,
+    userId: client.id,
+    sid: nanoid(),
+    authParams,
   });
 }
