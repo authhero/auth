@@ -14,7 +14,7 @@ export async function executeQuery<T extends keyof Database>(
     .limit(parsedRange.limit)
     .execute();
 
-  if (!parsedRange) {
+  if (!parsedRange.entity) {
     return { data };
   }
 
