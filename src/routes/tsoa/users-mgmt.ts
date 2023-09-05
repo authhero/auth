@@ -11,16 +11,6 @@ import { Profile } from "../../types";
 // TODO - need security!
 // @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
-  @Get("")
-  public async helloHello(
-    @Request() request: RequestWithContext,
-  ): Promise<string> {
-    console.log("in helloHello");
-
-    // nice! this route works
-    return "hello hello";
-  }
-
   @Get("{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
