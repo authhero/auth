@@ -46,7 +46,8 @@ export class UsersMgmtController extends Controller {
     }
 
     // I can find the user by querying the planetscale database
-    const tenantId = "breakit";
+    // but I need to suffix breakit id for durable object?
+    const tenantId = "JTnV3E4M59SpxiIhhXf6s";
 
     console.log("dbUser", dbUser);
     // Fetch the user from durable object
