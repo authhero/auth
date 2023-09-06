@@ -19,10 +19,7 @@ export class UsersMgmtController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    // get tenantId from header tenant-id
     const tenantId = request.headers["tenant-id"];
-    // headers is of type any! 8-0  - can I fix this?
-    // should be string | string[] | undefined - like Nextjs
 
     if (!tenantId) throw new Error("tenant-id header is required");
 
