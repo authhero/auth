@@ -1,8 +1,10 @@
 const fs = require("fs");
 const readline = require("readline");
+const Papa = require("papaparse");
 
-const token = "Add token here...";
-const tenantId = "AH_1eG1-Ouam8jRlSd1fI";
+const token = "add token here...";
+const tenantId = "YH0yxCXqdc-UuPD_1MqSY";
+const apiUrl = "https://auth2.sesamy.com";
 
 async function postUser(user) {
   const body = JSON.stringify({
@@ -18,23 +20,39 @@ async function postUser(user) {
     modifiedAt: user.updated_at,
   });
 
-  const response = await fetch(
-    `https://auth2.sesamy.dev/tenants/${tenantId}/users`,
-    {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-      body,
+  const response = await fetch(`${apiUrl}/tenants/${tenantId}/users`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
     },
-  );
+    body,
+  });
 
   if (!response.ok) {
     console.log(
       `Status: ${response.status}, with error ${await response.text()}`,
     );
+  } else {
+    console.log(".");
   }
+}
+
+function getCsvUsers(filePath) {
+  const csvString = fs.readFileSync(filePath, "utf8");
+
+  const { data } = Papa.parse(csvString, {
+    header: true,
+  });
+
+  return data.map((user) => ({
+    name: user.fullName,
+    email: user.email,
+    tags: [],
+
+    id: user.id,
+    createdAt: user.createdAt,
+  }));
 }
 
 async function importUsers(filePath) {
@@ -58,4 +76,17 @@ async function importUsers(filePath) {
   }
 }
 
-importUsers("./data/auth0-dev.json");
+async function importUsersFromCsv(file) {
+  const users = getCsvUsers(file);
+
+  for await (const user of users) {
+    try {
+      await postUser(user);
+    } catch (error) {
+      console.error(`Failed to parse line: ${user}. Error: ${error.message}`);
+    }
+  }
+}
+
+// importUsers("./data/auth0-dev.json");
+importUsersFromCsv("./data/kvartal-auth0.csv");
