@@ -1,4 +1,3 @@
-// not sure what to call this, or where to place it! 8-)
 import {
   Controller,
   Get,
@@ -50,11 +49,11 @@ export class UsersMgmtController extends Controller {
     return userResult;
   }
 
-  // "https://auth2.sesamy.dev/api/v2/users-by-email?email=dan%2B456%40sesamy.com",
   @Get("users-by-email")
   public async getUserByEmail(
     @Request() request: RequestWithContext,
     @Query("email") userEmail: string,
+    @Header("tenant-id") tenantId: string,
   ): Promise<Profile> {
     const { ctx } = request;
     const { env } = ctx;
@@ -62,6 +61,7 @@ export class UsersMgmtController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
       .where("users.email", "=", userEmail)
       .selectAll()
       .executeTakeFirst();
