@@ -1,5 +1,6 @@
 import { Env, SqlConnectionSchema, PartialClient } from "../types";
 import { getDb } from "../services/db";
+import { app } from "src/app";
 
 export async function updateTenantClientsInKV(env: Env, tenantId: string) {
   const db = getDb(env);
@@ -95,6 +96,7 @@ export async function updateClientInKV(env: Env, applicationId: string) {
       secondaryColor: application.secondaryColor,
       senderEmail: application.senderEmail,
       senderName: application.senderName,
+      language: application.language,
     }),
   };
 
