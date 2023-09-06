@@ -4,15 +4,19 @@ import {
   Query,
   Request,
   Route,
+  Post,
   Tags,
   Path,
   Header,
+  SuccessResponse,
+  Body,
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { Profile } from "../../types";
+import { User } from "../../types/sql/User";
 
 @Route("api/v2")
 @Tags("users-mgmt") // what is tags?
@@ -77,5 +81,28 @@ export class UsersMgmtController extends Controller {
     const userResult = user.getProfile.query();
 
     return userResult;
+  }
+
+  @Post("users")
+  @SuccessResponse(201, "Created")
+  public async postUser(
+    @Request() request: RequestWithContext,
+    @Header("tenant-id") tenantId: string,
+    @Body()
+    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id"> &
+      Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>,
+  ): Promise<Profile> {
+    const { ctx } = request;
+
+    const userInstance = ctx.env.userFactory.getInstanceByName(
+      getId(tenantId, user.email),
+    );
+
+    const result: Profile = await userInstance.createUser.mutate({
+      ...user,
+      connections: [],
+      tenantId,
+    });
+    return result;
   }
 }
