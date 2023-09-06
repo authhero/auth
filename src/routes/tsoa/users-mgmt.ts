@@ -94,18 +94,6 @@ export class UsersMgmtController extends Controller {
   ): Promise<Profile> {
     const { ctx } = request;
 
-    /*
-      we get this POSTed from auth0/node
-
-      email: "foo1@bar.com",
-      password: "test-1234",
-      email_verified: true,
-      verify_email: false,
-      connection: "Username-Password-Authentication",
-      given_name: "firstName",
-      family_name: "lastName"
-    */
-
     const userInstance = ctx.env.userFactory.getInstanceByName(
       getId(tenantId, user.email),
     );
