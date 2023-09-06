@@ -1,5 +1,13 @@
 // not sure what to call this, or where to place it! 8-)
-import { Controller, Get, Request, Route, Tags, Path } from "@tsoa/runtime";
+import {
+  Controller,
+  Get,
+  Request,
+  Route,
+  Tags,
+  Path,
+  Header,
+} from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
@@ -15,13 +23,10 @@ export class UsersMgmtController extends Controller {
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
+    @Header("tenant-id") tenantId: string,
   ): Promise<Profile> {
     const { ctx } = request;
     const { env } = ctx;
-
-    const tenantId = request.headers["tenant-id"];
-
-    if (!tenantId) throw new Error("tenant-id header is required");
 
     const db = getDb(env);
     const dbUser = await db
