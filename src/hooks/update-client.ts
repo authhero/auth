@@ -1,6 +1,5 @@
 import { Env, SqlConnectionSchema, PartialClient } from "../types";
 import { getDb } from "../services/db";
-import { app } from "src/app";
 
 export async function updateTenantClientsInKV(env: Env, tenantId: string) {
   const db = getDb(env);
@@ -37,31 +36,25 @@ function removeNullProperties<T = any>(obj: Record<string, any>) {
 
 export async function updateClientInKV(env: Env, applicationId: string) {
   const db = getDb(env);
+
   const application = await db
     .selectFrom("applications")
-    .innerJoin("tenants", "applications.tenantId", "tenants.id")
-    .select([
-      "applications.id",
-      "applications.name",
-      "applications.tenantId",
-      "applications.allowedWebOrigins",
-      "applications.allowedCallbackUrls",
-      "applications.allowedLogoutUrls",
-      "applications.clientSecret",
-      "applications.emailValidation",
-      "tenants.senderEmail",
-      "tenants.senderName",
-      "tenants.audience",
-      "tenants.language",
-      "tenants.logo",
-      "tenants.primaryColor",
-      "tenants.secondaryColor",
-    ])
-    .where("applications.id", "=", applicationId)
+    .selectAll()
+    .where("id", "=", applicationId)
     .executeTakeFirst();
 
   if (!application) {
     throw new Error("Client not found");
+  }
+
+  const tenant = await db
+    .selectFrom("tenants")
+    .selectAll()
+    .where("id", "=", application.tenantId)
+    .executeTakeFirst();
+
+  if (!tenant) {
+    throw new Error("Tenant not found");
   }
 
   const connections = await db
@@ -79,24 +72,24 @@ export async function updateClientInKV(env: Env, applicationId: string) {
   const client: PartialClient = {
     id: application.id,
     name: application.name,
-    audience: application.audience,
     connections: connections.map((connection) =>
       SqlConnectionSchema.parse(removeNullProperties(connection)),
     ),
     domains,
-    tenantId: application.tenantId,
+    tenantId: tenant.id,
     allowedCallbackUrls: splitUrls(application.allowedCallbackUrls),
     allowedLogoutUrls: splitUrls(application.allowedLogoutUrls),
     allowedWebOrigins: splitUrls(application.allowedWebOrigins),
     emailValidation: application.emailValidation,
     clientSecret: application.clientSecret,
     tenant: removeNullProperties({
-      logo: application.logo,
-      primaryColor: application.primaryColor,
-      secondaryColor: application.secondaryColor,
-      senderEmail: application.senderEmail,
-      senderName: application.senderName,
-      language: application.language,
+      audience: tenant.audience,
+      logo: tenant.logo,
+      primaryColor: tenant.primaryColor,
+      secondaryColor: tenant.secondaryColor,
+      senderEmail: tenant.senderEmail,
+      senderName: tenant.senderName,
+      language: tenant.language,
     }),
   };
 

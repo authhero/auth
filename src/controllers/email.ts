@@ -25,7 +25,7 @@ export async function sendEmailValidation(
 
   const templateString = await response.text();
 
-  const language = client.language || "en";
+  const language = client.tenant.language || "en";
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -72,7 +72,7 @@ export async function sendCode(
 
   const templateString = await response.text();
 
-  const language = client.language || "en";
+  const language = client.tenant.language || "en";
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
