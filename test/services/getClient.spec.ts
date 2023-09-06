@@ -19,8 +19,8 @@ describe("getClient", () => {
       allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
       allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
       emailValidation: "enabled",
-      audience: "audience",
       tenant: {
+        audience: "audience",
         senderEmail: "senderEmail",
         senderName: "senderName",
       },
@@ -101,10 +101,10 @@ describe("getClient", () => {
       allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
       allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
       emailValidation: "enabled",
-      audience: "audience",
       tenant: {
         senderEmail: "senderEmail",
         senderName: "senderName",
+        audience: "audience",
       },
       connections: [
         {
