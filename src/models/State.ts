@@ -1,8 +1,9 @@
 import { createProxy, Context } from "trpc-durable-objects";
 import { initTRPC } from "@trpc/server";
 import { z } from "zod";
+import { Env } from "../types";
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context<Env>>().create();
 
 const publicProcedure = t.procedure;
 

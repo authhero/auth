@@ -58,7 +58,7 @@ const MAX_LOGS_LENGTH = 500;
 
 type Code = z.infer<typeof CodeSchema>;
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context<Env>>().create();
 
 const publicProcedure = t.procedure;
 
@@ -143,7 +143,7 @@ async function writeLog(
 
 // Stores information about the current operation and ensures that the user has an id.
 async function updateProfile(
-  ctx: Context,
+  ctx: Context<Env>,
   profile: Partial<Profile> & Pick<Profile, "tenantId" | "email">,
 ) {
   let existingProfile = await getProfile(ctx.state.storage);
@@ -294,7 +294,7 @@ export const userRouter = router({
       return profile;
     }),
   delete: publicProcedure.mutation(async ({ ctx }) => {
-    const profile = await getProfile(ctx.env.storage);
+    const profile = await getProfile(ctx.state.storage);
 
     if (!profile?.tenantId) {
       throw new NotFoundError();
