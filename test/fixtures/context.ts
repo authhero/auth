@@ -17,7 +17,7 @@ import { userRouter } from "../../src/models/User";
 const caller = userRouter.createCaller({
   req: new Request("http://localhost:8787"),
   resHeaders: new Headers(),
-  env: {},
+  env: {} as Env,
   state: {} as DurableObjectState,
 });
 
@@ -46,7 +46,6 @@ export const client: Client = {
   allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
   allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
   emailValidation: "enabled",
-
   tenant: {
     senderEmail: "senderEmail",
     senderName: "senderName",

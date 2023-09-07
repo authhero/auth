@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import "isomorphic-fetch";
 import { QueueMessage } from "../../src/services/events";
 import { userRouter } from "../../src/models/User";
+import { Env } from "../../src/types";
 
 function createCaller(storage: any) {
   return userRouter.createCaller({
@@ -12,7 +13,7 @@ function createCaller(storage: any) {
       USERS_QUEUE: {
         send: async () => {},
       } as unknown as Queue<QueueMessage>,
-    },
+    } as Env,
     state: {
       storage: storage as unknown as DurableObjectStorage,
     } as DurableObjectState,
