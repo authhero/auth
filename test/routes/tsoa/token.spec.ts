@@ -38,8 +38,8 @@ describe("token", () => {
     allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
     allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
     emailValidation: "enabled",
-    audience: "audience",
     tenant: {
+      audience: "audience",
       senderEmail: "senderEmail",
       senderName: "senderName",
     },

@@ -18,6 +18,7 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
+import { updateTenantClientsInKV } from "../../hooks/update-client";
 
 @Route("tenants")
 @Tags("tenants")
@@ -89,9 +90,9 @@ export class TenantsController extends Controller {
     @Path("id") id: string,
     @Body() body: Omit<Tenant, "id" | "createdAt" | "modifiedAt">,
   ): Promise<Tenant | string> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const db = getDb(ctx.env);
+    const db = getDb(env);
     const tenant = {
       ...body,
       id,
@@ -113,6 +114,8 @@ export class TenantsController extends Controller {
         .where("id", "=", tenant.id)
         .execute();
     }
+
+    await updateTenantClientsInKV(env, id);
 
     this.setStatus(201);
     return tenant;
@@ -148,6 +151,8 @@ export class TenantsController extends Controller {
 
     await db.insertInto("tenants").values(tenant).execute();
     await db.insertInto("members").values(adminUser).execute();
+
+    await updateTenantClientsInKV(ctx.env, tenant.id);
 
     this.setStatus(201);
     return tenant;
