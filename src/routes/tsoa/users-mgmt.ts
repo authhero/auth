@@ -19,7 +19,7 @@ import { Profile } from "../../types";
 import { User } from "../../types/sql/User";
 
 @Route("api/v2")
-@Tags("users-mgmt") // what is tags?
+@Tags("management-api")
 // TODO - need security!
 // @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
