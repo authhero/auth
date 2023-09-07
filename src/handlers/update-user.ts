@@ -7,32 +7,24 @@ export async function handleUserEvent(
   env: Env,
   tenantId: string,
   email: string,
+  userId: string,
   event: UserEvent,
 ) {
   switch (event) {
     case UserEvent.userDeleted:
-      return deleteUser(env, tenantId, email);
+      return deleteUser(env, tenantId, userId);
     default:
       return updateUser(env, tenantId, email);
   }
 }
 
-async function deleteUser(env: Env, tenantId: string, email: string) {
-  const userId = getId(tenantId, email);
-  const userInstance = User.getInstanceByName(env.USER, userId);
-  const profile = await userInstance.getProfile.query();
-
-  if (!profile || !profile.email) {
-    console.log("No profile found for user", userId);
-    return;
-  }
-
+async function deleteUser(env: Env, tenantId: string, userId: string) {
   const db = getDb(env);
 
   await db
     .deleteFrom("users")
     .where("tenantId", "=", tenantId)
-    .where("email", "=", email)
+    .where("id", "=", userId)
     .execute();
 }
 

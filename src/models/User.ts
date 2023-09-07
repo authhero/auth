@@ -189,6 +189,7 @@ async function updateProfile(
   await sendUserEvent(
     ctx.env,
     `${profile.tenantId}|${profile.email}`,
+    updatedProfile.id,
     existingProfile ? UserEvent.userUpdated : UserEvent.userCreated,
   );
 
@@ -305,6 +306,7 @@ export const userRouter = router({
     await sendUserEvent(
       ctx.env,
       `${profile.tenantId}|${profile.email}`,
+      profile.id,
       UserEvent.userDeleted,
     );
   }),
