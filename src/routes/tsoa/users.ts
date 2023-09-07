@@ -157,8 +157,8 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>,
+    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id" | "tags"> &
+      Partial<Pick<User, "createdAt" | "modifiedAt" | "id" | "tags">>,
   ): Promise<Profile> {
     const { ctx } = request;
 
@@ -174,14 +174,12 @@ export class UsersController extends Controller {
   }
 
   @Delete("{userId}")
-  @SuccessResponse(201, "Created")
   public async deleteUser(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Path("userId") userId: string,
-  ): Promise<Profile> {
-    const { ctx } = request;
-    const { env } = ctx;
+  ) {
+    const { env } = request.ctx;
 
     const db = getDb(env);
     const dbUser = await db
@@ -195,11 +193,26 @@ export class UsersController extends Controller {
       throw new NotFoundError();
     }
 
-    // Fetch the user from durable object
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
+    try {
+      // Fetch the user from durable object
+      const user = env.userFactory.getInstanceByName(
+        getId(tenantId, dbUser.email),
+      );
 
-    return user.delete.mutate();
+      await user.delete.mutate();
+    } catch (err: any) {
+      if (err.message === "Not Found") {
+        // If a user is cleared in DO but still available in sql. Should never happen
+        await db
+          .deleteFrom("users")
+          .where("users.tenantId", "=", tenantId)
+          .where("users.id", "=", userId)
+          .execute();
+      } else {
+        throw err;
+      }
+    }
+
+    return "OK";
   }
 }
