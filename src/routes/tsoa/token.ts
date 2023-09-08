@@ -40,7 +40,7 @@ export class TokenRoutes extends Controller {
       case GrantType.ClientCredential:
         return clientCredentialsGrant(ctx.env, body);
       case GrantType.Password:
-        return passwordGrant(ctx, body);
+        return passwordGrant(ctx.env, body);
       case GrantType.Passwordless:
         return passwordlessGrant(ctx.env, body);
     }

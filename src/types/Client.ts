@@ -64,7 +64,6 @@ export const BaseClientSchema = z.object({
   tenantId: z.string(),
   clientSecret: z.string(),
   tenant: z.object({
-    // this should fix /oauth/token issue?
     audience: z.string().optional(),
     logo: z.string().optional(),
     primaryColor: z.string().optional(),

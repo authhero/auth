@@ -25,6 +25,7 @@ export async function passwordlessGrant(
   );
 
   const token = await tokenFactory.createAccessToken({
+    aud: params.audience,
     scope: params.scope || "",
     sub: profile.id,
     iss: env.ISSUER,

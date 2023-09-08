@@ -77,6 +77,7 @@ export async function generateTokens(
   );
 
   const accessToken = await tokenFactory.createAccessToken({
+    aud: authParams.audience,
     scope: authParams.scope || "",
     sub: userId,
     iss: env.ISSUER,
