@@ -1,4 +1,3 @@
-import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
 import { PasswordGrantTypeParams, TokenResponse } from "../types/Token";
 import { getCertificate } from "../models/Certificate";
@@ -6,12 +5,12 @@ import { TokenFactory } from "../services/token-factory";
 import { getClient } from "../services/clients";
 
 export async function passwordGrant(
-  ctx: Context<Env>,
+  env: Env,
   params: PasswordGrantTypeParams,
 ): Promise<TokenResponse> {
-  const user = ctx.env.userFactory.getInstanceByName(params.username);
+  const user = env.userFactory.getInstanceByName(params.username);
 
-  const client = await getClient(ctx.env, params.client_id);
+  const client = await getClient(env, params.client_id);
 
   await user.validatePassword.mutate({
     password: params.password,
@@ -21,16 +20,17 @@ export async function passwordGrant(
 
   const profile = await user.getProfile.query();
 
-  const certificate = await getCertificate(ctx.env);
+  const certificate = await getCertificate(env);
   const tokenFactory = new TokenFactory(
     certificate.privateKey,
     certificate.kid,
   );
 
   const token = await tokenFactory.createAccessToken({
+    aud: params.audience,
     scope: params.scope || "",
     sub: profile.id,
-    iss: ctx.env.ISSUER,
+    iss: env.ISSUER,
   });
 
   return {
