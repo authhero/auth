@@ -10,6 +10,7 @@ import {
   Header,
   SuccessResponse,
   Body,
+  Delete,
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -29,15 +30,14 @@ export class UsersMgmtController extends Controller {
     @Path("userId") userId: string,
     @Header("tenant-id") tenantId: string,
   ): Promise<Profile> {
-    const { ctx } = request;
-    const { env } = ctx;
+    const { env } = request.ctx;
 
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
       .where("users.tenantId", "=", tenantId)
       .where("users.id", "=", userId)
-      .selectAll()
+      .select("users.email")
       .executeTakeFirst();
 
     if (!dbUser) {
@@ -48,9 +48,35 @@ export class UsersMgmtController extends Controller {
       getId(tenantId, dbUser.email),
     );
 
-    const userResult = user.getProfile.query();
+    return user.getProfile.query();
+  }
 
-    return userResult;
+  @Delete("users/{userId}")
+  @SuccessResponse(200, "Delete")
+  public async deleteUser(
+    @Request() request: RequestWithContext,
+    @Path("userId") userId: string,
+    @Header("tenant-id") tenantId: string,
+  ): Promise<Profile> {
+    const { env } = request.ctx;
+
+    const db = getDb(env);
+    const dbUser = await db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .where("users.id", "=", userId)
+      .select("users.email")
+      .executeTakeFirst();
+
+    if (!dbUser) {
+      throw new NotFoundError();
+    }
+
+    const user = env.userFactory.getInstanceByName(
+      getId(tenantId, dbUser.email),
+    );
+
+    return user.delete.mutate();
   }
 
   @Get("users-by-email")
@@ -59,15 +85,14 @@ export class UsersMgmtController extends Controller {
     @Query("email") userEmail: string,
     @Header("tenant-id") tenantId: string,
   ): Promise<Profile> {
-    const { ctx } = request;
-    const { env } = ctx;
+    const { env } = request.ctx;
 
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
       .where("users.tenantId", "=", tenantId)
       .where("users.email", "=", userEmail)
-      .selectAll()
+      .select("users.email")
       .executeTakeFirst();
 
     if (!dbUser) {
@@ -75,12 +100,10 @@ export class UsersMgmtController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      getId(dbUser.tenantId, dbUser.email),
+      getId(tenantId, dbUser.email),
     );
 
-    const userResult = user.getProfile.query();
-
-    return userResult;
+    return user.getProfile.query();
   }
 
   @Post("users")
@@ -92,17 +115,16 @@ export class UsersMgmtController extends Controller {
     user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id"> &
       Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>,
   ): Promise<Profile> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const userInstance = ctx.env.userFactory.getInstanceByName(
+    const userInstance = env.userFactory.getInstanceByName(
       getId(tenantId, user.email),
     );
 
-    const result: Profile = await userInstance.createUser.mutate({
+    return userInstance.createUser.mutate({
       ...user,
       connections: [],
       tenantId,
     });
-    return result;
   }
 }

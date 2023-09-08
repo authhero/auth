@@ -174,6 +174,7 @@ export class UsersController extends Controller {
   }
 
   @Delete("{userId}")
+  @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
