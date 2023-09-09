@@ -17,7 +17,7 @@ export default async function corsMiddleware<Env>(
   response?.headers.set(headers.accessControlAllowCredentials, "true");
   response?.headers.set(
     headers.accessControlAllowHeaders,
-    "Content-Type, Auth0-Client, Authorization, Range, tenant-id",
+    "Content-Type, Auth0-Client, Authorization, Range, Tenant-Id",
   );
   response?.headers.set(headers.accessControlExposeHeaders, "Content-Range");
   response?.headers.set(
