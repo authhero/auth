@@ -20,6 +20,8 @@ import { getId } from "../../models";
 import { Profile } from "../../types";
 import { User } from "../../types/sql/User";
 import { headers } from "../../constants";
+import { FilterSchema } from "../../types/Filter";
+import { executeQuery } from "../../helpers/sql";
 
 @Route("api/v2")
 @Tags("management-api")
@@ -39,41 +41,27 @@ export class UsersMgmtController extends Controller {
 
     let query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
 
-    // TODO - implement this?
-    // if (filterQuerystring) {
-    //   const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
+    // TODO - check this still actually works using auth0/node on the demo repo https://github.com/sesamyab/auth0-management-api-demo
+    if (filterQuerystring) {
+      const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
 
-    //   if (filter.q) {
-    //     query = query.where((eb) =>
-    //       eb.or([
-    //         eb("name", "like", `%${filter.q}%`),
-    //         eb("email", "like", `%${filter.q}%`),
-    //       ]),
-    //     );
-    //   }
-    // }
+      if (filter.q) {
+        query = query.where((eb) =>
+          eb.or([
+            eb("name", "like", `%${filter.q}%`),
+            eb("email", "like", `%${filter.q}%`),
+          ]),
+        );
+      }
+    }
 
-    // const { data, range } = await executeQuery(query, rangeRequest);
+    const { data, range } = await executeQuery(query, rangeRequest);
 
-    // if (range) {
-    //   this.setHeader(headers.contentRange, range);
-    // }
+    if (range) {
+      this.setHeader(headers.contentRange, range);
+    }
 
-    // return data.map((user) => ({
-    //   ...user,
-    //   tags: JSON.parse(user.tags || "[]"),
-    // }));
-
-    // this is to stop react-admin complaining
-    this.setHeader(headers.contentRange, "users=0-9/1362");
-
-    const dbUsersList = await db
-      .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
-      .selectAll()
-      .execute();
-
-    return dbUsersList.map((user) => ({
+    return data.map((user) => ({
       ...user,
       tags: JSON.parse(user.tags || "[]"),
     }));
