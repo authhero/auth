@@ -17,13 +17,12 @@ export default async function corsMiddleware<Env>(
   response?.headers.set(headers.accessControlAllowCredentials, "true");
   response?.headers.set(
     headers.accessControlAllowHeaders,
-    "Content-Type, Auth0-Client, Authorization, Range",
-  );
-  response?.headers.set(
-    headers.accessControlAllowHeaders,
-    "Content-Type, Auth0-Client, Authorization, Range",
+    "Content-Type, Auth0-Client, Authorization, Range, tenant-id",
   );
   response?.headers.set(headers.accessControlExposeHeaders, "Content-Range");
-
+  response?.headers.set(
+    headers.accessControlAllowMethod,
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  );
   return response;
 }

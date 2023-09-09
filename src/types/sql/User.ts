@@ -52,9 +52,9 @@ export interface BaseUser {
 }
 
 export interface User extends BaseUser {
-  tags: UserTag[];
+  tags?: UserTag[];
 }
 
 export interface SqlUser extends BaseUser {
-  tags: string;
+  tags?: string;
 }

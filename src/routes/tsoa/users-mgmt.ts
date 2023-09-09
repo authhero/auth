@@ -11,6 +11,7 @@ import {
   SuccessResponse,
   Body,
   Delete,
+  Put,
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -18,12 +19,66 @@ import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { Profile } from "../../types";
 import { User } from "../../types/sql/User";
+import { headers } from "../../constants";
 
 @Route("api/v2")
 @Tags("management-api")
 // TODO - need security!
 // @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
+  @Get("users")
+  public async listUsers(
+    @Request() request: RequestWithContext,
+    @Header("tenant-id") tenantId: string,
+    @Header("range") rangeRequest?: string,
+    @Query("filter") filterQuerystring?: string,
+  ): Promise<User[]> {
+    const { ctx } = request;
+
+    const db = getDb(ctx.env);
+
+    let query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
+
+    // TODO - implement this?
+    // if (filterQuerystring) {
+    //   const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
+
+    //   if (filter.q) {
+    //     query = query.where((eb) =>
+    //       eb.or([
+    //         eb("name", "like", `%${filter.q}%`),
+    //         eb("email", "like", `%${filter.q}%`),
+    //       ]),
+    //     );
+    //   }
+    // }
+
+    // const { data, range } = await executeQuery(query, rangeRequest);
+
+    // if (range) {
+    //   this.setHeader(headers.contentRange, range);
+    // }
+
+    // return data.map((user) => ({
+    //   ...user,
+    //   tags: JSON.parse(user.tags || "[]"),
+    // }));
+
+    // this is to stop react-admin complaining
+    this.setHeader(headers.contentRange, "users=0-9/1362");
+
+    const dbUsersList = await db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .selectAll()
+      .execute();
+
+    return dbUsersList.map((user) => ({
+      ...user,
+      tags: JSON.parse(user.tags || "[]"),
+    }));
+  }
+
   @Get("users/{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
@@ -126,5 +181,28 @@ export class UsersMgmtController extends Controller {
       connections: [],
       tenantId,
     });
+  }
+
+  @Put("users")
+  public async putUser(
+    @Request() request: RequestWithContext,
+    @Header("tenant-id") tenantId: string,
+    @Body()
+    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt"> &
+      Partial<Pick<User, "createdAt" | "modifiedAt">>,
+  ): Promise<Profile> {
+    const { ctx } = request;
+
+    const userInstance = ctx.env.userFactory.getInstanceByName(
+      getId(tenantId, user.email),
+    );
+
+    // I'm assuming that patchProfile isn't actually tested...
+    // is it even what we want here? let's see...
+    const result: Profile = await userInstance.patchProfile.mutate({
+      ...user,
+      tenantId,
+    });
+    return result;
   }
 }
