@@ -12,6 +12,7 @@ import {
   Body,
   Delete,
   Put,
+  Security,
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -25,8 +26,9 @@ import { executeQuery } from "../../helpers/sql";
 
 @Route("api/v2")
 @Tags("management-api")
-// TODO - need security!
-// @Security("oauth2managementApi", [""])
+// TODO - check with NPM lib auth0/node @ https://github.com/sesamyab/auth0-management-api-demo/ - that this can create the correct token
+// ALSO - are we checking these scopes? read:users update:users create:users delete:users
+@Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
   @Get("users")
   public async listUsers(
