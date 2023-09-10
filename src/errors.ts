@@ -113,7 +113,7 @@ export class NoCodeError extends Error {
 export class NoUserFoundError extends Error {
   status = 404;
 
-  constructor(message = "No user found") {
+  constructor(message = "No User Found") {
     super();
 
     this.message = message;

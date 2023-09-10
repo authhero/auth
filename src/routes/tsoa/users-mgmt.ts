@@ -24,6 +24,12 @@ import { headers } from "../../constants";
 import { FilterSchema } from "../../types/Filter";
 import { executeQuery } from "../../helpers/sql";
 
+export interface LinkBodyParams {
+  provider?: string;
+  connection_id?: string;
+  link_with: string;
+}
+
 @Route("api/v2")
 @Tags("management-api")
 // TODO - check with NPM lib auth0/node @ https://github.com/sesamyab/auth0-management-api-demo/ - that this can create the correct token
@@ -194,5 +200,47 @@ export class UsersMgmtController extends Controller {
       tenantId,
     });
     return result;
+  }
+
+  @Post("users/{userId}/identities")
+  public async linkUserAccount(
+    @Request() request: RequestWithContext,
+    @Header("tenant-id") tenantId: string,
+    @Body() body: LinkBodyParams,
+  ): Promise<Profile> {
+    const { env } = request.ctx;
+
+    const db = getDb(env);
+    const currentDbUser = await db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .where("users.id", "=", request.ctx.state.sub)
+      .select(["users.email"])
+      .executeTakeFirst();
+
+    if (!currentDbUser) {
+      throw new NotFoundError("Current user not found");
+    }
+
+    const linkedDbUser = await db
+      .selectFrom("users")
+      .where("users.tenantId", "=", tenantId)
+      .where("users.id", "=", body.link_with)
+      .select(["users.email"])
+      .executeTakeFirst();
+
+    if (!linkedDbUser) {
+      throw new NotFoundError("Linked user not found");
+    }
+
+    const currentUser = env.userFactory.getInstanceByName(
+      getId(tenantId, currentDbUser.email),
+    );
+
+    const linkedUser = env.userFactory.getInstanceByName(
+      getId(tenantId, linkedDbUser.email),
+    );
+
+    return currentUser.getProfile.query();
   }
 }
