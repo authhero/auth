@@ -237,7 +237,7 @@ export class UsersMgmtController extends Controller {
       getId(tenantId, currentDbUser.email),
     );
 
-    const linkeUser = env.userFactory.getInstanceByName(
+    const linkedUser = env.userFactory.getInstanceByName(
       getId(tenantId, linkedDbUser.email),
     );
 
