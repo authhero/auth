@@ -319,6 +319,40 @@ export const userRouter = router({
 
     return profile;
   }),
+  linkWithUser: publicProcedure
+    .input(
+      z.object({
+        email: z.string(),
+        linkWithEmail: z.string(),
+        tenantId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const existingProfile = await getProfile(ctx.state.storage);
+      if (!existingProfile) {
+        throw new NotFoundError();
+      }
+
+      const profile = await updateProfile(ctx, {
+        tenantId: input.tenantId,
+        email: input.email,
+        connections: [
+          {
+            name: "linked-user",
+            profile: {
+              email: input.linkWithEmail,
+            },
+          },
+        ],
+      });
+
+      await writeLog(ctx.state.storage, {
+        category: "link",
+        message: `Link with ${input.linkWithEmail}`,
+      });
+
+      return profile;
+    }),
   loginWithConnection: publicProcedure
     .input(
       z.object({

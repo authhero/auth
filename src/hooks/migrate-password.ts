@@ -116,28 +116,33 @@ export async function migratePasswordHook(
 
   console.log("Start migration");
 
-  const migrations = await db
-    .selectFrom("migrations")
-    .where("migrations.tenantId", "=", tenantId)
-    .selectAll()
-    .execute();
+  try {
+    const migrations = await db
+      .selectFrom("migrations")
+      .where("migrations.tenantId", "=", tenantId)
+      .selectAll()
+      .execute();
 
-  for (const migration of migrations) {
-    let profile;
+    for (const migration of migrations) {
+      let profile;
 
-    switch (migration.provider) {
-      case "auth0":
-        profile = await auth0login(migration, username, password);
-        break;
-      case "connectId":
-        profile = await connectIdLogin(migration, username, password);
-        break;
+      switch (migration.provider) {
+        case "auth0":
+          profile = await auth0login(migration, username, password);
+          break;
+        case "connectId":
+          profile = await connectIdLogin(migration, username, password);
+          break;
+      }
+
+      if (profile) {
+        return profile;
+      }
     }
 
-    if (profile) {
-      return profile;
-    }
+    return false;
+  } catch (err) {
+    console.log("Failed to fetch migrations");
+    return false;
   }
-
-  return false;
 }

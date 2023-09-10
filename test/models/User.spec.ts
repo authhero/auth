@@ -4,8 +4,9 @@ import "isomorphic-fetch";
 import { QueueMessage } from "../../src/services/events";
 import { userRouter } from "../../src/models/User";
 import { Env } from "../../src/types";
+import { DOStorageFixture } from "../fixtures/do-storage";
 
-function createCaller(storage: any) {
+function createCaller(storage: DOStorageFixture) {
   return userRouter.createCaller({
     req: new Request("http://localhost:8787"),
     resHeaders: new Headers(),
@@ -32,76 +33,58 @@ describe("User", () => {
   });
 
   describe("validate password", () => {
-    it("should throw an invalid password error if a user has no password", async () => {
-      try {
-        await createCaller({
-          get: async () => {
-            return bcrypt.hashSync("another password");
-          },
-        }).validatePassword({
+    it("should throw an invalid password error if a user has another password", async () => {
+      const storage = new DOStorageFixture();
+      storage.put("password-hash", bcrypt.hashSync("another password"));
+
+      await expect(
+        createCaller(storage).validatePassword({
           password: "password",
           email: "test@example.com",
           tenantId: "tenantId",
-        });
+        }),
+      ).rejects.toThrow("Unauthenticated");
+    });
 
-        throw new Error("Should throw");
-      } catch (err: any) {
-        if (err.message !== "Unauthenticated") {
-          throw err;
-        }
-      }
+    it("should throw an no user found if a user has no password", async () => {
+      const storage = new DOStorageFixture();
+
+      await expect(
+        createCaller(storage).validatePassword({
+          password: "password",
+          email: "test@example.com",
+          tenantId: "tenantId",
+        }),
+      ).rejects.toThrow("No User Found");
     });
 
     it("should return true if the passwords match", async () => {
-      let profile: any = {};
+      const storage = new DOStorageFixture();
+      storage.put("password-hash", bcrypt.hashSync("password"));
 
-      await createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return null;
-            case "password-hash":
-              return bcrypt.hashSync("password");
-          }
-        },
-        put: async (key: string, value: string) => {
-          profile = JSON.parse(value);
-          return;
-        },
-      }).validatePassword({
+      await createCaller(storage).validatePassword({
         password: "password",
         email: "test@example.com",
         tenantId: "tenantId",
       });
+
+      expect(storage.get("profile")).not.toBe(null);
     });
   });
 
   describe("register password", () => {
     it("should register a new password, store a new unverified connection", async () => {
-      let profile: any = {};
+      const storage = new DOStorageFixture();
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return null;
-          }
-        },
-        put: async (key: string, value: string) => {
-          switch (key) {
-            case "profile":
-              profile = JSON.parse(value);
-              break;
-          }
-          return;
-        },
-      });
+      const caller = createCaller(storage);
 
       await caller.registerPassword({
         password: "password",
         email: "test@example.com",
         tenantId: "tenantId",
       });
+
+      const profile = JSON.parse(storage.getSync("profile"));
 
       const emailConnection = profile.connections.find(
         (connection) => connection.name === "auth",
@@ -112,29 +95,17 @@ describe("User", () => {
 
   describe("patch profile", () => {
     it("should create a new user if it does not exist", async () => {
-      let profile: any = {};
+      const storage = new DOStorageFixture();
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return null;
-          }
-        },
-        put: async (key: string, value: string) => {
-          switch (key) {
-            case "profile":
-              profile = JSON.parse(value);
-          }
-          return;
-        },
-      });
+      const caller = createCaller(storage);
 
       await caller.patchProfile({
         tenantId: "tenantId",
         email: "test@example.com",
         name: "Test",
       });
+
+      const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.name).toEqual("Test");
       expect(profile.modified_at).toBe(date.toISOString());
@@ -143,24 +114,9 @@ describe("User", () => {
     });
 
     it("should create a new user with a connection with a boolean", async () => {
-      let profile: any = {};
+      const storage = new DOStorageFixture();
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return null;
-          }
-        },
-        put: async (key: string, value: string) => {
-          switch (key) {
-            case "profile":
-              profile = JSON.parse(value);
-          }
-          return;
-        },
-      });
-
+      const caller = createCaller(storage);
       await caller.patchProfile({
         tenantId: "tenantId",
         email: "test@example.com",
@@ -175,35 +131,26 @@ describe("User", () => {
         ],
       });
 
+      const profile = JSON.parse(storage.getSync("profile"));
       expect(profile.connections[0].profile.email_verified).toBe(true);
     });
 
     it("should add a connection to an existing user", async () => {
-      let profile: any = {};
+      const storage = new DOStorageFixture();
+      storage.put(
+        "profile",
+        JSON.stringify({
+          id: "id",
+          name: "Test",
+          email: "test@example.com",
+          tenantId: "tenantId",
+          created_at: "2021-01-01T00:00:00.000Z",
+          modified_at: "2021-01-01T00:00:00.000Z",
+          connections: [],
+        }),
+      );
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return JSON.stringify({
-                id: "id",
-                name: "Test",
-                email: "test@example.com",
-                tenantId: "tenantId",
-                created_at: "2021-01-01T00:00:00.000Z",
-                modified_at: "2021-01-01T00:00:00.000Z",
-                connections: [],
-              });
-          }
-        },
-        put: async (key: string, value: string) => {
-          switch (key) {
-            case "profile":
-              profile = JSON.parse(value);
-          }
-          return;
-        },
-      });
+      const caller = createCaller(storage);
 
       await caller.patchProfile({
         tenantId: "tenantId",
@@ -220,6 +167,8 @@ describe("User", () => {
         ],
       });
 
+      const profile = JSON.parse(storage.getSync("profile"));
+
       expect(profile.name).toEqual("Test");
       expect(profile.modified_at).toBe(date.toISOString());
       expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
@@ -230,38 +179,28 @@ describe("User", () => {
     });
 
     it("should validate a connection to an existing user", async () => {
-      let profile: any = {};
+      const storage = new DOStorageFixture();
+      storage.put(
+        "profile",
+        JSON.stringify({
+          id: "id",
+          name: "Test",
+          email: "test@example.com",
+          tenantId: "tenantId",
+          created_at: "2021-01-01T00:00:00.000Z",
+          modified_at: "2021-01-01T00:00:00.000Z",
+          connections: [
+            {
+              name: "auth",
+              profile: {
+                validated: false,
+              },
+            },
+          ],
+        }),
+      );
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return JSON.stringify({
-                id: "id",
-                name: "Test",
-                email: "test@example.com",
-                tenantId: "tenantId",
-                created_at: "2021-01-01T00:00:00.000Z",
-                modified_at: "2021-01-01T00:00:00.000Z",
-                connections: [
-                  {
-                    name: "auth",
-                    profile: {
-                      validated: false,
-                    },
-                  },
-                ],
-              });
-          }
-        },
-        put: async (key: string, value: string) => {
-          switch (key) {
-            case "profile":
-              profile = JSON.parse(value);
-          }
-          return;
-        },
-      });
+      const caller = createCaller(storage);
 
       await caller.patchProfile({
         tenantId: "tenantId",
@@ -276,6 +215,8 @@ describe("User", () => {
         ],
       });
 
+      const profile = JSON.parse(storage.getSync("profile"));
+
       expect(profile.name).toEqual("Test");
       expect(profile.modified_at).toBe(date.toISOString());
       expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
@@ -284,36 +225,28 @@ describe("User", () => {
     });
 
     it("should add a a name to an existing user", async () => {
-      let profile: any = {};
+      const storage = new DOStorageFixture();
+      storage.put(
+        "profile",
+        JSON.stringify({
+          id: "id",
+          email: "test@example.com",
+          tenantId: "tenantId",
+          created_at: "2021-01-01T00:00:00.000Z",
+          modified_at: "2021-01-01T00:00:00.000Z",
+          connections: [],
+        }),
+      );
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return JSON.stringify({
-                id: "id",
-                email: "test@example.com",
-                tenantId: "tenantId",
-                created_at: "2021-01-01T00:00:00.000Z",
-                modified_at: "2021-01-01T00:00:00.000Z",
-                connections: [],
-              });
-          }
-        },
-        put: async (key: string, value: string) => {
-          switch (key) {
-            case "profile":
-              profile = JSON.parse(value);
-          }
-          return;
-        },
-      });
+      const caller = createCaller(storage);
 
       await caller.patchProfile({
         tenantId: "tenantId",
         email: "test@example.com",
         name: "Test",
       });
+
+      const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.name).toEqual("Test");
       expect(profile.modified_at).toBe(date.toISOString());
@@ -324,14 +257,8 @@ describe("User", () => {
 
   describe("validate authentication code", () => {
     it("should throw a NoCodeError if a user tries to validate a code but no code is stored", async () => {
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "authentication-code":
-              return null;
-          }
-        },
-      });
+      const storage = new DOStorageFixture();
+      const caller = createCaller(storage);
 
       await expect(
         caller.validateAuthenticationCode({
@@ -343,14 +270,15 @@ describe("User", () => {
     });
 
     it("should throw a InvalidCodeError if a user tries to validate an incorrect code", async () => {
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "authentication-code":
-              return JSON.stringify({ code: "000000" });
-          }
-        },
-      });
+      const storage = new DOStorageFixture();
+      storage.put(
+        "authentication-code",
+        JSON.stringify({
+          code: "000000",
+        }),
+      );
+
+      const caller = createCaller(storage);
 
       await expect(
         caller.validateAuthenticationCode({
@@ -362,17 +290,16 @@ describe("User", () => {
     });
 
     it("should throw a AuthenticationCodeExpiredError if a user tries to validate an incorrect code", async () => {
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "authentication-code":
-              return JSON.stringify({
-                code: "123456",
-                expireAt: 1684757783145,
-              });
-          }
-        },
-      });
+      const storage = new DOStorageFixture();
+      storage.put(
+        "authentication-code",
+        JSON.stringify({
+          code: "123456",
+          expireAt: 1684757783145,
+        }),
+      );
+
+      const caller = createCaller(storage);
 
       await expect(
         caller.validateAuthenticationCode({
@@ -384,27 +311,19 @@ describe("User", () => {
     });
 
     it("should add a new connection to the profile if it does not exist", async () => {
-      const storage: { [key: string]: string } = {};
+      const storage = new DOStorageFixture();
+      storage.put(
+        "authentication-code",
+        JSON.stringify({
+          code: "123456",
+          expireAt: 1784757783145,
+          authParams: {
+            client_id: "clientId",
+          },
+        }),
+      );
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return null;
-            case "authentication-code":
-              return JSON.stringify({
-                code: "123456",
-                expireAt: 1784757783145,
-                authParams: {
-                  client_id: "clientId",
-                },
-              });
-          }
-        },
-        put: async (key: string, value: string) => {
-          storage[key] = value;
-        },
-      });
+      const caller = createCaller(storage);
 
       await caller.validateAuthenticationCode({
         code: "123456",
@@ -412,7 +331,7 @@ describe("User", () => {
         tenantId: "tenantId",
       });
 
-      const profile = JSON.parse(storage.profile);
+      const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.email).toBe("test@example.com");
     });
@@ -420,43 +339,38 @@ describe("User", () => {
 
   describe("validate email", () => {
     it("should add a validated true to the auth connection", async () => {
-      const storage: { [key: string]: string } = {};
+      const storage = new DOStorageFixture();
+      storage.put(
+        "email-validation-code",
+        JSON.stringify({
+          code: "123456",
+          expireAt: 1784757783145,
+          authParams: {
+            client_id: "clientId",
+          },
+        }),
+      );
+      storage.put(
+        "profile",
+        JSON.stringify({
+          email: "test@example.com",
+          tenantId: "tenantId",
+          id: "id",
+          created_at: ".",
+          modified_at: ".",
+          connections: [
+            {
+              name: "auth",
+              profile: {
+                id: "2345",
+                validated: false,
+              },
+            },
+          ],
+        }),
+      );
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "profile":
-              return JSON.stringify({
-                email: "test@example.com",
-                tenantId: "tenantId",
-                id: "id",
-                created_at: ".",
-                modified_at: ".",
-                connections: [
-                  {
-                    name: "auth",
-                    profile: {
-                      id: "2345",
-                      validated: false,
-                    },
-                  },
-                ],
-              });
-            case "email-validation-code":
-              return JSON.stringify({
-                code: "123456",
-                expireAt: 1784757783145,
-                authParams: {
-                  client_id: "clientId",
-                },
-              });
-          }
-        },
-        put: async (key: string, value: string) => {
-          storage[key] = value;
-        },
-        delete: async () => {},
-      });
+      const caller = createCaller(storage);
 
       await caller.validateEmailValidationCode({
         code: "123456",
@@ -464,7 +378,7 @@ describe("User", () => {
         tenantId: "tenantId",
       });
 
-      const profile = JSON.parse(storage.profile);
+      const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.connections[0].profile.validated).toBe(true);
     });
@@ -474,20 +388,8 @@ describe("User", () => {
     const THIRTY_MINUTES = 30 * 60 * 1000;
 
     it("should create new code and write this to storage", async () => {
-      const storage: { [key: string]: string } = {};
-
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "authentication-code":
-              return null;
-          }
-        },
-        put: async (key: string, value: string) => {
-          storage[key] = value;
-        },
-        delete: async () => {},
-      });
+      const storage = new DOStorageFixture();
+      const caller = createCaller(storage);
 
       await caller.createAuthenticationCode({
         authParams: {
@@ -495,7 +397,7 @@ describe("User", () => {
         },
       });
 
-      const code = JSON.parse(storage["authentication-code"]);
+      const code = JSON.parse(storage.getSync("authentication-code"));
 
       expect(code.code).toHaveLength(6);
       expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
@@ -503,35 +405,27 @@ describe("User", () => {
     });
 
     it("should overwrite existing code if expired, and return new code", async () => {
-      const storage: { [key: string]: string } = {};
+      const storage = new DOStorageFixture();
+      storage.put(
+        "authentication-code",
+        JSON.stringify({
+          code: "123456",
+          // this date is in the past
+          expireAt: 1684757783145,
+          authParams: {
+            client_id: "clientId",
+          },
+        }),
+      );
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "authentication-code":
-              return JSON.stringify({
-                code: "123456",
-                // this date is in the past
-                expireAt: 1684757783145,
-                authParams: {
-                  client_id: "clientId",
-                },
-              });
-          }
-        },
-        put: async (key: string, value: string) => {
-          storage[key] = value;
-        },
-        delete: async () => {},
-      });
-
+      const caller = createCaller(storage);
       await caller.createAuthenticationCode({
         authParams: {
           client_id: "clientId",
         },
       });
 
-      const code = JSON.parse(storage["authentication-code"]);
+      const code = JSON.parse(storage.getSync("authentication-code"));
 
       expect(code.code).toHaveLength(6);
       // code should be different
@@ -541,26 +435,19 @@ describe("User", () => {
     });
 
     it("should return same code if still valid, and bump expiry time", async () => {
-      const storage: { [key: string]: string } = {};
+      const storage = new DOStorageFixture();
+      storage.put(
+        "authentication-code",
+        JSON.stringify({
+          code: "123456",
+          expireAt: date.getTime() + 1000,
+          authParams: {
+            client_id: "clientId",
+          },
+        }),
+      );
 
-      const caller = createCaller({
-        get: async (key: string) => {
-          switch (key) {
-            case "authentication-code":
-              return JSON.stringify({
-                code: "123456",
-                expireAt: date.getTime() + 1000,
-                authParams: {
-                  client_id: "clientId",
-                },
-              });
-          }
-        },
-        put: async (key: string, value: string) => {
-          storage[key] = value;
-        },
-        delete: async () => {},
-      });
+      const caller = createCaller(storage);
 
       await caller.createAuthenticationCode({
         authParams: {
@@ -568,12 +455,47 @@ describe("User", () => {
         },
       });
 
-      const code = JSON.parse(storage["authentication-code"]);
+      const code = JSON.parse(storage.getSync("authentication-code"));
 
       // code should be the same
       expect(code.code).toBe("123456");
       expect(code.expireAt).toBe(date.getTime() + THIRTY_MINUTES);
       expect(code.authParams.client_id).toBe("clientId");
+    });
+  });
+
+  describe("linkWithUser", () => {
+    it("should link a user with another user", async () => {
+      const storage = new DOStorageFixture();
+      storage.put(
+        "profile",
+        JSON.stringify({
+          email: "user1@example.com",
+          tenantId: "tenantId",
+          id: "userId",
+          created_at: "",
+          modified_at: "",
+          connections: [],
+        }),
+      );
+
+      const caller = createCaller(storage);
+
+      await caller.linkWithUser({
+        email: "user1@example.com",
+        tenantId: "tenantId",
+        linkWithEmail: "user2@example.com",
+      });
+
+      const profile = JSON.parse(storage.getSync("profile"));
+
+      expect(profile.connections.length).toBe(1);
+      expect(profile.connections[0]).toEqual({
+        name: "linked-user",
+        profile: {
+          email: "user2@example.com",
+        },
+      });
     });
   });
 });
