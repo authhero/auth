@@ -5,6 +5,6 @@ export interface Migration {
   clientId: string;
   origin: string;
   domain: string;
-  createdAt: string;
-  modifiedAt: string;
+  created_at: string;
+  modified_at: string;
 }

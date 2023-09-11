@@ -23,7 +23,7 @@ async function deleteUser(env: Env, tenantId: string, userId: string) {
 
   await db
     .deleteFrom("users")
-    .where("tenantId", "=", tenantId)
+    .where("tenant_id", "=", tenantId)
     .where("id", "=", userId)
     .execute();
 }
@@ -48,13 +48,13 @@ async function updateUser(env: Env, tenantId: string, email: string) {
   const user: SqlUser = {
     id: profile.id,
     email: profile.email,
-    givenName: profile.given_name || "",
-    familyName: profile.family_name || "",
+    given_name: profile.given_name || "",
+    family_name: profile.family_name || "",
     name: profile.name || "",
     nickname: profile.nickname || "",
     picture: profile.picture || "",
-    createdAt: profile.created_at,
-    modifiedAt: profile.modified_at,
+    created_at: profile.created_at,
+    modified_at: profile.modified_at,
     tags: JSON.stringify(tags),
     tenantId,
   };

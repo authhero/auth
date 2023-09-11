@@ -103,7 +103,7 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<SqlConnection, "id" | "tenantId" | "createdAt" | "modifiedAt">
+      Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -112,7 +112,7 @@ export class ConnectionsController extends Controller {
     const connection = {
       ...body,
       tenantId,
-      modifiedAt: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -133,7 +133,7 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<SqlConnection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;
@@ -143,8 +143,8 @@ export class ConnectionsController extends Controller {
       ...body,
       tenantId,
       id: nanoid(),
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     await db.insertInto("connections").values(connection).execute();
@@ -162,7 +162,7 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<SqlConnection, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;
@@ -173,8 +173,8 @@ export class ConnectionsController extends Controller {
       ...body,
       tenantId,
       id,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     try {
@@ -188,7 +188,7 @@ export class ConnectionsController extends Controller {
         throw err;
       }
 
-      const { id, createdAt, tenantId, ...connectionUpdate } = connection;
+      const { id, created_at, tenantId, ...connectionUpdate } = connection;
       await db
         .updateTable("connections")
         .set(connectionUpdate)

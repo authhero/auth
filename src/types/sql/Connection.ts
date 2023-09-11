@@ -18,8 +18,8 @@ export const SqlConnectionSchema = z.object({
   teamId: z.string().optional(),
   tokenEndpoint: z.string().optional(),
   scope: z.string().optional(),
-  createdAt: z.string(),
-  modifiedAt: z.string(),
+  created_at: z.string(),
+  modified_at: z.string(),
 });
 
 export interface SqlConnection {
@@ -36,6 +36,6 @@ export interface SqlConnection {
   teamId?: string;
   tokenEndpoint?: string;
   scope?: string;
-  createdAt: string;
-  modifiedAt: string;
+  created_at: string;
+  modified_at: string;
 }

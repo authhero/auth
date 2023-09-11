@@ -104,7 +104,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">
+      Omit<Application, "id" | "tenantId" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -114,7 +114,7 @@ export class ApplicationsController extends Controller {
     const application = {
       ...body,
       tenantId,
-      modifiedAt: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -136,7 +136,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "tenantId" | "createdAt" | "modifiedAt">
+      Omit<Application, "tenantId" | "created_at" | "modified_at">
     > & {
       name: string;
     },
@@ -157,8 +157,8 @@ export class ApplicationsController extends Controller {
       id: nanoid(),
       ...body,
       tenantId,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     await db.insertInto("applications").values(application).execute();
@@ -176,7 +176,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<Application, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;
@@ -187,8 +187,8 @@ export class ApplicationsController extends Controller {
       ...body,
       tenantId,
       id,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     try {
@@ -202,7 +202,7 @@ export class ApplicationsController extends Controller {
         throw err;
       }
 
-      const { id, createdAt, tenantId, ...applicationUpdate } = application;
+      const { id, created_at, tenantId, ...applicationUpdate } = application;
       await db
         .updateTable("applications")
         .set(applicationUpdate)

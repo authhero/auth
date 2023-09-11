@@ -101,7 +101,7 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Body()
     body: Partial<
-      Omit<Profile, "id" | "createdAt" | "modifiedAt" | "tenantId">
+      Omit<Profile, "id" | "created_at" | "modified_at" | "tenantId">
     > & {
       password?: string;
     },
@@ -136,7 +136,7 @@ export class UsersController extends Controller {
   public async putUser(
     @Request() request: RequestWithContext,
     @Body()
-    body: Omit<Profile, "id" | "createdAt" | "modifiedAt" | "tenantId">,
+    body: Omit<Profile, "id" | "created_at" | "modified_at" | "tenantId">,
     @Path("userId") userId: string,
     @Path("tenantId") tenantId: string,
   ): Promise<Profile> {
@@ -157,8 +157,11 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id" | "tags"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt" | "id" | "tags">>,
+    user: Omit<
+      User,
+      "tenantId" | "created_at" | "modified_at" | "id" | "tags"
+    > &
+      Partial<Pick<User, "created_at" | "modified_at" | "id" | "tags">>,
   ): Promise<Profile> {
     const { ctx } = request;
 

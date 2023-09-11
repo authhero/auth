@@ -9,6 +9,6 @@ export interface Application {
   // twoFactorAuthentication: "enabled" | "disabled" | "enforced";
   // enableSignup: boolean;
   clientSecret: string;
-  createdAt: string;
-  modifiedAt: string;
+  created_at: string;
+  modified_at: string;
 }

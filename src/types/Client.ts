@@ -28,8 +28,8 @@ export const PartialConnectionSchema = z.object({
   tokenEndpoint: z.string().optional(),
   responseType: z.custom<AuthorizationResponseType>().optional(),
   responseMode: z.custom<AuthorizationResponseMode>().optional(),
-  createdAt: z.string(),
-  modifiedAt: z.string(),
+  created_at: z.string(),
+  modified_at: z.string(),
 });
 
 export const ConnectionSchema = z.object({
@@ -45,8 +45,8 @@ export const ConnectionSchema = z.object({
   tokenEndpoint: z.string(),
   responseType: z.custom<AuthorizationResponseType>().optional(),
   responseMode: z.custom<AuthorizationResponseMode>().optional(),
-  createdAt: z.string(),
-  modifiedAt: z.string(),
+  created_at: z.string(),
+  modified_at: z.string(),
 });
 
 export const BaseClientSchema = z.object({

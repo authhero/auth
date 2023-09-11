@@ -163,8 +163,8 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>,
+    user: Omit<User, "tenantId" | "created_at" | "modified_at" | "id"> &
+      Partial<Pick<User, "created_at" | "modified_at" | "id">>,
   ): Promise<Profile> {
     const { env } = request.ctx;
 
@@ -184,8 +184,8 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt">>,
+    user: Omit<User, "tenantId" | "created_at" | "modified_at"> &
+      Partial<Pick<User, "created_at" | "modified_at">>,
   ): Promise<Profile> {
     const { ctx } = request;
 

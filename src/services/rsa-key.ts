@@ -4,7 +4,7 @@ import { Certificate } from "../models/Certificate";
 export interface KeyPair {
   privateKey: string;
   publicKey: any;
-  createdAt: number;
+  created_at: number;
 }
 
 export async function create(): Promise<Certificate> {
@@ -34,7 +34,7 @@ export async function create(): Promise<Certificate> {
       use: "sig",
     },
     kid,
-    createdAt: Date.now(),
+    created_at: Date.now(),
   };
 }
 

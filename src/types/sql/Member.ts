@@ -3,8 +3,8 @@ export interface Member {
   sub?: string;
   email?: string;
   tenantId: string;
-  createdAt: string;
-  modifiedAt: string;
+  created_at: string;
+  modified_at: string;
   name?: string;
   role?: string;
   status?: string;

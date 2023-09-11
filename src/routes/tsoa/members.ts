@@ -100,7 +100,9 @@ export class MembersController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Partial<Omit<Member, "id" | "tenantId" | "createdAt" | "modifiedAt">>,
+    body: Partial<
+      Omit<Member, "id" | "tenantId" | "created_at" | "modified_at">
+    >,
   ) {
     const { env } = request.ctx;
 
@@ -108,7 +110,7 @@ export class MembersController extends Controller {
     const member = {
       ...body,
       tenantId,
-      modifiedAt: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -127,7 +129,7 @@ export class MembersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Member, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<Member, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Member> {
     const { ctx } = request;
     const { env } = ctx;
@@ -138,8 +140,8 @@ export class MembersController extends Controller {
       ...body,
       tenantId,
       id: nanoid(),
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     await db.insertInto("members").values(member).execute();
@@ -156,7 +158,7 @@ export class MembersController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Member, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<Member, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Member> {
     const { ctx } = request;
     const { env } = ctx;
@@ -167,8 +169,8 @@ export class MembersController extends Controller {
       ...body,
       tenantId,
       id,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     try {
@@ -178,7 +180,7 @@ export class MembersController extends Controller {
         throw err;
       }
 
-      const { id, createdAt, tenantId, ...memberUpdate } = member;
+      const { id, created_at, tenantId, ...memberUpdate } = member;
       await db
         .updateTable("members")
         .set(memberUpdate)

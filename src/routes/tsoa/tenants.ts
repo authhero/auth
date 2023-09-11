@@ -88,7 +88,7 @@ export class TenantsController extends Controller {
   public async putTenant(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Body() body: Omit<Tenant, "id" | "createdAt" | "modifiedAt">,
+    @Body() body: Omit<Tenant, "id" | "created_at" | "modified_at">,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
 
@@ -96,8 +96,8 @@ export class TenantsController extends Controller {
     const tenant = {
       ...body,
       id,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     try {
@@ -107,7 +107,7 @@ export class TenantsController extends Controller {
         throw err;
       }
 
-      const { id, createdAt, ...tenantUpdate } = tenant;
+      const { id, created_at, ...tenantUpdate } = tenant;
       await db
         .updateTable("tenants")
         .set(tenantUpdate)
@@ -126,7 +126,7 @@ export class TenantsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postTenants(
     @Request() request: RequestWithContext,
-    @Body() body: Omit<Tenant, "id" | "createdAt" | "modifiedAt">,
+    @Body() body: Omit<Tenant, "id" | "created_at" | "modified_at">,
   ): Promise<Tenant> {
     const { ctx } = request;
 
@@ -134,8 +134,8 @@ export class TenantsController extends Controller {
     const tenant = {
       ...body,
       id: nanoid(),
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     const adminUser: Member = {
@@ -145,8 +145,8 @@ export class TenantsController extends Controller {
       tenantId: tenant.id,
       role: "admin",
       status: "active",
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     await db.insertInto("tenants").values(tenant).execute();
