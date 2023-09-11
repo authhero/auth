@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Kysely } from "kysely";
+import { Kysely } from "kysely";
 // import { D1Dialect } from "kysely-d1";
 import { Database } from "../types/sql/db";
 import { Env } from "../types/Env";
@@ -20,7 +20,6 @@ export function getDb(env: Env): Kysely<Database> {
         fetch: (opts, init) =>
           fetch(new Request(opts, { ...init, cache: undefined })),
       }),
-      plugins: [new CamelCasePlugin()],
     });
   }
 
