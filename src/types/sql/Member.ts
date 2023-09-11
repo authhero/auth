@@ -2,7 +2,7 @@ export interface Member {
   id: string;
   sub?: string;
   email?: string;
-  tenantId: string;
+  tenant_id: string;
   created_at: string;
   modified_at: string;
   name?: string;

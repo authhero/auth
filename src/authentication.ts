@@ -218,7 +218,7 @@ export async function verifyTenantPermissions(ctx: Context<Env>) {
   const member = await db
     .selectFrom("members")
     .where("members.sub", "=", ctx.state.user.sub)
-    .where("members.tenantId", "=", tenantId)
+    .where("members.tenant_id", "=", tenantId)
     .where("members.status", "=", "active")
     .select("members.role")
     .executeTakeFirst();

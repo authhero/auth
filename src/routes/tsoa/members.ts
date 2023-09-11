@@ -38,7 +38,7 @@ export class MembersController extends Controller {
     const db = getDb(ctx.env);
     const query = db
       .selectFrom("members")
-      .where("members.tenantId", "=", tenantId);
+      .where("members.tenant_id", "=", tenantId);
 
     const { data, range } = await executeQuery(query, rangeRequest);
 
@@ -62,7 +62,7 @@ export class MembersController extends Controller {
     const member = await db
       .selectFrom("members")
       .where("members.id", "=", id)
-      .where("members.tenantId", "=", tenantId)
+      .where("members.tenant_id", "=", tenantId)
       .selectAll()
       .executeTakeFirst();
 
@@ -86,7 +86,7 @@ export class MembersController extends Controller {
     const db = getDb(env);
     await db
       .deleteFrom("members")
-      .where("members.tenantId", "=", tenantId)
+      .where("members.tenant_id", "=", tenantId)
       .where("members.id", "=", id)
       .execute();
 
@@ -138,7 +138,7 @@ export class MembersController extends Controller {
 
     const member: Member = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id: nanoid(),
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -167,7 +167,7 @@ export class MembersController extends Controller {
 
     const member: Member = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id,
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -180,7 +180,7 @@ export class MembersController extends Controller {
         throw err;
       }
 
-      const { id, created_at, tenantId, ...memberUpdate } = member;
+      const { id, created_at, tenant_id: tenantId, ...memberUpdate } = member;
       await db
         .updateTable("members")
         .set(memberUpdate)
