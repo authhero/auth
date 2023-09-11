@@ -51,6 +51,7 @@ export type Profile = {
   name?: string;
   picture?: string;
   locale?: string;
+  linked_with?: string;
   connections: Connection[];
 };
 

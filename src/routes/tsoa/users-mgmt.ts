@@ -16,7 +16,7 @@ import {
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { NotFoundError } from "../../errors";
+import { ConflictError, NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { Profile } from "../../types";
 import { User } from "../../types/sql/User";
@@ -206,6 +206,7 @@ export class UsersMgmtController extends Controller {
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
+    @Path("userId") userId: string,
     @Body() body: LinkBodyParams,
   ): Promise<Profile> {
     const { env } = request.ctx;
@@ -214,7 +215,7 @@ export class UsersMgmtController extends Controller {
     const currentDbUser = await db
       .selectFrom("users")
       .where("users.tenantId", "=", tenantId)
-      .where("users.id", "=", request.ctx.state.sub)
+      .where("users.id", "=", userId)
       .select(["users.email"])
       .executeTakeFirst();
 
@@ -241,6 +242,18 @@ export class UsersMgmtController extends Controller {
       getId(tenantId, linkedDbUser.email),
     );
 
-    return currentUser.getProfile.query();
+    // Link the child account
+    await linkedUser.linkToUser.mutate({
+      tenantId,
+      email: linkedDbUser.email,
+      linkWithEmail: currentDbUser.email,
+    });
+
+    // Link the parent account
+    return currentUser.linkWithUser.mutate({
+      tenantId,
+      email: currentDbUser.email,
+      linkWithEmail: linkedDbUser.email,
+    });
   }
 }

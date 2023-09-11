@@ -319,6 +319,37 @@ export const userRouter = router({
 
     return profile;
   }),
+  linkToUser: publicProcedure
+    .input(
+      z.object({
+        email: z.string(),
+        linkWithEmail: z.string(),
+        tenantId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const existingProfile = await getProfile(ctx.state.storage);
+      if (!existingProfile) {
+        throw new NotFoundError();
+      }
+
+      if (existingProfile.linked_with) {
+        throw new ConflictError();
+      }
+
+      const profile = await updateProfile(ctx, {
+        tenantId: input.tenantId,
+        email: input.email,
+        linked_with: input.linkWithEmail,
+      });
+
+      await writeLog(ctx.state.storage, {
+        category: "link",
+        message: `Linked to ${input.linkWithEmail}`,
+      });
+
+      return profile;
+    }),
   linkWithUser: publicProcedure
     .input(
       z.object({
@@ -348,7 +379,7 @@ export const userRouter = router({
 
       await writeLog(ctx.state.storage, {
         category: "link",
-        message: `Link with ${input.linkWithEmail}`,
+        message: `Added ${input.linkWithEmail} as linked user`,
       });
 
       return profile;
