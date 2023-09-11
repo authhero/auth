@@ -56,6 +56,7 @@ export class DbConnectionController extends Controller {
     );
     // This throws if if fails
     await user.registerPassword.mutate(body.password);
+    // type errors! we have type errors all over this file... is it used? We're not typechecking all our code...
 
     return "OK";
   }

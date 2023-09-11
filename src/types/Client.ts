@@ -28,10 +28,11 @@ export const PartialConnectionSchema = z.object({
   tokenEndpoint: z.string().optional(),
   responseType: z.custom<AuthorizationResponseType>().optional(),
   responseMode: z.custom<AuthorizationResponseMode>().optional(),
-  createdAt: z.string(),
-  modifiedAt: z.string(),
+  created_at: z.string(),
+  modified_at: z.string(),
 });
 
+// this is duplicated to SQL and the KV store... I figure we can release this and then see what needs changing
 export const ConnectionSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -45,8 +46,8 @@ export const ConnectionSchema = z.object({
   tokenEndpoint: z.string(),
   responseType: z.custom<AuthorizationResponseType>().optional(),
   responseMode: z.custom<AuthorizationResponseMode>().optional(),
-  createdAt: z.string(),
-  modifiedAt: z.string(),
+  created_at: z.string(),
+  modified_at: z.string(),
 });
 
 export const BaseClientSchema = z.object({

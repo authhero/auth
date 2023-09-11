@@ -40,7 +40,7 @@ export class UsersController extends Controller {
 
     const db = getDb(ctx.env);
 
-    let query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
+    let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     if (filterQuerystring) {
       const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
@@ -79,7 +79,7 @@ export class UsersController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -101,7 +101,7 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Body()
     body: Partial<
-      Omit<Profile, "id" | "createdAt" | "modifiedAt" | "tenantId">
+      Omit<Profile, "id" | "created_at" | "modified_at" | "tenantId">
     > & {
       password?: string;
     },
@@ -113,7 +113,7 @@ export class UsersController extends Controller {
     const db = getDb(request.ctx.env);
     const user = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("email")
       .executeTakeFirst();
@@ -136,7 +136,7 @@ export class UsersController extends Controller {
   public async putUser(
     @Request() request: RequestWithContext,
     @Body()
-    body: Omit<Profile, "id" | "createdAt" | "modifiedAt" | "tenantId">,
+    body: Omit<Profile, "id" | "created_at" | "modified_at" | "tenantId">,
     @Path("userId") userId: string,
     @Path("tenantId") tenantId: string,
   ): Promise<Profile> {
@@ -147,7 +147,7 @@ export class UsersController extends Controller {
 
     return userInstance.patchProfile.mutate({
       ...body,
-      tenantId,
+      tenant_id: tenantId,
     });
   }
 
@@ -157,8 +157,11 @@ export class UsersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id" | "tags"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt" | "id" | "tags">>,
+    user: Omit<
+      User,
+      "tenantId" | "created_at" | "modified_at" | "id" | "tags"
+    > &
+      Partial<Pick<User, "created_at" | "modified_at" | "id" | "tags">>,
   ): Promise<Profile> {
     const { ctx } = request;
 
@@ -168,7 +171,7 @@ export class UsersController extends Controller {
     const result: Profile = await userInstance.createUser.mutate({
       ...user,
       connections: [],
-      tenantId,
+      tenant_id: tenantId,
     });
     return result;
   }
@@ -185,7 +188,7 @@ export class UsersController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -206,7 +209,7 @@ export class UsersController extends Controller {
         // If a user is cleared in DO but still available in sql. Should never happen
         await db
           .deleteFrom("users")
-          .where("users.tenantId", "=", tenantId)
+          .where("users.tenant_id", "=", tenantId)
           .where("users.id", "=", userId)
           .execute();
       } else {

@@ -69,7 +69,7 @@ export class LogsController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", filter.userId)
       .select("users.email")
       .executeTakeFirst();

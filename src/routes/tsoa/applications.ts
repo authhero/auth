@@ -38,7 +38,7 @@ export class ApplicationsController extends Controller {
     const db = getDb(ctx.env);
     const query = db
       .selectFrom("applications")
-      .where("applications.tenantId", "=", tenantId);
+      .where("applications.tenant_id", "=", tenantId);
 
     const { data, range } = await executeQuery(query, rangeRequest);
 
@@ -61,7 +61,7 @@ export class ApplicationsController extends Controller {
     const db = getDb(ctx.env);
     const application = await db
       .selectFrom("applications")
-      .where("applications.tenantId", "=", tenantId)
+      .where("applications.tenant_id", "=", tenantId)
       .where("applications.id", "=", id)
       .selectAll()
       .executeTakeFirst();
@@ -87,7 +87,7 @@ export class ApplicationsController extends Controller {
 
     await db
       .deleteFrom("applications")
-      .where("applications.tenantId", "=", tenantId)
+      .where("applications.tenant_id", "=", tenantId)
       .where("applications.id", "=", id)
       .execute();
 
@@ -104,7 +104,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">
+      Omit<Application, "id" | "tenantId" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -114,7 +114,7 @@ export class ApplicationsController extends Controller {
     const application = {
       ...body,
       tenantId,
-      modifiedAt: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -136,7 +136,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "tenantId" | "createdAt" | "modifiedAt">
+      Omit<Application, "tenantId" | "created_at" | "modified_at">
     > & {
       name: string;
     },
@@ -147,18 +147,18 @@ export class ApplicationsController extends Controller {
     const db = getDb(env);
 
     const application: Application = {
-      allowedWebOrigins: "",
-      allowedCallbackUrls: "",
-      allowedLogoutUrls: "",
-      emailValidation: "enabled",
+      allowed_web_origins: "",
+      allowed_callback_urls: "",
+      allowed_logout_urls: "",
+      email_validation: "enabled",
       // twoFactorAuthentication: "enabled",
       // enableSignup: true,
-      clientSecret: nanoid(),
+      client_secret: nanoid(),
       id: nanoid(),
       ...body,
-      tenantId,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      tenant_id: tenantId,
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     await db.insertInto("applications").values(application).execute();
@@ -176,7 +176,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Application, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<Application, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;
@@ -185,10 +185,10 @@ export class ApplicationsController extends Controller {
 
     const application: Application = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     try {
@@ -202,7 +202,12 @@ export class ApplicationsController extends Controller {
         throw err;
       }
 
-      const { id, createdAt, tenantId, ...applicationUpdate } = application;
+      const {
+        id,
+        created_at,
+        tenant_id: tenantId,
+        ...applicationUpdate
+      } = application;
       await db
         .updateTable("applications")
         .set(applicationUpdate)

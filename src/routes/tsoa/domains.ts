@@ -40,7 +40,7 @@ export class DomainsController extends Controller {
     const db = getDb(ctx.env);
     const query = db
       .selectFrom("domains")
-      .where("domains.tenantId", "=", tenantId);
+      .where("domains.tenant_id", "=", tenantId);
 
     const domains = await query
       .selectAll()
@@ -75,7 +75,7 @@ export class DomainsController extends Controller {
     const domain = await db
       .selectFrom("domains")
       .where("domains.id", "=", id)
-      .where("domains.tenantId", "=", tenantId)
+      .where("domains.tenant_id", "=", tenantId)
       .selectAll()
       .executeTakeFirst();
 
@@ -99,7 +99,7 @@ export class DomainsController extends Controller {
     const db = getDb(env);
     await db
       .deleteFrom("domains")
-      .where("domains.tenantId", "=", tenantId)
+      .where("domains.tenant_id", "=", tenantId)
       .where("domains.id", "=", id)
       .execute();
 
@@ -116,7 +116,7 @@ export class DomainsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<SqlDomain, "id" | "tenantId" | "createdAt" | "modifiedAt">
+      Omit<SqlDomain, "id" | "tenantId" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -125,7 +125,7 @@ export class DomainsController extends Controller {
     const domain = {
       ...body,
       tenantId,
-      modifiedAt: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -155,13 +155,13 @@ export class DomainsController extends Controller {
 
     const domain: SqlDomain = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id: nanoid(),
       // TODO: generate keys
-      dkimPrivateKey: "",
-      dkimPublicKey: "",
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      dkim_public_key: "",
+      dkim_private_key: "",
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     await db.insertInto("domains").values(domain).execute();
@@ -180,7 +180,7 @@ export class DomainsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<SqlDomain, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<SqlDomain, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<SqlDomain> {
     const { ctx } = request;
     const { env } = ctx;
@@ -189,10 +189,10 @@ export class DomainsController extends Controller {
 
     const domain: SqlDomain = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     try {
@@ -202,7 +202,7 @@ export class DomainsController extends Controller {
         throw err;
       }
 
-      const { id, createdAt, tenantId, ...domainUpdate } = domain;
+      const { id, created_at, tenant_id: tenantId, ...domainUpdate } = domain;
       await db
         .updateTable("domains")
         .set(domainUpdate)

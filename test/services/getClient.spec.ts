@@ -29,8 +29,8 @@ describe("getClient", () => {
         {
           id: "connectionId",
           name: "facebook",
-          createdAt: "createdAt",
-          modifiedAt: "modifiedAt",
+          created_at: "created_at",
+          modified_at: "modified_at",
         },
       ],
       domains: [],
@@ -195,8 +195,8 @@ describe("getClient", () => {
         {
           id: "connectionId",
           name: "facebook",
-          createdAt: "createdAt",
-          modifiedAt: "modifiedAt",
+          created_at: "created_at",
+          modified_at: "modified_at",
         },
       ],
       domains: [],

@@ -6,7 +6,7 @@ export async function updateTenantClientsInKV(env: Env, tenantId: string) {
 
   const applications = await db
     .selectFrom("applications")
-    .where("applications.tenantId", "=", tenantId)
+    .where("applications.tenant_id", "=", tenantId)
     .select("id")
     .execute();
 
@@ -50,7 +50,7 @@ export async function updateClientInKV(env: Env, applicationId: string) {
   const tenant = await db
     .selectFrom("tenants")
     .selectAll()
-    .where("id", "=", application.tenantId)
+    .where("id", "=", application.tenant_id)
     .executeTakeFirst();
 
   if (!tenant) {
@@ -59,14 +59,14 @@ export async function updateClientInKV(env: Env, applicationId: string) {
 
   const connections = await db
     .selectFrom("connections")
-    .where("tenantId", "=", application.tenantId)
+    .where("tenant_id", "=", application.tenant_id)
     .selectAll()
     .execute();
 
   const domains = await db
     .selectFrom("domains")
-    .where("tenantId", "=", application.tenantId)
-    .select(["domain", "dkimPrivateKey"])
+    .where("tenant_id", "=", application.tenant_id)
+    .select(["domain", "dkim_private_key"])
     .execute();
 
   const client: PartialClient = {
@@ -77,18 +77,18 @@ export async function updateClientInKV(env: Env, applicationId: string) {
     ),
     domains,
     tenantId: tenant.id,
-    allowedCallbackUrls: splitUrls(application.allowedCallbackUrls),
-    allowedLogoutUrls: splitUrls(application.allowedLogoutUrls),
-    allowedWebOrigins: splitUrls(application.allowedWebOrigins),
-    emailValidation: application.emailValidation,
-    clientSecret: application.clientSecret,
+    allowedCallbackUrls: splitUrls(application.allowed_callback_urls),
+    allowedLogoutUrls: splitUrls(application.allowed_logout_urls),
+    allowedWebOrigins: splitUrls(application.allowed_web_origins),
+    emailValidation: application.email_validation,
+    clientSecret: application.client_secret,
     tenant: removeNullProperties({
       audience: tenant.audience,
       logo: tenant.logo,
-      primaryColor: tenant.primaryColor,
-      secondaryColor: tenant.secondaryColor,
-      senderEmail: tenant.senderEmail,
-      senderName: tenant.senderName,
+      primaryColor: tenant.primary_color,
+      secondaryColor: tenant.secondary_color,
+      senderEmail: tenant.sender_email,
+      senderName: tenant.sender_name,
       language: tenant.language,
     }),
   };

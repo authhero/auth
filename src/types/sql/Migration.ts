@@ -1,10 +1,10 @@
 export interface Migration {
   id: string;
   provider: string;
-  tenantId: string;
-  clientId: string;
+  tenant_id: string;
+  client_id: string;
   origin: string;
   domain: string;
-  createdAt: string;
-  modifiedAt: string;
+  created_at: string;
+  modified_at: string;
 }

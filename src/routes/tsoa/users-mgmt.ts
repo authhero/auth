@@ -47,7 +47,7 @@ export class UsersMgmtController extends Controller {
 
     const db = getDb(ctx.env);
 
-    let query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
+    let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     // TODO - check this still actually works using auth0/node on the demo repo https://github.com/sesamyab/auth0-management-api-demo
     if (filterQuerystring) {
@@ -86,7 +86,7 @@ export class UsersMgmtController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -114,7 +114,7 @@ export class UsersMgmtController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -141,7 +141,7 @@ export class UsersMgmtController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.email", "=", userEmail)
       .select("users.email")
       .executeTakeFirst();
@@ -163,8 +163,8 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt" | "id"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt" | "id">>,
+    user: Omit<User, "tenantId" | "created_at" | "modified_at" | "id"> &
+      Partial<Pick<User, "created_at" | "modified_at" | "id">>,
   ): Promise<Profile> {
     const { env } = request.ctx;
 
@@ -175,7 +175,7 @@ export class UsersMgmtController extends Controller {
     return userInstance.createUser.mutate({
       ...user,
       connections: [],
-      tenantId,
+      tenant_id: tenantId,
     });
   }
 
@@ -184,8 +184,8 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenantId" | "createdAt" | "modifiedAt"> &
-      Partial<Pick<User, "createdAt" | "modifiedAt">>,
+    user: Omit<User, "tenantId" | "created_at" | "modified_at"> &
+      Partial<Pick<User, "created_at" | "modified_at">>,
   ): Promise<Profile> {
     const { ctx } = request;
 
@@ -197,7 +197,7 @@ export class UsersMgmtController extends Controller {
     // is it even what we want here? let's see...
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
-      tenantId,
+      tenant_id: tenantId,
     });
     return result;
   }
@@ -214,7 +214,7 @@ export class UsersMgmtController extends Controller {
     const db = getDb(env);
     const currentDbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select(["users.email"])
       .executeTakeFirst();
@@ -225,7 +225,7 @@ export class UsersMgmtController extends Controller {
 
     const linkedDbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", body.link_with)
       .select(["users.email"])
       .executeTakeFirst();

@@ -13,11 +13,11 @@ async function postUser(user) {
     nickname: user.nickname,
     picture: user.picture,
     tags: [],
-    givenName: user.given_name,
-    familyName: user.family_name,
+    given_name: user.given_name,
+    family_name: user.family_name,
     id: user.user_id,
-    createdAt: user.created_at,
-    modifiedAt: user.updated_at,
+    created_at: user.created_at,
+    modified_at: user.updated_at,
   });
 
   const response = await fetch(`${apiUrl}/tenants/${tenantId}/users`, {
@@ -46,12 +46,12 @@ function getCsvUsers(filePath) {
   });
 
   return data.map((user) => ({
-    name: user.fullName,
+    name: user.full_name,
     email: user.email,
     tags: [],
 
     id: user.id,
-    createdAt: user.createdAt,
+    created_at: user.created_at,
   }));
 }
 

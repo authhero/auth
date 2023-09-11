@@ -10,11 +10,11 @@ async function postUser(user) {
     nickname: user.nickname,
     picture: user.picture,
     tags: [],
-    givenName: user.given_name,
-    familyName: user.family_name,
+    given_name: user.given_name,
+    family_name: user.family_name,
     id: user.user_id,
-    createdAt: user.created_at,
-    modifiedAt: user.updated_at,
+    created_at: user.created_at,
+    modified_at: user.updated_at,
   });
 
   const response = await fetch(
@@ -47,7 +47,6 @@ async function importUsers(filePath) {
   let counter = 0;
 
   for await (const line of rl) {
-
     try {
       const user = JSON.parse(line);
 

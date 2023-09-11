@@ -104,7 +104,7 @@ export class MigrationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Migration, "id" | "tenantId" | "createdAt" | "modifiedAt">
+      Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -113,7 +113,7 @@ export class MigrationsController extends Controller {
     const migration = {
       ...body,
       tenantId,
-      modifiedAt: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -134,7 +134,7 @@ export class MigrationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Migration, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Migration> {
     const { ctx } = request;
     const { env } = ctx;
@@ -145,8 +145,8 @@ export class MigrationsController extends Controller {
       ...body,
       tenantId,
       id: nanoid(),
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     await db.insertInto("migrations").values(migration).execute();
@@ -165,7 +165,7 @@ export class MigrationsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Migration, "id" | "tenantId" | "createdAt" | "modifiedAt">,
+    body: Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Migration> {
     const { ctx } = request;
     const { env } = ctx;
@@ -176,8 +176,8 @@ export class MigrationsController extends Controller {
       ...body,
       tenantId,
       id,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
     };
 
     try {
@@ -187,7 +187,7 @@ export class MigrationsController extends Controller {
         throw err;
       }
 
-      const { id, createdAt, tenantId, ...migrationUpdate } = migration;
+      const { id, created_at, tenantId, ...migrationUpdate } = migration;
       await db
         .updateTable("migrations")
         .set(migrationUpdate)
