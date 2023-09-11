@@ -71,6 +71,7 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
     })
     .filter((c) => c);
 
+  // I have a feeling this will not work...  what casing should the KV store be? 8-0
   return ClientSchema.parse({
     ...client,
     allowedWebOrigins: [...client.allowedWebOrigins, `${env.ISSUER}u/login`],

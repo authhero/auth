@@ -100,7 +100,7 @@ describe("User", () => {
       const caller = createCaller(storage);
 
       await caller.patchProfile({
-        tenantId: "tenantId",
+        tenant_id: "tenantId",
         email: "test@example.com",
         name: "Test",
       });
@@ -118,7 +118,7 @@ describe("User", () => {
 
       const caller = createCaller(storage);
       await caller.patchProfile({
-        tenantId: "tenantId",
+        tenant_id: "tenantId",
         email: "test@example.com",
         name: "Test",
         connections: [
@@ -153,7 +153,7 @@ describe("User", () => {
       const caller = createCaller(storage);
 
       await caller.patchProfile({
-        tenantId: "tenantId",
+        tenant_id: "tenantId",
         email: "test@example.com",
         connections: [
           {
@@ -203,7 +203,7 @@ describe("User", () => {
       const caller = createCaller(storage);
 
       await caller.patchProfile({
-        tenantId: "tenantId",
+        tenant_id: "tenantId",
         email: "test@example.com",
         connections: [
           {
@@ -241,7 +241,7 @@ describe("User", () => {
       const caller = createCaller(storage);
 
       await caller.patchProfile({
-        tenantId: "tenantId",
+        tenant_id: "tenantId",
         email: "test@example.com",
         name: "Test",
       });

@@ -32,6 +32,7 @@ export const PartialConnectionSchema = z.object({
   modified_at: z.string(),
 });
 
+// this is duplicated to SQL and the KV store... I figure we can release this and then see what needs changing
 export const ConnectionSchema = z.object({
   id: z.string(),
   name: z.string(),
