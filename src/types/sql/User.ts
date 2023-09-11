@@ -40,11 +40,11 @@ export interface UserTag {
 export interface BaseUser {
   id: string;
   email: string;
-  tenantId: string;
-  createdAt: string;
-  modifiedAt: string;
-  givenName?: string;
-  familyName?: string;
+  tenant_id: string;
+  created_at: string;
+  modified_at: string;
+  given_name?: string;
+  family_name?: string;
   nickname?: string;
   name?: string;
   picture?: string;
