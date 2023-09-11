@@ -38,7 +38,7 @@ export class ApplicationsController extends Controller {
     const db = getDb(ctx.env);
     const query = db
       .selectFrom("applications")
-      .where("applications.tenantId", "=", tenantId);
+      .where("applications.tenant_id", "=", tenantId);
 
     const { data, range } = await executeQuery(query, rangeRequest);
 
@@ -61,7 +61,7 @@ export class ApplicationsController extends Controller {
     const db = getDb(ctx.env);
     const application = await db
       .selectFrom("applications")
-      .where("applications.tenantId", "=", tenantId)
+      .where("applications.tenant_id", "=", tenantId)
       .where("applications.id", "=", id)
       .selectAll()
       .executeTakeFirst();
@@ -87,7 +87,7 @@ export class ApplicationsController extends Controller {
 
     await db
       .deleteFrom("applications")
-      .where("applications.tenantId", "=", tenantId)
+      .where("applications.tenant_id", "=", tenantId)
       .where("applications.id", "=", id)
       .execute();
 
@@ -147,16 +147,16 @@ export class ApplicationsController extends Controller {
     const db = getDb(env);
 
     const application: Application = {
-      allowedWebOrigins: "",
-      allowedCallbackUrls: "",
-      allowedLogoutUrls: "",
-      emailValidation: "enabled",
+      allowed_web_origins: "",
+      allowed_callback_urls: "",
+      allowed_logout_urls: "",
+      email_validation: "enabled",
       // twoFactorAuthentication: "enabled",
       // enableSignup: true,
-      clientSecret: nanoid(),
+      client_secret: nanoid(),
       id: nanoid(),
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
     };
@@ -185,7 +185,7 @@ export class ApplicationsController extends Controller {
 
     const application: Application = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id,
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -202,7 +202,12 @@ export class ApplicationsController extends Controller {
         throw err;
       }
 
-      const { id, created_at, tenantId, ...applicationUpdate } = application;
+      const {
+        id,
+        created_at,
+        tenant_id: tenantId,
+        ...applicationUpdate
+      } = application;
       await db
         .updateTable("applications")
         .set(applicationUpdate)
