@@ -41,7 +41,7 @@ interface Connection {
 
 export type Profile = {
   id: string;
-  tenantId: string;
+  tenant_id: string;
   email: string;
   created_at: string;
   modified_at: string;
@@ -62,7 +62,7 @@ const ConnectionSchema = z.object({
 
 export const ProfileSchema = z.object({
   id: z.string(),
-  tenantId: z.string(),
+  tenant_id: z.string(),
   email: z.string(),
   created_at: z.string(),
   modified_at: z.string(),

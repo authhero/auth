@@ -23,6 +23,10 @@ import { Profile } from "../types";
 import { migratePasswordHook } from "../hooks/migrate-password";
 import { LogMessage } from "../types/LogMessage";
 
+// do these need changing? I'm thinking I've been too aggressive here and these are the DOs which should remain camelcase?
+// BUT if Auth0 does all the user profile (and ONLY the user profile) snake_case everywhere, I think we should copy
+// else we'll end up painting ourselves into a corner
+// TBD
 const CodeSchema = z.object({
   authParams: z.custom<AuthParams>().optional(),
   code: z.string(),
@@ -32,7 +36,7 @@ const CodeSchema = z.object({
 
 const UserSchema = z.object({
   email: z.string(),
-  tenantId: z.string(),
+  tenant_id: z.string(),
   id: z.string().optional(),
   created_at: z.string().optional(),
   modified_at: z.string().optional(),
@@ -144,7 +148,7 @@ async function writeLog(
 // Stores information about the current operation and ensures that the user has an id.
 async function updateProfile(
   ctx: Context<Env>,
-  profile: Partial<Profile> & Pick<Profile, "tenantId" | "email">,
+  profile: Partial<Profile> & Pick<Profile, "tenant_id" | "email">,
 ) {
   let existingProfile = await getProfile(ctx.state.storage);
 
@@ -188,7 +192,7 @@ async function updateProfile(
 
   await sendUserEvent(
     ctx.env,
-    `${profile.tenantId}|${profile.email}`,
+    `${profile.tenant_id}|${profile.email}`,
     updatedProfile.id,
     existingProfile ? UserEvent.userUpdated : UserEvent.userCreated,
   );
@@ -297,7 +301,7 @@ export const userRouter = router({
   delete: publicProcedure.mutation(async ({ ctx }) => {
     const profile = await getProfile(ctx.state.storage);
 
-    if (!profile?.tenantId) {
+    if (!profile?.tenant_id) {
       throw new NotFoundError();
     }
 
@@ -305,7 +309,7 @@ export const userRouter = router({
 
     await sendUserEvent(
       ctx.env,
-      `${profile.tenantId}|${profile.email}`,
+      `${profile.tenant_id}|${profile.email}`,
       profile.id,
       UserEvent.userDeleted,
     );
@@ -338,7 +342,7 @@ export const userRouter = router({
       }
 
       const profile = await updateProfile(ctx, {
-        tenantId: input.tenantId,
+        tenant_id: input.tenantId,
         email: input.email,
         linked_with: input.linkWithEmail,
       });
@@ -365,7 +369,7 @@ export const userRouter = router({
       }
 
       const profile = await updateProfile(ctx, {
-        tenantId: input.tenantId,
+        tenant_id: input.tenantId,
         email: input.email,
         connections: [
           {
@@ -400,7 +404,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const profile = await updateProfile(ctx, {
         email: input.email,
-        tenantId: input.tenantId,
+        tenant_id: input.tenantId,
         connections: [input.connection],
       });
 
@@ -450,7 +454,7 @@ export const userRouter = router({
 
       return updateProfile(ctx, {
         email: input.email,
-        tenantId: input.tenantId,
+        tenant_id: input.tenantId,
         connections: [
           {
             name: "auth",
@@ -515,7 +519,7 @@ export const userRouter = router({
 
       return updateProfile(ctx, {
         email: input.email,
-        tenantId: input.tenantId,
+        tenant_id: input.tenantId,
         connections: [
           {
             name: "auth",
@@ -565,7 +569,7 @@ export const userRouter = router({
 
       const profile = await updateProfile(ctx, {
         email: input.email,
-        tenantId: input.tenantId,
+        tenant_id: input.tenantId,
         connections: [
           {
             name: "email",
@@ -621,7 +625,7 @@ export const userRouter = router({
       // Set the email to validated
       return updateProfile(ctx, {
         email: input.email,
-        tenantId: input.tenantId,
+        tenant_id: input.tenantId,
         connections: [
           {
             name: "auth",
