@@ -5,11 +5,11 @@ export async function up(db: Kysely<Database>): Promise<void> {
   await db.schema
     .alterTable("connections")
     .addColumn("scope", "varchar(255)")
-    .addColumn("responseType", "varchar(255)")
-    .addColumn("responseMode", "varchar(255)")
-    .addColumn("privateKey", "varchar(767)")
+    .addColumn("response_type", "varchar(255)")
+    .addColumn("response_mode", "varchar(255)")
+    .addColumn("private_key", "varchar(767)")
     .addColumn("kid", "varchar(255)")
-    .addColumn("teamId", "varchar(255)")
+    .addColumn("team_id", "varchar(255)")
     .execute();
 }
 
@@ -17,10 +17,10 @@ export async function down(db: Kysely<Database>): Promise<void> {
   await db.schema
     .alterTable("connections")
     .dropColumn("scope")
-    .dropColumn("responseType")
-    .dropColumn("responseMode")
-    .dropColumn("privateKey")
+    .dropColumn("response_type")
+    .dropColumn("response_mode")
+    .dropColumn("private_key")
     .dropColumn("kid")
-    .dropColumn("teamId")
+    .dropColumn("team_id")
     .execute();
 }
