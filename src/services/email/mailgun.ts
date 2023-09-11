@@ -1,14 +1,13 @@
 import { getDomainFromEmail } from "../../utils/email";
 import { EmailOptions } from "./EmailOptions";
 
-export default async function send(emailOptions: EmailOptions) {
-  const API_URL = `https://api.mailgun.net/v3/${getDomainFromEmail(
+export default async function send(emailOptions: EmailOptions, apiKey: string) {
+  const apiUrl = `https://api.eu.mailgun.net/v3/${getDomainFromEmail(
     emailOptions.from.email,
   )}/messages`;
-  const API_KEY = emailOptions.apiKey;
 
   const headers = new Headers();
-  headers.set("Authorization", "Basic " + btoa(`api ${API_KEY}`));
+  headers.set("Authorization", "Basic " + btoa(`api:${apiKey}`));
   headers.set("Content-Type", "application/x-www-form-urlencoded");
 
   const htmlContent = emailOptions.content.find(
@@ -37,13 +36,11 @@ export default async function send(emailOptions: EmailOptions) {
     formData.append("text", textContent.value);
   }
 
-  const response = await fetch(API_URL, {
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: headers,
     body: formData,
   });
-
-  const body = await response.text();
 
   if (!response.ok) {
     throw new Error(`Failed with status: ${response.status}`);

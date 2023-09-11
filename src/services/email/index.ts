@@ -11,18 +11,17 @@ export default async function sendEmail(
 ) {
   const domainName = getDomainFromEmail(emailOptions.from.email);
 
-  const domain = client.domains.find((d) => d.domain === domainName) || {};
+  const domain = client.domains.find((d) => d.domain === domainName);
 
-  const emailOptionsWithDefaults = {
-    ...domain,
-    ...emailOptions,
-  };
-
-  switch (emailOptionsWithDefaults.emailService) {
+  switch (domain?.emailService) {
     case "mailgun":
-      return sendWithMailgun(emailOptions);
+      if (!domain.apiKey) {
+        throw new Error("Api key required");
+      }
+
+      return sendWithMailgun(emailOptions, domain.apiKey);
     case "mailchannels":
     default:
-      return sendWithMailchannels(emailOptions);
+      return sendWithMailchannels(emailOptions, domain?.dkimPrivateKey);
   }
 }

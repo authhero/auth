@@ -5,6 +5,7 @@ import {
   AuthorizationResponseType,
   AuthorizationResponseMode,
   PartialClient,
+  Client,
 } from "../../src/types";
 import { kvStorageFixture } from "../fixtures/kv-storage";
 
@@ -67,7 +68,29 @@ describe("getClient", () => {
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const ctx = contextFixture();
+    const testClient: Client = {
+      id: "testClient",
+      name: "clientName",
+      clientSecret: "clientSecret",
+      tenantId: "tenantId",
+      allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
+      allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
+      allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
+      emailValidation: "enabled",
+      tenant: {
+        senderEmail: "senderEmail",
+        senderName: "senderName",
+        audience: "audience",
+      },
+      connections: [],
+      domains: [],
+    };
+
+    const clients = kvStorageFixture({
+      testClient: JSON.stringify(testClient),
+    });
+
+    const ctx = contextFixture({ clients });
 
     const defaultSettings: DefaultSettings = {
       connections: [],
@@ -75,18 +98,80 @@ describe("getClient", () => {
         {
           domain: "example.com",
           dkimPrivateKey: "dkimKey",
+          emailService: "mailchannels",
         },
       ],
     };
 
     ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
 
-    const client = await getClient(ctx.env, "clientId");
+    const client = await getClient(ctx.env, "testClient");
 
     expect(client.domains).toEqual([
       {
         domain: "example.com",
         dkimPrivateKey: "dkimKey",
+        emailService: "mailchannels",
+      },
+    ]);
+  });
+
+  it("should add a domain from the envDefaultSettings to the client domains", async () => {
+    const testClient: Client = {
+      id: "testClient",
+      name: "clientName",
+      clientSecret: "clientSecret",
+      tenantId: "tenantId",
+      allowedCallbackUrls: ["http://localhost:3000", "https://example.com"],
+      allowedLogoutUrls: ["http://localhost:3000", "https://example.com"],
+      allowedWebOrigins: ["http://localhost:3000", "https://example.com"],
+      emailValidation: "enabled",
+      tenant: {
+        senderEmail: "senderEmail",
+        senderName: "senderName",
+        audience: "audience",
+      },
+      connections: [],
+      domains: [
+        {
+          domain: "example2.com",
+          apiKey: "apiKey",
+          emailService: "mailgun",
+        },
+      ],
+    };
+
+    const clients = kvStorageFixture({
+      testClient: JSON.stringify(testClient),
+    });
+
+    const ctx = contextFixture({ clients });
+
+    const defaultSettings: DefaultSettings = {
+      connections: [],
+      domains: [
+        {
+          domain: "example.com",
+          dkimPrivateKey: "dkimKey",
+          emailService: "mailchannels",
+        },
+      ],
+    };
+
+    ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
+
+    const client = await getClient(ctx.env, "testClient");
+
+    expect(client.domains).toEqual([
+      {
+        domain: "example2.com",
+        apiKey: "apiKey",
+        emailService: "mailgun",
+      },
+      {
+        domain: "example.com",
+        dkimPrivateKey: "dkimKey",
+        emailService: "mailchannels",
       },
     ]);
   });
