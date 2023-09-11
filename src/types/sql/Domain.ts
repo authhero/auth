@@ -7,5 +7,5 @@ export interface SqlDomain {
   dkimPrivateKey?: string;
   dkimPublicKey?: string;
   apiKey?: string;
-  mailService?: "mailgun" | "mailchannels";
+  emailService?: "mailgun" | "mailchannels";
 }

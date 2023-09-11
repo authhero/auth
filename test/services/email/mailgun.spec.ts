@@ -12,7 +12,6 @@ describe("send", () => {
       to: [{ email: "test@example.com", name: "Test User" }],
       from: { email: "sender@mydomain.com", name: "Sender" },
       subject: "Test Subject",
-      apiKey: "test-api-key",
       content: [
         { type: "text/plain", value: "Test plain content" },
         { type: "text/html", value: "<p>Test HTML content</p>" },
@@ -24,11 +23,11 @@ describe("send", () => {
       headers: { "content-type": "application/json" },
     });
 
-    await send(testEmailOptions);
+    await send(testEmailOptions, "test-api-key");
 
     expect(fetchMock.mock.calls.length).toEqual(1);
     expect(fetchMock.mock.calls[0][0]).toEqual(
-      "https://api.mailgun.net/v3/mydomain.com/messages",
+      "https://api.eu.mailgun.net/v3/mydomain.com/messages",
     );
     expect(fetchMock.mock.calls?.[0]?.[1]?.method).toEqual("POST");
   });
@@ -38,7 +37,6 @@ describe("send", () => {
       to: [{ email: "test@example.com", name: "Test User" }],
       from: { email: "sender@mydomain.com", name: "Sender" },
       subject: "Test Subject",
-      apiKey: "test-api-key",
       content: [
         { type: "text/plain", value: "Test plain content" },
         { type: "text/html", value: "<p>Test HTML content</p>" },
@@ -47,6 +45,8 @@ describe("send", () => {
 
     fetchMock.mockReject(new Error("API call failed"));
 
-    await expect(send(testEmailOptions)).rejects.toThrow("API call failed");
+    await expect(send(testEmailOptions, "test-api-key")).rejects.toThrow(
+      "API call failed",
+    );
   });
 });

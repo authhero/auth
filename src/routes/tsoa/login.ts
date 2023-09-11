@@ -145,6 +145,7 @@ export class LoginController extends Controller {
     const loginState = await getLoginState(env, state);
 
     const client = await getClient(env, loginState.authParams.client_id);
+
     const user = env.userFactory.getInstanceByName(
       getId(client.tenantId, params.username),
     );

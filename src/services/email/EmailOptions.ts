@@ -7,9 +7,6 @@ export interface EmailOptions {
   to: EmailUser[];
   from: EmailUser;
   subject: string;
-  dkim?: string;
-  apiKey?: string;
-  emailService?: "mailgun" | "mailchannels";
   content: {
     type: "text/plain" | "text/html";
     value: string;

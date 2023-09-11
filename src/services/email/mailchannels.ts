@@ -1,8 +1,8 @@
 import { getDomainFromEmail } from "../../utils/email";
 import { EmailOptions } from "./EmailOptions";
 
-export default async function send(emailOptions: EmailOptions) {
-  const { to, from, dkim, subject, content } = emailOptions;
+export default async function send(emailOptions: EmailOptions, dkim?: string) {
+  const { to, from, subject, content } = emailOptions;
 
   const domain = getDomainFromEmail(from.email);
 

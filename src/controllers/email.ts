@@ -42,7 +42,6 @@ export async function sendEmailValidation(
 
   await sendEmail(client, {
     to: [{ email: to, name: to }],
-    dkim: client.domains[0]?.dkimPrivateKey,
     from: {
       email: client.tenant.senderEmail,
       name: client.tenant.senderName,
@@ -89,7 +88,6 @@ export async function sendCode(
 
   await sendEmail(client, {
     to: [{ email: to, name: to }],
-    dkim: client.domains[0]?.dkimPrivateKey,
     from: {
       email: client.tenant.senderEmail,
       name: client.tenant.senderName,
@@ -116,7 +114,6 @@ export async function sendResetPassword(
   const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
   await sendEmail(client, {
     to: [{ email: to, name: to }],
-    dkim: client.domains[0]?.dkimPrivateKey,
     from: {
       email: client.tenant.senderEmail,
       name: client.tenant.senderName,
