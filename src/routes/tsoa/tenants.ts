@@ -39,13 +39,13 @@ export class TenantsController extends Controller {
       const memberTenants = await db
         .selectFrom("members")
         .where("sub", "=", ctx.state.user.sub)
-        .select("tenantId")
+        .select("tenant_id")
         .execute();
 
       query = query.where(
         "id",
         "in",
-        memberTenants.map((mt) => mt.tenantId),
+        memberTenants.map((mt) => mt.tenant_id),
       );
     }
 
@@ -142,7 +142,7 @@ export class TenantsController extends Controller {
       id: nanoid(),
       sub: ctx.state.user.sub,
       email: "placeholder",
-      tenantId: tenant.id,
+      tenant_id: tenant.id,
       role: "admin",
       status: "active",
       created_at: new Date().toISOString(),

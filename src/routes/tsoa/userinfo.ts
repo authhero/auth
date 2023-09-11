@@ -28,7 +28,7 @@ export class UserinfoController extends Controller {
 
     // Fetch the user from durable object
     const user = env.userFactory.getInstanceByName(
-      getId(dbUser.tenantId, dbUser.email),
+      getId(dbUser.tenant_id, dbUser.email),
     );
 
     return user.getProfile.query();

@@ -40,7 +40,7 @@ export class UsersController extends Controller {
 
     const db = getDb(ctx.env);
 
-    let query = db.selectFrom("users").where("users.tenantId", "=", tenantId);
+    let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     if (filterQuerystring) {
       const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
@@ -79,7 +79,7 @@ export class UsersController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -113,7 +113,7 @@ export class UsersController extends Controller {
     const db = getDb(request.ctx.env);
     const user = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("email")
       .executeTakeFirst();
@@ -147,7 +147,7 @@ export class UsersController extends Controller {
 
     return userInstance.patchProfile.mutate({
       ...body,
-      tenantId,
+      tenant_id: tenantId,
     });
   }
 
@@ -171,7 +171,7 @@ export class UsersController extends Controller {
     const result: Profile = await userInstance.createUser.mutate({
       ...user,
       connections: [],
-      tenantId,
+      tenant_id: tenantId,
     });
     return result;
   }
@@ -188,7 +188,7 @@ export class UsersController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      .where("users.tenantId", "=", tenantId)
+      .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
       .select("users.email")
       .executeTakeFirst();
@@ -209,7 +209,7 @@ export class UsersController extends Controller {
         // If a user is cleared in DO but still available in sql. Should never happen
         await db
           .deleteFrom("users")
-          .where("users.tenantId", "=", tenantId)
+          .where("users.tenant_id", "=", tenantId)
           .where("users.id", "=", userId)
           .execute();
       } else {
