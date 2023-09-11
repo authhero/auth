@@ -7,7 +7,7 @@ export default async function send(emailOptions: EmailOptions, apiKey: string) {
   )}/messages`;
 
   const headers = new Headers();
-  headers.set("Authorization", "Basic " + btoa(`api:${apiKey}`));
+  headers.set("Authorization", `Basic ${btoa(`api:${apiKey}`)}`);
   headers.set("Content-Type", "application/x-www-form-urlencoded");
 
   const htmlContent = emailOptions.content.find(
