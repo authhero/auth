@@ -143,7 +143,7 @@ describe("User", () => {
           id: "id",
           name: "Test",
           email: "test@example.com",
-          tenantId: "tenantId",
+          tenant_id: "tenantId",
           created_at: "2021-01-01T00:00:00.000Z",
           modified_at: "2021-01-01T00:00:00.000Z",
           connections: [],
@@ -186,7 +186,7 @@ describe("User", () => {
           id: "id",
           name: "Test",
           email: "test@example.com",
-          tenantId: "tenantId",
+          tenant_id: "tenantId",
           created_at: "2021-01-01T00:00:00.000Z",
           modified_at: "2021-01-01T00:00:00.000Z",
           connections: [
@@ -231,7 +231,7 @@ describe("User", () => {
         JSON.stringify({
           id: "id",
           email: "test@example.com",
-          tenantId: "tenantId",
+          tenant_id: "tenantId",
           created_at: "2021-01-01T00:00:00.000Z",
           modified_at: "2021-01-01T00:00:00.000Z",
           connections: [],
@@ -354,7 +354,7 @@ describe("User", () => {
         "profile",
         JSON.stringify({
           email: "test@example.com",
-          tenantId: "tenantId",
+          tenant_id: "tenantId",
           id: "id",
           created_at: ".",
           modified_at: ".",
@@ -471,7 +471,7 @@ describe("User", () => {
         "profile",
         JSON.stringify({
           email: "user1@example.com",
-          tenantId: "tenantId",
+          tenant_id: "tenantId",
           id: "userId",
           created_at: "",
           modified_at: "",
