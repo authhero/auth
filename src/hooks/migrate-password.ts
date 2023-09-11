@@ -21,7 +21,7 @@ export async function auth0login(
       realm: "Username-Password-Authentication",
       username,
       password,
-      client_id: migration.clientId,
+      client_id: migration.client_id,
     }),
   });
 
@@ -38,7 +38,7 @@ export async function connectIdLogin(
       migration.domain
     }/user/oauth/authorize?state=${Date.now()}&response_type=code&approval_prompt=auto&redirect_uri=${
       migration.origin
-    }k&client_id=${migration.clientId}`,
+    }k&client_id=${migration.client_id}`,
     {
       headers: {
         "user-agent": userAgent,
@@ -119,7 +119,7 @@ export async function migratePasswordHook(
   try {
     const migrations = await db
       .selectFrom("migrations")
-      .where("migrations.tenantId", "=", tenantId)
+      .where("migrations.tenant_id", "=", tenantId)
       .selectAll()
       .execute();
 
