@@ -56,7 +56,7 @@ async function updateUser(env: Env, tenantId: string, email: string) {
     created_at: profile.created_at,
     modified_at: profile.modified_at,
     tags: JSON.stringify(tags),
-    tenantId,
+    tenant_id: tenantId,
   };
 
   try {
