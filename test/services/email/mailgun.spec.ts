@@ -27,7 +27,7 @@ describe("send", () => {
 
     expect(fetchMock.mock.calls.length).toEqual(1);
     expect(fetchMock.mock.calls[0][0]).toEqual(
-      "https://api.mailgun.net/v3/mydomain.com/messages",
+      "https://api.eu.mailgun.net/v3/mydomain.com/messages",
     );
     expect(fetchMock.mock.calls?.[0]?.[1]?.method).toEqual("POST");
   });
