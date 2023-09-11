@@ -2,11 +2,11 @@ export interface Tenant {
   id: string;
   name: string;
   audience: string;
-  senderEmail: string;
-  senderName: string;
+  sender_email: string;
+  sender_name: string;
   logo?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
+  primary_color?: string;
+  secondary_color?: string;
   language?: string;
   created_at: string;
   modified_at: string;

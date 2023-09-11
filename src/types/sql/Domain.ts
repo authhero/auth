@@ -1,11 +1,11 @@
 export interface SqlDomain {
   id: string;
-  tenantId: string;
+  tenant_id: string;
   created_at: string;
   modified_at: string;
   domain: string;
-  dkimPrivateKey?: string;
-  dkimPublicKey?: string;
-  apiKey?: string;
-  emailService?: "mailgun" | "mailchannels";
+  dkim_private_key?: string;
+  dkim_public_key?: string;
+  api_key?: string;
+  email_service?: "mailgun" | "mailchannels";
 }
