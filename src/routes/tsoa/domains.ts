@@ -40,7 +40,7 @@ export class DomainsController extends Controller {
     const db = getDb(ctx.env);
     const query = db
       .selectFrom("domains")
-      .where("domains.tenantId", "=", tenantId);
+      .where("domains.tenant_id", "=", tenantId);
 
     const domains = await query
       .selectAll()
@@ -75,7 +75,7 @@ export class DomainsController extends Controller {
     const domain = await db
       .selectFrom("domains")
       .where("domains.id", "=", id)
-      .where("domains.tenantId", "=", tenantId)
+      .where("domains.tenant_id", "=", tenantId)
       .selectAll()
       .executeTakeFirst();
 
@@ -99,7 +99,7 @@ export class DomainsController extends Controller {
     const db = getDb(env);
     await db
       .deleteFrom("domains")
-      .where("domains.tenantId", "=", tenantId)
+      .where("domains.tenant_id", "=", tenantId)
       .where("domains.id", "=", id)
       .execute();
 
@@ -155,11 +155,11 @@ export class DomainsController extends Controller {
 
     const domain: SqlDomain = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id: nanoid(),
       // TODO: generate keys
-      dkimPrivateKey: "",
-      dkimPublicKey: "",
+      dkim_public_key: "",
+      dkim_private_key: "",
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
     };
@@ -189,7 +189,7 @@ export class DomainsController extends Controller {
 
     const domain: SqlDomain = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       id,
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -202,7 +202,7 @@ export class DomainsController extends Controller {
         throw err;
       }
 
-      const { id, created_at, tenantId, ...domainUpdate } = domain;
+      const { id, created_at, tenant_id: tenantId, ...domainUpdate } = domain;
       await db
         .updateTable("domains")
         .set(domainUpdate)
