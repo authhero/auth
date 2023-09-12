@@ -41,7 +41,7 @@ export class PasswordlessController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      `${client.tenantId}|${body.email}`,
+      `${client.tenant_id}|${body.email}`,
     );
     const { code } = await user.createAuthenticationCode.mutate({
       authParams: {

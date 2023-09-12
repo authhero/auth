@@ -33,7 +33,7 @@ export class LogoutController extends Controller {
       throw new Error("No return to url found");
     }
 
-    validateRedirectUrl(client.allowedLogoutUrls, redirectUri);
+    validateRedirectUrl(client.allowed_logout_urls, redirectUri);
 
     this.setStatus(302);
     serializeClearCookie().forEach((cookie) => {

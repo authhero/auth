@@ -42,23 +42,23 @@ export async function socialAuth(
     state: JSON.stringify({ authParams, connection }),
   });
 
-  const oauthLoginUrl = new URL(connectionInstance.authorizationEndpoint);
+  const oauthLoginUrl = new URL(connectionInstance.authorization_endpoint);
   if (connectionInstance.scope) {
     oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
   oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
   oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
-  oauthLoginUrl.searchParams.set("client_id", connectionInstance.clientId);
-  if (connectionInstance.responseType) {
+  oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id);
+  if (connectionInstance.response_type) {
     oauthLoginUrl.searchParams.set(
       "response_type",
-      connectionInstance.responseType,
+      connectionInstance.response_type,
     );
   }
-  if (connectionInstance.responseMode) {
+  if (connectionInstance.response_mode) {
     oauthLoginUrl.searchParams.set(
       "response_mode",
-      connectionInstance.responseMode,
+      connectionInstance.response_mode,
     );
   }
   controller.setHeader(headers.location, oauthLoginUrl.href);
@@ -94,7 +94,7 @@ export async function socialAuthCallback({
   }
 
   validateRedirectUrl(
-    client.allowedCallbackUrls,
+    client.allowed_callback_urls,
     state.authParams.redirect_uri,
   );
 
@@ -107,12 +107,12 @@ export async function socialAuthCallback({
 
   const oauth2Profile = parseJwt(token.id_token!);
 
-  const userId = getId(client.tenantId, oauth2Profile.email);
+  const userId = getId(client.tenant_id, oauth2Profile.email);
   const user = env.userFactory.getInstanceByName(userId);
 
   const profile = await user.loginWithConnection.mutate({
     email: oauth2Profile.email,
-    tenantId: client.tenantId,
+    tenantId: client.tenant_id,
     connection: { name: connection.name, profile: oauth2Profile },
   });
 

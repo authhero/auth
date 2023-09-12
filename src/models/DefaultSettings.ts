@@ -7,16 +7,16 @@ const DefaultSettingsSchema = z.object({
       z.object({
         name: z.string(),
         // All these properties are optional as they only are defaults
-        clientId: z.string().optional(),
-        clientSecret: z.string().optional(),
-        privateKey: z.string().optional(),
+        client_id: z.string().optional(),
+        client_secret: z.string().optional(),
+        private_key: z.string().optional(),
         kid: z.string().optional(),
-        teamId: z.string().optional(),
+        team_id: z.string().optional(),
         scope: z.string().optional(),
-        authorizationEndpoint: z.string().optional(),
-        tokenEndpoint: z.string().optional(),
-        responseType: z.string().optional(),
-        responseMode: z.string().optional(),
+        authorization_endpoint: z.string().optional(),
+        token_endpoint: z.string().optional(),
+        response_type: z.string().optional(),
+        response_mode: z.string().optional(),
       }),
     )
     .optional(),
@@ -24,21 +24,21 @@ const DefaultSettingsSchema = z.object({
     .array(
       z.object({
         domain: z.string(),
-        dkimPrivateKey: z.string().optional(),
-        emailService: z
+        dkim_private_key: z.string().optional(),
+        email_service: z
           .union([z.literal("mailchannels"), z.literal("mailgun")])
           .optional(),
-        apiKey: z.string().optional(),
+        api_key: z.string().optional(),
       }),
     )
     .optional(),
   tenant: z
     .object({
       logo: z.string().optional(),
-      primaryColor: z.string().optional(),
-      secondaryColor: z.string().optional(),
-      senderEmail: z.string(),
-      senderName: z.string(),
+      primary_color: z.string().optional(),
+      secondary_color: z.string().optional(),
+      sender_email: z.string(),
+      sender_name: z.string(),
     })
     .optional(),
 });

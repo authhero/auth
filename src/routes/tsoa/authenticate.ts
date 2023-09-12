@@ -62,7 +62,7 @@ export class AuthenticateController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      `${client.tenantId}|${body.username}`,
+      `${client.tenant_id}|${body.username}`,
     );
 
     let authParams: AuthParams | undefined = {
@@ -75,14 +75,14 @@ export class AuthenticateController extends Controller {
           await user.validateAuthenticationCode.mutate({
             code: body.otp,
             email: body.username,
-            tenantId: client.tenantId,
+            tenantId: client.tenant_id,
           });
           break;
         case "Username-Password-Authentication":
           await user.validatePassword.mutate({
             password: body.password,
             email: body.username,
-            tenantId: client.tenantId,
+            tenantId: client.tenant_id,
           });
           break;
         default:
@@ -96,7 +96,7 @@ export class AuthenticateController extends Controller {
         coVerifier,
         coID,
         username: body.username,
-        userId: `${client.tenantId}|${body.username}`,
+        userId: `${client.tenant_id}|${body.username}`,
         authParams,
       };
 

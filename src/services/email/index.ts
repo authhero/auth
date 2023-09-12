@@ -13,15 +13,15 @@ export default async function sendEmail(
 
   const domain = client.domains.find((d) => d.domain === domainName);
 
-  switch (domain?.emailService) {
+  switch (domain?.email_service) {
     case "mailgun":
-      if (!domain.apiKey) {
+      if (!domain.api_key) {
         throw new Error("Api key required");
       }
 
-      return sendWithMailgun(emailOptions, domain.apiKey);
+      return sendWithMailgun(emailOptions, domain.api_key);
     case "mailchannels":
     default:
-      return sendWithMailchannels(emailOptions, domain?.dkimPrivateKey);
+      return sendWithMailchannels(emailOptions, domain?.dkim_private_key);
   }
 }

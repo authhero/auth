@@ -12,7 +12,7 @@ export async function sendEmailValidation(
   to: string,
   code: string,
 ) {
-  if (client.emailValidation === "disabled") {
+  if (client.email_validation === "disabled") {
     return;
   }
 
@@ -43,8 +43,8 @@ export async function sendEmailValidation(
   await sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
-      email: client.tenant.senderEmail,
-      name: client.tenant.senderName,
+      email: client.tenant.sender_email,
+      name: client.tenant.sender_name,
     },
     content: [
       {
@@ -89,8 +89,8 @@ export async function sendCode(
   await sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
-      email: client.tenant.senderEmail,
-      name: client.tenant.senderName,
+      email: client.tenant.sender_email,
+      name: client.tenant.sender_name,
     },
     content: [
       {
@@ -115,8 +115,8 @@ export async function sendResetPassword(
   await sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
-      email: client.tenant.senderEmail,
-      name: client.tenant.senderName,
+      email: client.tenant.sender_email,
+      name: client.tenant.sender_name,
     },
     content: [
       {

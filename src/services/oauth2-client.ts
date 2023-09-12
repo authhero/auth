@@ -8,15 +8,15 @@ export interface TokenResponse {
   refresh_token: string;
 }
 export interface OAuthProviderParams {
-  clientId: string;
-  clientSecret?: string;
+  client_id: string;
+  client_secret?: string;
   kid?: string;
-  teamId?: string;
-  privateKey?: string;
-  authorizationEndpoint: string;
-  tokenEndpoint: string;
+  team_id?: string;
+  private_key?: string;
+  authorization_endpoint: string;
+  token_endpoint: string;
   scope: string;
-  profileEndpoint?: string;
+  profile_endpoint?: string;
 }
 
 export interface IOAuth2ClientFactory {
@@ -47,18 +47,18 @@ export class OAuth2Client implements IOAuth2Client {
 
   async getAuthorizationUrl(state: string): Promise<string> {
     const params = new URLSearchParams({
-      client_id: this.params.clientId,
+      client_id: this.params.client_id,
       redirect_uri: this.redirectUri,
       response_type: "code",
       scope: this.params.scope,
       state,
     });
 
-    return `${this.params.authorizationEndpoint}?${params.toString()}`;
+    return `${this.params.authorization_endpoint}?${params.toString()}`;
   }
 
   async generateAppleClientSecret() {
-    if (!(this.params.privateKey && this.params.kid && this.params.teamId)) {
+    if (!(this.params.private_key && this.params.kid && this.params.team_id)) {
       throw new Error("Private key, kid, and teamId required");
     }
 
@@ -67,12 +67,12 @@ export class OAuth2Client implements IOAuth2Client {
     const DAY_IN_SECONDS = 60 * 60 * 24;
 
     return createToken({
-      pemKey: this.params.privateKey,
+      pemKey: this.params.private_key,
       alg: "ES256",
       payload: {
-        iss: this.params.teamId,
+        iss: this.params.team_id,
         aud: "https://appleid.apple.com",
-        sub: this.params.clientId,
+        sub: this.params.client_id,
         iat: now,
         exp: now + DAY_IN_SECONDS,
       },
@@ -83,9 +83,9 @@ export class OAuth2Client implements IOAuth2Client {
   }
 
   async exchangeCodeForTokenResponse(code: string): Promise<TokenResponse> {
-    const clientSecret = this.params.privateKey
+    const clientSecret = this.params.private_key
       ? await this.generateAppleClientSecret()
-      : this.params.clientSecret;
+      : this.params.client_secret;
 
     if (!clientSecret) {
       throw new Error("Client secret  or private key required");
@@ -94,12 +94,12 @@ export class OAuth2Client implements IOAuth2Client {
     const params = new URLSearchParams({
       grant_type: "authorization_code",
       code,
-      client_id: this.params.clientId,
+      client_id: this.params.client_id,
       client_secret: clientSecret,
       redirect_uri: this.redirectUri,
     });
 
-    const response = await fetch(this.params.tokenEndpoint, {
+    const response = await fetch(this.params.token_endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -119,11 +119,11 @@ export class OAuth2Client implements IOAuth2Client {
   async getUserProfile(
     accessToken: string,
   ): Promise<{ [key: string]: string }> {
-    if (!this.params.profileEndpoint) {
+    if (!this.params.profile_endpoint) {
       throw new Error("No profile endpoint configured");
     }
 
-    const response = await fetch(this.params.profileEndpoint, {
+    const response = await fetch(this.params.profile_endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

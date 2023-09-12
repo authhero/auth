@@ -13,24 +13,24 @@ const defaultSettings: DefaultSettings = {
     {
       name: "google-oauth2",
       scope: "email profile",
-      authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-      tokenEndpoint: "https://oauth2.googleapis.com/token",
-      responseType: "code",
-      responseMode: "query",
+      authorization_endpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+      token_endpoint: "https://oauth2.googleapis.com/token",
+      response_type: "code",
+      response_mode: "query",
     },
     {
       name: "facebook",
       scope: "email public_profile openid",
-      authorizationEndpoint: "https://www.facebook.com/dialog/oauth",
-      tokenEndpoint: "https://graph.facebook.com/oauth/access_token",
+      authorization_endpoint: "https://www.facebook.com/dialog/oauth",
+      token_endpoint: "https://graph.facebook.com/oauth/access_token",
     },
     {
       name: "apple",
       scope: "name email",
-      authorizationEndpoint: "https://appleid.apple.com/auth/authorize",
-      tokenEndpoint: "https://appleid.apple.com/auth/token",
-      responseMode: "form_post",
-      responseType: "code",
+      authorization_endpoint: "https://appleid.apple.com/auth/authorize",
+      token_endpoint: "https://appleid.apple.com/auth/token",
+      response_mode: "form_post",
+      response_type: "code",
     },
   ],
 };
@@ -71,12 +71,17 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
     })
     .filter((c) => c);
 
-  // I have a feeling this will not work...  what casing should the KV store be? 8-0
   return ClientSchema.parse({
     ...client,
-    allowedWebOrigins: [...client.allowedWebOrigins, `${env.ISSUER}u/login`],
-    allowedLogoutUrls: [...client.allowedLogoutUrls, env.ISSUER],
-    allowedCallbackUrls: [...client.allowedCallbackUrls, `${env.ISSUER}u/info`],
+    allowed_web_origins: [
+      ...client.allowed_web_origins,
+      `${env.ISSUER}u/login`,
+    ],
+    allowed_logout_urls: [...client.allowed_logout_urls, env.ISSUER],
+    allowed_callback_urls: [
+      ...client.allowed_callback_urls,
+      `${env.ISSUER}u/info`,
+    ],
     connections,
     domains: [...client.domains, ...(envDefaultSettings.domains || [])],
     tenant: {

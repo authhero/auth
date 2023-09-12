@@ -44,7 +44,7 @@ export async function authorizeCodeGrant(
 
   // Check the secret if this is a code grant flow
   const secretHash = await hash(params.client_secret);
-  if (client.clientSecret !== secretHash) {
+  if (client.client_secret !== secretHash) {
     throw new InvalidClientError("Invalid Secret");
   }
 
@@ -61,7 +61,7 @@ export async function clientCredentialsGrant(
 ): Promise<TokenResponse | CodeResponse> {
   const client = await getClient(env, params.client_id);
 
-  if (client.clientSecret !== params.client_secret) {
+  if (client.client_secret !== params.client_secret) {
     throw new Error("Invalid secret");
   }
 

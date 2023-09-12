@@ -4,10 +4,10 @@ import {
 } from "../../src/services/oauth2-client";
 
 const oauth2ClientParams: OAuthProviderParams = {
-  authorizationEndpoint: "https://example.com/oauth2/authorize",
-  tokenEndpoint: "https://example.com/oauth2/token",
-  clientId: "your_client_id",
-  clientSecret: "your_client_secret",
+  authorization_endpoint: "https://example.com/oauth2/authorize",
+  token_endpoint: "https://example.com/oauth2/token",
+  client_id: "your_client_id",
+  client_secret: "your_client_secret",
   scope: "scope1 scope2",
 };
 
@@ -39,7 +39,7 @@ describe("OAuth2Client", () => {
       const url = await client.getAuthorizationUrl(state);
 
       expect(url).toContain("response_type=code");
-      expect(url).toContain(`client_id=${oauth2ClientParams.clientId}`);
+      expect(url).toContain(`client_id=${oauth2ClientParams.client_id}`);
       expect(url).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
       expect(url).toContain(`scope=scope1+scope2`);
       expect(url).toContain(`state=${encodeURIComponent(state)}`);

@@ -14,7 +14,7 @@ export async function passwordlessGrant(
 
   const profile = await user.validateAuthenticationCode.mutate({
     code: params.otp,
-    tenantId: client.tenantId,
+    tenantId: client.tenant_id,
     email: params.username,
   });
 

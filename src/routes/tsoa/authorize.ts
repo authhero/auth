@@ -113,11 +113,14 @@ export class AuthorizeController extends Controller {
     };
 
     if (referer) {
-      validateRedirectUrl(client.allowedWebOrigins, referer);
+      validateRedirectUrl(client.allowed_web_origins, referer);
     }
 
     if (authParams.redirect_uri) {
-      validateRedirectUrl(client.allowedCallbackUrls, authParams.redirect_uri);
+      validateRedirectUrl(
+        client.allowed_callback_urls,
+        authParams.redirect_uri,
+      );
     }
 
     // Silent authentication
