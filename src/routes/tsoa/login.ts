@@ -147,7 +147,7 @@ export class LoginController extends Controller {
     const client = await getClient(env, loginState.authParams.client_id);
 
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, params.username),
+      getId(client.tenant_id, params.username),
     );
 
     const { code } = await user.createAuthenticationCode.mutate(loginState);
@@ -202,14 +202,14 @@ export class LoginController extends Controller {
 
     const client = await getClient(env, loginState.authParams.client_id);
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginState.authParams.username),
+      getId(client.tenant_id, loginState.authParams.username),
     );
 
     try {
       await user.validateAuthenticationCode.mutate({
         code: params.code,
         email: loginState.authParams.username,
-        tenantId: client.tenantId,
+        tenantId: client.tenant_id,
       });
     } catch (err) {
       return renderEnterCode(env.AUTH_TEMPLATES, this, {
@@ -245,14 +245,14 @@ export class LoginController extends Controller {
 
     const client = await getClient(env, loginState.authParams.client_id);
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, email),
+      getId(client.tenant_id, email),
     );
 
     try {
       const profile = await user.validateEmailValidationCode.mutate({
         code: params.code,
         email,
-        tenantId: client.tenantId,
+        tenantId: client.tenant_id,
       });
 
       return handleLogin(env, this, profile, loginState);
@@ -290,7 +290,7 @@ export class LoginController extends Controller {
 
     const client = await getClient(env, loginState.authParams.client_id);
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginParams.username),
+      getId(client.tenant_id, loginParams.username),
     );
 
     if (loginState.authParams.username !== loginParams.username) {
@@ -301,14 +301,14 @@ export class LoginController extends Controller {
     try {
       const profile = await user.registerPassword.mutate({
         email: loginParams.username,
-        tenantId: client.tenantId,
+        tenantId: client.tenant_id,
         password: loginParams.password,
       });
 
       const { code } = await user.createEmailValidationCode.mutate();
       await sendEmailValidation(env, client, loginParams.username, code);
 
-      if (client.emailValidation === "enforced") {
+      if (client.email_validation === "enforced") {
         // Update the username in the state
         await setLoginState(env, state, {
           ...loginState,
@@ -369,7 +369,7 @@ export class LoginController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, params.username),
+      getId(client.tenant_id, params.username),
     );
 
     if (loginState.authParams.username !== params.username) {
@@ -424,7 +424,7 @@ export class LoginController extends Controller {
     const client = await getClient(env, loginState.authParams.client_id);
 
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginState.authParams.username),
+      getId(client.tenant_id, loginState.authParams.username),
     );
 
     try {
@@ -459,13 +459,13 @@ export class LoginController extends Controller {
     const client = await getClient(env, loginState.authParams.client_id);
 
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenantId, loginParams.username),
+      getId(client.tenant_id, loginParams.username),
     );
 
     try {
       await user.validatePassword.mutate({
         password: loginParams.password,
-        tenantId: client.tenantId,
+        tenantId: client.tenant_id,
         email: loginParams.username,
       });
       const profile = await user.getProfile.query();
@@ -473,7 +473,7 @@ export class LoginController extends Controller {
       const authConnection = profile.connections.find((c) => c.name === "auth");
       if (
         !authConnection?.profile?.validated &&
-        client.emailValidation === "enforced"
+        client.email_validation === "enforced"
       ) {
         // Update the username in the state
         await setLoginState(env, state, {

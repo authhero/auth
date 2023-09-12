@@ -9,6 +9,10 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("audience", "varchar(255)")
     .addColumn("sender_email", "varchar(255)")
     .addColumn("sender_name", "varchar(255)")
+    .addColumn("language", "varchar(255)")
+    .addColumn("logo", "varchar(255)")
+    .addColumn("primary_color", "varchar(255)")
+    .addColumn("secondary_color", "varchar(255)")
     .addColumn("created_at", "varchar(255)")
     .addColumn("modified_at", "varchar(255)")
     .execute();
@@ -79,6 +83,12 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("client_secret", "varchar(255)")
     .addColumn("authorization_endpoint", "varchar(255)")
     .addColumn("token_endpoint", "varchar(255)")
+    .addColumn("scope", "varchar(255)")
+    .addColumn("response_type", "varchar(255)")
+    .addColumn("response_mode", "varchar(255)")
+    .addColumn("private_key", "varchar(767)")
+    .addColumn("kid", "varchar(255)")
+    .addColumn("team_id", "varchar(255)")
     .addColumn("created_at", "varchar(255)")
     .addColumn("modified_at", "varchar(255)")
     .execute();
@@ -96,9 +106,25 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("created_at", "varchar(255)")
     .addColumn("modified_at", "varchar(255)")
     .execute();
+
+  await db.schema
+    .createTable("domains")
+    .addColumn("id", "varchar(255)", (col) => col.notNull().primaryKey())
+    .addColumn("tenant_id", "varchar(255)", (col) =>
+      col.references("tenants.id").onDelete("cascade").notNull(),
+    )
+    .addColumn("domain", "varchar(255)", (col) => col.notNull())
+    .addColumn("email_service", "varchar(255)")
+    .addColumn("email_api_key", "varchar(255)")
+    .addColumn("dkim_private_key", "varchar(2048)")
+    .addColumn("dkim_public_key", "varchar(2048)")
+    .addColumn("created_at", "varchar(255)")
+    .addColumn("modified_at", "varchar(255)")
+    .execute();
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {
+  await db.schema.dropTable("domains").execute();
   await db.schema.dropTable("members").execute();
   await db.schema.dropTable("users").execute();
   await db.schema.dropTable("connections").execute();

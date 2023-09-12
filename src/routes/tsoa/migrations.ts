@@ -31,7 +31,7 @@ export class MigrationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async listMigrations(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path("tenantId") tenant_id: string,
     @Header("range") rangeRequest?: string,
   ): Promise<Migration[]> {
     const { ctx } = request;
@@ -39,7 +39,7 @@ export class MigrationsController extends Controller {
     const db = getDb(ctx.env);
     const query = db
       .selectFrom("migrations")
-      .where("migrations.tenantId", "=", tenantId);
+      .where("migrations.tenant_id", "=", tenant_id);
 
     const { data, range } = await executeQuery(query, rangeRequest);
 
@@ -62,7 +62,7 @@ export class MigrationsController extends Controller {
     const db = getDb(ctx.env);
     const migration = await db
       .selectFrom("migrations")
-      .where("migrations.tenantId", "=", tenantId)
+      .where("migrations.tenant_id", "=", tenantId)
       .where("migrations.id", "=", id)
       .selectAll()
       .executeTakeFirst();
@@ -87,7 +87,7 @@ export class MigrationsController extends Controller {
     const db = getDb(env);
     await db
       .deleteFrom("migrations")
-      .where("migrations.tenantId", "=", tenantId)
+      .where("migrations.tenant_id", "=", tenantId)
       .where("migrations.id", "=", id)
       .execute();
 
@@ -132,7 +132,7 @@ export class MigrationsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postMigrations(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path("tenantId") tenant_id: string,
     @Body()
     body: Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Migration> {
@@ -143,7 +143,7 @@ export class MigrationsController extends Controller {
 
     const migration: Migration = {
       ...body,
-      tenantId,
+      tenant_id,
       id: nanoid(),
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -151,7 +151,7 @@ export class MigrationsController extends Controller {
 
     await db.insertInto("migrations").values(migration).execute();
 
-    await updateTenantClientsInKV(env, tenantId);
+    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(201);
     return migration;
@@ -163,7 +163,7 @@ export class MigrationsController extends Controller {
   public async putMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path("tenantId") tenant_id: string,
     @Body()
     body: Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<Migration> {
@@ -174,7 +174,7 @@ export class MigrationsController extends Controller {
 
     const migration: Migration = {
       ...body,
-      tenantId,
+      tenant_id,
       id,
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -187,7 +187,7 @@ export class MigrationsController extends Controller {
         throw err;
       }
 
-      const { id, created_at, tenantId, ...migrationUpdate } = migration;
+      const { id, created_at, tenant_id, ...migrationUpdate } = migration;
       await db
         .updateTable("migrations")
         .set(migrationUpdate)
@@ -197,7 +197,7 @@ export class MigrationsController extends Controller {
 
     await db.insertInto("migrations").values(migration).execute();
 
-    await updateTenantClientsInKV(env, tenantId);
+    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(201);
     return migration;

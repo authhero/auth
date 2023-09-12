@@ -38,7 +38,7 @@ export class ConnectionsController extends Controller {
     const db = getDb(ctx.env);
     const query = db
       .selectFrom("connections")
-      .where("connections.tenantId", "=", tenantId);
+      .where("connections.tenant_id", "=", tenantId);
 
     const { data, range } = await executeQuery(query, rangeRequest);
 
@@ -61,7 +61,7 @@ export class ConnectionsController extends Controller {
     const db = getDb(ctx.env);
     const connection = await db
       .selectFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
+      .where("connections.tenant_id", "=", tenantId)
       .where("connections.id", "=", id)
       .selectAll()
       .executeTakeFirst();
@@ -86,7 +86,7 @@ export class ConnectionsController extends Controller {
     const db = getDb(env);
     await db
       .deleteFrom("connections")
-      .where("connections.tenantId", "=", tenantId)
+      .where("connections.tenant_id", "=", tenantId)
       .where("connections.id", "=", id)
       .execute();
 
@@ -131,7 +131,7 @@ export class ConnectionsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postConnections(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path("tenantId") tenant_id: string,
     @Body()
     body: Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">,
   ): Promise<SqlConnection> {
@@ -141,7 +141,7 @@ export class ConnectionsController extends Controller {
     const db = getDb(env);
     const connection: SqlConnection = {
       ...body,
-      tenantId,
+      tenant_id,
       id: nanoid(),
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -149,7 +149,7 @@ export class ConnectionsController extends Controller {
 
     await db.insertInto("connections").values(connection).execute();
 
-    await updateTenantClientsInKV(env, tenantId);
+    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(201);
     return connection;
@@ -159,7 +159,7 @@ export class ConnectionsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async putConnection(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path("tenantId") tenant_id: string,
     @Path("id") id: string,
     @Body()
     body: Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">,
@@ -171,7 +171,7 @@ export class ConnectionsController extends Controller {
 
     const connection: SqlConnection = {
       ...body,
-      tenantId,
+      tenant_id,
       id,
       created_at: new Date().toISOString(),
       modified_at: new Date().toISOString(),
@@ -188,7 +188,7 @@ export class ConnectionsController extends Controller {
         throw err;
       }
 
-      const { id, created_at, tenantId, ...connectionUpdate } = connection;
+      const { id, created_at, tenant_id, ...connectionUpdate } = connection;
       await db
         .updateTable("connections")
         .set(connectionUpdate)
@@ -196,7 +196,7 @@ export class ConnectionsController extends Controller {
         .execute();
     }
 
-    await updateTenantClientsInKV(env, tenantId);
+    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(200);
     return connection;
