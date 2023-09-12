@@ -104,7 +104,7 @@ export class MigrationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">
+      Omit<Migration, "id" | "tenant_id" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -134,7 +134,7 @@ export class MigrationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenant_id: string,
     @Body()
-    body: Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<Migration, "id" | "tenant_id" | "created_at" | "modified_at">,
   ): Promise<Migration> {
     const { ctx } = request;
     const { env } = ctx;
@@ -165,7 +165,7 @@ export class MigrationsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenant_id: string,
     @Body()
-    body: Omit<Migration, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<Migration, "id" | "tenant_id" | "created_at" | "modified_at">,
   ): Promise<Migration> {
     const { ctx } = request;
     const { env } = ctx;

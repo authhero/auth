@@ -101,7 +101,7 @@ export class MembersController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Member, "id" | "tenantId" | "created_at" | "modified_at">
+      Omit<Member, "id" | "tenant_id" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -129,7 +129,7 @@ export class MembersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Member, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<Member, "id" | "tenant_id" | "created_at" | "modified_at">,
   ): Promise<Member> {
     const { ctx } = request;
     const { env } = ctx;
@@ -158,7 +158,7 @@ export class MembersController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Member, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<Member, "id" | "tenant_id" | "created_at" | "modified_at">,
   ): Promise<Member> {
     const { ctx } = request;
     const { env } = ctx;
