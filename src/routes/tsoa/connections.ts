@@ -103,7 +103,7 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">
+      Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -133,7 +133,10 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenant_id: string,
     @Body()
-    body: Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<
+      SqlConnection,
+      "id" | "tenant_id" | "created_at" | "modified_at"
+    >,
   ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;
@@ -162,7 +165,10 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenant_id: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<SqlConnection, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<
+      SqlConnection,
+      "id" | "tenant_id" | "created_at" | "modified_at"
+    >,
   ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;

@@ -104,7 +104,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "id" | "tenantId" | "created_at" | "modified_at">
+      Omit<Application, "id" | "tenant_id" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -136,7 +136,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "tenantId" | "created_at" | "modified_at">
+      Omit<Application, "tenant_id" | "created_at" | "modified_at">
     > & {
       name: string;
     },
@@ -176,7 +176,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Application, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<Application, "id" | "tenant_id" | "created_at" | "modified_at">,
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;

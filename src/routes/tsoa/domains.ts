@@ -116,7 +116,7 @@ export class DomainsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<SqlDomain, "id" | "tenantId" | "created_at" | "modified_at">
+      Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "modified_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -180,7 +180,7 @@ export class DomainsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<SqlDomain, "id" | "tenantId" | "created_at" | "modified_at">,
+    body: Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "modified_at">,
   ): Promise<SqlDomain> {
     const { ctx } = request;
     const { env } = ctx;
