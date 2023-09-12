@@ -179,7 +179,7 @@ export class UsersMgmtController extends Controller {
     });
   }
 
-  @Put("users")
+  @Put("users/{userId}")
   public async putUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
@@ -193,8 +193,6 @@ export class UsersMgmtController extends Controller {
       getId(tenantId, user.email),
     );
 
-    // I'm assuming that patchProfile isn't actually tested...
-    // is it even what we want here? let's see...
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       tenant_id: tenantId,
