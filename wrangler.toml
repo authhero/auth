@@ -54,6 +54,9 @@ bindings = [
 tag = "v1"
 new_classes = ["User", "State"]
 
+[triggers]
+crons = ["0 3 * * *"]
+
 [env.production]
 account_id = "d684d0f34602a66c97de230566a2fa87"
 workers_dev = true
@@ -103,3 +106,6 @@ bindings = [
 [[env.production.migrations]]
 tag = "v1"
 new_classes = ["User", "State"]
+
+[env.production.triggers]
+crons = ["0 3 * * *"]

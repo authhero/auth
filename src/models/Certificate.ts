@@ -22,5 +22,9 @@ export async function getCertificate(env: Env): Promise<Certificate> {
     )
     .pop();
 
+  if (!certificatesString) {
+    throw new Error("No Valid Certificate Found");
+  }
+
   return certificate;
 }

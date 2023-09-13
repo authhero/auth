@@ -29,7 +29,7 @@ const server = {
     );
   },
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
-    ctx.waitUntil(rotateKeys(env));
+    await rotateKeys(env);
   },
   async queue(
     batch: MessageBatch<QueueMessage>,
