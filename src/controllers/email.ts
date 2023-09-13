@@ -16,11 +16,11 @@ export async function sendEmailValidation(
     return;
   }
 
-  let response = await env.AUTH_TEMPLATES.get(
-    "templates/email/email-validation.liquid",
+  const response = await env.AUTH_TEMPLATES.get(
+    "templates/email/verify-email.liquid",
   );
   if (!response) {
-    throw new Error("Code template not found");
+    throw new Error("Verify email template not found");
   }
 
   const templateString = await response.text();
@@ -64,7 +64,7 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  let response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
+  const response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
   if (!response) {
     throw new Error("Code template not found");
   }
@@ -111,7 +111,31 @@ export async function sendResetPassword(
   code: string,
   state: string,
 ) {
-  const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
+  const response = await env.AUTH_TEMPLATES.get(
+    "templates/email/password-reset.liquid",
+  );
+  if (!response) {
+    throw new Error("Code template not found");
+  }
+
+  const templateString = await response.text();
+
+  const language = client.tenant.language || "en";
+
+  const logo = getClientLogoPngGreyBg(
+    client.tenant.logo ||
+      "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
+    env.IMAGE_PROXY_URL,
+  );
+
+  const sendCodeTemplate = engine.parse(templateString);
+  const codeEmailBody = await engine.render(sendCodeTemplate, {
+    passwordResetUrl: `${env.ISSUER}u/reset-password?code=${code}&state=${state}`,
+    vendorName: client.name,
+    logo,
+    primaryColor: client.tenant.primary_color || "#007bff",
+  });
+
   await sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
@@ -120,10 +144,13 @@ export async function sendResetPassword(
     },
     content: [
       {
-        type: "text/plain",
-        value: message,
+        type: "text/html",
+        value: codeEmailBody,
       },
     ],
-    subject: "Reset password",
+    subject: translate(language, "passwordResetTitle").replace(
+      "{{vendorName}}",
+      client.name,
+    ),
   });
 }
