@@ -2,6 +2,9 @@ import { z } from "zod";
 import { Env } from "../types";
 
 const DefaultSettingsSchema = z.object({
+  allowed_logout_urls: z.array(z.string()).optional(),
+  allowed_web_origins: z.array(z.string()).optional(),
+  allowed_callback_urls: z.array(z.string()).optional(),
   connections: z
     .array(
       z.object({

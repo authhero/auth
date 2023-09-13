@@ -74,11 +74,17 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
   return ClientSchema.parse({
     ...client,
     allowed_web_origins: [
+      ...(envDefaultSettings.allowed_web_origins || []),
       ...client.allowed_web_origins,
       `${env.ISSUER}u/login`,
     ],
-    allowed_logout_urls: [...client.allowed_logout_urls, env.ISSUER],
+    allowed_logout_urls: [
+      ...(envDefaultSettings.allowed_logout_urls || []),
+      ...client.allowed_logout_urls,
+      env.ISSUER,
+    ],
     allowed_callback_urls: [
+      ...(envDefaultSettings.allowed_callback_urls || []),
       ...client.allowed_callback_urls,
       `${env.ISSUER}u/info`,
     ],
