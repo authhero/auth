@@ -15,7 +15,7 @@ export async function handleLinkedAccount(env: Env, profile: Profile) {
     tenantId: profile.tenant_id,
     email: profile.linked_with,
     connection: {
-      name: "linked-user",
+      name: `linked-user|${profile.email}`,
       profile: profileWithoutConnections,
     },
   });
