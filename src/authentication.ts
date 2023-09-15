@@ -184,7 +184,7 @@ export async function getUser(
 }
 
 export async function verifyTenantPermissions(ctx: Context<Env>) {
-  const tenantId = ctx.params.tenantId;
+  const tenantId = ctx.params.tenantId || ctx.headers.get("tenant-id");
   if (!tenantId) {
     return;
   }
