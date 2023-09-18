@@ -31,11 +31,11 @@ export default async function loggerMiddleware(
   try {
     const response = await next();
 
-    ctx.event.waitUntil(logResponse(ctx, response!));
+    ctx.executionCtx.waitUntil(logResponse(ctx, response!));
 
     return response;
   } catch (error: any) {
-    ctx.event.waitUntil(logError(ctx, error as Error));
+    ctx.executionCtx.waitUntil(logError(ctx, error as Error));
     throw error;
   }
 }

@@ -11,11 +11,7 @@ import { handleUserEvent } from "./handlers/update-user";
 export { User, State };
 
 const server = {
-  async fetch(
-    request: Request,
-    env: Env,
-    ctx: ExecutionContext,
-  ): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     return app.fetch(
       request,
       // Add dependencies to the environment

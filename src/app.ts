@@ -21,19 +21,17 @@ app.onError((err, ctx) => {
     return err.getResponse();
   }
 
-  return ctx.text("Server Error", 500);
+  return ctx.text(err.message, 500);
 });
 
 app.use(loggerMiddleware);
 app.use(cors());
 
-app.get("/", async () => {
-  return new Response(
-    JSON.stringify({
-      name: packageJson.name,
-      version: packageJson.version,
-    }),
-  );
+app.get("/", async (ctx: Context) => {
+  return ctx.json({
+    name: packageJson.name,
+    version: packageJson.version,
+  });
 });
 
 app.get("/spec", async () => {
@@ -89,7 +87,7 @@ app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 //   return new Response("OK");
 // });
 
-app.get("/static/:file*", serve);
+app.get("/static/:file{.*}", serve);
 
 app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   const db = getDb(ctx.env);
@@ -106,12 +104,6 @@ app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
       location: `/authorize?client_id=${application?.id}&redirect_uri=${url.protocol}//${url.host}/u/info&scope=profile%20email%20openid&state=1234&response_type=code`,
     },
   });
-});
-
-app.post("/create-key", async (ctx: Context<{ Bindings: Env }>) => {
-  await rotateKeys(ctx.env);
-
-  return new Response("OK");
 });
 
 RegisterRoutes(app as unknown as Hono);
