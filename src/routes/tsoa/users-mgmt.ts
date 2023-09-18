@@ -16,7 +16,7 @@ import {
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { ConflictError, NotFoundError } from "../../errors";
+import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { Profile } from "../../types";
 import { User } from "../../types/sql/User";
