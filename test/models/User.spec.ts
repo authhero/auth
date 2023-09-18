@@ -491,7 +491,7 @@ describe("User", () => {
 
       expect(profile.connections.length).toBe(1);
       expect(profile.connections[0]).toEqual({
-        name: "linked-user",
+        name: "linked-user|user2@example.com",
         profile: {
           email: "user2@example.com",
         },
