@@ -11,7 +11,7 @@ export interface ClientFactory<ClientType> {
   getInstanceByName: (name: string) => ClientType;
 }
 
-export interface Env {
+export type Env = {
   ISSUER: string;
   DD_API_KEY: string;
   JWKS_URL: string;
@@ -34,4 +34,4 @@ export interface Env {
   oauth2ClientFactory: IOAuth2ClientFactory;
   stateFactory: ClientFactory<StateClient>;
   userFactory: ClientFactory<UserClient>;
-}
+};

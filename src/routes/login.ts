@@ -1,9 +1,9 @@
-import { Context } from "cloudworker-router";
 import mime from "mime/lite";
 import { Env } from "../types/Env";
+import { Context } from "hono";
 
-export async function serve(ctx: Context<Env>) {
-  const path = ctx.params.file;
+export async function serve(ctx: Context<{ Bindings: Env }>) {
+  const path = ctx.req.param("file");
 
   let response = await ctx.env.AUTH_TEMPLATES.get(`templates/static/${path}`);
 
