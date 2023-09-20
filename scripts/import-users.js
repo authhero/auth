@@ -2,9 +2,9 @@ const fs = require("fs");
 const readline = require("readline");
 const Papa = require("papaparse");
 
-const token = "add token here...";
-const tenantId = "YH0yxCXqdc-UuPD_1MqSY";
-const apiUrl = "https://auth2.sesamy.com";
+const tenantId = "qo0kCHUE8qAvpNPznuoRW";
+const token = "add token here..";
+const apiUrl = "https://auth2.sesamy.dev";
 
 async function postUser(user) {
   const body = JSON.stringify({
@@ -20,11 +20,12 @@ async function postUser(user) {
     modified_at: user.updated_at,
   });
 
-  const response = await fetch(`${apiUrl}/tenants/${tenantId}/users`, {
+  const response = await fetch(`${apiUrl}/api/v2/users`, {
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
+      "tenant-id": tenantId,
     },
     body,
   });
@@ -34,7 +35,7 @@ async function postUser(user) {
       `Status: ${response.status}, with error ${await response.text()}`,
     );
   } else {
-    console.log(".");
+    console.log(`User: ${user.id}: ${response.status}`);
   }
 }
 
@@ -88,5 +89,5 @@ async function importUsersFromCsv(file) {
   }
 }
 
-// importUsers("./data/auth0-dev.json");
-importUsersFromCsv("./data/kvartal-auth0.csv");
+importUsers("./data/auth0-dev.json");
+// importUsersFromCsv("./data/kvartal-auth0.csv");

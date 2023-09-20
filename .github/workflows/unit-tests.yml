@@ -24,5 +24,6 @@ jobs:
 
       - run: yarn lint
       - run: yarn format:ci-cd
+      - run: yarn build
       - run: yarn test
-      - run: node tsoa.mjs
+      - run: yarn integration-test      
