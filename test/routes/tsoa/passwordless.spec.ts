@@ -1,7 +1,11 @@
 import fetchMock from "jest-fetch-mock";
 import { contextFixture, client } from "../../fixtures";
 import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
-import { Client, AuthorizationResponseType } from "../../../src/types";
+import {
+  Client,
+  AuthorizationResponseType,
+  RequestWithContext,
+} from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 import { kvStorageFixture } from "../../fixtures/kv-storage";
 
@@ -21,7 +25,11 @@ const SESAMY_HEADER_LOGO_URL = `https://imgproxy.dev.sesamy.cloud/unsafe/format:
 )}`;
 
 describe("Passwordless", () => {
+  const date = new Date();
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(date);
+
     fetchMock.resetMocks();
     fetchMock.mockResponse(JSON.stringify({ message: "Queued. Thank you." }), {
       status: 200,
@@ -154,6 +162,74 @@ describe("Passwordless", () => {
 
       // but should have client logo
       expect(emailBody).toContain(`src="${clientLogoUrl}"`);
+    });
+  });
+
+  describe("verify_redirect", () => {
+    it('should return a token and redirect to "redirect_uri" if code is valid', async () => {
+      const ctx = contextFixture({
+        stateData: {},
+      });
+
+      const controller = new PasswordlessController();
+
+      const result = await controller.verifyRedirect(
+        { ctx } as RequestWithContext,
+        "",
+        AuthorizationResponseType.TOKEN,
+        "https://example.com",
+        "https://example.com",
+        "state",
+        "nonce",
+        "code",
+        "email",
+        "clientId",
+        "email",
+      );
+
+      expect(controller.getStatus()).toBe(302);
+      expect(result).toEqual("Redirecting");
+
+      const redirectUrl = new URL(controller.getHeader("location") as string);
+
+      expect(redirectUrl.searchParams.get("state")).toBe("state");
+      expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
+
+      // Dummy token as json
+      const token = JSON.parse(
+        redirectUrl.searchParams.get("access_token") as string,
+      );
+      expect(token).toEqual({
+        aud: "https://example.com",
+        iat: Math.floor(date.getTime() / 1000),
+        exp: Math.floor(date.getTime() / 1000) + 86400,
+        iss: "https://auth.example.com/",
+        scope: "",
+      });
+    });
+
+    it("should return a 403 if code is not valid", async () => {
+      const ctx = contextFixture({
+        stateData: {},
+      });
+
+      const controller = new PasswordlessController();
+
+      await expect(() =>
+        controller.verifyRedirect(
+          { ctx } as RequestWithContext,
+          "",
+          AuthorizationResponseType.TOKEN,
+          "https://example.com",
+          "https://example.com",
+          "state",
+          "nonce",
+          "000000",
+          "email",
+          "clientId",
+          "email",
+        ),
+      ).rejects.toThrow("Invalid code");
     });
   });
 });

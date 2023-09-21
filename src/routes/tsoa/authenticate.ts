@@ -10,7 +10,6 @@ import {
 } from "../../errors";
 import randomString from "../../utils/random-string";
 import { hexToBase64 } from "../../utils/base64";
-import { AuthParams } from "../../types";
 import { handleLinkedAccount } from "../../helpers/account-linking";
 
 export interface LoginError {

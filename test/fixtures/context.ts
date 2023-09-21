@@ -144,6 +144,7 @@ export function contextFixture(params?: ContextFixtureParams): Context<Env> {
 
               return {
                 client_id: "clientId",
+                email: "test@example.com",
               };
             },
           },
