@@ -1,6 +1,6 @@
 {
   "name": "auth2",
-  "version": "1.53.1",
+  "version": "1.55.0",
   "description": "",
   "main": "build/src/server.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
     "test": "jest --config jest.config.js --verbose",
+    "integration-test": "jest --config jest-integration.config.js --verbose",
     "test-with-coverage": "jest --config jest.config.js --coverage",
     "semantic-release": "semantic-release",
     "prepare": "husky install"
@@ -76,6 +77,7 @@
     "lint-staged": "^14.0.1",
     "miniflare": "^3.20230918.0",
     "mjml": "^4.14.1",
+    "papaparse": "^5.4.1",
     "prettier": "^3.0.3",
     "semantic-release": "^22.0.0",
     "ts-jest": "29.1.1",

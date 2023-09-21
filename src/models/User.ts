@@ -373,7 +373,7 @@ export const userRouter = router({
         email: input.email,
         connections: [
           {
-            name: "linked-user",
+            name: `linked-user|${input.linkWithEmail}`,
             profile: {
               email: input.linkWithEmail,
             },

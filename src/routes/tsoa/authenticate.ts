@@ -10,7 +10,8 @@ import {
 } from "../../errors";
 import randomString from "../../utils/random-string";
 import { hexToBase64 } from "../../utils/base64";
-import { AuthParams, AuthorizationResponseType, Env } from "../../types";
+import { AuthParams } from "../../types";
+import { handleLinkedAccount } from "../../helpers/account-linking";
 
 export interface LoginError {
   error: string;
@@ -65,10 +66,6 @@ export class AuthenticateController extends Controller {
       `${client.tenant_id}|${body.username}`,
     );
 
-    let authParams: AuthParams | undefined = {
-      client_id: client.id,
-    };
-
     try {
       switch (body.realm) {
         case "email":
@@ -92,12 +89,20 @@ export class AuthenticateController extends Controller {
       const coVerifier = randomString(32);
       const coID = randomString(12);
 
+      const profile = await handleLinkedAccount(
+        env,
+        await user.getProfile.query(),
+      );
+
       const payload = {
         coVerifier,
         coID,
-        username: body.username,
-        userId: `${client.tenant_id}|${body.username}`,
-        authParams,
+        username: profile.email,
+        userId: `${client.tenant_id}|${profile.email}`,
+        authParams: {
+          client_id: body.client_id,
+          user: profile,
+        },
       };
 
       const stateId = env.STATE.newUniqueId().toString();
