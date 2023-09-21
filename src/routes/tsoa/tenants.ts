@@ -58,11 +58,11 @@ export class TenantsController extends Controller {
     return data;
   }
 
-  @Get("{id}")
+  @Get("{tenantId}")
   @Security("oauth2managementApi", [""])
   public async getTenant(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path("tenantId") id: string,
   ): Promise<Tenant | string> {
     const { ctx } = request;
 
@@ -73,8 +73,6 @@ export class TenantsController extends Controller {
       .selectAll()
       .executeTakeFirst();
 
-    console.log("tenant: " + JSON.stringify(tenant));
-
     if (!tenant) {
       this.setStatus(404);
       return "Not found";
@@ -83,11 +81,11 @@ export class TenantsController extends Controller {
     return tenant;
   }
 
-  @Put("{id}")
+  @Put("{tenantId}")
   @Security("oauth2managementApi", [""])
   public async putTenant(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path("tenantId") id: string,
     @Body() body: Omit<Tenant, "id" | "created_at" | "modified_at">,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
