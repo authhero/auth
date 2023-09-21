@@ -17,7 +17,6 @@ import {
 import { nanoid } from "nanoid";
 
 import { getDb } from "../../services/db";
-import { RequestWithContext } from "../../types/RequestWithContext";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
 import { headers } from "../../constants";

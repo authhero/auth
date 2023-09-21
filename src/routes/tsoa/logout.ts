@@ -28,7 +28,7 @@ export class LogoutController extends Controller {
   ) {
     const client = await getClient(request.ctx.env, clientId);
 
-    const redirectUri = returnTo || request.ctx.headers.get("referer");
+    const redirectUri = returnTo || request.ctx.req.header("referer");
     if (!redirectUri) {
       throw new Error("No return to url found");
     }

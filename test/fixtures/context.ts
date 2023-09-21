@@ -1,6 +1,6 @@
-import { Context } from "cloudworker-router";
 // This is to make Request and other browser stuff work
 import "isomorphic-fetch";
+import { Context } from "hono";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -26,6 +26,7 @@ type ValidateAuthenticationCodeParams = Parameters<
 >[0];
 
 export interface ContextFixtureParams {
+  headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
   clients?: KVNamespace;
   userData?: { [key: string]: string | boolean };
@@ -82,11 +83,21 @@ export const client: Client = {
   domains: [],
 };
 
-export function contextFixture(params?: ContextFixtureParams): Context<Env> {
-  const { stateData = {}, userData = {}, logs = [], clients } = params || {};
+export function contextFixture(
+  params?: ContextFixtureParams,
+): Context<{ Bindings: Env }> {
+  const {
+    stateData = {},
+    userData = {},
+    headers = {},
+    logs = [],
+    clients,
+  } = params || {};
 
   return {
-    headers: new URLSearchParams(),
+    req: {
+      header: (key) => headers[key],
+    },
     env: {
       AUTH_TEMPLATES: mockedR2Bucket(),
       ISSUER: "https://auth.example.com/",
@@ -162,7 +173,7 @@ export function contextFixture(params?: ContextFixtureParams): Context<Env> {
         }),
       IMAGE_PROXY_URL: "https://imgproxy.dev.sesamy.cloud",
     },
-  } as unknown as Context<Env>;
+  } as unknown as Context<{ Bindings: Env }>;
 }
 
 const certificate = JSON.stringify([

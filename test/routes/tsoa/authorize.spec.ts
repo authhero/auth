@@ -55,12 +55,10 @@ describe("authorize", () => {
 
       const ctx = contextFixture({
         stateData,
+        headers: {
+          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        },
       });
-
-      ctx.headers.set(
-        "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
-      );
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,
@@ -143,12 +141,10 @@ describe("authorize", () => {
 
       const ctx = contextFixture({
         stateData,
+        headers: {
+          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        },
       });
-
-      ctx.headers.set(
-        "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
-      );
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,

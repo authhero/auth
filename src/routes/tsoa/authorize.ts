@@ -128,7 +128,7 @@ export class AuthorizeController extends Controller {
       return silentAuth({
         env,
         controller: this,
-        cookie_header: request.ctx.headers.get("cookie"),
+        cookie_header: request.ctx.req.header("cookie") ?? null,
         redirect_uri,
         state,
         response_type,
