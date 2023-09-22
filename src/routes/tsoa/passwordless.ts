@@ -15,9 +15,8 @@ import { AuthParams, AuthorizationResponseType } from "../../types/AuthParams";
 import { sendCode } from "../../controllers/email";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
-import { nanoid } from "nanoid";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
-import { setSilentAuthCookies } from "src/helpers/silent-auth-cookie";
+import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 
 export interface PasswordlessOptions {
   client_id: string;
