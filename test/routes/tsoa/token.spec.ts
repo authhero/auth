@@ -42,6 +42,7 @@ describe("token", () => {
       audience: "audience",
       sender_email: "senderEmail",
       sender_name: "senderName",
+      support_url: "supportUrl",
     },
     connections: [
       {
