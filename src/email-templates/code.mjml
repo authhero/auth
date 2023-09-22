@@ -110,6 +110,17 @@
           </tr>
         </mj-table>
         <mj-button
+          href="{{magicLink}}"
+          target="_blank"
+          width="100%"
+          border-radius="6px"
+          background-color="#fcba03"
+          font-size="14px"
+          css-class="clickable-button"
+        >
+          Logga in
+        </mj-button>
+        <mj-button
           href="https://support.sesamy.com"
           target="_blank"
           width="100%"

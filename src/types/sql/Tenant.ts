@@ -4,6 +4,7 @@ export interface Tenant {
   audience: string;
   sender_email: string;
   sender_name: string;
+  support_url?: string;
   logo?: string;
   primary_color?: string;
   secondary_color?: string;

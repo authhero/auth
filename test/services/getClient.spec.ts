@@ -24,6 +24,7 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
+        support_url: "supportUrl",
       },
       connections: [
         {
@@ -81,6 +82,7 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
+        support_url: "supportUrl",
       },
       connections: [],
       domains: [],
@@ -130,6 +132,7 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
+        support_url: "supportUrl",
       },
       connections: [],
       domains: [
@@ -190,6 +193,7 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
+        support_url: "supportUrl",
       },
       connections: [
         {

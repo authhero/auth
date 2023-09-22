@@ -63,6 +63,7 @@ export async function sendCode(
   client: Client,
   to: string,
   code: string,
+  magicLink: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
   if (!response) {
@@ -84,6 +85,8 @@ export async function sendCode(
     code,
     vendorName: client.name,
     logo,
+    supportUrl: client.tenant.support_url,
+    magicLink,
   });
 
   await sendEmail(client, {
