@@ -70,7 +70,7 @@ export const BaseClientSchema = z.object({
     secondary_color: z.string().optional(),
     sender_email: z.string(),
     sender_name: z.string(),
-    support_url: z.string(),
+    support_url: z.string().optional(),
     language: z.string().length(2).optional(),
   }),
 });
