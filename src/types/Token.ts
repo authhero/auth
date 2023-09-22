@@ -37,7 +37,7 @@ export interface PKCEAuthorizationCodeGrantTypeParams {
 
 export interface ClientCredentialGrantTypeParams {
   grant_type: GrantType.ClientCredential;
-  scope: string;
+  scope?: string;
   client_secret: string;
   client_id: string;
   audience?: string;
