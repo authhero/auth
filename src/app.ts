@@ -36,25 +36,25 @@ app.get("/spec", async () => {
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 
-// app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
-//   try {
-//     await migrateToLatest(ctx);
-//     return new Response("OK");
-//   } catch (err: any) {
-//     return new Response(
-//       JSON.stringify({
-//         message: err.message,
-//         cause: err.cause,
-//       }),
-//       {
-//         status: 500,
-//         headers: {
-//           "content-type": "application/json",
-//         },
-//       },
-//     );
-//   }
-// });
+app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
+  try {
+    await migrateToLatest(ctx);
+    return new Response("OK");
+  } catch (err: any) {
+    return new Response(
+      JSON.stringify({
+        message: err.message,
+        cause: err.cause,
+      }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+  }
+});
 
 // app.post("/migrate-down", async (ctx: Context<Env>) => {
 //   try {

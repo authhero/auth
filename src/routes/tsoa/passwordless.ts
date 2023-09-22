@@ -17,6 +17,7 @@ import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { nanoid } from "nanoid";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
+import { setSilentAuthCookies } from "src/helpers/silent-auth-cookie";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -138,11 +139,18 @@ export class PasswordlessController extends Controller {
       audience,
     };
 
+    const sessionId = await setSilentAuthCookies(
+      env,
+      this,
+      profile,
+      authParams,
+    );
+
     const tokenResponse = await generateAuthResponse({
       responseType: response_type,
       env,
       userId: profile.id,
-      sid: nanoid(),
+      sid: sessionId,
       state,
       nonce,
       user: profile,
