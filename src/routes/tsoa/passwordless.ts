@@ -91,7 +91,7 @@ export class PasswordlessController extends Controller {
     magicLink.searchParams.set("connection", body.connection);
     magicLink.searchParams.set("client_id", body.client_id);
     magicLink.searchParams.set("email", body.email);
-    magicLink.searchParams.set("code", code);
+    magicLink.searchParams.set("verification_code", code);
 
     await sendCode(env, client, body.email, code, magicLink.href);
 
