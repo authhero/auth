@@ -85,7 +85,7 @@ export async function sendCode(
     code,
     vendorName: client.name,
     logo,
-    supportUrl: client.tenant.support_url,
+    supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     magicLink,
   });
 
