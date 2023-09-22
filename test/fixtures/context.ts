@@ -50,7 +50,6 @@ export const client: Client = {
     sender_email: "senderEmail",
     sender_name: "senderName",
     audience: "audience",
-    support_url: "supportUrl",
   },
   connections: [
     {

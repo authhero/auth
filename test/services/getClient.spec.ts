@@ -24,7 +24,6 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
-        support_url: "supportUrl",
       },
       connections: [
         {
@@ -179,7 +178,7 @@ describe("getClient", () => {
     ]);
   });
 
-  it("should use the connection settings form the defaultSettins and the clientId from envDefaultSettings", async () => {
+  it("should use the connection settings form the defaultSettings and the clientId from envDefaultSettings", async () => {
     const clientInKV: PartialClient = {
       id: "testClient",
       name: "clientName",
@@ -193,7 +192,6 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
-        support_url: "supportUrl",
       },
       connections: [
         {
