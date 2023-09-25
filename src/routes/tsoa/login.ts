@@ -156,7 +156,39 @@ export class LoginController extends Controller {
     loginState.authParams.username = params.username;
     await setLoginState(env, state, loginState);
 
-    await sendCode(env, client, params.username, code);
+    const magicLink = new URL(env.ISSUER);
+    magicLink.pathname = "passwordless/verify_redirect";
+    if (loginState.authParams.scope) {
+      magicLink.searchParams.set("scope", loginState.authParams.scope);
+    }
+    if (loginState.authParams.response_type) {
+      magicLink.searchParams.set(
+        "response_type",
+        loginState.authParams.response_type,
+      );
+    }
+    if (loginState.authParams.redirect_uri) {
+      magicLink.searchParams.set(
+        "redirect_uri",
+        loginState.authParams.redirect_uri,
+      );
+    }
+    if (loginState.authParams.audience) {
+      magicLink.searchParams.set("audience", loginState.authParams.audience);
+    }
+    if (loginState.authParams.state) {
+      magicLink.searchParams.set("state", loginState.authParams.state);
+    }
+    if (loginState.authParams.nonce) {
+      magicLink.searchParams.set("nonce", loginState.authParams.nonce);
+    }
+
+    magicLink.searchParams.set("connection", "email");
+    magicLink.searchParams.set("client_id", loginState.authParams.client_id);
+    magicLink.searchParams.set("email", loginState.authParams.username);
+    magicLink.searchParams.set("verification_code", code);
+
+    await sendCode(env, client, params.username, code, magicLink.href);
 
     this.setHeader(
       headers.location,
