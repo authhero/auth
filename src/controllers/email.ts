@@ -87,6 +87,7 @@ export async function sendCode(
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     magicLink,
+    buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
   await sendEmail(client, {

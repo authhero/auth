@@ -114,7 +114,7 @@
           target="_blank"
           width="100%"
           border-radius="6px"
-          background-color="#fcba03"
+          background-color="{{buttonColor}}"
           font-size="14px"
           css-class="clickable-button"
         >
