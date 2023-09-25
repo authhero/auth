@@ -102,7 +102,7 @@ describe("Passwordless", () => {
 
       expect(emailBody).toContain("Välkommen till ditt clientName-konto!");
       expect(emailBody).toContain(
-        "Skriv in koden i clientName för att slutföra inloggningen.",
+        "Skriv in koden i clientName för att slutföra inloggningen eller klicka på knappen för att logga in med ett klick.",
       );
     });
 
