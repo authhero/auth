@@ -18,11 +18,11 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
-import { Profile } from "../../types";
 import { User } from "../../types/sql/User";
 import { headers } from "../../constants";
 import { FilterSchema } from "../../types/Filter";
 import { executeQuery } from "../../helpers/sql";
+import { Profile } from "../../types";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -41,7 +41,9 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Header("range") rangeRequest?: string,
-    @Query("filter") filterQuerystring?: string,
+    // Deprecated - Switch to use q insteads
+    @Query("filter") reactAcminfilterQuerystring?: string,
+    @Query("q") filterQuerystring?: string,
   ): Promise<User[]> {
     const { ctx } = request;
 
@@ -50,8 +52,10 @@ export class UsersMgmtController extends Controller {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     // TODO - check this still actually works using auth0/node on the demo repo https://github.com/sesamyab/auth0-management-api-demo
-    if (filterQuerystring) {
-      const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
+    if (reactAcminfilterQuerystring) {
+      const filter = FilterSchema.parse(
+        JSON.parse(reactAcminfilterQuerystring),
+      );
 
       if (filter.q) {
         query = query.where((eb) =>
@@ -60,6 +64,13 @@ export class UsersMgmtController extends Controller {
             eb("email", "like", `%${filter.q}%`),
           ]),
         );
+      }
+    } else if (filterQuerystring) {
+      const filter = new URLSearchParams(filterQuerystring);
+
+      // Only support email for now
+      if (filter.has("email")) {
+        query = query.where("email", "=", filter.get("email"));
       }
     }
 
