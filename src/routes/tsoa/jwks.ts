@@ -2,6 +2,7 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { Controller, Get, Request, Route, Tags } from "@tsoa/runtime";
 import {
   CERTIFICATE_EXPIRE_IN_SECONDS,
+  JWKS_CACHE_TIMEOUT_IN_SECONDS,
   contentTypes,
   headers,
 } from "../../constants";
@@ -54,7 +55,9 @@ export class JWKSRoutes extends Controller {
     this.setHeader(headers.accessControlAllowMethod, "GET");
     this.setHeader(
       headers.cacheControl,
-      `public, max-age=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-while-revalidate=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-if-error=86400`,
+      `public, max-age=${JWKS_CACHE_TIMEOUT_IN_SECONDS}, stale-while-revalidate=${
+        JWKS_CACHE_TIMEOUT_IN_SECONDS * 2
+      }, stale-if-error=86400`,
     );
 
     return { keys };
