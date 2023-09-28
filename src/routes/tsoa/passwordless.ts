@@ -167,7 +167,7 @@ export class PasswordlessController extends Controller {
 
       const stateDecoded = new URLSearchParams(state);
 
-      login2ExpiredCodeUrl.searchParams.set("email", email);
+      login2ExpiredCodeUrl.searchParams.set("email", encodeURIComponent(email));
 
       const redirectUri = stateDecoded.get("redirect_uri");
       if (redirectUri) {
