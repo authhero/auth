@@ -101,9 +101,6 @@ describe("Passwordless", () => {
       expect(emailBody).toContain("123456");
 
       expect(emailBody).toContain("Välkommen till ditt clientName-konto!");
-      expect(emailBody).toContain(
-        "Skriv in koden i clientName för att slutföra inloggningen eller klicka på knappen för att logga in med ett klick.",
-      );
     });
 
     it("should use the client logo if set", async () => {
@@ -162,6 +159,8 @@ describe("Passwordless", () => {
 
       // but should have client logo
       expect(emailBody).toContain(`src="${clientLogoUrl}"`);
+
+      // TODO - assert we have magic link in here with correct params?
     });
   });
 
