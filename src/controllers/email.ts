@@ -25,7 +25,7 @@ export async function sendEmailValidation(
 
   const templateString = await response.text();
 
-  const language = client.tenant.language || "en";
+  const language = client.tenant.language || "sv";
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -72,7 +72,7 @@ export async function sendCode(
 
   const templateString = await response.text();
 
-  const language = client.tenant.language || "en";
+  const language = client.tenant.language || "sv";
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -124,7 +124,7 @@ export async function sendResetPassword(
 
   const templateString = await response.text();
 
-  const language = client.tenant.language || "en";
+  const language = client.tenant.language || "sv";
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
