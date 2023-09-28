@@ -161,13 +161,9 @@ export class PasswordlessController extends Controller {
       return applyTokenResponse(this, tokenResponse, authParams);
     } catch (e) {
       // Ideally here only catch AuthenticationCodeExpiredError
-      // BUT I don't think tsoa/authenticate is doing this correctly. TBD
       // redirect here always to login2.sesamy.dev/expired-code
 
-      // TODO - create this!
-      const LOGIN2_ENV_VAR = "https://login2.sesamy.dev";
-
-      const login2ExpiredCodeUrl = new URL(`${LOGIN2_ENV_VAR}/expired-code`);
+      const login2ExpiredCodeUrl = new URL(`${env.LOGIN2_URL}/expired-code`);
 
       login2ExpiredCodeUrl.searchParams.set("email", email);
       login2ExpiredCodeUrl.searchParams.set("client_id", client_id);
@@ -177,13 +173,15 @@ export class PasswordlessController extends Controller {
       login2ExpiredCodeUrl.searchParams.set("redirect_uri", redirect_uri);
       login2ExpiredCodeUrl.searchParams.set("response_type", response_type);
       login2ExpiredCodeUrl.searchParams.set("scope", scope);
-      // any other params? nonce, audience
+      // any other params? nonce, audience - let's release and see!
 
       this.setHeader(headers.location, login2ExpiredCodeUrl.toString());
 
       this.setStatus(302);
 
       return "Redirect";
+
+      // TODO - write unit tests once sure this works
     }
   }
 }

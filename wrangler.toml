@@ -17,6 +17,7 @@ route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2
 [vars]
 IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"
 ISSUER = "https://auth2.sesamy.dev/"
+LOGIN2_URL = 'https://login2.sesamy.dev'
 JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
 READ_PERMISSION = "auth:read"
 WRITE_PERMISSION = "auth:write"
@@ -71,6 +72,7 @@ services = [{ binding = "TOKEN_SERVICE", service = "token-service-prod" }]
 
 [env.production.vars]
 ISSUER = "https://auth2.sesamy.com/"
+LOGIN2_URL = 'https://login2.sesamy.com'
 JWKS_URL = "https://token.sesamy.com/.well-known/jwks.json"
 READ_PERMISSION = 'auth:read'
 WRITE_PERMISSION = 'auth:write'
