@@ -70,7 +70,7 @@ describe("Passwordless", () => {
       );
 
       expect(mailRequest.subject).toEqual(
-        "Welcome to clientName! 123456 is the login code",
+        "Välkommen till clientName! 123456 är koden för att logga in",
       );
 
       expect(mailRequest.from).toEqual({
