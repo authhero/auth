@@ -87,9 +87,11 @@ export function contextFixture(params?: ContextFixtureParams): Context<Env> {
 
   return {
     headers: new URLSearchParams(),
+    // TODO - can we type this to Env so we get TypeSafe checking?
     env: {
       AUTH_TEMPLATES: mockedR2Bucket(),
       ISSUER: "https://auth.example.com/",
+      LOGIN2_URL: "https://login2.sesamy.dev",
       oauth2ClientFactory: {
         create: oAuth2ClientFactory,
       },
