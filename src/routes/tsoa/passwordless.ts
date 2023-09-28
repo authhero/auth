@@ -167,7 +167,7 @@ export class PasswordlessController extends Controller {
 
       login2ExpiredCodeUrl.searchParams.set("email", email);
       login2ExpiredCodeUrl.searchParams.set("client_id", client_id);
-      login2ExpiredCodeUrl.searchParams.set("connection", connection);
+      login2ExpiredCodeUrl.searchParams.set("connection", "auth2");
       // is this the correct state? release and find out?
       login2ExpiredCodeUrl.searchParams.set("state", state);
       login2ExpiredCodeUrl.searchParams.set("redirect_uri", redirect_uri);
