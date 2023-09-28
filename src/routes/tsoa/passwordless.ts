@@ -17,6 +17,7 @@ import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
+import { headers } from "../../constants";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -122,40 +123,67 @@ export class PasswordlessController extends Controller {
     const user = env.userFactory.getInstanceByName(
       `${client.tenant_id}|${email}`,
     );
-    const profile = await user.validateAuthenticationCode.mutate({
-      code: verification_code,
-      email,
-      tenantId: client.tenant_id,
-    });
 
-    validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
+    try {
+      const profile = await user.validateAuthenticationCode.mutate({
+        code: verification_code,
+        email,
+        tenantId: client.tenant_id,
+      });
+      validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
 
-    const authParams: AuthParams = {
-      client_id,
-      redirect_uri,
-      state,
-      scope,
-      audience,
-    };
+      const authParams: AuthParams = {
+        client_id,
+        redirect_uri,
+        state,
+        scope,
+        audience,
+      };
 
-    const sessionId = await setSilentAuthCookies(
-      env,
-      this,
-      profile,
-      authParams,
-    );
+      const sessionId = await setSilentAuthCookies(
+        env,
+        this,
+        profile,
+        authParams,
+      );
 
-    const tokenResponse = await generateAuthResponse({
-      responseType: response_type,
-      env,
-      userId: profile.id,
-      sid: sessionId,
-      state,
-      nonce,
-      user: profile,
-      authParams,
-    });
+      const tokenResponse = await generateAuthResponse({
+        responseType: response_type,
+        env,
+        userId: profile.id,
+        sid: sessionId,
+        state,
+        nonce,
+        user: profile,
+        authParams,
+      });
 
-    return applyTokenResponse(this, tokenResponse, authParams);
+      return applyTokenResponse(this, tokenResponse, authParams);
+    } catch (e) {
+      // Ideally here only catch AuthenticationCodeExpiredError
+      // BUT I don't think tsoa/authenticate is doing this correctly. TBD
+      // redirect here always to login2.sesamy.dev/expired-code
+
+      // TODO - create this!
+      const LOGIN2_ENV_VAR = "https://login2.sesamy.dev";
+
+      const login2ExpiredCodeUrl = new URL(`${LOGIN2_ENV_VAR}/expired-code`);
+
+      login2ExpiredCodeUrl.searchParams.set("email", email);
+      login2ExpiredCodeUrl.searchParams.set("client_id", client_id);
+      login2ExpiredCodeUrl.searchParams.set("connection", connection);
+      // is this the correct state? release and find out?
+      login2ExpiredCodeUrl.searchParams.set("state", state);
+      login2ExpiredCodeUrl.searchParams.set("redirect_uri", redirect_uri);
+      login2ExpiredCodeUrl.searchParams.set("response_type", response_type);
+      login2ExpiredCodeUrl.searchParams.set("scope", scope);
+      // any other params? nonce, audience
+
+      this.setHeader(headers.location, login2ExpiredCodeUrl.toString());
+
+      this.setStatus(302);
+
+      return "Redirect";
+    }
   }
 }
