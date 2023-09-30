@@ -71,7 +71,7 @@
           Välkommen till ditt {{vendorName}}-konto!
         </mj-text>
         <mj-text font-size="16px" line-height="19.2px">
-          Klicka på knapper för att logga in
+          Klicka på knappen för att logga in
         </mj-text>
         <mj-button
             href="{{magicLink}}"
