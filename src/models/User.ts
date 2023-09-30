@@ -681,7 +681,7 @@ export const userRouter = router({
 type UserRouter = typeof userRouter;
 
 export function getId(tenantId: string, email: string) {
-  return `${tenantId}|${email}`;
+  return `${tenantId}|${email.toLowerCase()}`;
 }
 
 export const User = createProxy<UserRouter, Env>(userRouter);

@@ -3,14 +3,17 @@ import { PasswordGrantTypeParams, TokenResponse } from "../types/Token";
 import { getCertificate } from "../models/Certificate";
 import { TokenFactory } from "../services/token-factory";
 import { getClient } from "../services/clients";
+import { getId } from "../models";
 
 export async function passwordGrant(
   env: Env,
   params: PasswordGrantTypeParams,
 ): Promise<TokenResponse> {
-  const user = env.userFactory.getInstanceByName(params.username);
-
   const client = await getClient(env, params.client_id);
+
+  const user = env.userFactory.getInstanceByName(
+    getId(client.tenant_id, params.username),
+  );
 
   await user.validatePassword.mutate({
     password: params.password,

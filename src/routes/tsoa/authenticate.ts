@@ -11,6 +11,7 @@ import {
 import randomString from "../../utils/random-string";
 import { hexToBase64 } from "../../utils/base64";
 import { handleLinkedAccount } from "../../helpers/account-linking";
+import { getId } from "../../models";
 
 export interface LoginError {
   error: string;
@@ -62,7 +63,7 @@ export class AuthenticateController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      `${client.tenant_id}|${body.username}`,
+      getId(client.tenant_id, body.username),
     );
 
     try {

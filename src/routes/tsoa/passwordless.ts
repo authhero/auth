@@ -18,6 +18,7 @@ import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
+import { getId } from "../../models";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -61,7 +62,7 @@ export class PasswordlessController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      `${client.tenant_id}|${body.email}`,
+      getId(client.tenant_id, body.email),
     );
 
     const { code } = await user.createAuthenticationCode.mutate({
@@ -127,7 +128,7 @@ export class PasswordlessController extends Controller {
     }
 
     const user = env.userFactory.getInstanceByName(
-      `${client.tenant_id}|${email}`,
+      getId(client.tenant_id, email),
     );
 
     try {
