@@ -23,6 +23,11 @@ import { headers } from "../../constants";
 import { FilterSchema } from "../../types/Filter";
 import { executeQuery } from "../../helpers/sql";
 import { Profile } from "../../types";
+import {
+  GetUserResponse,
+  GetUserResponseWithTotals,
+} from "../../types/auth0/UserResponse";
+import { createAdapter } from "../../adapters/planetscale/User";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -40,50 +45,37 @@ export class UsersMgmtController extends Controller {
   public async listUsers(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Header("range") rangeRequest?: string,
-    // Deprecated - Switch to use q insteads
-    @Query("filter") reactAcminfilterQuerystring?: string,
-    @Query("q") filterQuerystring?: string,
-  ): Promise<User[]> {
+    // Auth0
+    @Query() page = 0,
+    @Query() per_page = 20,
+    @Query() include_totals = false,
+    @Query() sort?: string,
+    @Query() connection?: string,
+    @Query() fields?: string,
+    @Query() include_fields?: boolean,
+    @Query() q?: string,
+    @Query() search_engine?: "v1" | "v2" | "v3",
+  ): Promise<GetUserResponse[] | GetUserResponseWithTotals> {
     const { ctx } = request;
 
     const db = getDb(ctx.env);
 
-    let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
+    const adapter = createAdapter(ctx.env);
 
-    // TODO - check this still actually works using auth0/node on the demo repo https://github.com/sesamyab/auth0-management-api-demo
-    if (reactAcminfilterQuerystring) {
-      const filter = FilterSchema.parse(
-        JSON.parse(reactAcminfilterQuerystring),
-      );
+    const data = await adapter.listUsers({
+      tenantId,
+      page,
+      perPage: per_page,
+      includeTotals: include_totals,
+    });
 
-      if (filter.q) {
-        query = query.where((eb) =>
-          eb.or([
-            eb("name", "like", `%${filter.q}%`),
-            eb("email", "like", `%${filter.q}%`),
-          ]),
-        );
-      }
-    } else if (filterQuerystring) {
-      const filter = new URLSearchParams(filterQuerystring);
-
-      // Only support email for now
-      if (filter.has("email")) {
-        query = query.where("email", "=", filter.get("email"));
-      }
+    if (include_totals && data.totals) {
+      return {
+        ...data.totals,
+        users: data.users,
+      };
     }
-
-    const { data, range } = await executeQuery(query, rangeRequest);
-
-    if (range) {
-      this.setHeader(headers.contentRange, range);
-    }
-
-    return data.map((user) => ({
-      ...user,
-      tags: JSON.parse(user.tags || "[]"),
-    }));
+    return data.users;
   }
 
   @Get("users/{userId}")
