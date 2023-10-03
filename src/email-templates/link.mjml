@@ -71,7 +71,23 @@
           Välkommen till ditt {{vendorName}}-konto!
         </mj-text>
         <mj-text font-size="16px" line-height="19.2px">
-          Skriv in koden på {{vendorName}} för att slutföra inloggningen.
+          Klicka på knappen för att logga in
+        </mj-text>
+        <mj-button
+            href="{{magicLink}}"
+            target="_blank"
+            width="100%"
+            border-radius="6px"
+            background-color="{{buttonColor}}"
+            font-size="16px"
+            css-class="clickable-button"
+            inner-padding="15px 25px"
+            line-height="20px"
+          >
+          Logga in
+        </mj-button>
+        <mj-text font-size="16px" line-height="19.2px">
+          Eller skriv in koden på {{vendorName}} för att slutföra inloggningen.
         </mj-text>
         <mj-table>
           <tr>
