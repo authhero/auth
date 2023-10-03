@@ -63,7 +63,7 @@ export async function sendCode(
   client: Client,
   to: string,
   code: string,
-  magicLink?: string,
+  magicLink: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
   if (!response) {

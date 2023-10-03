@@ -70,7 +70,6 @@
         <mj-text font-size="18px" line-height="21.6px" font-weight="500" color="#14141A">
           Välkommen till ditt {{vendorName}}-konto!
         </mj-text>
-        {% if show_section %}
         <mj-text font-size="16px" line-height="19.2px">
           Klicka på knappen för att logga in
         </mj-text>
@@ -86,15 +85,10 @@
             line-height="20px"
           >
           Logga in
-        </mj-button>        
+        </mj-button>
         <mj-text font-size="16px" line-height="19.2px">
           Eller skriv in koden på {{vendorName}} för att slutföra inloggningen.
         </mj-text>
-        {% else %}
-        <mj-text font-size="16px" line-height="19.2px">
-          Skriv in koden på {{vendorName}} för att slutföra inloggningen.
-        </mj-text>
-        {% endif %}
         <mj-table>
           <tr>
             <td style="text-align: center; padding: 10px; border-radius: 8px; background: #F5F5F7;">
