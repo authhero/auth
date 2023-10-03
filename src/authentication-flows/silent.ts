@@ -13,10 +13,7 @@ import {
 } from "../types";
 import renderAuthIframe from "../templates/authIframe";
 import { base64ToHex } from "../utils/base64";
-import {
-  generateAuthResponse,
-  generateCode,
-} from "../helpers/generate-auth-response";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
 
 export interface SilentAuthParams {
@@ -29,6 +26,7 @@ export interface SilentAuthParams {
   nonce?: string;
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
+  audience?: string;
   State?: typeof StateModel;
 }
 
@@ -48,6 +46,7 @@ export async function silentAuth({
   response_type,
   code_challenge_method,
   code_challenge,
+  audience,
 }: SilentAuthParams) {
   const tokenState = getStateFromCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);
@@ -73,6 +72,7 @@ export async function silentAuth({
         userId: superState.userId,
         authParams: {
           ...superState.authParams,
+          audience,
           code_challenge_method,
           code_challenge,
         },
