@@ -3,31 +3,42 @@ import { Identity } from "./Identity";
 import { Totals } from "./Totals";
 import { UserMetadata } from "./UserMetadata";
 
-export interface GetUserResponse {
-  user_id: string;
-  email: string;
-  email_verified: boolean;
+interface BaseUser {
+  email?: string;
+  phone_number?: string;
+  user_metadata?: UserMetadata;
+  app_metadata?: AppMetadata;
+  given_name?: string;
+  family_name?: string;
+  name?: string;
+  nickname?: string;
+  picture?: string;
+  user_id?: string;
+  blocked?: boolean;
+  email_verified?: boolean;
+  phone_verified?: boolean;
+}
+
+export interface PostUsersBody extends BaseUser {
+  password?: string;
+  verify_email?: boolean;
+  username?: string;
+  connection?: string;
+}
+
+export interface UserResponse extends BaseUser {
+  email: string; // Overriding: email is mandatory in GetUserResponse
   username: string;
-  phone_number: string;
-  phone_verified: boolean;
   created_at: string;
   updated_at: string;
   identities: Identity[];
-  app_metadata?: AppMetadata;
-  user_metadata?: UserMetadata;
-  picture?: string;
-  name?: string;
-  nickname?: string;
+  logins_count: number;
   multifactor?: string[];
   last_ip?: string;
   last_login?: string;
-  logins_count: number;
-  blocked?: boolean;
-  given_name?: string;
-  family_name?: string;
   [key: string]: any;
 }
 
 export interface GetUserResponseWithTotals extends Totals {
-  users: GetUserResponse[];
+  users: UserResponse[];
 }

@@ -1,8 +1,7 @@
 import { Totals } from "../../types/auth0/Totals";
-import { GetUserResponse } from "../../types/auth0/UserResponse";
+import { PostUsersBody, UserResponse } from "../../types/auth0/UserResponse";
 
 export interface ListUserParams {
-  tenantId: string;
   page: number;
   perPage: number;
   includeTotals: boolean;
@@ -10,7 +9,9 @@ export interface ListUserParams {
 }
 
 export interface UserDataAdapter {
+  createUser(tenantId: string, PostUsersBody): Promise<UserResponse>;
   listUsers(
+    tenantId: string,
     ListUserParams,
-  ): Promise<{ users: GetUserResponse[]; totals?: Totals }>;
+  ): Promise<{ users: UserResponse[]; totals?: Totals }>;
 }

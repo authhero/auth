@@ -19,13 +19,11 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { User } from "../../types/sql/User";
-import { headers } from "../../constants";
-import { FilterSchema } from "../../types/Filter";
-import { executeQuery } from "../../helpers/sql";
 import { Profile } from "../../types";
 import {
-  GetUserResponse,
+  UserResponse,
   GetUserResponseWithTotals,
+  PostUsersBody,
 } from "../../types/auth0/UserResponse";
 import { createAdapter } from "../../adapters/planetscale/User";
 
@@ -55,15 +53,12 @@ export class UsersMgmtController extends Controller {
     @Query() include_fields?: boolean,
     @Query() q?: string,
     @Query() search_engine?: "v1" | "v2" | "v3",
-  ): Promise<GetUserResponse[] | GetUserResponseWithTotals> {
+  ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { ctx } = request;
-
-    const db = getDb(ctx.env);
 
     const adapter = createAdapter(ctx.env);
 
-    const data = await adapter.listUsers({
-      tenantId,
+    const data = await adapter.listUsers(tenantId, {
       page,
       perPage: per_page,
       includeTotals: include_totals,
@@ -162,24 +157,20 @@ export class UsersMgmtController extends Controller {
 
   @Post("users")
   @SuccessResponse(201, "Created")
+  /**
+   * Create a new user.
+   */
   public async postUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "modified_at" | "id"> &
-      Partial<Pick<User, "created_at" | "modified_at" | "id">>,
-  ): Promise<Profile> {
-    const { env } = request.ctx;
+    user: PostUsersBody,
+  ): Promise<UserResponse> {
+    const adapter = createAdapter(request.ctx.env);
 
-    const userInstance = env.userFactory.getInstanceByName(
-      getId(tenantId, user.email),
-    );
+    const data = await adapter.createUser(tenantId, user);
 
-    return userInstance.createUser.mutate({
-      ...user,
-      connections: [],
-      tenant_id: tenantId,
-    });
+    return data;
   }
 
   @Put("users/{userId}")
