@@ -19,6 +19,7 @@ import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
 import { getId } from "../../models";
+import { string } from "zod";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -72,36 +73,43 @@ export class PasswordlessController extends Controller {
       },
     });
 
-    const magicLink = new URL(env.ISSUER);
-    magicLink.pathname = "passwordless/verify_redirect";
-    if (body.authParams.scope) {
-      magicLink.searchParams.set("scope", body.authParams.scope);
-    }
-    if (body.authParams.response_type) {
-      magicLink.searchParams.set(
-        "response_type",
-        body.authParams.response_type,
-      );
-    }
-    if (body.authParams.redirect_uri) {
-      magicLink.searchParams.set("redirect_uri", body.authParams.redirect_uri);
-    }
-    if (body.authParams.audience) {
-      magicLink.searchParams.set("audience", body.authParams.audience);
-    }
-    if (body.authParams.state) {
-      magicLink.searchParams.set("state", body.authParams.state);
-    }
-    if (body.authParams.nonce) {
-      magicLink.searchParams.set("nonce", body.authParams.nonce);
+    let magicLink: URL | undefined;
+
+    if (client.id !== "test-breakit") {
+      magicLink = new URL(env.ISSUER);
+      magicLink.pathname = "passwordless/verify_redirect";
+      if (body.authParams.scope) {
+        magicLink.searchParams.set("scope", body.authParams.scope);
+      }
+      if (body.authParams.response_type) {
+        magicLink.searchParams.set(
+          "response_type",
+          body.authParams.response_type,
+        );
+      }
+      if (body.authParams.redirect_uri) {
+        magicLink.searchParams.set(
+          "redirect_uri",
+          body.authParams.redirect_uri,
+        );
+      }
+      if (body.authParams.audience) {
+        magicLink.searchParams.set("audience", body.authParams.audience);
+      }
+      if (body.authParams.state) {
+        magicLink.searchParams.set("state", body.authParams.state);
+      }
+      if (body.authParams.nonce) {
+        magicLink.searchParams.set("nonce", body.authParams.nonce);
+      }
+
+      magicLink.searchParams.set("connection", body.connection);
+      magicLink.searchParams.set("client_id", body.client_id);
+      magicLink.searchParams.set("email", body.email);
+      magicLink.searchParams.set("verification_code", code);
     }
 
-    magicLink.searchParams.set("connection", body.connection);
-    magicLink.searchParams.set("client_id", body.client_id);
-    magicLink.searchParams.set("email", body.email);
-    magicLink.searchParams.set("verification_code", code);
-
-    await sendCode(env, client, body.email, code, magicLink.href);
+    await sendCode(env, client, body.email, code, magicLink?.href);
 
     return "OK";
   }
