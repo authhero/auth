@@ -91,6 +91,7 @@ describe("authorize", () => {
       expect(stateJson).toEqual({
         userId: "tenantId|test@example.com",
         authParams: {
+          audience: "audience",
           redirect_uri: "https://example.com",
           scope: "openid profile email",
           state: "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
@@ -187,7 +188,7 @@ describe("authorize", () => {
 
       const accessToken = JSON.parse(response.access_token);
 
-      expect(accessToken.aud).toBe("default");
+      expect(accessToken.aud).toBe("audience");
       expect(accessToken.scope).toBe("openid profile email");
       expect(accessToken.sub).toBe("tenantId|test@example.com");
       expect(accessToken.iss).toBe("https://auth.example.com/");
@@ -237,6 +238,64 @@ describe("authorize", () => {
 
       expect(actual).toBe("Redirect to login");
       expect(controller.getStatus()).toBe(302);
+    });
+
+    it("should use audience from the request for the silent auth", async () => {
+      const controller = new AuthorizeController();
+
+      const stateData: { [key: string]: any } = {
+        // This id corresponds to the base64 token below
+        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
+          JSON.stringify({
+            userId: "tenantId|test@example.com",
+            authParams: {
+              redirect_uri: "https://example.com",
+              scope: "openid profile email",
+              state:
+                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
+              client_id: "clientId",
+              audience: "",
+              nonce:
+                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
+            },
+            user: {
+              email: "foo@bar.com",
+            },
+          }),
+      };
+
+      const ctx = contextFixture({
+        stateData,
+      });
+
+      ctx.headers.set(
+        "cookie",
+        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+      );
+
+      const actual = await controller.authorizeWithParams({
+        request: { ctx } as RequestWithContext,
+        client_id: "clientId",
+        redirect_uri: "https://example.com",
+        scope: "openid+profile+email",
+        state: "state",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        response_mode: AuthorizationResponseMode.WEB_MESSAGE,
+        audience: "aud2",
+        nonce: "nonce",
+        code_challenge_method: CodeChallengeMethod.S265,
+        // When using PKCE the client generates a random code challenge
+        code_challenge: "Aci0drFQuKXZ5KU4uqEfzSOWzNKqIOM2hNfLYA8qfJo",
+        prompt: "none",
+      });
+
+      const match = actual.match(/"access_token":"(\{[^}]+\})/);
+      if (match?.length !== 2) {
+        throw new Error("No access token found");
+      }
+      const accessToken = JSON.parse(match[1].replace(/\\/g, ""));
+
+      expect(accessToken.aud).toBe("aud2");
     });
   });
 

@@ -135,6 +135,7 @@ export class AuthorizeController extends Controller {
         nonce,
         code_challenge_method,
         code_challenge,
+        audience,
       });
     }
 

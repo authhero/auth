@@ -1,6 +1,9 @@
 import fetchMock from "jest-fetch-mock";
 import { contextFixture, client } from "../../fixtures";
-import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
+import {
+  PasswordlessController,
+  PasswordlessOptions,
+} from "../../../src/routes/tsoa/passwordless";
 import {
   Client,
   AuthorizationResponseType,
@@ -41,7 +44,7 @@ describe("Passwordless", () => {
     it("should use the fallback sesamy logo if client does not have a logo set", async () => {
       const controller = new PasswordlessController();
 
-      const body = {
+      const body: PasswordlessOptions = {
         client_id: "clientId",
         connection: "email",
         send: "code",
@@ -106,7 +109,7 @@ describe("Passwordless", () => {
     it("should use the client logo if set", async () => {
       const controller = new PasswordlessController();
 
-      const body = {
+      const body: PasswordlessOptions = {
         client_id: "clientId",
         connection: "email",
         send: "code",
