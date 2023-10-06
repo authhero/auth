@@ -119,6 +119,9 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
+  // should ignore fragments also! and combinations thereof
+  // add new tests to previous branch
+
   it("should match one of the URLs in the list", () => {
     const allowedUrls = [
       "http://foo.com",
@@ -136,11 +139,9 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
-  it("should allow any kind of strings to be passed in? Looks ot me like urlPattern regexp isn't working", () => {
-    // could also test multiple allowed urls
-    // I still think there'll be some hack in this regex!
+  it("should only allow real URLs", () => {
     const allowedUrls = ["this is not a real url"];
     const redirectUri = "this is not a real url";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 });

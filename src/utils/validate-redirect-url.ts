@@ -1,11 +1,35 @@
 import { InvalidRedirectError } from "../errors";
 
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
-}
+// no idea what this does! no tested
+// function escapeRegExp(string) {
+//   return string.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+// }
 
-// Regular expression to extract protocol + host and path (without query string) from a URL
-const urlPattern: RegExp = /^((?:http[s]?:\/\/)?[^\/]+)([^?]*)(\?.*)?$/;
+// this did nothing anyway
+// const urlPattern: RegExp = /^((?:http[s]?:\/\/)?[^\/]+)([^?]*)(\?.*)?$/;
+
+function matchUrlWithAllowedUrl(allowedUrlStr: string, redirectUrlStr: string) {
+  const allowedUrl = new URL(allowedUrlStr);
+  const redirectUrl = new URL(redirectUrlStr);
+
+  if (allowedUrl.protocol !== redirectUrl.protocol) {
+    return false;
+  }
+
+  if (allowedUrl.hostname !== redirectUrl.hostname) {
+    return false;
+  }
+
+  if (allowedUrl.port !== redirectUrl.port) {
+    return false;
+  }
+
+  if (allowedUrl.pathname !== redirectUrl.pathname) {
+    return false;
+  }
+
+  return true;
+}
 
 export function validateRedirectUrl(
   allowedUrls: string[],
@@ -15,26 +39,27 @@ export function validateRedirectUrl(
     return;
   }
 
-  const regexes = allowedUrls.map((allowedUrl) => {
+  const matches: boolean[] = allowedUrls.map((allowedUrl) => {
+    // previous Markus comment
+    // ----------------------------------------------------------------
     // This doesn't work in cloudflare workers for whatever reason
     // const url = new URL(allowedUrl);
-    const match: RegExpMatchArray | null = allowedUrl.match(urlPattern);
-    if (!match) {
-      throw new Error("Invalid URL");
-    }
+    // ----------------------------------------------------------------
+    // hmmm. this is serious! TBD - maybe we should even ping Cloudflare!
+    // I can google and see if they have another solution
+    // I could also manually replicate the above... with varying levels of complexity
 
-    // This replaces * with .* and escapes any other regexes in the string
-    const host = escapeRegExp(match[1]).replace(/\\\*/g, ".*");
-    // This removes any trailing slashes in the path and escapes any other regexes in the string
-    const path = escapeRegExp(match[2] || "").replace(/\/$/, "");
+    // maybe we don't actually want to allow port numbers or http!
+    // we could hardcode some allowed URLs like http://localhost:3000
+    // but apart from that the URL MUST start with https://
 
-    return new RegExp(`^${host}${path}$`, "i");
+    return matchUrlWithAllowedUrl(allowedUrl, redirectUri);
   });
 
-  // Regular expression to remove trailing slashes, query strings, and fragments
-  const cleanedUrl = redirectUri.replace(/(\/+)?(\?.*)?(#[^#]*)?$/, "");
-
-  if (!regexes.some((regex) => regex.test(cleanedUrl))) {
-    throw new InvalidRedirectError("Invalid redirectUri");
+  if (matches.some((match) => match)) {
+    return true;
   }
+
+  // I prefer false to exceptions but let's maintain current unit tests
+  throw new InvalidRedirectError("Invalid redirectUri");
 }
