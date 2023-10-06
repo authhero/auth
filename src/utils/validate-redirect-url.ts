@@ -12,8 +12,9 @@ function matchHostnameWithWildcards(
   allowedHostname: string,
   redirectHostname: string,
 ) {
-  const allowedHostnameParts = allowedHostname.split(".");
-  const redirectHostnameParts = redirectHostname.split(".");
+  // reverse this to simplify logic
+  const allowedHostnameParts = allowedHostname.split(".").reverse();
+  const redirectHostnameParts = redirectHostname.split(".").reverse();
 
   if (allowedHostnameParts.length !== redirectHostnameParts.length) {
     return false;
@@ -22,6 +23,16 @@ function matchHostnameWithWildcards(
   for (let i = 0; i < allowedHostnameParts.length; i++) {
     const allowedHostnamePart = allowedHostnameParts[i];
     const redirectHostnamePart = redirectHostnameParts[i];
+
+    // do not allow wildcard in TLD
+    if (i === 0 && allowedHostnamePart === "*") {
+      return false;
+    }
+
+    // do not allow wildcard in SLD
+    if (i === 1 && allowedHostnamePart === "*") {
+      return false;
+    }
 
     if (allowedHostnamePart === "*") {
       continue;
