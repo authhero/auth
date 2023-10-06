@@ -13,10 +13,10 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
-  it("should allow wildcard to span multiple subdomains?", () => {
+  it("should not allow wildcard to span multiple subdomains", () => {
     const allowedUrls = ["https://*.example.com/path"];
     const redirectUri = "https://sub.sub.example.com/path";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should allow domain wildcard like this?", () => {
@@ -31,10 +31,10 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
-  it("really should not allow this", () => {
+  it("should not allow bad URLs with just wildcards", () => {
     const allowedUrls = ["*"];
     const redirectUri = "*";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should disallow redirectUri with wildcard subdomain specified but not existing", () => {
