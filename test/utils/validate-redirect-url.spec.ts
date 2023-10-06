@@ -119,6 +119,12 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
+  it("should should ignore hash fragments", () => {
+    const allowedUrls = ["http://example.com"];
+    const redirectUri = "http://example.com#hey=ho";
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+  });
+
   it("should match one of the URLs in the list", () => {
     const allowedUrls = [
       "http://foo.com",
