@@ -8,6 +8,33 @@ import { InvalidRedirectError } from "../errors";
 // this did nothing anyway
 // const urlPattern: RegExp = /^((?:http[s]?:\/\/)?[^\/]+)([^?]*)(\?.*)?$/;
 
+function matchHostnameWithWildcards(
+  allowedHostname: string,
+  redirectHostname: string,
+) {
+  const allowedHostnameParts = allowedHostname.split(".");
+  const redirectHostnameParts = redirectHostname.split(".");
+
+  if (allowedHostnameParts.length !== redirectHostnameParts.length) {
+    return false;
+  }
+
+  for (let i = 0; i < allowedHostnameParts.length; i++) {
+    const allowedHostnamePart = allowedHostnameParts[i];
+    const redirectHostnamePart = redirectHostnameParts[i];
+
+    if (allowedHostnamePart === "*") {
+      continue;
+    }
+
+    if (allowedHostnamePart !== redirectHostnamePart) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function matchUrlWithAllowedUrl(allowedUrlStr: string, redirectUrlStr: string) {
   const allowedUrl = new URL(allowedUrlStr);
   const redirectUrl = new URL(redirectUrlStr);
@@ -16,7 +43,7 @@ function matchUrlWithAllowedUrl(allowedUrlStr: string, redirectUrlStr: string) {
     return false;
   }
 
-  if (allowedUrl.hostname !== redirectUrl.hostname) {
+  if (!matchHostnameWithWildcards(allowedUrl.hostname, redirectUrl.hostname)) {
     return false;
   }
 
