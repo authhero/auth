@@ -128,4 +128,19 @@ describe("validateRedirectUrl", () => {
     const redirectUri = "http://example.com";
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
+
+  // these tests increase the code coverage
+  it("should return nothing if no redirect uri is provided", () => {
+    const allowedUrls = ["http://foo.com"];
+    const redirectUri = undefined;
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+  });
+
+  it("should throw an exception if the allowed uri is not valid", () => {
+    // could also test multiple allowed urls
+    // I still think there'll be some hack in this regex!
+    const allowedUrls = ["this is not a real url"];
+    const redirectUri = "http://foo.com";
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+  });
 });
