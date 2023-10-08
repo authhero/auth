@@ -1,5 +1,3 @@
-// import { getToken } from "@sagi.io/workers-jwt";
-
 import { createToken } from "../utils/jwt";
 
 const DAY_IN_SECONDS = 60 * 60 * 24;

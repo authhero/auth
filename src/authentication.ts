@@ -6,7 +6,6 @@ import {
   InvalidSignatureError,
   UnauthorizedError,
 } from "./errors";
-import { getDb } from "./services/db";
 import { Env } from "./types/Env";
 
 export enum SecuritySchemeName {

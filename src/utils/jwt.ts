@@ -87,7 +87,6 @@ export async function createToken(params: CreateTokenParams) {
   const keyBuffer = pemToBuffer(params.pemKey);
 
   const algorithm = getAlgorithm(params.alg, "import");
-  console.log("algorithm: " + JSON.stringify(algorithm));
 
   const key = await crypto.subtle.importKey(
     getKeyFormat(params.pemKey),

@@ -15,15 +15,5 @@ export default async function rotateKeys(env: Env) {
       Date.now() - CERTIFICATE_EXPIRE_IN_SECONDS * 1000,
   );
 
-  console.log(
-    "cert: " +
-      JSON.stringify(
-        filteredCertificates.map((c) => ({
-          created_at: c.created_at,
-          kid: c.kid,
-        })),
-      ),
-  );
-
   await env.data.certificates.upsertCertificates(filteredCertificates);
 }

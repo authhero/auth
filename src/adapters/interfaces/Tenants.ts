@@ -6,6 +6,7 @@ export interface CreateTenantParams {
   audience: string;
   sender_name: string;
   sender_email: string;
+  id?: string;
 }
 
 export interface TenantsDataAdapter {

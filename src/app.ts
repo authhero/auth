@@ -13,6 +13,8 @@ import corsMiddleware from "./middlewares/cors";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
+import { getCertificate } from "integration-test/helpers/token";
+import { TokenFactory } from "./services/token-factory";
 
 export const app = new Router<Env>();
 
@@ -74,12 +76,6 @@ app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 //       },
 //     );
 //   }
-// });
-
-// app.post("/rotate-keys", async (ctx: Context<Env>) => {
-//   await rotateKeys(ctx.env);
-
-//   return new Response("OK");
 // });
 
 app.get("/static/:file*", serve);

@@ -15,6 +15,7 @@ import { getCertificate } from "../integration-test/helpers/token";
 // our Durable Object namespace, we must export it from the root module.
 export { User, State };
 
+// TODO: Remove test adapter
 const data = createAdapters();
 // Add a known certificate
 await data.certificates.upsertCertificates([getCertificate()]);
