@@ -3,6 +3,7 @@
   "version": "1.63.1",
   "description": "",
   "main": "build/src/server.js",
+  "type": "module",
   "scripts": {
     "build": "node tsoa.mjs",
     "dev": "node tsoa.mjs && wrangler dev --remote",
@@ -11,7 +12,7 @@
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
     "test": "jest --config jest.config.js --verbose",
-    "integration-test": "jest --config jest-integration.config.js --verbose",
+    "integration": "jest --config jest-integration.config.js --verbose",
     "test-with-coverage": "jest --config jest.config.js --coverage",
     "semantic-release": "semantic-release",
     "prepare": "husky install"

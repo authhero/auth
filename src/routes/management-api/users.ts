@@ -25,7 +25,6 @@ import {
   GetUserResponseWithTotals,
   PostUsersBody,
 } from "../../types/auth0/UserResponse";
-import { createAdapter } from "../../adapters/planetscale/User";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -54,11 +53,9 @@ export class UsersMgmtController extends Controller {
     @Query() q?: string,
     @Query() search_engine?: "v1" | "v2" | "v3",
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const adapter = createAdapter(ctx.env);
-
-    const data = await adapter.listUsers(tenantId, {
+    const data = await env.data.users.listUsers(tenantId, {
       page,
       perPage: per_page,
       includeTotals: include_totals,
@@ -166,9 +163,9 @@ export class UsersMgmtController extends Controller {
     @Body()
     user: PostUsersBody,
   ): Promise<UserResponse> {
-    const adapter = createAdapter(request.ctx.env);
+    const { env } = request.ctx;
 
-    const data = await adapter.createUser(tenantId, user);
+    const data = await env.data.users.createUser(tenantId, user);
 
     return data;
   }

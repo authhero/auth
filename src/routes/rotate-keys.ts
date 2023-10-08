@@ -4,10 +4,7 @@ import { Env } from "../types/Env";
 import { create } from "../services/rsa-key";
 
 export default async function rotateKeys(env: Env) {
-  const certificatesString = await env.CERTIFICATES.get("default");
-  const certificates: Certificate[] = certificatesString
-    ? JSON.parse(certificatesString)
-    : [];
+  const certificates = await env.data.certificates.listCertificates();
 
   const newCertificate = await create();
   certificates.push(newCertificate);
@@ -18,5 +15,15 @@ export default async function rotateKeys(env: Env) {
       Date.now() - CERTIFICATE_EXPIRE_IN_SECONDS * 1000,
   );
 
-  await env.CERTIFICATES.put("default", JSON.stringify(filteredCertificates));
+  console.log(
+    "cert: " +
+      JSON.stringify(
+        filteredCertificates.map((c) => ({
+          created_at: c.created_at,
+          kid: c.kid,
+        })),
+      ),
+  );
+
+  await env.data.certificates.upsertCertificates(filteredCertificates);
 }

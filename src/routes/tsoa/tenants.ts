@@ -30,32 +30,20 @@ export class TenantsController extends Controller {
     @Header("range") rangeRequest?: string,
   ): Promise<Tenant[]> {
     const { ctx } = request;
-    const db = getDb(ctx.env);
 
-    let query = db.selectFrom("tenants");
+    const { tenants } = await ctx.env.data.tenants.list();
+
+    console.log("User: " + JSON.stringify(ctx.state.user));
 
     const permissions: string[] = ctx.state.user.permissions || [];
-    if (!permissions.includes(ctx.env.READ_PERMISSION as string)) {
-      const memberTenants = await db
-        .selectFrom("members")
-        .where("sub", "=", ctx.state.user.sub)
-        .select("tenant_id")
-        .execute();
-
-      query = query.where(
-        "id",
-        "in",
-        memberTenants.map((mt) => mt.tenant_id),
-      );
+    if (permissions.includes(ctx.env.READ_PERMISSION as string)) {
+      return tenants;
     }
 
-    const { data, range } = await executeQuery<"tenants">(query, rangeRequest);
+    const { members } = await ctx.env.data.members.list();
+    const memberTenants = members.map((m) => m.tenant_id);
 
-    if (range) {
-      this.setHeader(headers.contentRange, range);
-    }
-
-    return data;
+    return tenants.filter((t) => memberTenants.includes(t.id));
   }
 
   @Get("{id}")
@@ -72,8 +60,6 @@ export class TenantsController extends Controller {
       .where("tenants.id", "=", id)
       .selectAll()
       .executeTakeFirst();
-
-    console.log("tenant: " + JSON.stringify(tenant));
 
     if (!tenant) {
       this.setStatus(404);
@@ -130,29 +116,23 @@ export class TenantsController extends Controller {
   ): Promise<Tenant> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
-    const tenant = {
-      ...body,
-      id: nanoid(),
-      created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
-    };
+    const tenant = await ctx.env.data.tenants.create(body);
 
-    const adminUser: Member = {
-      id: nanoid(),
-      sub: ctx.state.user.sub,
-      email: "placeholder",
-      tenant_id: tenant.id,
-      role: "admin",
-      status: "active",
-      created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
-    };
+    // TODO: add to adapter
+    // const adminUser: Member = {
+    //   id: nanoid(),
+    //   sub: ctx.state.user.sub,
+    //   email: "placeholder",
+    //   tenant_id: tenant.id,
+    //   role: "admin",
+    //   status: "active",
+    //   created_at: new Date().toISOString(),
+    //   modified_at: new Date().toISOString(),
+    // };
 
-    await db.insertInto("tenants").values(tenant).execute();
-    await db.insertInto("members").values(adminUser).execute();
+    // await db.insertInto("members").values(adminUser).execute();
 
-    await updateTenantClientsInKV(ctx.env, tenant.id);
+    // await updateTenantClientsInKV(ctx.env, tenant.id);
 
     this.setStatus(201);
     return tenant;

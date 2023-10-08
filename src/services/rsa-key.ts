@@ -49,7 +49,7 @@ function arrayBufferToBase64String(arrayBuffer: ArrayBuffer) {
 
 function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
   const base64Cert = arrayBufferToBase64String(binaryData);
-  let pemCert = "-----BEGIN " + label + "-----\r\n";
+  let pemCert = "-----BEGIN RSA PRIVATE KEY-----\r\n";
   let nextIndex = 0;
 
   while (nextIndex < base64Cert.length) {
@@ -60,7 +60,7 @@ function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
     }
     nextIndex += 64;
   }
-  pemCert += "-----END " + label + "-----\r\n";
+  pemCert += "-----END RSA PRIVATE KEY-----\r\n";
   return pemCert;
 }
 

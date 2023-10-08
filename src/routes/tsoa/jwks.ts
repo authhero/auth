@@ -43,12 +43,10 @@ export class JWKSRoutes extends Controller {
   ): Promise<JwksKeys> {
     const { env } = request.ctx;
 
-    const certificatesString = await env.CERTIFICATES.get("default");
-    const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
-      (cert: any) => {
-        return { kid: cert.kid, ...cert.publicKey };
-      },
-    );
+    const certificates = await env.data.certificates.listCertificates();
+    const keys = certificates.map((cert: any) => {
+      return { kid: cert.kid, ...cert.publicKey };
+    });
 
     this.setHeader(headers.contentType, contentTypes.json);
     this.setHeader(headers.accessControlAllowOrigin, "*");
