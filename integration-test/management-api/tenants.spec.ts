@@ -52,7 +52,6 @@ describe("tenants", () => {
 
     expect(createTenantResponse.status).toBe(201);
     const createdTenant = await createTenantResponse.json();
-    console.log("tenant: " + JSON.stringify(createdTenant));
 
     expect(createdTenant.name).toBe("test");
 

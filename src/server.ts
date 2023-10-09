@@ -10,6 +10,7 @@ import { createUsersAdapter } from "./adapters/planetscale/users";
 import { createMembersAdapter } from "./adapters/planetscale/members";
 import createAdapters from "./adapters/in-memory";
 import { getCertificate } from "../integration-test/helpers/token";
+import { createTenantsAdapter } from "./adapters/in-memory/tenants";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -34,12 +35,13 @@ const server = {
         oauth2ClientFactory: { create: oAuth2ClientFactory },
         stateFactory: State.getFactory(env.STATE, env),
         userFactory: User.getFactory(env.USER, env),
-        // data: {
-        //   certificates: createCertificatesAdapter(env),
-        //   users: createUsersAdapter(env),
-        //   members: createMembersAdapter(env),
-        // },
-        data,
+        data: {
+          certificates: createCertificatesAdapter(env),
+          users: createUsersAdapter(env),
+          members: createMembersAdapter(env),
+          tenants: createTenantsAdapter(env),
+        },
+        // data,
       },
       ctx,
     );

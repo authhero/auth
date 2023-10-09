@@ -67,7 +67,14 @@ export class UsersMgmtController extends Controller {
         users: data.users,
       };
     }
-    return data.users;
+    return data.users.map((u) => {
+      const { id, ...user } = u;
+
+      return {
+        ...user,
+        user_id: id,
+      };
+    });
   }
 
   @Get("users/{userId}")
@@ -165,9 +172,13 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const data = await env.data.users.createUser(tenantId, user);
+    const { id, ...data } = await env.data.users.createUser(tenantId, user);
 
-    return data;
+    this.setStatus(201);
+    return {
+      ...data,
+      user_id: id,
+    };
   }
 
   @Put("users/{userId}")
