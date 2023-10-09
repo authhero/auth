@@ -12,7 +12,7 @@ describe("tenants", () => {
     worker.stop();
   });
 
-  it("should return an the test tenant", async () => {
+  it("should return an empty list of tenants", async () => {
     const token = await getAdminToken();
 
     const response = await worker.fetch("/tenants", {
