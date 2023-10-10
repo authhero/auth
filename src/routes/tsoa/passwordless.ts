@@ -121,13 +121,13 @@ export class PasswordlessController extends Controller {
     @Query("scope") scope: string,
     @Query("response_type") response_type: AuthorizationResponseType,
     @Query("redirect_uri") redirect_uri: string,
-    @Query("audience") audience: string,
     @Query("state") state: string,
     @Query("nonce") nonce: string,
     @Query("verification_code") verification_code: string,
     @Query("connection") connection: string,
     @Query("client_id") client_id: string,
     @Query("email") email: string,
+    @Query("audience") audience?: string,
   ): Promise<string> {
     const { env } = request.ctx;
 

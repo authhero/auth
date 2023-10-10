@@ -180,13 +180,13 @@ describe("Passwordless", () => {
         "",
         AuthorizationResponseType.TOKEN,
         "https://example.com",
-        "https://example.com",
         "state",
         "nonce",
         "code",
         "email",
         "clientId",
         "email",
+        "https://example.com",
       );
 
       expect(controller.getStatus()).toBe(302);
@@ -225,13 +225,13 @@ describe("Passwordless", () => {
           "",
           AuthorizationResponseType.TOKEN,
           "https://example.com",
-          "https://example.com",
           "state",
           "nonce",
           "000000",
           "email",
           "clientId",
           "email",
+          "https://example.com",
         ),
       ).rejects.toThrow("Invalid code");
     });
