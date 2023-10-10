@@ -61,8 +61,10 @@ export class PasswordlessController extends Controller {
       throw new Error("Client not found");
     }
 
+    const email = body.email.toLocaleLowerCase();
+
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, body.email),
+      getId(client.tenant_id, email),
     );
 
     const { code } = await user.createAuthenticationCode.mutate({
@@ -102,12 +104,12 @@ export class PasswordlessController extends Controller {
 
       magicLink.searchParams.set("connection", body.connection);
       magicLink.searchParams.set("client_id", body.client_id);
-      magicLink.searchParams.set("email", body.email);
+      magicLink.searchParams.set("email", email);
       magicLink.searchParams.set("verification_code", code);
 
-      await sendLink(env, client, body.email, code, magicLink.href);
+      await sendLink(env, client, email, code, magicLink.href);
     } else {
-      await sendCode(env, client, body.email, code);
+      await sendCode(env, client, email, code);
     }
 
     return "OK";

@@ -11,14 +11,16 @@ export async function passwordGrant(
 ): Promise<TokenResponse> {
   const client = await getClient(env, params.client_id);
 
+  const email = params.username.toLocaleLowerCase();
+
   const user = env.userFactory.getInstanceByName(
-    getId(client.tenant_id, params.username),
+    getId(client.tenant_id, email),
   );
 
   await user.validatePassword.mutate({
     password: params.password,
     tenantId: client.tenant_id,
-    email: params.username,
+    email: email,
   });
 
   const profile = await user.getProfile.query();
