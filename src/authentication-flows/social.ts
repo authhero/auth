@@ -107,11 +107,12 @@ export async function socialAuthCallback({
 
   const oauth2Profile = parseJwt(token.id_token!);
 
-  const userId = getId(client.tenant_id, oauth2Profile.email);
+  const email = oauth2Profile.email.toLocaleLowerCase();
+  const userId = getId(client.tenant_id, email);
   const user = env.userFactory.getInstanceByName(userId);
 
   const profile = await user.loginWithConnection.mutate({
-    email: oauth2Profile.email,
+    email,
     tenantId: client.tenant_id,
     connection: { name: connection.name, profile: oauth2Profile },
   });
