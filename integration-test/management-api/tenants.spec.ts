@@ -27,7 +27,7 @@ describe("tenants", () => {
     expect(body.length).toBe(0);
   });
 
-  it("should add a new tenant tenants", async () => {
+  it("should add a new tenant", async () => {
     const token = await getAdminToken();
     const tenantResponse = await worker.fetch("/tenants", {
       headers: {
