@@ -31,4 +31,4 @@ jobs:
       - run: yarn format:ci-cd
       - run: yarn build
       - run: yarn test
-      - run: yarn integration-test      
+      - run: yarn integration     
