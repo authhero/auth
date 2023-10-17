@@ -6,20 +6,11 @@ import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { QueueMessage } from "./services/events";
 import { handleUserEvent } from "./handlers/update-user";
 import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
-import { createUsersAdapter } from "./adapters/planetscale/users";
-import { createMembersAdapter } from "./adapters/planetscale/members";
-import createAdapters from "./adapters/in-memory";
-import { getCertificate } from "../integration-test/helpers/token";
-import { createTenantsAdapter } from "./adapters/in-memory/tenants";
+import createAdapters from "./adapters/planetscale";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
 export { User, State };
-
-// TODO: Remove test adapter
-const data = createAdapters();
-// Add a known certificate
-await data.certificates.upsertCertificates([getCertificate()]);
 
 const server = {
   async fetch(
@@ -37,9 +28,7 @@ const server = {
         userFactory: User.getFactory(env.USER, env),
         data: {
           certificates: createCertificatesAdapter(env),
-          users: createUsersAdapter(env),
-          members: createMembersAdapter(env),
-          tenants: createTenantsAdapter(env),
+          ...createAdapters(env),
         },
         // data,
       },
