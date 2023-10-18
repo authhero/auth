@@ -15,7 +15,7 @@ describe("tenants", () => {
   it("should return an empty list of tenants", async () => {
     const token = await getAdminToken();
 
-    const response = await worker.fetch("/tenants", {
+    const response = await worker.fetch("/api/v2/tenants", {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -29,14 +29,14 @@ describe("tenants", () => {
 
   it("should add a new tenant", async () => {
     const token = await getAdminToken();
-    const tenantResponse = await worker.fetch("/tenants", {
+    const tenantResponse = await worker.fetch("/api/v2/tenants", {
       headers: {
         authorization: `Bearer ${token}`,
       },
     });
     expect(tenantResponse.status).toBe(200);
 
-    const createTenantResponse = await worker.fetch("/tenants", {
+    const createTenantResponse = await worker.fetch("/api/v2/tenants", {
       method: "POST",
       body: JSON.stringify({
         name: "test",
@@ -55,7 +55,7 @@ describe("tenants", () => {
 
     expect(createdTenant.name).toBe("test");
 
-    const newTenantResponse = await worker.fetch("/tenants", {
+    const newTenantResponse = await worker.fetch("/api/v2/tenants", {
       headers: {
         authorization: `Bearer ${token}`,
       },

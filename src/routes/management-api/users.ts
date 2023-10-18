@@ -32,13 +32,13 @@ export interface LinkBodyParams {
   link_with: string;
 }
 
-@Route("api/v2")
+@Route("api/v2/users")
 @Tags("management-api")
 // TODO - check with NPM lib auth0/node @ https://github.com/sesamyab/auth0-management-api-demo/ - that this can create the correct token
 // ALSO - are we checking these scopes? read:users update:users create:users delete:users
 @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
-  @Get("users")
+  @Get("")
   public async listUsers(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
@@ -77,7 +77,7 @@ export class UsersMgmtController extends Controller {
     });
   }
 
-  @Get("users/{userId}")
+  @Get("{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
@@ -104,7 +104,7 @@ export class UsersMgmtController extends Controller {
     return user.getProfile.query();
   }
 
-  @Delete("users/{userId}")
+  @Delete("{userId}")
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
@@ -132,34 +132,7 @@ export class UsersMgmtController extends Controller {
     return user.delete.mutate();
   }
 
-  @Get("users-by-email")
-  public async getUserByEmail(
-    @Request() request: RequestWithContext,
-    @Query("email") userEmail: string,
-    @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
-    const { env } = request.ctx;
-
-    const db = getDb(env);
-    const dbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.email", "=", userEmail)
-      .select("users.email")
-      .executeTakeFirst();
-
-    if (!dbUser) {
-      throw new NotFoundError();
-    }
-
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.getProfile.query();
-  }
-
-  @Post("users")
+  @Post("")
   @SuccessResponse(201, "Created")
   /**
    * Create a new user.
@@ -181,7 +154,7 @@ export class UsersMgmtController extends Controller {
     };
   }
 
-  @Put("users/{userId}")
+  @Put("{userId}")
   public async putUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
@@ -202,7 +175,7 @@ export class UsersMgmtController extends Controller {
     return result;
   }
 
-  @Post("users/{userId}/identities")
+  @Post("{userId}/identities")
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,

@@ -12,15 +12,12 @@ import {
   Path,
   Put,
 } from "@tsoa/runtime";
-import { Tenant, Member } from "../../types/sql";
+import { Tenant } from "../../types/sql";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { nanoid } from "nanoid";
-import { headers } from "../../constants";
-import { executeQuery } from "../../helpers/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
 
-@Route("tenants")
+@Route("api/v2/tenants")
 @Tags("tenants")
 export class TenantsController extends Controller {
   @Get("")
@@ -32,8 +29,6 @@ export class TenantsController extends Controller {
     const { ctx } = request;
 
     const { tenants } = await ctx.env.data.tenants.list();
-
-    console.log("User: " + JSON.stringify(ctx.state.user));
 
     const permissions: string[] = ctx.state.user.permissions || [];
     if (permissions.includes(ctx.env.READ_PERMISSION as string)) {
