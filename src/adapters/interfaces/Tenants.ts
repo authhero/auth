@@ -1,5 +1,6 @@
 import { Tenant } from "../../types";
 import { Totals } from "../../types/auth0/Totals";
+import { ListParams } from "./ListParams";
 
 export interface CreateTenantParams {
   name: string;
@@ -11,5 +12,7 @@ export interface CreateTenantParams {
 
 export interface TenantsDataAdapter {
   create(params: CreateTenantParams): Promise<Tenant>;
-  list(): Promise<{ tenants: Tenant[]; totals?: Totals }>;
+  get(id: string): Promise<Tenant | undefined>;
+  list(params: ListParams): Promise<{ tenants: Tenant[]; totals?: Totals }>;
+  update(id: string, tenant: Partial<Tenant>): Promise<void>;
 }

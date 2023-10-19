@@ -8,37 +8,81 @@ import {
   Body,
   SuccessResponse,
   Security,
-  Header,
+  Query,
   Path,
-  Put,
+  Patch,
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql";
-import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
+import { Totals } from "../../types/auth0";
+
+export interface GetTenantsWithTotals extends Totals {
+  tenants: Tenant[];
+}
+
+function parseSort(sort?: string):
+  | undefined
+  | {
+      sort_by: string;
+      sort_order: "asc" | "desc";
+    } {
+  if (!sort) {
+    return undefined;
+  }
+
+  const [sort_by, orderString] = sort.split(":");
+  const sort_order = orderString === "1" ? "asc" : "desc";
+
+  return {
+    sort_by,
+    sort_order,
+  };
+}
 
 @Route("api/v2/tenants")
 @Tags("tenants")
 export class TenantsController extends Controller {
   @Get("")
-  @Security("oauth2managementApi", [""])
+  @Security("oauth2managementApi", [])
+  /**
+   * This endpoint is not available in the Auth0 Management API as it only handles one tenant per domain.
+   */
   public async listTenants(
     @Request() request: RequestWithContext,
-    @Header("range") rangeRequest?: string,
-  ): Promise<Tenant[]> {
-    const { ctx } = request;
+    /**
+     * @description The page number where 1 is the first page
+     * @isInt value
+     * @minimum 1
+     */
+    @Query() page = 1,
+    /**
+     * @description The number of items per page
+     * @isInt value
+     * @minimum 1
+     */
+    @Query() per_page = 20,
+    @Query() include_totals = false,
+    /**
+     * @description A property that should have the format "string:-1" or "string:1"
+     * @pattern ^.+:(-1|1)$
+     */
+    @Query() sort?: string,
+  ): Promise<Tenant[] | GetTenantsWithTotals> {
+    const { env } = request.ctx;
 
-    const { tenants } = await ctx.env.data.tenants.list();
+    const result = await env.data.tenants.list({
+      page,
+      per_page,
+      include_totals,
+      sort: parseSort(sort),
+    });
 
-    const permissions: string[] = ctx.state.user.permissions || [];
-    if (permissions.includes(ctx.env.READ_PERMISSION as string)) {
-      return tenants;
+    if (include_totals) {
+      return result as GetTenantsWithTotals;
     }
 
-    const { members } = await ctx.env.data.members.list();
-    const memberTenants = members.map((m) => m.tenant_id);
-
-    return tenants.filter((t) => memberTenants.includes(t.id));
+    return result.tenants;
   }
 
   @Get("{id}")
@@ -47,14 +91,9 @@ export class TenantsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("id") id: string,
   ): Promise<Tenant | string> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const db = getDb(ctx.env);
-    const tenant = await db
-      .selectFrom("tenants")
-      .where("tenants.id", "=", id)
-      .selectAll()
-      .executeTakeFirst();
+    const tenant = await env.data.tenants.get(id);
 
     if (!tenant) {
       this.setStatus(404);
@@ -64,7 +103,7 @@ export class TenantsController extends Controller {
     return tenant;
   }
 
-  @Put("{id}")
+  @Patch("{id}")
   @Security("oauth2managementApi", [""])
   public async putTenant(
     @Request() request: RequestWithContext,
@@ -73,30 +112,13 @@ export class TenantsController extends Controller {
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
-    const tenant = {
-      ...body,
-      id,
-      created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
-    };
+    await env.data.tenants.update(id, body);
 
-    try {
-      await db.insertInto("tenants").values(tenant).execute();
-    } catch (err: any) {
-      if (!err.message.includes("AlreadyExists")) {
-        throw err;
-      }
-
-      const { id, created_at, ...tenantUpdate } = tenant;
-      await db
-        .updateTable("tenants")
-        .set(tenantUpdate)
-        .where("id", "=", tenant.id)
-        .execute();
+    const tenant = await env.data.tenants.get(id);
+    if (!tenant) {
+      this.setStatus(404);
+      return "Not found";
     }
-
-    await updateTenantClientsInKV(env, id);
 
     this.setStatus(201);
     return tenant;
@@ -109,25 +131,11 @@ export class TenantsController extends Controller {
     @Request() request: RequestWithContext,
     @Body() body: Omit<Tenant, "id" | "created_at" | "modified_at">,
   ): Promise<Tenant> {
-    const { ctx } = request;
+    const { env } = request.ctx;
 
-    const tenant = await ctx.env.data.tenants.create(body);
+    const tenant = await env.data.tenants.create(body);
 
-    // TODO: add to adapter
-    // const adminUser: Member = {
-    //   id: nanoid(),
-    //   sub: ctx.state.user.sub,
-    //   email: "placeholder",
-    //   tenant_id: tenant.id,
-    //   role: "admin",
-    //   status: "active",
-    //   created_at: new Date().toISOString(),
-    //   modified_at: new Date().toISOString(),
-    // };
-
-    // await db.insertInto("members").values(adminUser).execute();
-
-    // await updateTenantClientsInKV(ctx.env, tenant.id);
+    // await updateTenantClientsInKV(env, tenant.id);
 
     this.setStatus(201);
     return tenant;

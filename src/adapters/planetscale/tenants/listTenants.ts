@@ -1,16 +1,37 @@
-import { UserResponse, Totals } from "../../../types/auth0";
-import { ListUserParams } from "../../interfaces/User";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { ListParams } from "../../../adapters/interfaces/ListParams";
 
 export function listTenants(db: Kysely<Database>) {
-  return async () => {
+  return async (params: ListParams) => {
     let query = db.selectFrom("tenants");
 
-    const tenants = await query.selectAll().execute();
+    if (params.sort && params.sort.sort_by) {
+      const { ref } = db.dynamic;
+      query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
+    }
+
+    const filteredQuery = query
+      .offset((params.page - 1) * params.per_page)
+      .limit(params.per_page);
+
+    const tenants = await filteredQuery.selectAll().execute();
+
+    if (!params.include_totals) {
+      return {
+        tenants,
+      };
+    }
+
+    const [{ count }] = await query
+      .select((eb) => eb.fn.countAll().as("count"))
+      .execute();
 
     return {
       tenants,
+      start: (params.page - 1) * params.per_page,
+      limit: params.per_page,
+      length: count,
     };
   };
 }
