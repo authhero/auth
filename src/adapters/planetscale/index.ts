@@ -1,4 +1,3 @@
-import { DataAdapters } from "../interfaces";
 import { createUsersAdapter } from "./users";
 import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";

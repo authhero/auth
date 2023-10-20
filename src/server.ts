@@ -7,6 +7,7 @@ import { QueueMessage } from "./services/events";
 import { handleUserEvent } from "./handlers/update-user";
 import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
 import createAdapters from "./adapters/planetscale";
+import { updateTenantClientsInKV } from "./hooks/update-client";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -30,7 +31,12 @@ const server = {
           certificates: createCertificatesAdapter(env),
           ...createAdapters(env),
         },
-        // data,
+        hooks: {
+          tenant: {
+            onCreated: async (env, tenant) =>
+              updateTenantClientsInKV(env, tenant.id),
+          },
+        },
       },
       ctx,
     );

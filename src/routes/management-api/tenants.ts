@@ -7,6 +7,7 @@ import {
   Tags,
   Body,
   SuccessResponse,
+  Middlewares,
   Security,
   Query,
   Path,
@@ -135,7 +136,10 @@ export class TenantsController extends Controller {
 
     const tenant = await env.data.tenants.create(body);
 
-    // await updateTenantClientsInKV(env, tenant.id);
+    // TODO: this should be a middleware
+    if (env.hooks?.tenant?.onCreated) {
+      await env.hooks.tenant.onCreated(env, tenant);
+    }
 
     this.setStatus(201);
     return tenant;
