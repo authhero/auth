@@ -115,14 +115,14 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   return jwksUrls[jwksUrl];
 }
 
-function isValidScopes(token: TokenData, scopes: string[]) {
-  if (!scopes.length) {
+function isValidPermissions(token: TokenData, permissions: string[]) {
+  if (!permissions.length) {
     return true;
   }
 
-  const tokenScopes = token.payload.scope?.split(" ") || [];
+  const tokenScopes = token.payload.permissions || [];
 
-  const match = !scopes.some((scope) => !tokenScopes.includes(scope));
+  const match = !permissions.some((p) => !tokenScopes.includes(p));
 
   return match;
 }
@@ -161,7 +161,7 @@ export async function getUser(
   ctx: Context<Env>,
   securitySchemeName: SecuritySchemeName,
   bearer: string,
-  scopes: string[],
+  permissions: string[],
 ): Promise<any> {
   const token = decodeJwt(bearer);
 
@@ -172,7 +172,7 @@ export async function getUser(
     throw new ExpiredTokenError();
   }
 
-  if (!isValidScopes(token, scopes)) {
+  if (!isValidPermissions(token, permissions)) {
     throw new InvalidScopesError();
   }
 
@@ -259,7 +259,7 @@ export function authenticationHandler(
       ? SecuritySchemeName.oauth2
       : SecuritySchemeName.oauth2managementApi;
 
-  const [scope] = authProvider[securitySchemeName];
+  const [permissionString] = authProvider[securitySchemeName];
   return async function jwtMiddleware(
     ctx: Context<Env>,
     next: Next,
@@ -272,9 +272,15 @@ export function authenticationHandler(
     }
     const bearer = authHeader.slice(7);
 
-    const scopes = scope?.split(" ").filter((scope) => scope) || [];
+    const permissions =
+      permissionString?.split(" ").filter((permission) => permission) || [];
 
-    ctx.state.user = await getUser(ctx, securitySchemeName, bearer, scopes);
+    ctx.state.user = await getUser(
+      ctx,
+      securitySchemeName,
+      bearer,
+      permissions,
+    );
 
     await verifyTenantPermissions(ctx);
 
