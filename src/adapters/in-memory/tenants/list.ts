@@ -24,23 +24,29 @@ function sortByString<T>(
   });
 }
 
-export function listTenants(tenants: Tenant[]) {
+export function listTenants(tenantsStorage: Tenant[]) {
   return async (params: ListParams) => {
-    const sortedTenants = sortByString(tenants as any[], params.sort);
+    let tenants = sortByString(tenantsStorage as any[], params.sort);
 
-    const pagedTenants = sortedTenants.slice(
+    if (params.q) {
+      tenants = tenants.filter((tenant) =>
+        tenant.name.toLowerCase().includes(params.q?.toLowerCase()),
+      );
+    }
+
+    tenants = tenants.slice(
       (params.page - 1) * params.per_page,
       params.page * params.per_page,
     );
 
     if (!params.include_totals) {
       return {
-        tenants: pagedTenants,
+        tenants,
       };
     }
 
     return {
-      tenants: pagedTenants,
+      tenants,
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: tenants.length,

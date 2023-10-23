@@ -7,14 +7,11 @@ import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import rotateKeys from "./routes/rotate-keys";
 import { serve } from "./routes/login";
-import { migrateDown, migrateToLatest } from "./migrate";
 import errorHandler from "./middlewares/errorHandler";
 import corsMiddleware from "./middlewares/cors";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
-import { getCertificate } from "integration-test/helpers/token";
-import { TokenFactory } from "./services/token-factory";
 
 export const app = new Router<Env>();
 
@@ -37,46 +34,6 @@ app.get("/spec", async () => {
 
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
-
-// app.post("/migrate-to-latest", async (ctx: Context<Env>) => {
-//   try {
-//     await migrateToLatest(ctx);
-//     return new Response("OK");
-//   } catch (err: any) {
-//     return new Response(
-//       JSON.stringify({
-//         message: err.message,
-//         cause: err.cause,
-//       }),
-//       {
-//         status: 500,
-//         headers: {
-//           "content-type": "application/json",
-//         },
-//       },
-//     );
-//   }
-// });
-
-// app.post("/migrate-down", async (ctx: Context<Env>) => {
-//   try {
-//     await migrateDown(ctx);
-//     return new Response("OK");
-//   } catch (err: any) {
-//     return new Response(
-//       JSON.stringify({
-//         message: err.message,
-//         cause: err.cause,
-//       }),
-//       {
-//         status: 500,
-//         headers: {
-//           "content-type": "application/json",
-//         },
-//       },
-//     );
-//   }
-// });
 
 app.get("/static/:file*", serve);
 

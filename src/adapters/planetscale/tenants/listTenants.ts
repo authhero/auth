@@ -11,6 +11,10 @@ export function listTenants(db: Kysely<Database>) {
       query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
     }
 
+    if (params.q) {
+      query = query.where((eb) => eb.or([eb("name", "like", `%${params.q}%`)]));
+    }
+
     const filteredQuery = query
       .offset((params.page - 1) * params.per_page)
       .limit(params.per_page);

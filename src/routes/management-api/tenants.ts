@@ -69,6 +69,10 @@ export class TenantsController extends Controller {
      * @pattern ^.+:(-1|1)$
      */
     @Query() sort?: string,
+    /**
+     * @description A lucene query string used to filter the results"
+     */
+    @Query() q?: string,
   ): Promise<Tenant[] | GetTenantsWithTotals> {
     const { env } = request.ctx;
 
@@ -77,6 +81,7 @@ export class TenantsController extends Controller {
       per_page,
       include_totals,
       sort: parseSort(sort),
+      q,
     });
 
     if (include_totals) {
