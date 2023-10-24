@@ -68,7 +68,7 @@ export class UsersMgmtController extends Controller {
       return result as GetUserResponseWithTotals;
     }
 
-    return result.users;
+    return result.data;
   }
 
   @Get("{userId}")

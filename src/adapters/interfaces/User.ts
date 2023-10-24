@@ -17,5 +17,5 @@ export interface UserDataAdapter {
   list(
     tenantId: string,
     params: ListUserParams,
-  ): Promise<{ users: UserResponse[]; totals?: Totals }>;
+  ): Promise<{ data: UserResponse[]; totals?: Totals }>;
 }

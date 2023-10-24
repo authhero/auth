@@ -8,7 +8,8 @@ export function createUsersAdapter(env: Env): UserDataAdapter {
   const db = getDb(env);
 
   return {
-    createUser: createUser(db),
-    listUsers: listUsers(db),
+    create: createUser(db),
+    // getting more typescript errors here but not being picked up anywhere... is this a VS code thing? is this a build issue?
+    list: listUsers(db),
   };
 }

@@ -8,7 +8,7 @@ export function createUserAdapter(): UserDataAdapter {
   const users: UserResponse[] = [];
 
   return {
-    createUser: createUser(users),
-    listUsers: listUsers(users),
+    create: createUser(users),
+    list: listUsers(users),
   };
 }

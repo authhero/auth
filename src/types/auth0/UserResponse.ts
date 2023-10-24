@@ -40,5 +40,6 @@ export interface UserResponse extends BaseUser {
 }
 
 export interface GetUserResponseWithTotals extends Totals {
-  users: UserResponse[];
+  // users: UserResponse[];
+  data: UserResponse[];
 }
