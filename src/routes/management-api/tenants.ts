@@ -7,7 +7,6 @@ import {
   Tags,
   Body,
   SuccessResponse,
-  Middlewares,
   Security,
   Query,
   Path,
@@ -15,7 +14,6 @@ import {
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { Totals } from "../../types/auth0";
 
 export interface GetTenantsWithTotals extends Totals {
@@ -133,7 +131,7 @@ export class TenantsController extends Controller {
   @Post("")
   @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
-  public async postTenants(
+  public async postTenant(
     @Request() request: RequestWithContext,
     @Body() body: Omit<Tenant, "id" | "created_at" | "modified_at">,
   ): Promise<Tenant> {

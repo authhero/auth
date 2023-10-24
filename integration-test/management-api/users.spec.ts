@@ -28,7 +28,7 @@ describe("tenants", () => {
     worker.stop();
   });
 
-  it("should an empty list of users for a tenant", async () => {
+  it("should return an empty list of users for a tenant", async () => {
     const token = await getAdminToken();
 
     const response = await worker.fetch("/api/v2/users", {

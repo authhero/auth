@@ -33,6 +33,7 @@ export function listUsers(db: Kysely<Database>) {
 
         const userResponse: UserResponse = {
           user_id: user.id,
+          // TODO: store this field in sql
           email_verified: true,
           username: user.email,
           phone_number: "",

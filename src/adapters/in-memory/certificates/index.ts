@@ -8,10 +8,6 @@ export function createCertificateAdapter(): CertificatesAdapter {
 
   return {
     listCertificates: listCertificates(certificateStorage),
-    upsertCertificates: async (cert) => {
-      const func = upsertCertificates(certificateStorage);
-
-      return await func(cert);
-    },
+    upsertCertificates: upsertCertificates(certificateStorage),
   };
 }

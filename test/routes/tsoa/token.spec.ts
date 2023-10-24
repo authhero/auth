@@ -313,7 +313,6 @@ describe("token", () => {
         throw new Error("Should be Token");
       }
 
-      // This is a debug token with just json
       const tokenData: CreateAccessTokenParams = parseJwt(body.access_token);
 
       expect(tokenData.iss).toBe("https://auth.example.com/");

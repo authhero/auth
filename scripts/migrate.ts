@@ -15,7 +15,7 @@ let _db: Kysely<Database>;
 
 function getDb(dialect: Dialect): Kysely<Database> {
   if (!_db) {
-    _db = new Kysely<any>({
+    _db = new Kysely<Database>({
       dialect,
     });
   }

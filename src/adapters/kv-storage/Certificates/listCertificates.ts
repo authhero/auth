@@ -8,8 +8,6 @@ export function listCertificates(namespace: KVNamespace<string>) {
       return [];
     }
 
-    return JSON.parse(certificateJson).map((cert: any) => {
-      return { kid: cert.kid, ...cert.publicKey };
-    });
+    return JSON.parse(certificateJson);
   };
 }
