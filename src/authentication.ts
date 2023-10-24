@@ -6,7 +6,6 @@ import {
   InvalidSignatureError,
   UnauthorizedError,
 } from "./errors";
-import { getDb } from "./services/db";
 import { Env } from "./types/Env";
 
 export enum SecuritySchemeName {
@@ -90,10 +89,8 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   if (!jwksUrls[jwksUrl]) {
     // If we're using the auth service itself for authenticating
     if (jwksUrl.startsWith(env.ISSUER)) {
-      const certificatesString = await env.CERTIFICATES.get("default");
-      const keys = (
-        certificatesString ? JSON.parse(certificatesString) : []
-      ).map((cert: any) => {
+      const certificates = await env.data.certificates.listCertificates();
+      const keys = certificates.map((cert: any) => {
         return { kid: cert.kid, ...cert.publicKey };
       });
 
@@ -214,14 +211,10 @@ export async function verifyTenantPermissions(ctx: Context<Env>) {
   }
 
   // Check db permissions
-  const db = getDb(ctx.env);
-  const member = await db
-    .selectFrom("members")
-    .where("members.sub", "=", ctx.state.user.sub)
-    .where("members.tenant_id", "=", tenantId)
-    .where("members.status", "=", "active")
-    .select("members.role")
-    .executeTakeFirst();
+  const { members } = await ctx.env.data.members.list(tenantId);
+  const member = members.find(
+    (m) => m.sub === ctx.state.user.sub && m.status === "active",
+  );
 
   if (!member?.role) {
     throw new UnauthorizedError();

@@ -1,6 +1,7 @@
 import { contextFixture } from "../fixtures";
 import { passwordlessGrant } from "../../src/token-grant-types";
 import { GrantType, PasswordlessGrantTypeParams } from "../../src/types";
+import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("passwordGrant", () => {
   it("should pass the audience to the token", async () => {
@@ -17,8 +18,7 @@ describe("passwordGrant", () => {
 
     const { access_token } = await passwordlessGrant(ctx.env, params);
 
-    // This is a mock returning the token as a json string
-    const accessToken = JSON.parse(access_token);
+    const accessToken = parseJwt(access_token);
     expect(accessToken.aud).toBe("audience");
   });
 });

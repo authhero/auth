@@ -19,10 +19,12 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
 import { User } from "../../types/sql/User";
-import { headers } from "../../constants";
-import { FilterSchema } from "../../types/Filter";
-import { executeQuery } from "../../helpers/sql";
 import { Profile } from "../../types";
+import {
+  UserResponse,
+  GetUserResponseWithTotals,
+  PostUsersBody,
+} from "../../types/auth0/UserResponse";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -30,63 +32,52 @@ export interface LinkBodyParams {
   link_with: string;
 }
 
-@Route("api/v2")
+@Route("api/v2/users")
 @Tags("management-api")
 // TODO - check with NPM lib auth0/node @ https://github.com/sesamyab/auth0-management-api-demo/ - that this can create the correct token
 // ALSO - are we checking these scopes? read:users update:users create:users delete:users
 @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
-  @Get("users")
+  @Get("")
   public async listUsers(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Header("range") rangeRequest?: string,
-    // Deprecated - Switch to use q insteads
-    @Query("filter") reactAcminfilterQuerystring?: string,
-    @Query("q") filterQuerystring?: string,
-  ): Promise<User[]> {
-    const { ctx } = request;
+    // Auth0
+    @Query() page = 0,
+    @Query() per_page = 20,
+    @Query() include_totals = false,
+    @Query() sort?: string,
+    @Query() connection?: string,
+    @Query() fields?: string,
+    @Query() include_fields?: boolean,
+    @Query() q?: string,
+    @Query() search_engine?: "v1" | "v2" | "v3",
+  ): Promise<UserResponse[] | GetUserResponseWithTotals> {
+    const { env } = request.ctx;
 
-    const db = getDb(ctx.env);
+    const data = await env.data.users.listUsers(tenantId, {
+      page,
+      perPage: per_page,
+      includeTotals: include_totals,
+    });
 
-    let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
-
-    // TODO - check this still actually works using auth0/node on the demo repo https://github.com/sesamyab/auth0-management-api-demo
-    if (reactAcminfilterQuerystring) {
-      const filter = FilterSchema.parse(
-        JSON.parse(reactAcminfilterQuerystring),
-      );
-
-      if (filter.q) {
-        query = query.where((eb) =>
-          eb.or([
-            eb("name", "like", `%${filter.q}%`),
-            eb("email", "like", `%${filter.q}%`),
-          ]),
-        );
-      }
-    } else if (filterQuerystring) {
-      const filter = new URLSearchParams(filterQuerystring);
-
-      // Only support email for now
-      if (filter.has("email")) {
-        query = query.where("email", "=", filter.get("email"));
-      }
+    if (include_totals && data.totals) {
+      return {
+        ...data.totals,
+        users: data.users,
+      };
     }
+    return data.users.map((u) => {
+      const { id, ...user } = u;
 
-    const { data, range } = await executeQuery(query, rangeRequest);
-
-    if (range) {
-      this.setHeader(headers.contentRange, range);
-    }
-
-    return data.map((user) => ({
-      ...user,
-      tags: JSON.parse(user.tags || "[]"),
-    }));
+      return {
+        ...user,
+        user_id: id,
+      };
+    });
   }
 
-  @Get("users/{userId}")
+  @Get("{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
@@ -113,7 +104,7 @@ export class UsersMgmtController extends Controller {
     return user.getProfile.query();
   }
 
-  @Delete("users/{userId}")
+  @Delete("{userId}")
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
@@ -141,56 +132,29 @@ export class UsersMgmtController extends Controller {
     return user.delete.mutate();
   }
 
-  @Get("users-by-email")
-  public async getUserByEmail(
-    @Request() request: RequestWithContext,
-    @Query("email") userEmail: string,
-    @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
-    const { env } = request.ctx;
-
-    const db = getDb(env);
-    const dbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.email", "=", userEmail)
-      .select("users.email")
-      .executeTakeFirst();
-
-    if (!dbUser) {
-      throw new NotFoundError();
-    }
-
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.getProfile.query();
-  }
-
-  @Post("users")
+  @Post("")
   @SuccessResponse(201, "Created")
+  /**
+   * Create a new user.
+   */
   public async postUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "modified_at" | "id"> &
-      Partial<Pick<User, "created_at" | "modified_at" | "id">>,
-  ): Promise<Profile> {
+    user: PostUsersBody,
+  ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const userInstance = env.userFactory.getInstanceByName(
-      getId(tenantId, user.email),
-    );
+    const { id, ...data } = await env.data.users.createUser(tenantId, user);
 
-    return userInstance.createUser.mutate({
-      ...user,
-      connections: [],
-      tenant_id: tenantId,
-    });
+    this.setStatus(201);
+    return {
+      ...data,
+      user_id: id,
+    };
   }
 
-  @Put("users/{userId}")
+  @Put("{userId}")
   public async putUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
@@ -211,7 +175,7 @@ export class UsersMgmtController extends Controller {
     return result;
   }
 
-  @Post("users/{userId}/identities")
+  @Post("{userId}/identities")
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,

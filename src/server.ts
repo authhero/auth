@@ -5,6 +5,9 @@ import { User, State } from "./models";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { QueueMessage } from "./services/events";
 import { handleUserEvent } from "./handlers/update-user";
+import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
+import createAdapters from "./adapters/planetscale";
+import { updateTenantClientsInKV } from "./hooks/update-client";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -24,6 +27,16 @@ const server = {
         oauth2ClientFactory: { create: oAuth2ClientFactory },
         stateFactory: State.getFactory(env.STATE, env),
         userFactory: User.getFactory(env.USER, env),
+        data: {
+          certificates: createCertificatesAdapter(env),
+          ...createAdapters(env),
+        },
+        hooks: {
+          tenant: {
+            onCreated: async (env, tenant) =>
+              updateTenantClientsInKV(env, tenant.id),
+          },
+        },
       },
       ctx,
     );

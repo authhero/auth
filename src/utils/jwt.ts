@@ -2,9 +2,14 @@ import { base64UrlEncode } from "./base64";
 
 export function pemToBuffer(pem: string): ArrayBuffer {
   const base64String = pem
-    .replace(/^-----BEGIN.*PRIVATE KEY-----/, "")
-    .replace(/-----END.*PRIVATE KEY-----$/, "")
+    .replace(/^-----BEGIN RSA PRIVATE KEY-----/, "")
+    .replace(/-----END RSA PRIVATE KEY-----/, "")
+    .replace(/^-----BEGIN PRIVATE KEY-----/, "")
+    .replace(/-----END PRIVATE KEY-----/, "")
+    .replace(/^-----BEGIN PUBLIC KEY-----/, "")
+    .replace(/-----END PUBLIC KEY-----/, "")
     .replace(/\s/g, "");
+
   return Uint8Array.from(atob(base64String), (c) => c.charCodeAt(0)).buffer;
 }
 
@@ -81,10 +86,12 @@ export function getAlgorithm(
 export async function createToken(params: CreateTokenParams) {
   const keyBuffer = pemToBuffer(params.pemKey);
 
+  const algorithm = getAlgorithm(params.alg, "import");
+
   const key = await crypto.subtle.importKey(
     getKeyFormat(params.pemKey),
     keyBuffer,
-    getAlgorithm(params.alg, "import"),
+    algorithm,
     false, // Not extractable
     ["sign"],
   );

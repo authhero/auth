@@ -111,3 +111,11 @@ new_classes = ["User", "State"]
 
 [env.production.triggers]
 crons = ["0 3 * * *"]
+
+[env.test.vars]
+ISSUER = "https://example.com/"
+LOGIN2_URL = 'https://login2.sesamy.com'
+JWKS_URL = "https://example.com/.well-known/jwks.json"
+READ_PERMISSION = 'auth:read'
+WRITE_PERMISSION = 'auth:write'
+IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"

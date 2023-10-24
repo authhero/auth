@@ -1,4 +1,4 @@
-import { start } from "./server";
+import { start } from "./start";
 
 describe("ping", () => {
   let worker;

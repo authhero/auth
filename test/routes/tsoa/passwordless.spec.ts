@@ -11,6 +11,7 @@ import {
 } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 import { kvStorageFixture } from "../../fixtures/kv-storage";
+import { parseJwt } from "../../../src/utils/parse-jwt";
 
 const SESAMY_LOGO =
   "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png";
@@ -197,8 +198,7 @@ describe("Passwordless", () => {
       expect(redirectUrl.searchParams.get("state")).toBe("state");
       expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
 
-      // Dummy token as json
-      const token = JSON.parse(
+      const token = parseJwt(
         redirectUrl.searchParams.get("access_token") as string,
       );
       expect(token).toEqual({

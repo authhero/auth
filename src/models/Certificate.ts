@@ -9,12 +9,9 @@ export interface Certificate {
 }
 
 export async function getCertificate(env: Env): Promise<Certificate> {
-  const certificatesString = await env.CERTIFICATES.get("default");
-  if (!certificatesString) {
-    throw new Error("No Certificate Found");
-  }
+  const certificates = await env.data.certificates.listCertificates();
 
-  const certificate: Certificate = JSON.parse(certificatesString)
+  const certificate = certificates
     // Wait for the cache to be cleared
     .filter(
       (c: Certificate) =>
@@ -22,7 +19,7 @@ export async function getCertificate(env: Env): Promise<Certificate> {
     )
     .pop();
 
-  if (!certificatesString) {
+  if (!certificate) {
     throw new Error("No Valid Certificate Found");
   }
 

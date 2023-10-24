@@ -234,9 +234,7 @@ export class PasswordlessController extends Controller {
 
       this.setStatus(302);
 
-      return "Redirect";
-
-      // TODO - write unit tests once sure this works
+      return "Redirecting";
     }
   }
 }

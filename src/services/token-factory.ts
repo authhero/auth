@@ -1,4 +1,4 @@
-import { getToken } from "@sagi.io/workers-jwt";
+import { createToken } from "../utils/jwt";
 
 const DAY_IN_SECONDS = 60 * 60 * 24;
 
@@ -20,6 +20,7 @@ interface AccessTokenPayload {
   scope?: string;
   sub: string;
   iss: string;
+  permissions?: string[];
 }
 
 export interface IDTokenPayload {
@@ -44,6 +45,7 @@ export interface CreateAccessTokenParams {
   scope?: string;
   aud?: string;
   azp?: string;
+  permissions?: string[];
 }
 
 export interface CreateIDTokenParams {
@@ -77,8 +79,8 @@ export class TokenFactory {
   async getJwt(payload: AccessTokenPayload): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
 
-    return getToken({
-      privateKeyPEM: this.privateKeyPEM,
+    return createToken({
+      pemKey: this.privateKeyPEM,
       payload: {
         ...payload,
         iat: now,
@@ -97,6 +99,7 @@ export class TokenFactory {
     iss,
     aud = "default",
     azp,
+    permissions,
   }: CreateAccessTokenParams): Promise<string> {
     const payload: AccessTokenPayload = {
       aud,
@@ -104,6 +107,7 @@ export class TokenFactory {
       sub,
       iss,
       azp,
+      permissions,
     };
 
     return this.getJwt(payload);
