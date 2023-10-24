@@ -13,9 +13,9 @@ export interface ListUserParams {
 }
 
 export interface UserDataAdapter {
-  createUser(tenantId: string, PostUsersBody): Promise<UserResponse>;
-  listUsers(
+  create(tenantId: string, PostUsersBody): Promise<UserResponse>;
+  list(
     tenantId: string,
-    ListUserParams,
+    params: ListUserParams,
   ): Promise<{ users: UserResponse[]; totals?: Totals }>;
 }

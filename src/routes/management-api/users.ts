@@ -55,7 +55,7 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { env } = request.ctx;
 
-    const data = await env.data.users.listUsers(tenantId, {
+    const data = await env.data.users.list(tenantId, {
       page,
       perPage: per_page,
       includeTotals: include_totals,
@@ -145,7 +145,7 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const { id, ...data } = await env.data.users.createUser(tenantId, user);
+    const { id, ...data } = await env.data.users.create(tenantId, user);
 
     this.setStatus(201);
     return {
