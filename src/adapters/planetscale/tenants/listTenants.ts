@@ -2,6 +2,14 @@ import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../../adapters/interfaces/ListParams";
 
+function getCountAsInt(count: string | number | bigint) {
+  if (typeof count === "string") {
+    return parseInt(count, 10);
+  }
+
+  return count;
+}
+
 export function listTenants(db: Kysely<Database>) {
   return async (params: ListParams) => {
     let query = db.selectFrom("tenants");
@@ -31,11 +39,13 @@ export function listTenants(db: Kysely<Database>) {
       .select((eb) => eb.fn.countAll().as("count"))
       .execute();
 
+    const countInt = getCountAsInt(count);
+
     return {
       tenants,
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
-      length: count,
+      length: countInt,
     };
   };
 }
