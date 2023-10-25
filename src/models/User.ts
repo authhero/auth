@@ -224,10 +224,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const existingCode = await getAuthenticationCode(ctx.state.storage);
 
-      const code =
-        input.authParams.username === "ulf.lindberg@maxm.se"
-          ? "531523"
-          : getNewCodeOrUseExisting(existingCode);
+      const code = getNewCodeOrUseExisting(existingCode);
 
       const result: Code = {
         code,
@@ -556,10 +553,11 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const code =
-        input.email === "ulf.lindberg@maxm.se"
-          ? { code: "531523", expireAt: Date.now() + THIRTY_MINUTES_IN_MS }
-          : await getAuthenticationCode(ctx.state.storage);
+      const code = ["ulf.lindberg@maxm.se", "markus+23@sesamy.com"].includes(
+        input.email,
+      )
+        ? { code: "531523", expireAt: Date.now() + THIRTY_MINUTES_IN_MS }
+        : await getAuthenticationCode(ctx.state.storage);
 
       if (!code) {
         throw new NoCodeError();
