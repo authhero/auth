@@ -33,7 +33,6 @@ export function listUsers(db: Kysely<Database>) {
     }
 
     if (params.q) {
-      // TODO - filter on more fields?
       query = query.where((eb) =>
         eb.or([eb("email", "like", `%${params.q}%`)]),
       );
