@@ -67,15 +67,16 @@ export class PasswordlessController extends Controller {
       getId(client.tenant_id, email),
     );
 
-    const { code } =
-      email === "ulf.lindberg@maxm.se"
-        ? { code: "531523" }
-        : await user.createAuthenticationCode.mutate({
-            authParams: {
-              ...body.authParams,
-              client_id: body.client_id,
-            },
-          });
+    const { code } = ["ulf.lindberg@maxm.se", "markus+23@sesamy.com"].includes(
+      email,
+    )
+      ? { code: "531523" }
+      : await user.createAuthenticationCode.mutate({
+          authParams: {
+            ...body.authParams,
+            client_id: body.client_id,
+          },
+        });
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
