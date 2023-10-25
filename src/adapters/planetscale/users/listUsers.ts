@@ -45,7 +45,7 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      users,
+      data: users,
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,
