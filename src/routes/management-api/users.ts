@@ -140,7 +140,7 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const { id, ...data } = await env.data.users.create(tenantId, user);
+    const data = await env.data.users.create(tenantId, user);
 
     this.setStatus(201);
     return data;

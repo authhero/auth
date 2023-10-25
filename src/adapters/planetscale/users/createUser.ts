@@ -8,8 +8,10 @@ export function createUser(db: Kysely<Database>) {
     tenantId: string,
     user: PostUsersBody,
   ): Promise<UserResponse> => {
+    // TODO - is POSTing user_id allowed in Auth0 mgmt API?
+    const user_id = user.user_id || nanoid();
     const sqlUser: SqlUser = {
-      id: user.user_id || nanoid(),
+      id: user_id,
       email: user.email || "",
       given_name: user.given_name,
       family_name: user.family_name,
@@ -24,7 +26,7 @@ export function createUser(db: Kysely<Database>) {
 
     await db.insertInto("users").values(sqlUser).execute();
 
-    const { modified_at, ...userWithoutFields } = sqlUser;
+    const { modified_at, id, ...userWithoutFields } = sqlUser;
 
     return {
       ...userWithoutFields,
@@ -32,6 +34,7 @@ export function createUser(db: Kysely<Database>) {
       logins_count: 0,
       username: sqlUser.email,
       identities: [],
+      user_id,
     };
   };
 }

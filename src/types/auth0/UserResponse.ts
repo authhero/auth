@@ -13,6 +13,10 @@ interface BaseUser {
   name?: string;
   nickname?: string;
   picture?: string;
+  // I think we should be stricter with this
+  // I need to check the auth0-mgmt-api library
+  // I'm not too sure if it's required from the docs
+  // https://auth0.com/docs/api/management/v2/users/post-users
   user_id?: string;
   blocked?: boolean;
   email_verified?: boolean;
@@ -36,6 +40,7 @@ export interface UserResponse extends BaseUser {
   multifactor?: string[];
   last_ip?: string;
   last_login?: string;
+  user_id: string;
   [key: string]: any;
 }
 
