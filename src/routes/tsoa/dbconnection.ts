@@ -52,7 +52,7 @@ export class DbConnectionController extends Controller {
 
     const user = User.getInstanceByName(
       ctx.env.USER,
-      getId(client.tenantId, body.email),
+      getId(client.tenant_id, body.email),
     );
     // This throws if if fails
     await user.registerPassword.mutate(body.password);
