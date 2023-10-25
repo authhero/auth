@@ -8,7 +8,7 @@ export function listUsers(users: UserResponse[]) {
     { page, perPage, includeTotals, q }: ListUserParams,
   ) => {
     return {
-      users,
+      data: users,
     };
   };
 }
