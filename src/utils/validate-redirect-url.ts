@@ -65,7 +65,8 @@ export function validateRedirectUrl(
     // const url = new URL(allowedUrl);
     const match: RegExpMatchArray | null = allowedUrl.match(urlPattern);
     if (!match) {
-      throw new Error("Invalid URL");
+      console.log(`Invalid URL: ${allowedUrl}`);
+      return null;
     }
 
     // This replaces * with .* and escapes any other regexes in the string
@@ -79,7 +80,7 @@ export function validateRedirectUrl(
   // Regular expression to remove trailing slashes, query strings, and fragments
   const cleanedUrl = redirectUri.replace(/(\/+)?(\?.*)?(#[^#]*)?$/, "");
 
-  if (!regexes.some((regex) => regex.test(cleanedUrl))) {
+  if (!regexes.some((regex) => regex?.test(cleanedUrl))) {
     throw new InvalidRedirectError("Invalid redirectUri");
   }
 }
