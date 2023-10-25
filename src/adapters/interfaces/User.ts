@@ -13,7 +13,7 @@ export interface ListUserParams {
 }
 
 export interface ListUsersResponse {
-  data: UserResponse[];
+  users: UserResponse[];
   totals?: Totals;
 }
 

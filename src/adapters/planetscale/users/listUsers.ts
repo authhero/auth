@@ -40,9 +40,9 @@ export function listUsers(db: Kysely<Database>) {
       .offset((params.page - 1) * params.per_page)
       .limit(params.per_page);
 
-    const users = await filteredQuery.selectAll().execute();
+    const usersRaw = await filteredQuery.selectAll().execute();
 
-    const data: UserResponse[] = users.map((user) => {
+    const users: UserResponse[] = usersRaw.map((user) => {
       const { id, modified_at, ...userWithoutFields } = user;
 
       const tags = JSON.parse(user.tags || "[]");
@@ -74,7 +74,7 @@ export function listUsers(db: Kysely<Database>) {
 
     if (!params.include_totals) {
       return {
-        data,
+        users,
       };
     }
 
@@ -85,7 +85,7 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      data,
+      users,
       totals: {
         start: (params.page - 1) * params.per_page,
         limit: params.per_page,
