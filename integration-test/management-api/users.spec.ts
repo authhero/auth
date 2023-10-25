@@ -9,8 +9,7 @@ describe("users", () => {
     worker = await start();
 
     token = await getAdminToken();
-    // should this not be /api/v2/tenants?
-    await worker.fetch("/tenants", {
+    await worker.fetch("/api/v2/tenants", {
       method: "POST",
       body: JSON.stringify({
         name: "test",
