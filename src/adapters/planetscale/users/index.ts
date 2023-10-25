@@ -8,7 +8,7 @@ export function createUsersAdapter(env: Env): UserDataAdapter {
   const db = getDb(env);
 
   return {
-    createUser: createUser(db),
-    listUsers: listUsers(db),
+    create: createUser(db),
+    list: listUsers(db),
   };
 }

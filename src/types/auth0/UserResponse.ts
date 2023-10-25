@@ -39,6 +39,7 @@ export interface UserResponse extends BaseUser {
   [key: string]: any;
 }
 
+// this type is a duplicate of ListUsersResponse
 export interface GetUserResponseWithTotals extends Totals {
   users: UserResponse[];
 }

@@ -1,7 +1,7 @@
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 
-describe("tenants", () => {
+describe("users", () => {
   let worker;
   let token;
 
@@ -9,7 +9,7 @@ describe("tenants", () => {
     worker = await start();
 
     token = await getAdminToken();
-    await worker.fetch("/tenants", {
+    await worker.fetch("/api/v2/tenants", {
       method: "POST",
       body: JSON.stringify({
         name: "test",

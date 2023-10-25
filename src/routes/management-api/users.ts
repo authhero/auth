@@ -22,8 +22,8 @@ import { User } from "../../types/sql/User";
 import { Profile } from "../../types";
 import {
   UserResponse,
-  GetUserResponseWithTotals,
   PostUsersBody,
+  GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 
 export interface LinkBodyParams {
@@ -55,26 +55,20 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { env } = request.ctx;
 
-    const data = await env.data.users.listUsers(tenantId, {
+    const result = await env.data.users.list(tenantId, {
       page,
-      perPage: per_page,
-      includeTotals: include_totals,
+      per_page,
+      include_totals,
+      // TODO
+      // sort: parseSort(sort),
+      // q,
     });
 
-    if (include_totals && data.totals) {
-      return {
-        ...data.totals,
-        users: data.users,
-      };
+    if (include_totals) {
+      return result as GetUserResponseWithTotals;
     }
-    return data.users.map((u) => {
-      const { id, ...user } = u;
 
-      return {
-        ...user,
-        user_id: id,
-      };
-    });
+    return result.users;
   }
 
   @Get("{userId}")
@@ -145,13 +139,10 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const { id, ...data } = await env.data.users.createUser(tenantId, user);
+    const { id, ...data } = await env.data.users.create(tenantId, user);
 
     this.setStatus(201);
-    return {
-      ...data,
-      user_id: id,
-    };
+    return data;
   }
 
   @Put("{userId}")
