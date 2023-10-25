@@ -142,10 +142,7 @@ export class UsersMgmtController extends Controller {
     const { id, ...data } = await env.data.users.create(tenantId, user);
 
     this.setStatus(201);
-    return {
-      ...data,
-      user_id: id,
-    };
+    return data;
   }
 
   @Put("{userId}")
