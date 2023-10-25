@@ -224,10 +224,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const existingCode = await getAuthenticationCode(ctx.state.storage);
 
-      const code =
-        input.authParams.username === "ulf.lindberg@maxm.se"
-          ? "531523"
-          : getNewCodeOrUseExisting(existingCode);
+      const code = getNewCodeOrUseExisting(existingCode);
 
       const result: Code = {
         code,
