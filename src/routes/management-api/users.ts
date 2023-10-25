@@ -5,6 +5,7 @@ import {
   Request,
   Route,
   Post,
+  Patch,
   Tags,
   Path,
   Header,
@@ -145,8 +146,8 @@ export class UsersMgmtController extends Controller {
     return data;
   }
 
-  @Put("{userId}")
-  public async putUser(
+  @Patch("{userId}")
+  public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
