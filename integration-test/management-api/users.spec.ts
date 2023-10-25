@@ -1,7 +1,7 @@
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 
-describe("tenants", () => {
+describe("users", () => {
   let worker;
   let token;
 
