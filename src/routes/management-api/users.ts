@@ -60,9 +60,9 @@ export class UsersMgmtController extends Controller {
       page,
       per_page,
       include_totals,
-      // TODO
+      // TODO - sorting!
       // sort: parseSort(sort),
-      // q,
+      q,
     });
 
     if (include_totals) {
