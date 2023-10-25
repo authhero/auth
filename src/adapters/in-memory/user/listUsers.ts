@@ -4,8 +4,7 @@ import { ListUserParams, ListUsersResponse } from "../../interfaces/User";
 export function listUsers(users: UserResponse[]) {
   return async (
     tenantId,
-    // why is our build process not picking up these types here? hard to spot issues...
-    { page, perPage, includeTotals, q }: ListUserParams,
+    { page, per_page, include_totals, q }: ListUserParams,
   ): Promise<ListUsersResponse> => {
     return {
       users,
