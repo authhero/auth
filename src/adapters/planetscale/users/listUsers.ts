@@ -1,5 +1,8 @@
 import { UserResponse, Totals } from "../../../types/auth0";
-import { ListUserParams } from "../../../adapters/interfaces/User";
+import {
+  ListUserParams,
+  ListUsersResponse,
+} from "../../../adapters/interfaces/User";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
@@ -21,7 +24,7 @@ export function listUsers(db: Kysely<Database>) {
   return async (
     tenantId,
     params: ListUserParams,
-  ): Promise<{ data: UserResponse[]; totals?: Totals }> => {
+  ): Promise<ListUsersResponse> => {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     if (params.sort && params.sort.sort_by) {

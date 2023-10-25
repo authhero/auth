@@ -12,10 +12,12 @@ export interface ListUserParams {
   };
 }
 
+export interface ListUsersResponse {
+  data: UserResponse[];
+  totals?: Totals;
+}
+
 export interface UserDataAdapter {
   create(tenantId: string, PostUsersBody): Promise<UserResponse>;
-  list(
-    tenantId: string,
-    params: ListUserParams,
-  ): Promise<{ data: UserResponse[]; totals?: Totals }>;
+  list(tenantId: string, params: ListUserParams): Promise<ListUsersResponse>;
 }
