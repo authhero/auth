@@ -1,8 +1,5 @@
 import { UserResponse, Totals } from "../../../types/auth0";
-import {
-  ListUserParams,
-  ListUsersResponse,
-} from "../../../adapters/interfaces/User";
+import { ListUserParams, ListUsersResponse } from "../../interfaces/Users";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 

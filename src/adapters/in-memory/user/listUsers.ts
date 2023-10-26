@@ -1,5 +1,5 @@
 import { UserResponse, Totals } from "../../../types/auth0";
-import { ListUserParams, ListUsersResponse } from "../../interfaces/User";
+import { ListUserParams, ListUsersResponse } from "../../interfaces/Users";
 
 export function listUsers(users: UserResponse[]) {
   return async (
