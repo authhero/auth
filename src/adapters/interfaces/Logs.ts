@@ -16,5 +16,5 @@ export interface ListLogsResponse {
 
 export interface LogsDataAdapter {
   create(params: CreateLogParams): Promise<Log>;
-  list(tenantId, userId, params: ListParams): Promise<ListLogsResponse>;
+  list(tenantId, params: ListParams): Promise<ListLogsResponse>;
 }

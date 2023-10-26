@@ -3,11 +3,14 @@ import { Kysely } from "kysely";
 import { ListParams } from "../../../adapters/interfaces/ListParams";
 
 export function listLogs(db: Kysely<Database>) {
-  return async (tenantId, userId, params: ListParams) => {
-    let query = db
-      .selectFrom("logs")
-      .where("logs.tenant_id", "=", tenantId)
-      .where("logs.user_id", "=", userId);
+  return async (tenantId, params: ListParams) => {
+    let query = db.selectFrom("logs").where("logs.tenant_id", "=", tenantId);
+
+    if (params.q) {
+      query = query.where((eb) =>
+        eb.or([eb("logs.user_id", "like", `%${params.q}%`)]),
+      );
+    }
 
     if (params.sort && params.sort.sort_by) {
       const { ref } = db.dynamic;
