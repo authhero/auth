@@ -65,7 +65,7 @@ export const client: Client = {
       response_type: AuthorizationResponseType.CODE,
       scope: "openid profile email",
       created_at: "created_at",
-      modified_at: "modified_at",
+      updated_at: "updated_at",
     },
     {
       id: "connectionId2",
@@ -78,7 +78,7 @@ export const client: Client = {
       response_type: AuthorizationResponseType.CODE,
       scope: "email public_profile",
       created_at: "created_at",
-      modified_at: "modified_at",
+      updated_at: "updated_at",
     },
   ],
   domains: [],

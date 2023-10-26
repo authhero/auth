@@ -108,7 +108,7 @@ describe("User", () => {
       const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.name).toEqual("Test");
-      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.updated_at).toBe(date.toISOString());
       expect(profile.created_at).toBe(date.toISOString());
       expect(typeof profile.id).toBe("string");
     });
@@ -145,7 +145,7 @@ describe("User", () => {
           email: "test@example.com",
           tenant_id: "tenantId",
           created_at: "2021-01-01T00:00:00.000Z",
-          modified_at: "2021-01-01T00:00:00.000Z",
+          updated_at: "2021-01-01T00:00:00.000Z",
           connections: [],
         }),
       );
@@ -170,7 +170,7 @@ describe("User", () => {
       const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.name).toEqual("Test");
-      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.updated_at).toBe(date.toISOString());
       expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
       expect(profile.given_name).toBe("given_name");
       expect(profile.family_name).toBe("family_name");
@@ -188,7 +188,7 @@ describe("User", () => {
           email: "test@example.com",
           tenant_id: "tenantId",
           created_at: "2021-01-01T00:00:00.000Z",
-          modified_at: "2021-01-01T00:00:00.000Z",
+          updated_at: "2021-01-01T00:00:00.000Z",
           connections: [
             {
               name: "auth",
@@ -218,7 +218,7 @@ describe("User", () => {
       const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.name).toEqual("Test");
-      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.updated_at).toBe(date.toISOString());
       expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
       expect(profile.id).toBe("id");
       expect(profile.connections[0].profile.validated).toBe(true);
@@ -233,7 +233,7 @@ describe("User", () => {
           email: "test@example.com",
           tenant_id: "tenantId",
           created_at: "2021-01-01T00:00:00.000Z",
-          modified_at: "2021-01-01T00:00:00.000Z",
+          updated_at: "2021-01-01T00:00:00.000Z",
           connections: [],
         }),
       );
@@ -249,7 +249,7 @@ describe("User", () => {
       const profile = JSON.parse(storage.getSync("profile"));
 
       expect(profile.name).toEqual("Test");
-      expect(profile.modified_at).toBe(date.toISOString());
+      expect(profile.updated_at).toBe(date.toISOString());
       expect(profile.created_at).toBe("2021-01-01T00:00:00.000Z");
       expect(profile.id).toBe("id");
     });
@@ -357,7 +357,7 @@ describe("User", () => {
           tenant_id: "tenantId",
           id: "id",
           created_at: ".",
-          modified_at: ".",
+          updated_at: ".",
           connections: [
             {
               name: "auth",
@@ -474,7 +474,7 @@ describe("User", () => {
           tenant_id: "tenantId",
           id: "userId",
           created_at: "",
-          modified_at: "",
+          updated_at: "",
           connections: [],
         }),
       );

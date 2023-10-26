@@ -155,7 +155,7 @@ async function updateProfile(
   if (!existingProfile || !existingProfile.id) {
     existingProfile = {
       id: nanoid(),
-      modified_at: "",
+      updated_at: "",
       connections: [],
       created_at: new Date().toISOString(),
       ...profile,
@@ -166,7 +166,7 @@ async function updateProfile(
     ...existingProfile,
     ...profile,
     connections: existingProfile.connections,
-    modified_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   profile.connections?.forEach((connection) => {

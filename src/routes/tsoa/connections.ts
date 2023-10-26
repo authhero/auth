@@ -103,7 +103,7 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "modified_at">
+      Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "updated_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -112,7 +112,7 @@ export class ConnectionsController extends Controller {
     const connection = {
       ...body,
       tenantId,
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -133,10 +133,7 @@ export class ConnectionsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenant_id: string,
     @Body()
-    body: Omit<
-      SqlConnection,
-      "id" | "tenant_id" | "created_at" | "modified_at"
-    >,
+    body: Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;
@@ -147,7 +144,7 @@ export class ConnectionsController extends Controller {
       tenant_id,
       id: nanoid(),
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     await db.insertInto("connections").values(connection).execute();
@@ -165,10 +162,7 @@ export class ConnectionsController extends Controller {
     @Path("tenantId") tenant_id: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<
-      SqlConnection,
-      "id" | "tenant_id" | "created_at" | "modified_at"
-    >,
+    body: Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<SqlConnection> {
     const { ctx } = request;
     const { env } = ctx;
@@ -180,7 +174,7 @@ export class ConnectionsController extends Controller {
       tenant_id,
       id,
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     try {
