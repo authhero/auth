@@ -473,8 +473,8 @@ describe("User", () => {
           email: "user1@example.com",
           tenant_id: "tenantId",
           id: "userId",
-          created_at: "",
-          updated_at: "",
+          created_at: "12-12-2020",
+          updated_at: "12-12-2020",
           connections: [],
         }),
       );
