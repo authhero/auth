@@ -1,4 +1,3 @@
-import { Env } from "../../../types";
 import { UserResponse } from "../../../types/auth0";
 import { UserDataAdapter } from "../../interfaces/Users";
 import { createUser } from "./createUser";

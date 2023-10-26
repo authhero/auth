@@ -3,6 +3,7 @@ import { createCertificateAdapter } from "./certificates";
 import { createUserAdapter } from "./user";
 import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";
+import { createLogsAdapter } from "./logs";
 
 export default function createAdapters(): DataAdapters {
   return {
