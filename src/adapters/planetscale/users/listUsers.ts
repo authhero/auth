@@ -45,7 +45,7 @@ export function listUsers(db: Kysely<Database>) {
     const usersRaw = await filteredQuery.selectAll().execute();
 
     const users: UserResponse[] = usersRaw.map((user) => {
-      const { id, modified_at, ...userWithoutFields } = user;
+      const { id, updated_at, ...userWithoutFields } = user;
 
       const tags = JSON.parse(user.tags || "[]");
 
@@ -56,7 +56,7 @@ export function listUsers(db: Kysely<Database>) {
         username: user.email,
         phone_number: "",
         phone_verified: false,
-        updated_at: modified_at,
+        updated_at,
         logins_count: 0,
         identities: tags.map((tag) => ({
           profileData: {
