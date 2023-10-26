@@ -1,7 +1,8 @@
 import { UserResponse, Totals } from "../../../types/auth0";
-import { ListUsersParams, ListUsersResponse } from "../../interfaces/Users";
+import { ListUsersResponse } from "../../interfaces/Users";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { ListParams } from "../../interfaces/ListParams";
 
 // duplicated from tenants
 function getCountAsInt(count: string | number | bigint) {
@@ -18,10 +19,7 @@ function getCountAsInt(count: string | number | bigint) {
 }
 
 export function listUsers(db: Kysely<Database>) {
-  return async (
-    tenantId,
-    params: ListUsersParams,
-  ): Promise<ListUsersResponse> => {
+  return async (tenantId, params: ListParams): Promise<ListUsersResponse> => {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     if (params.sort && params.sort.sort_by) {
