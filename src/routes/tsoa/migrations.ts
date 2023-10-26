@@ -104,7 +104,7 @@ export class MigrationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Migration, "id" | "tenant_id" | "created_at" | "modified_at">
+      Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -113,7 +113,7 @@ export class MigrationsController extends Controller {
     const migration = {
       ...body,
       tenantId,
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -134,7 +134,7 @@ export class MigrationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenant_id: string,
     @Body()
-    body: Omit<Migration, "id" | "tenant_id" | "created_at" | "modified_at">,
+    body: Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Migration> {
     const { ctx } = request;
     const { env } = ctx;
@@ -146,7 +146,7 @@ export class MigrationsController extends Controller {
       tenant_id,
       id: nanoid(),
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     await db.insertInto("migrations").values(migration).execute();
@@ -165,7 +165,7 @@ export class MigrationsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenant_id: string,
     @Body()
-    body: Omit<Migration, "id" | "tenant_id" | "created_at" | "modified_at">,
+    body: Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Migration> {
     const { ctx } = request;
     const { env } = ctx;
@@ -177,7 +177,7 @@ export class MigrationsController extends Controller {
       tenant_id,
       id,
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     try {

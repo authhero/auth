@@ -8,7 +8,7 @@ export function createTenant(db: Kysely<Database>) {
     const tenant: Tenant = {
       id: params.id || nanoid(),
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       ...params,
     };
 

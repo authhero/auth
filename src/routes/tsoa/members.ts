@@ -101,7 +101,7 @@ export class MembersController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Member, "id" | "tenant_id" | "created_at" | "modified_at">
+      Omit<Member, "id" | "tenant_id" | "created_at" | "updated_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -110,7 +110,7 @@ export class MembersController extends Controller {
     const member = {
       ...body,
       tenantId,
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -129,7 +129,7 @@ export class MembersController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<Member, "id" | "tenant_id" | "created_at" | "modified_at">,
+    body: Omit<Member, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Member> {
     const { ctx } = request;
     const { env } = ctx;
@@ -141,7 +141,7 @@ export class MembersController extends Controller {
       tenant_id: tenantId,
       id: nanoid(),
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     await db.insertInto("members").values(member).execute();
@@ -158,7 +158,7 @@ export class MembersController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Member, "id" | "tenant_id" | "created_at" | "modified_at">,
+    body: Omit<Member, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Member> {
     const { ctx } = request;
     const { env } = ctx;
@@ -170,7 +170,7 @@ export class MembersController extends Controller {
       tenant_id: tenantId,
       id,
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     try {

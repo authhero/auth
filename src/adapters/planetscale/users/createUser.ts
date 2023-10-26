@@ -19,18 +19,18 @@ export function createUser(db: Kysely<Database>) {
       nickname: user.nickname,
       picture: user.picture,
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       tags: JSON.stringify([]),
       tenant_id: tenantId,
     };
 
     await db.insertInto("users").values(sqlUser).execute();
 
-    const { modified_at, id, ...userWithoutFields } = sqlUser;
+    const { updated_at, id, ...userWithoutFields } = sqlUser;
 
     return {
       ...userWithoutFields,
-      updated_at: modified_at,
+      updated_at,
       logins_count: 0,
       username: sqlUser.email,
       identities: [],

@@ -112,7 +112,7 @@ export class TenantsController extends Controller {
   public async putTenant(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Body() body: Omit<Tenant, "id" | "created_at" | "modified_at">,
+    @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
 
@@ -133,7 +133,7 @@ export class TenantsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postTenant(
     @Request() request: RequestWithContext,
-    @Body() body: Omit<Tenant, "id" | "created_at" | "modified_at">,
+    @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,
   ): Promise<Tenant> {
     const { env } = request.ctx;
 

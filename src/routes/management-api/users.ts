@@ -151,8 +151,8 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "modified_at"> &
-      Partial<Pick<User, "created_at" | "modified_at">>,
+    user: Omit<User, "tenant_id" | "created_at" | "updated_at"> &
+      Partial<Pick<User, "created_at" | "updated_at">>,
   ): Promise<Profile> {
     const { ctx } = request;
 

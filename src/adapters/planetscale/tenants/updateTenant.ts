@@ -7,7 +7,7 @@ export function updateTenant(db: Kysely<Database>) {
       created_at: new Date().toISOString(),
       ...tenant,
       id,
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     await db

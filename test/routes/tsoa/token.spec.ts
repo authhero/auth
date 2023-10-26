@@ -57,7 +57,7 @@ describe("token", () => {
         response_type: AuthorizationResponseType.CODE,
         scope: "openid email profile",
         created_at: "created_at",
-        modified_at: "modified_at",
+        updated_at: "updated_at",
       },
     ],
     domains: [],

@@ -8,7 +8,7 @@ export function createTenant(tenants: Tenant[]) {
       ...params,
       id: nanoid(),
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     tenants.push(tenant);

@@ -6,5 +6,5 @@ export interface Migration {
   origin: string;
   domain: string;
   created_at: string;
-  modified_at: string;
+  updated_at: string;
 }
