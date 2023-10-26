@@ -7,7 +7,6 @@ export function createLog(db: Kysely<Database>) {
   return async (params: CreateLogParams): Promise<Log> => {
     const log: Log = {
       id: nanoid(),
-      // what format do we want this?
       timestamp: new Date().toISOString(),
       ...params,
     };

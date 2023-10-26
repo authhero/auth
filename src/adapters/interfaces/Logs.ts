@@ -2,7 +2,6 @@ import { Totals } from "../../types/auth0/Totals";
 import { Log } from "../../types/";
 import { ListParams } from "./ListParams";
 
-// TODO - remove this Message suffix...
 export interface CreateLogParams {
   category: string;
   message: string;
