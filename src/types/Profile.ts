@@ -44,7 +44,7 @@ export type Profile = {
   tenant_id: string;
   email: string;
   created_at: string;
-  modified_at: string;
+  updated_at: string;
   given_name?: string;
   family_name?: string;
   nickname?: string;
@@ -65,7 +65,7 @@ export const ProfileSchema = z.object({
   tenant_id: z.string(),
   email: z.string(),
   created_at: z.string(),
-  modified_at: z.string(),
+  updated_at: z.string(),
   given_name: z.string().optional(),
   family_name: z.string().optional(),
   nickname: z.string().optional(),
