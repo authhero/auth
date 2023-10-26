@@ -11,5 +11,9 @@ export interface CreateLogMessageParams {
 
 export interface LogsDataAdapter {
   create(params: CreateLogMessageParams): Promise<LogMessage>;
-  list(params: ListParams): Promise<{ tenants: LogMessage[]; totals?: Totals }>;
+  list(
+    tenantId,
+    userId,
+    params: ListParams,
+  ): Promise<{ logs: LogMessage[]; totals?: Totals }>;
 }
