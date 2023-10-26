@@ -137,11 +137,16 @@ async function writeLog(
 
   const { tenant_id, id } = profile;
 
-  await ctx.env.data.logs.create({
-    ...message,
-    tenant_id,
-    user_id: id,
-  });
+  console.log("ctx.env.data ", ctx.env.data);
+
+  // why is ctx.env.data undefined? according to env it should be here....
+
+  // this must be the issue... what is undefined?
+  // await ctx.env.data.logs.create({
+  //   ...message,
+  //   tenant_id,
+  //   user_id: id,
+  // });
 }
 
 // Stores information about the current operation and ensures that the user has an id.
@@ -417,6 +422,9 @@ export const userRouter = router({
     .input(UserSchema)
     .mutation(async ({ input, ctx }) => {
       const profile = await updateProfile(ctx, input);
+
+      console.log("this mostly looks like ctx.env - ", ctx.env);
+      console.log("but this is unpopulated ctx.env.data - ", ctx.env.data);
 
       await writeLog(ctx, {
         category: "update",

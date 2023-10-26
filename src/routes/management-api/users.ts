@@ -159,10 +159,14 @@ export class UsersMgmtController extends Controller {
   ): Promise<Profile> {
     const { ctx } = request;
 
+    // this here is populated
+    console.log("ctx.env.data ", request.ctx.env.data);
+
     const userInstance = ctx.env.userFactory.getInstanceByName(
       getId(tenantId, user.email),
     );
 
+    // but in here, ctx.env.data is NOT populated...
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       tenant_id: tenantId,
