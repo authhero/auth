@@ -5,7 +5,7 @@ import { z, ZodSchema } from "zod";
 import { Context } from "trpc-durable-objects";
 import { nanoid } from "nanoid";
 import { DataAdapters } from "../adapters/interfaces";
-import { LogMessage } from "../types";
+import { Log } from "../types";
 
 import generateOTP from "../utils/otp";
 import {
@@ -127,7 +127,7 @@ async function getEmailValidationCode(storage: DurableObjectStorage) {
 
 async function writeLog(
   ctx: Context<Env>,
-  message: Omit<LogMessage, "timestamp" | "id" | "tenant_id" | "user_id">,
+  message: Omit<Log, "timestamp" | "id" | "tenant_id" | "user_id">,
 ) {
   const profile = await getProfile(ctx.state.storage);
 

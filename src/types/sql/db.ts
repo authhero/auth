@@ -6,7 +6,7 @@ import {
   Migration,
   SqlUser,
   SqlDomain,
-  LogMessage,
+  Log,
 } from "./";
 
 // Keys of this interface are table names.
@@ -18,5 +18,5 @@ export interface Database {
   connections: SqlConnection;
   migrations: Migration;
   tenants: Tenant;
-  logs: LogMessage;
+  logs: Log;
 }

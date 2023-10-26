@@ -1,11 +1,11 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { Database, LogMessage } from "../../../types";
-import { CreateLogMessageParams } from "../../interfaces/Logs";
+import { Database, Log } from "../../../types";
+import { CreateLogParams } from "../../interfaces/Logs";
 
 export function createLog(db: Kysely<Database>) {
-  return async (params: CreateLogMessageParams): Promise<LogMessage> => {
-    const log: LogMessage = {
+  return async (params: CreateLogParams): Promise<Log> => {
+    const log: Log = {
       id: nanoid(),
       // what format do we want this?
       timestamp: new Date().toISOString(),

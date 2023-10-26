@@ -1,8 +1,8 @@
 import { ListLogsResponse } from "../../interfaces/Logs";
 import { ListParams } from "../../interfaces/ListParams";
-import { LogMessage } from "../../../types";
+import { Log } from "../../../types";
 
-export function listLogs(logs: LogMessage[]) {
+export function listLogs(logs: Log[]) {
   return async (
     tenantId,
     userId,

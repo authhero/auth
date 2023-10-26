@@ -1,21 +1,21 @@
 import { Totals } from "../../types/auth0/Totals";
-import { LogMessage } from "../../types/";
+import { Log } from "../../types/";
 import { ListParams } from "./ListParams";
 
 // TODO - remove this Message suffix...
-export interface CreateLogMessageParams {
+export interface CreateLogParams {
   category: string;
   message: string;
   tenant_id: string;
   user_id: string;
-} // this is the same as Omit<LogMessage, "timestamp" | "id"> - any reason to define it?
+} // this is the same as Omit<Log, "timestamp" | "id"> - any reason to define it?
 
 export interface ListLogsResponse {
-  logs: LogMessage[];
+  logs: Log[];
   totals?: Totals;
 }
 
 export interface LogsDataAdapter {
-  create(params: CreateLogMessageParams): Promise<LogMessage>;
+  create(params: CreateLogParams): Promise<Log>;
   list(tenantId, userId, params: ListParams): Promise<ListLogsResponse>;
 }

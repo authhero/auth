@@ -1,4 +1,4 @@
-export interface LogMessage {
+export interface Log {
   id: string;
   timestamp: string;
   category: string;

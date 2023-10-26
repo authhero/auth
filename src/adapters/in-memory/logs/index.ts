@@ -1,10 +1,10 @@
 import { LogsDataAdapter } from "../../interfaces/Logs";
 import { createLog } from "./create";
 import { listLogs } from "./list";
-import { LogMessage } from "../../../types";
+import { Log } from "../../../types";
 
 export function createLogsAdapter(): LogsDataAdapter {
-  const users: LogMessage[] = [];
+  const users: Log[] = [];
 
   return {
     create: createLog(users),
