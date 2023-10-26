@@ -4,6 +4,8 @@ import { initTRPC } from "@trpc/server";
 import { z, ZodSchema } from "zod";
 import { Context } from "trpc-durable-objects";
 import { nanoid } from "nanoid";
+import { DataAdapters } from "../adapters/interfaces";
+import { LogMessage } from "../types";
 
 import generateOTP from "../utils/otp";
 import {
@@ -124,19 +126,10 @@ async function getEmailValidationCode(storage: DurableObjectStorage) {
 }
 
 async function writeLog(
-  storage: DurableObjectStorage,
+  data: DataAdapters,
   message: Omit<LogMessage, "timestamp" | "id">,
 ) {
-  // Make space for the new log row
-  const logs = (await getLogs(storage)).slice(-MAX_LOGS_LENGTH + 1);
-
-  logs.push({
-    ...message,
-    id: nanoid(),
-    timestamp: new Date().toISOString(),
-  });
-
-  await storage.put(StorageKeys.logs, JSON.stringify(logs));
+  await data.logs.create(message);
 }
 
 // Stores information about the current operation and ensures that the user has an id.
@@ -231,7 +224,7 @@ export const userRouter = router({
         JSON.stringify(result),
       );
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "login",
         message: "Create authentication code",
       });
@@ -249,7 +242,7 @@ export const userRouter = router({
       JSON.stringify(result),
     );
 
-    await writeLog(ctx.state.storage, {
+    await writeLog(ctx.env.data, {
       category: "login",
       message: "Create email validation code",
     });
@@ -267,7 +260,7 @@ export const userRouter = router({
       JSON.stringify(result),
     );
 
-    await writeLog(ctx.state.storage, {
+    await writeLog(ctx.env.data, {
       category: "login",
       message: "Send password reset",
     });
@@ -285,7 +278,7 @@ export const userRouter = router({
 
       const profile = await updateProfile(ctx, input);
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "update",
         message: "User created",
       });
@@ -340,7 +333,7 @@ export const userRouter = router({
         linked_with: input.linkWithEmail,
       });
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "link",
         message: `Linked to ${input.linkWithEmail}`,
       });
@@ -374,7 +367,7 @@ export const userRouter = router({
         ],
       });
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "link",
         message: `Added ${input.linkWithEmail} as linked user`,
       });
@@ -401,7 +394,7 @@ export const userRouter = router({
         connections: [input.connection],
       });
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "login",
         message: `Login with ${input.connection.name}`,
       });
@@ -413,7 +406,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const profile = await updateProfile(ctx, input);
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "update",
         message: "User profile",
       });
@@ -440,7 +433,7 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "login",
         message: "User created with password",
       });
@@ -489,7 +482,7 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "update",
         message: "Reset password with code",
       });
@@ -505,7 +498,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "update",
         message: "Set email validated",
       });
@@ -527,7 +520,7 @@ export const userRouter = router({
   setPassword: publicProcedure
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "update",
         message: "Set password",
       });
@@ -580,7 +573,7 @@ export const userRouter = router({
         ],
       });
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "login",
         message: "Login with code",
       });
@@ -613,7 +606,7 @@ export const userRouter = router({
         throw new AuthenticationCodeExpiredError();
       }
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "validation",
         message: "Validate with code",
       });
@@ -670,7 +663,7 @@ export const userRouter = router({
         throw new UnauthenticatedError();
       }
 
-      await writeLog(ctx.state.storage, {
+      await writeLog(ctx.env.data, {
         category: "login",
         message: "Login with password",
       });
