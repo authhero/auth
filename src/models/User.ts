@@ -21,12 +21,7 @@ import { Env, ProfileSchema } from "../types";
 import { sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
 import { migratePasswordHook } from "../hooks/migrate-password";
-import { LogMessage } from "../types/LogMessage";
 
-// do these need changing? I'm thinking I've been too aggressive here and these are the DOs which should remain camelcase?
-// BUT if Auth0 does all the user profile (and ONLY the user profile) snake_case everywhere, I think we should copy
-// else we'll end up painting ourselves into a corner
-// TBD
 const CodeSchema = z.object({
   authParams: z.custom<AuthParams>().optional(),
   code: z.string(),
@@ -57,8 +52,6 @@ const UserSchema = z.object({
     )
     .optional(),
 });
-
-const MAX_LOGS_LENGTH = 500;
 
 type Code = z.infer<typeof CodeSchema>;
 
@@ -128,16 +121,6 @@ async function getEmailValidationCode(storage: DurableObjectStorage) {
   const jsonData = await storage.get<string>(StorageKeys.emailValidationCode);
 
   return parseStringToType<Code>(CodeSchema, jsonData);
-}
-
-async function getLogs(storage: DurableObjectStorage) {
-  const jsonData = await storage.get<string>(StorageKeys.logs);
-  if (!jsonData) {
-    return [];
-  }
-
-  // return parseStringToType<LogMessage[]>(LogMessageSchemaList, jsonData) || [];
-  return JSON.parse(jsonData) as LogMessage[];
 }
 
 async function writeLog(
@@ -325,7 +308,6 @@ export const userRouter = router({
       UserEvent.userDeleted,
     );
   }),
-  getLogs: publicProcedure.query(async ({ ctx }) => getLogs(ctx.state.storage)),
   getProfile: publicProcedure.query(async ({ ctx }) => {
     const profile = await getProfile(ctx.state.storage);
     if (!profile) {
