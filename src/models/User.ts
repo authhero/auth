@@ -126,10 +126,22 @@ async function getEmailValidationCode(storage: DurableObjectStorage) {
 }
 
 async function writeLog(
-  data: DataAdapters,
-  message: Omit<LogMessage, "timestamp" | "id">,
+  ctx: Context<Env>,
+  message: Omit<LogMessage, "timestamp" | "id" | "tenant_id" | "user_id">,
 ) {
-  await data.logs.create(message);
+  const profile = await getProfile(ctx.state.storage);
+
+  if (!profile) {
+    return;
+  }
+
+  const { tenant_id, id } = profile;
+
+  await ctx.env.data.logs.create({
+    ...message,
+    tenant_id,
+    user_id: id,
+  });
 }
 
 // Stores information about the current operation and ensures that the user has an id.
@@ -224,7 +236,7 @@ export const userRouter = router({
         JSON.stringify(result),
       );
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "login",
         message: "Create authentication code",
       });
@@ -242,7 +254,7 @@ export const userRouter = router({
       JSON.stringify(result),
     );
 
-    await writeLog(ctx.env.data, {
+    await writeLog(ctx, {
       category: "login",
       message: "Create email validation code",
     });
@@ -260,7 +272,7 @@ export const userRouter = router({
       JSON.stringify(result),
     );
 
-    await writeLog(ctx.env.data, {
+    await writeLog(ctx, {
       category: "login",
       message: "Send password reset",
     });
@@ -278,7 +290,7 @@ export const userRouter = router({
 
       const profile = await updateProfile(ctx, input);
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "update",
         message: "User created",
       });
@@ -333,7 +345,7 @@ export const userRouter = router({
         linked_with: input.linkWithEmail,
       });
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "link",
         message: `Linked to ${input.linkWithEmail}`,
       });
@@ -367,7 +379,7 @@ export const userRouter = router({
         ],
       });
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "link",
         message: `Added ${input.linkWithEmail} as linked user`,
       });
@@ -394,7 +406,7 @@ export const userRouter = router({
         connections: [input.connection],
       });
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "login",
         message: `Login with ${input.connection.name}`,
       });
@@ -406,7 +418,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const profile = await updateProfile(ctx, input);
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "update",
         message: "User profile",
       });
@@ -433,7 +445,7 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "login",
         message: "User created with password",
       });
@@ -482,7 +494,7 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "update",
         message: "Reset password with code",
       });
@@ -498,7 +510,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "update",
         message: "Set email validated",
       });
@@ -520,7 +532,7 @@ export const userRouter = router({
   setPassword: publicProcedure
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "update",
         message: "Set password",
       });
@@ -573,7 +585,7 @@ export const userRouter = router({
         ],
       });
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "login",
         message: "Login with code",
       });
@@ -606,7 +618,7 @@ export const userRouter = router({
         throw new AuthenticationCodeExpiredError();
       }
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "validation",
         message: "Validate with code",
       });
@@ -663,7 +675,7 @@ export const userRouter = router({
         throw new UnauthenticatedError();
       }
 
-      await writeLog(ctx.env.data, {
+      await writeLog(ctx, {
         category: "login",
         message: "Login with password",
       });
