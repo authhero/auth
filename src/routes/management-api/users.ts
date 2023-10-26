@@ -34,8 +34,6 @@ export interface LinkBodyParams {
 
 @Route("api/v2/users")
 @Tags("management-api")
-// TODO - check with NPM lib auth0/node @ https://github.com/sesamyab/auth0-management-api-demo/ - that this can create the correct token
-// ALSO - are we checking these scopes? read:users update:users create:users delete:users
 @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
   @Get("")

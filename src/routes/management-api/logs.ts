@@ -1,7 +1,7 @@
 import {
   Controller,
   Get,
-  Path,
+  Header,
   Query,
   Request,
   Route,
@@ -17,14 +17,14 @@ export const LogsFilterSchema = z.object({
   userId: z.string(),
 });
 
-@Route("tenants/{tenantId}/logs")
+@Route("api/v2/logs")
 @Tags("logs")
 @Security("oauth2managementApi", [""])
 export class LogsController extends Controller {
   @Get("")
   public async getUserLogs(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Header("tenant-id") tenantId: string,
     @Query("filter") filterJson: string,
     // TODO - implement these in SQL
     @Query("range") range?: string,
