@@ -6,7 +6,7 @@ export function updateTenant(tenants: Tenant[]) {
     tenants[index] = {
       ...tenants[index],
       ...tenant,
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
   };
 }

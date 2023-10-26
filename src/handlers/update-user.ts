@@ -54,7 +54,7 @@ async function updateUser(env: Env, tenantId: string, email: string) {
     nickname: profile.nickname || "",
     picture: profile.picture || "",
     created_at: profile.created_at,
-    modified_at: profile.modified_at,
+    updated_at: profile.modified_at,
     tags: JSON.stringify(tags),
     tenant_id: tenantId,
   };

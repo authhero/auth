@@ -39,7 +39,7 @@ const UserSchema = z.object({
   tenant_id: z.string(),
   id: z.string().optional(),
   created_at: z.string().optional(),
-  modified_at: z.string().optional(),
+  updated_at: z.string().optional(),
   given_name: z.string().optional(),
   family_name: z.string().optional(),
   nickname: z.string().optional(),
