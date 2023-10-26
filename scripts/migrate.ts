@@ -1,14 +1,19 @@
 import { Dialect, Kysely, Migrator } from "kysely";
-import { BunWorkerDialect } from "kysely-bun-worker";
+import "dotenv/config";
 
 import { Database } from "../src/types";
 import ReferenceMigrationProvider from "../src/migrate/ReferenceMigrationProvider";
 import migrations from "../src/migrate/migrations";
+import { PlanetScaleDialect } from "kysely-planetscale";
 
 console.log("migrating...");
 
-const dialect = new BunWorkerDialect({
-  url: "test.db",
+const dialect = new PlanetScaleDialect({
+  host: process.env.DATABASE_HOST,
+  username: process.env.DATABASE_USERNAME,
+  password: process.env.DATABASE_PASSWORD,
+  fetch: (opts, init) =>
+    fetch(new Request(opts, { ...init, cache: undefined })),
 });
 
 let _db: Kysely<Database>;
