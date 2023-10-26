@@ -98,7 +98,18 @@ function parseStringToType<T>(schema: ZodSchema<T>, input?: string): T | null {
 async function getProfile(storage: DurableObjectStorage) {
   const jsonData = await storage.get<string>(StorageKeys.profile);
 
-  return parseStringToType<Profile>(ProfileSchema, jsonData);
+  if (!jsonData) {
+    return null;
+  }
+
+  const data = JSON.parse(jsonData);
+  const patchedJsonData = JSON.stringify({
+    ...data,
+    // backwards compatible patch as we've since renamed the SQL columns to match Auth0
+    updated_at: data.updated_at || data.modified_at,
+  });
+
+  return parseStringToType<Profile>(ProfileSchema, patchedJsonData);
 }
 
 async function getPasswordResetCode(storage: DurableObjectStorage) {
