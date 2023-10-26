@@ -4,5 +4,5 @@ export interface LogMessage {
   category: string;
   message: string;
   tenant_id: string;
-  client_id: string;
+  user_id: string;
 }

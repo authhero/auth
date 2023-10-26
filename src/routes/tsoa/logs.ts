@@ -12,7 +12,6 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { z } from "zod";
 import { headers } from "../../constants";
-import { LogMessage } from "../../types/LogMessage";
 
 export const LogsFilterSchema = z.object({
   userId: z.string(),
