@@ -3,11 +3,7 @@ import { LogMessage } from "../../../types";
 import { CreateLogMessageParams } from "../../interfaces/Logs";
 
 export function createLog(logs: LogMessage[]) {
-  return async (
-    tenantId: string,
-    userId: string,
-    log: CreateLogMessageParams,
-  ): Promise<LogMessage> => {
+  return async (log: CreateLogMessageParams): Promise<LogMessage> => {
     const createdLog: LogMessage = {
       id: nanoid(),
       timestamp: new Date().toISOString(),

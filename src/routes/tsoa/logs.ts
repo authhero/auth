@@ -36,6 +36,7 @@ export class LogsController extends Controller {
     const filter = LogsFilterSchema.parse(JSON.parse(filterJson));
 
     const db = getDb(env);
+    // TODO - this needs to be an adaptor of course! so we can support in-memory
     const logs = await db
       .selectFrom("logs")
       .where("logs.tenant_id", "=", tenantId)

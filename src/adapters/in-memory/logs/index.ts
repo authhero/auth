@@ -3,7 +3,7 @@ import { createLog } from "./create";
 import { listLogs } from "./list";
 import { LogMessage } from "../../../types";
 
-export function createLogAdapter(): LogsDataAdapter {
+export function createLogsAdapter(): LogsDataAdapter {
   const users: LogMessage[] = [];
 
   return {
