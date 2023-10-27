@@ -222,19 +222,27 @@ export class UsersMgmtController extends Controller {
     });
     const linkedUserProfile = await linkedUser.getProfile.query();
     const currentUserProfile = await currentUser.getProfile.query();
-    const { tenant_id, id } = linkedUserProfile;
+
+    // I might have these logs the wrong way round!
     await env.data.logs.create({
       category: "login",
       message: `Linked to ${currentUserProfile.email}`,
-      tenant_id,
-      user_id: id,
+      tenant_id: linkedUserProfile.tenant_id,
+      user_id: linkedUserProfile.id,
     });
 
     // Link the parent account
-    return currentUser.linkWithUser.mutate({
+    const returnUser = currentUser.linkWithUser.mutate({
       tenantId,
       email: currentDbUser.email,
       linkWithEmail: linkedDbUser.email,
     });
+    await env.data.logs.create({
+      category: "login",
+      message: `Added ${linkedUserProfile.linkWithEmail} as linked user`,
+      tenant_id: currentUserProfile.tenant_id,
+      user_id: currentUserProfile.id,
+    });
+    return returnUser;
   }
 }

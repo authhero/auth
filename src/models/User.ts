@@ -366,11 +366,6 @@ export const userRouter = router({
         ],
       });
 
-      await writeLog(ctx, {
-        category: "link",
-        message: `Added ${input.linkWithEmail} as linked user`,
-      });
-
       return profile;
     }),
   loginWithConnection: publicProcedure
