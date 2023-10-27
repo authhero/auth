@@ -171,6 +171,13 @@ export class UsersMgmtController extends Controller {
       ...user,
       tenant_id: tenantId,
     });
+    const { tenant_id, id } = result;
+    await ctx.env.data.logs.create({
+      category: "login",
+      message: "User profile",
+      tenant_id,
+      user_id: id,
+    });
     return result;
   }
 

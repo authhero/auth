@@ -395,14 +395,6 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       const profile = await updateProfile(ctx, input);
 
-      console.log("this mostly looks like ctx.env - ", ctx.env);
-      console.log("but this is unpopulated ctx.env.data - ", ctx.env.data);
-
-      await writeLog(ctx, {
-        category: "update",
-        message: "User profile",
-      });
-
       return profile;
     }),
   registerPassword: publicProcedure
