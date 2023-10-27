@@ -69,6 +69,7 @@ export class AuthenticateController extends Controller {
     );
 
     const profile = await user.getProfile.query();
+    const { tenant_id, id } = profile;
 
     try {
       switch (body.realm) {
@@ -79,7 +80,6 @@ export class AuthenticateController extends Controller {
             tenantId: client.tenant_id,
           });
 
-          const { tenant_id, id } = profile;
           await env.data.logs.create({
             category: "login",
             message: "Login with code",
@@ -94,7 +94,6 @@ export class AuthenticateController extends Controller {
             tenantId: client.tenant_id,
           });
 
-          const { tenant_id, id } = profile;
           await env.data.logs.create({
             category: "login",
             message: "Login with password",

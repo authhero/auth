@@ -623,11 +623,6 @@ export const userRouter = router({
       } else if (!bcrypt.compareSync(input.password, passwordHash)) {
         throw new UnauthenticatedError();
       }
-
-      await writeLog(ctx, {
-        category: "login",
-        message: "Login with password",
-      });
     }),
 });
 
