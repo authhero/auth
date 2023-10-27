@@ -558,6 +558,14 @@ export class LoginController extends Controller {
       });
       const profile = await user.getProfile.query();
 
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "login",
+        message: "Login with password",
+        tenant_id,
+        user_id: id,
+      });
+
       const authConnection = profile.connections.find((c) => c.name === "auth");
       if (
         !authConnection?.profile?.validated &&
