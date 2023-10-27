@@ -347,6 +347,14 @@ export class LoginController extends Controller {
       });
 
       const { code } = await user.createEmailValidationCode.mutate();
+      const userProfile = await user.getProfile.query();
+      const { tenant_id, id } = userProfile;
+      await env.data.logs.create({
+        category: "login",
+        message: "Create email validation code",
+        tenant_id,
+        user_id: id,
+      });
       await sendEmailValidation(env, client, loginParams.username, code);
 
       if (client.email_validation === "enforced") {
@@ -526,6 +534,15 @@ export class LoginController extends Controller {
         });
 
         const { code } = await user.createEmailValidationCode.mutate();
+
+        const userProfile = await user.getProfile.query();
+        const { tenant_id, id } = userProfile;
+        await env.data.logs.create({
+          category: "login",
+          message: "Create email validation code",
+          tenant_id,
+          user_id: id,
+        });
         await sendEmailValidation(env, client, profile.email, code);
 
         return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
