@@ -162,6 +162,15 @@ export class PasswordlessController extends Controller {
         email,
         tenantId: client.tenant_id,
       });
+
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "login",
+        message: "Login with code",
+        tenant_id,
+        user_id: id,
+      });
+
       validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
 
       const authParams: AuthParams = {

@@ -22,6 +22,14 @@ export async function passwordlessGrant(
     email,
   });
 
+  const { tenant_id, id } = profile;
+  await env.data.logs.create({
+    category: "login",
+    message: "Login with code",
+    tenant_id,
+    user_id: id,
+  });
+
   const certificate = await getCertificate(env);
   const tokenFactory = new TokenFactory(
     certificate.privateKey,

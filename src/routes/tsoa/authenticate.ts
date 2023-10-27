@@ -71,10 +71,18 @@ export class AuthenticateController extends Controller {
     try {
       switch (body.realm) {
         case "email":
-          await user.validateAuthenticationCode.mutate({
+          const profile = await user.validateAuthenticationCode.mutate({
             code: body.otp,
             email: email,
             tenantId: client.tenant_id,
+          });
+
+          const { tenant_id, id } = profile;
+          await env.data.logs.create({
+            category: "login",
+            message: "Login with code",
+            tenant_id,
+            user_id: id,
           });
           break;
         case "Username-Password-Authentication":

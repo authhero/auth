@@ -472,11 +472,6 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx, {
-        category: "update",
-        message: "Set email validated",
-      });
-
       return updateProfile(ctx, {
         email: input.email,
         tenant_id: input.tenantId,
@@ -554,6 +549,8 @@ export const userRouter = router({
 
       // Remove once used. Skip for now
       // await ctx.state.storage.put(StorageKeys.authenticationCode, "");
+      // Remove once used
+      await ctx.state.storage.put(StorageKeys.authenticationCode, "");
 
       return profile;
     }),

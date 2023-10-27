@@ -248,10 +248,18 @@ export class LoginController extends Controller {
     );
 
     try {
-      await user.validateAuthenticationCode.mutate({
+      const profile = await user.validateAuthenticationCode.mutate({
         code: params.code,
         email: loginState.authParams.username,
         tenantId: client.tenant_id,
+      });
+
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "login",
+        message: "Login with code",
+        tenant_id,
+        user_id: id,
       });
     } catch (err) {
       return renderEnterCode(env.AUTH_TEMPLATES, this, {
