@@ -417,11 +417,6 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
-      await writeLog(ctx, {
-        category: "login",
-        message: "User created with password",
-      });
-
       return updateProfile(ctx, {
         email: input.email,
         tenant_id: input.tenantId,

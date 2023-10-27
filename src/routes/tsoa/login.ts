@@ -347,9 +347,15 @@ export class LoginController extends Controller {
         password: loginParams.password,
       });
 
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "login",
+        message: "User created with password",
+        tenant_id,
+        user_id: id,
+      });
+
       const { code } = await user.createEmailValidationCode.mutate();
-      const userProfile = await user.getProfile.query();
-      const { tenant_id, id } = userProfile;
       await env.data.logs.create({
         category: "login",
         message: "Create email validation code",

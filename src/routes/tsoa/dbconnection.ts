@@ -55,8 +55,16 @@ export class DbConnectionController extends Controller {
       getId(client.tenant_id, body.email),
     );
     // This throws if if fails
-    await user.registerPassword.mutate(body.password);
+    const profile = await user.registerPassword.mutate(body.password);
     // type errors! we have type errors all over this file... is it used? We're not typechecking all our code...
+
+    const { tenant_id, id } = profile;
+    await ctx.env.data.logs.create({
+      category: "login",
+      message: "User created with password",
+      tenant_id,
+      user_id: id,
+    });
 
     return "OK";
   }
