@@ -125,29 +125,30 @@ async function getEmailValidationCode(storage: DurableObjectStorage) {
   return parseStringToType<Code>(CodeSchema, jsonData);
 }
 
-async function writeLog(
-  ctx: Context<Env>,
-  message: Omit<Log, "timestamp" | "id" | "tenant_id" | "user_id">,
-) {
-  const profile = await getProfile(ctx.state.storage);
+// No more! do this in route. Let's gut this model 8-)
+// async function writeLog(
+//   ctx: Context<Env>,
+//   message: Omit<Log, "timestamp" | "id" | "tenant_id" | "user_id">,
+// ) {
+//   const profile = await getProfile(ctx.state.storage);
 
-  if (!profile) {
-    return;
-  }
+//   if (!profile) {
+//     return;
+//   }
 
-  const { tenant_id, id } = profile;
+//   const { tenant_id, id } = profile;
 
-  console.log("ctx.env.data ", ctx.env.data);
+//   console.log("ctx.env.data ", ctx.env.data);
 
-  // why is ctx.env.data undefined? according to env it should be here....
+//   // why is ctx.env.data undefined? according to env it should be here....
 
-  // this must be the issue... what is undefined?
-  // await ctx.env.data.logs.create({
-  //   ...message,
-  //   tenant_id,
-  //   user_id: id,
-  // });
-}
+//   // this must be the issue... what is undefined?
+//   // await ctx.env.data.logs.create({
+//   //   ...message,
+//   //   tenant_id,
+//   //   user_id: id,
+//   // });
+// }
 
 // Stores information about the current operation and ensures that the user has an id.
 async function updateProfile(
@@ -240,11 +241,6 @@ export const userRouter = router({
         StorageKeys.authenticationCode,
         JSON.stringify(result),
       );
-
-      await writeLog(ctx, {
-        category: "login",
-        message: "Create authentication code",
-      });
 
       return result;
     }),

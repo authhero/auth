@@ -152,6 +152,15 @@ export class LoginController extends Controller {
 
     const { code } = await user.createAuthenticationCode.mutate(loginState);
 
+    const userProfile = await user.getProfile.query();
+    const { tenant_id, id } = userProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: "Create authentication code",
+      tenant_id,
+      user_id: id,
+    });
+
     // Add the username to the state
     loginState.authParams.username = params.username;
     await setLoginState(env, state, loginState);
