@@ -42,7 +42,18 @@ export async function getClient(env: Env, clientId: string): Promise<Client> {
     throw new Error("Client not found");
   }
 
-  const client = PartialClientSchema.parse(JSON.parse(clientString));
+  // here we need the same fix as AUTH_CLIENTs KV storage still has modified_at keys for nested connections
+  const clientRawObj = JSON.parse(clientString);
+
+  const clientPatchedObj = {
+    ...clientRawObj,
+    connections: clientRawObj.connections.map((connection: any) => ({
+      ...connection,
+      updated_at: connection.updated_at || connection.modified_at,
+    })),
+  };
+
+  const client = PartialClientSchema.parse(clientPatchedObj);
   // These default settings are fetched from the env variables
   const envDefaultSettings = getDefaultSettings(env);
 
