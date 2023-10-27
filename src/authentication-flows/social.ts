@@ -122,6 +122,14 @@ export async function socialAuthCallback({
     tenantId: client.tenant_id,
     connection: { name: connection.name, profile: oauth2Profile },
   });
+  const userProfile = await user.getProfile.query();
+  const { tenant_id, id } = userProfile;
+  await env.data.logs.create({
+    category: "login",
+    message: `Login with ${connection.name}`,
+    tenant_id,
+    user_id: id,
+  });
 
   const sessionId = await setSilentAuthCookies(
     env,

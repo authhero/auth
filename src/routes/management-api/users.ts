@@ -239,7 +239,7 @@ export class UsersMgmtController extends Controller {
     });
     await env.data.logs.create({
       category: "login",
-      message: `Added ${linkedUserProfile.linkWithEmail} as linked user`,
+      message: `Added ${linkedUserProfile.email} as linked user`,
       tenant_id: currentUserProfile.tenant_id,
       user_id: currentUserProfile.id,
     });

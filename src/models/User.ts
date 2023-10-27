@@ -388,11 +388,6 @@ export const userRouter = router({
         connections: [input.connection],
       });
 
-      await writeLog(ctx, {
-        category: "login",
-        message: `Login with ${input.connection.name}`,
-      });
-
       return profile;
     }),
   patchProfile: publicProcedure
