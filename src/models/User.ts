@@ -461,11 +461,6 @@ export const userRouter = router({
         bcrypt.hashSync(input.password, 10),
       );
 
-      await writeLog(ctx, {
-        category: "update",
-        message: "Reset password with code",
-      });
-
       ctx.state.storage.delete(StorageKeys.passwordResetCode);
     }),
   setEmailValidated: publicProcedure

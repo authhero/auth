@@ -173,7 +173,7 @@ export class UsersMgmtController extends Controller {
     });
     const { tenant_id, id } = result;
     await ctx.env.data.logs.create({
-      category: "login",
+      category: "update", // ooops! check all categories...
       message: "User profile",
       tenant_id,
       user_id: id,

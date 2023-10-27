@@ -492,9 +492,17 @@ export class LoginController extends Controller {
     );
 
     try {
-      await user.resetPasswordWithCode.mutate({
+      const profile = await user.resetPasswordWithCode.mutate({
         code,
         password: params.password,
+      });
+
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "update",
+        message: "Reset password with code",
+        tenant_id,
+        user_id: id,
       });
     } catch (err) {
       return renderResetPassword(env.AUTH_TEMPLATES, this, {
