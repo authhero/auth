@@ -10,7 +10,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     )
     .addColumn("timestamp", "varchar(255)", (col) => col.notNull())
     .addColumn("category", "varchar(255)", (col) => col.notNull())
-    .addColumn("message", "varchar(255)", (col) => col.notNull());
+    .addColumn("message", "varchar(255)", (col) => col.notNull())
+    .execute();
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {
