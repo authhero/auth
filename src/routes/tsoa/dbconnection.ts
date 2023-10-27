@@ -71,6 +71,14 @@ export class DbConnectionController extends Controller {
 
     const user = User.getInstanceByName(env.USER, getId(clientId, body.email));
     const { code } = await user.createPasswordResetCode.mutate();
+    const userProfile = await user.getProfile.query();
+    const { tenant_id, id } = userProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: "Send password reset",
+      tenant_id,
+      user_id: id,
+    });
 
     const client = await getClient(env, clientId);
     if (!client) {

@@ -427,6 +427,14 @@ export class LoginController extends Controller {
     }
 
     const { code } = await user.createPasswordResetCode.mutate();
+    const userProfile = await user.getProfile.query();
+    const { tenant_id, id } = userProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: "Send password reset",
+      tenant_id,
+      user_id: id,
+    });
 
     await sendResetPassword(env, client, params.username, code, state);
 
@@ -534,7 +542,6 @@ export class LoginController extends Controller {
         });
 
         const { code } = await user.createEmailValidationCode.mutate();
-
         const userProfile = await user.getProfile.query();
         const { tenant_id, id } = userProfile;
         await env.data.logs.create({

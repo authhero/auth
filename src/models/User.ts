@@ -255,11 +255,6 @@ export const userRouter = router({
       JSON.stringify(result),
     );
 
-    await writeLog(ctx, {
-      category: "login",
-      message: "Create email validation code",
-    });
-
     return result;
   }),
   createPasswordResetCode: publicProcedure.mutation(async ({ ctx }) => {
@@ -272,11 +267,6 @@ export const userRouter = router({
       StorageKeys.passwordResetCode,
       JSON.stringify(result),
     );
-
-    await writeLog(ctx, {
-      category: "login",
-      message: "Send password reset",
-    });
 
     return result;
   }),
