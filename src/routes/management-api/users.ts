@@ -220,6 +220,15 @@ export class UsersMgmtController extends Controller {
       email: linkedDbUser.email,
       linkWithEmail: currentDbUser.email,
     });
+    const linkedUserProfile = await linkedUser.getProfile.query();
+    const currentUserProfile = await currentUser.getProfile.query();
+    const { tenant_id, id } = linkedUserProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: `Linked to ${currentUserProfile.email}`,
+      tenant_id,
+      user_id: id,
+    });
 
     // Link the parent account
     return currentUser.linkWithUser.mutate({

@@ -281,10 +281,11 @@ export const userRouter = router({
 
       const profile = await updateProfile(ctx, input);
 
-      await writeLog(ctx, {
-        category: "update",
-        message: "User created",
-      });
+      // I don't see this actually being called...
+      // await writeLog(ctx, {
+      //   category: "update",
+      //   message: "User created",
+      // });
 
       return profile;
     }),
@@ -334,11 +335,6 @@ export const userRouter = router({
         tenant_id: input.tenantId,
         email: input.email,
         linked_with: input.linkWithEmail,
-      });
-
-      await writeLog(ctx, {
-        category: "link",
-        message: `Linked to ${input.linkWithEmail}`,
       });
 
       return profile;
