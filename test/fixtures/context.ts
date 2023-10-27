@@ -179,6 +179,9 @@ export function contextFixture(
         certificates: {
           listCertificates,
         },
+        logs: {
+          create: () => {},
+        },
       },
     },
   } as unknown as Context<{ Bindings: Env; Variables: Var }>;
