@@ -125,7 +125,15 @@ export class DbConnectionController extends Controller {
       ctx.env.USER,
       getId(clientId, body.email),
     );
-    await user.validateEmailValidationCode.query(body.code);
+    const profile = await user.validateEmailValidationCode.query(body.code);
+
+    const { tenant_id, id } = profile;
+    await ctx.env.data.logs.create({
+      category: "validation",
+      message: "Validate with code",
+      tenant_id,
+      user_id: id,
+    });
 
     return "ok";
   }

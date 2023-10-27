@@ -489,11 +489,6 @@ export const userRouter = router({
   setPassword: publicProcedure
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx, {
-        category: "update",
-        message: "Set password",
-      });
-
       await ctx.state.storage.put(
         StorageKeys.passwordHash,
         bcrypt.hashSync(input, 10),
@@ -576,11 +571,6 @@ export const userRouter = router({
       if (!emailValidation.expireAt || Date.now() > emailValidation.expireAt) {
         throw new AuthenticationCodeExpiredError();
       }
-
-      await writeLog(ctx, {
-        category: "validation",
-        message: "Validate with code",
-      });
 
       // Remove once used
       await ctx.state.storage.delete(StorageKeys.emailValidationCode);

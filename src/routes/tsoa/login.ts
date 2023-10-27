@@ -305,6 +305,14 @@ export class LoginController extends Controller {
         tenantId: client.tenant_id,
       });
 
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "validation",
+        message: "Validate with code",
+        tenant_id,
+        user_id: id,
+      });
+
       return handleLogin(env, this, profile, loginState);
     } catch (err: any) {
       return renderEmailValidation(env.AUTH_TEMPLATES, this, {
