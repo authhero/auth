@@ -7,13 +7,12 @@ import {
   Post,
   Patch,
   Tags,
-  Path,
   Header,
   SuccessResponse,
-  Body,
   Delete,
-  Put,
   Security,
+  Path,
+  Body,
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -77,26 +76,31 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
     @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
+  ): Promise<UserResponse> {
     const { env } = request.ctx;
 
     const db = getDb(env);
-    const dbUser = await db
+    const user = await db
       .selectFrom("users")
       .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
-      .select("users.email")
+      .selectAll()
       .executeTakeFirst();
 
-    if (!dbUser) {
+    if (!user) {
       throw new NotFoundError();
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.getProfile.query();
+    return {
+      ...user,
+      // TODO: add missing properties to conform to auth0
+      logins_count: 0,
+      last_ip: "",
+      last_login: "",
+      identities: [],
+      user_id: user.id,
+      username: user.email,
+    };
   }
 
   @Delete("{userId}")
