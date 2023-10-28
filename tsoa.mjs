@@ -59,7 +59,7 @@ import { readFile, writeFile } from "fs/promises";
       "src/routes/management-api/*.ts",
     ],
     authenticationModule: "./src/authentication.ts",
-    middlewareTemplate: "node_modules/tsoa-workers/cloudworker-router.hbs",
+    middlewareTemplate: "node_modules/tsoa-hono/hono-router.hbs",
   };
 
   await generateSpec(specOptions);

@@ -14,12 +14,8 @@ import { updateTenantClientsInKV } from "./hooks/update-client";
 export { User, State };
 
 const server = {
-  async fetch(
-    request: Request,
-    env: Env,
-    ctx: ExecutionContext,
-  ): Promise<Response> {
-    return app.handle(
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    return app.fetch(
       request,
       // Add dependencies to the environment
       {

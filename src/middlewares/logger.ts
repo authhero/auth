@@ -1,13 +1,19 @@
 import datadogLogger from "../services/datadog";
-import { Context, Next } from "cloudworker-router";
 import { Env } from "../types/Env";
-import packageJson from "../../package.json";
+import { Context, Next } from "hono";
+import { Var } from "../types/Var";
 
-async function logResponse(ctx: Context<Env>, response: Response) {
+async function logResponse(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  response: Response,
+) {
   await datadogLogger.log(ctx, response);
 }
 
-async function logError(ctx: Context<Env>, err: Error) {
+async function logError(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  err: Error,
+) {
   console.log(JSON.stringify(err.message));
   await datadogLogger.err(ctx, err);
 }
@@ -16,18 +22,20 @@ export interface Options {
   version?: string;
 }
 
-export default async function loggerMiddleware(ctx: Context<Env>, next: Next) {
-  ctx.state.startAt = new Date().getTime();
-  ctx.state.verion = packageJson.version;
+export default async function loggerMiddleware(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  next: Next,
+) {
+  ctx.set("startAt", new Date().getTime());
 
   try {
     const response = await next();
 
-    ctx.event.waitUntil(logResponse(ctx, response!));
+    ctx.executionCtx.waitUntil(logResponse(ctx, response!));
 
     return response;
   } catch (error: any) {
-    ctx.event.waitUntil(logError(ctx, error as Error));
+    ctx.executionCtx.waitUntil(logError(ctx, error as Error));
     throw error;
   }
 }

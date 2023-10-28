@@ -19,7 +19,7 @@ const server = {
     env: Env,
     ctx: ExecutionContext,
   ): Promise<Response> {
-    return app.handle(
+    return app.fetch(
       request,
       // Add dependencies to the environment
       {

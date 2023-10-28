@@ -35,9 +35,10 @@ describe("logout", () => {
 
     const ctx = contextFixture({
       stateData,
+      headers: {
+        referer: "http://localhost:3000",
+      },
     });
-
-    ctx.headers.set("referer", "http://localhost:3000");
 
     const controller = new LogoutController();
     const actual = await controller.logout(

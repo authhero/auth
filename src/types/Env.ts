@@ -13,7 +13,7 @@ export interface ClientFactory<ClientType> {
   getInstanceByName: (name: string) => ClientType;
 }
 
-export interface Env {
+export type Env = {
   ISSUER: string;
   DD_API_KEY: string;
   JWKS_URL: string;
@@ -43,4 +43,4 @@ export interface Env {
       onCreated?: (env: Env, tenant: Tenant) => Promise<void>;
     };
   };
-}
+};

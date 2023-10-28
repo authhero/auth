@@ -1,4 +1,4 @@
-import { Context } from "cloudworker-router";
+import { Context } from "hono";
 import { Env } from "../types/Env";
 
 function getSwaggerHtml(env: Env) {
@@ -71,7 +71,7 @@ function getSwaggerHtml(env: Env) {
 </html>`;
 }
 
-export default async function swaggerUi(ctx: Context<Env>) {
+export default async function swaggerUi(ctx: Context) {
   return new Response(getSwaggerHtml(ctx.env), {
     headers: {
       "content-type": "text/html",
