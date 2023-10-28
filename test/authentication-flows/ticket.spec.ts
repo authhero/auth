@@ -7,6 +7,7 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
 } from "../../src/types";
+import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("passwordlessAuth", () => {
   const date = new Date();
@@ -51,7 +52,7 @@ describe("passwordlessAuth", () => {
     const redirectURL = new URL(redirectHeader);
     const hashParams = new URLSearchParams(redirectURL.hash.slice(1));
 
-    const accessToken = JSON.parse(hashParams.get("access_token") as string);
+    const accessToken = parseJwt(hashParams.get("access_token") as string);
 
     expect(response).toEqual("Redirecting");
     expect(controller.getStatus()).toEqual(302);

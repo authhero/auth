@@ -5,24 +5,26 @@ import {
   Request,
   Route,
   Post,
+  Patch,
   Tags,
-  Path,
   Header,
   SuccessResponse,
-  Body,
   Delete,
-  Put,
   Security,
+  Path,
+  Body,
 } from "@tsoa/runtime";
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
-import { Profile } from "../../types";
 import { User } from "../../types/sql/User";
-import { headers } from "../../constants";
-import { FilterSchema } from "../../types/Filter";
-import { executeQuery } from "../../helpers/sql";
+import { Profile } from "../../types";
+import {
+  UserResponse,
+  PostUsersBody,
+  GetUserResponseWithTotals,
+} from "../../types/auth0/UserResponse";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -30,79 +32,78 @@ export interface LinkBodyParams {
   link_with: string;
 }
 
-@Route("api/v2")
+@Route("api/v2/users")
 @Tags("management-api")
 // TODO - check with NPM lib auth0/node @ https://github.com/sesamyab/auth0-management-api-demo/ - that this can create the correct token
 // ALSO - are we checking these scopes? read:users update:users create:users delete:users
 @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
-  @Get("users")
+  @Get("")
   public async listUsers(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Header("range") rangeRequest?: string,
-    @Query("filter") filterQuerystring?: string,
-  ): Promise<User[]> {
-    const { ctx } = request;
+    // Auth0
+    @Query() page = 0,
+    @Query() per_page = 20,
+    @Query() include_totals = false,
+    @Query() sort?: string,
+    @Query() connection?: string,
+    @Query() fields?: string,
+    @Query() include_fields?: boolean,
+    @Query() q?: string,
+    @Query() search_engine?: "v1" | "v2" | "v3",
+  ): Promise<UserResponse[] | GetUserResponseWithTotals> {
+    const { env } = request.ctx;
 
-    const db = getDb(ctx.env);
+    const result = await env.data.users.list(tenantId, {
+      page,
+      per_page,
+      include_totals,
+      // TODO - sorting!
+      // sort: parseSort(sort),
+      q,
+    });
 
-    let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
-
-    // TODO - check this still actually works using auth0/node on the demo repo https://github.com/sesamyab/auth0-management-api-demo
-    if (filterQuerystring) {
-      const filter = FilterSchema.parse(JSON.parse(filterQuerystring));
-
-      if (filter.q) {
-        query = query.where((eb) =>
-          eb.or([
-            eb("name", "like", `%${filter.q}%`),
-            eb("email", "like", `%${filter.q}%`),
-          ]),
-        );
-      }
+    if (include_totals) {
+      return result as GetUserResponseWithTotals;
     }
 
-    const { data, range } = await executeQuery(query, rangeRequest);
-
-    if (range) {
-      this.setHeader(headers.contentRange, range);
-    }
-
-    return data.map((user) => ({
-      ...user,
-      tags: JSON.parse(user.tags || "[]"),
-    }));
+    return result.users;
   }
 
-  @Get("users/{userId}")
+  @Get("{userId}")
   public async getUser(
     @Request() request: RequestWithContext,
     @Path("userId") userId: string,
     @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
+  ): Promise<UserResponse> {
     const { env } = request.ctx;
 
     const db = getDb(env);
-    const dbUser = await db
+    const user = await db
       .selectFrom("users")
       .where("users.tenant_id", "=", tenantId)
       .where("users.id", "=", userId)
-      .select("users.email")
+      .selectAll()
       .executeTakeFirst();
 
-    if (!dbUser) {
+    if (!user) {
       throw new NotFoundError();
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.getProfile.query();
+    return {
+      ...user,
+      // TODO: add missing properties to conform to auth0
+      logins_count: 0,
+      last_ip: "",
+      last_login: "",
+      identities: [],
+      user_id: user.id,
+      username: user.email,
+    };
   }
 
-  @Delete("users/{userId}")
+  @Delete("{userId}")
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
@@ -130,62 +131,32 @@ export class UsersMgmtController extends Controller {
     return user.delete.mutate();
   }
 
-  @Get("users-by-email")
-  public async getUserByEmail(
-    @Request() request: RequestWithContext,
-    @Query("email") userEmail: string,
-    @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
-    const { env } = request.ctx;
-
-    const db = getDb(env);
-    const dbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.email", "=", userEmail)
-      .select("users.email")
-      .executeTakeFirst();
-
-    if (!dbUser) {
-      throw new NotFoundError();
-    }
-
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.getProfile.query();
-  }
-
-  @Post("users")
+  @Post("")
   @SuccessResponse(201, "Created")
+  /**
+   * Create a new user.
+   */
   public async postUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "modified_at" | "id"> &
-      Partial<Pick<User, "created_at" | "modified_at" | "id">>,
-  ): Promise<Profile> {
+    user: PostUsersBody,
+  ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const userInstance = env.userFactory.getInstanceByName(
-      getId(tenantId, user.email),
-    );
+    const data = await env.data.users.create(tenantId, user);
 
-    return userInstance.createUser.mutate({
-      ...user,
-      connections: [],
-      tenant_id: tenantId,
-    });
+    this.setStatus(201);
+    return data;
   }
 
-  @Put("users/{userId}")
-  public async putUser(
+  @Patch("{userId}")
+  public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "modified_at"> &
-      Partial<Pick<User, "created_at" | "modified_at">>,
+    user: Omit<User, "tenant_id" | "created_at" | "updated_at"> &
+      Partial<Pick<User, "created_at" | "updated_at">>,
   ): Promise<Profile> {
     const { ctx } = request;
 
@@ -200,7 +171,7 @@ export class UsersMgmtController extends Controller {
     return result;
   }
 
-  @Post("users/{userId}/identities")
+  @Post("{userId}/identities")
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,

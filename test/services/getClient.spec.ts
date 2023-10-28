@@ -30,7 +30,7 @@ describe("getClient", () => {
           id: "connectionId",
           name: "facebook",
           created_at: "created_at",
-          modified_at: "modified_at",
+          updated_at: "updated_at",
         },
       ],
       domains: [],
@@ -81,6 +81,7 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
+        support_url: "supportUrl",
       },
       connections: [],
       domains: [],
@@ -130,6 +131,7 @@ describe("getClient", () => {
         sender_email: "senderEmail",
         sender_name: "senderName",
         audience: "audience",
+        support_url: "supportUrl",
       },
       connections: [],
       domains: [
@@ -176,7 +178,7 @@ describe("getClient", () => {
     ]);
   });
 
-  it("should use the connection settings form the defaultSettins and the clientId from envDefaultSettings", async () => {
+  it("should use the connection settings form the defaultSettings and the clientId from envDefaultSettings", async () => {
     const clientInKV: PartialClient = {
       id: "testClient",
       name: "clientName",
@@ -196,7 +198,7 @@ describe("getClient", () => {
           id: "connectionId",
           name: "facebook",
           created_at: "created_at",
-          modified_at: "modified_at",
+          updated_at: "updated_at",
         },
       ],
       domains: [],
@@ -229,5 +231,41 @@ describe("getClient", () => {
     expect(facebookConnection?.authorization_endpoint).toBe(
       "https://www.facebook.com/dialog/oauth",
     );
+  });
+
+  it("should store the support url from the tenant in the client", async () => {
+    const clientInKV: PartialClient = {
+      id: "testClient",
+      name: "clientName",
+      client_secret: "clientSecret",
+      tenant_id: "tenantId",
+      allowed_callback_urls: ["http://localhost:3000", "https://example.com"],
+      allowed_logout_urls: ["http://localhost:3000", "https://example.com"],
+      allowed_web_origins: ["http://localhost:3000", "https://example.com"],
+      email_validation: "enabled",
+      tenant: {
+        sender_email: "senderEmail",
+        sender_name: "senderName",
+        support_url: "https://example.com/support",
+      },
+      connections: [],
+      domains: [],
+    };
+
+    const ctx = contextFixture({
+      clients: kvStorageFixture({
+        clientId: JSON.stringify(clientInKV),
+      }),
+    });
+
+    const envDefaultSettings: DefaultSettings = {
+      connections: [],
+    };
+
+    ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
+
+    const client = await getClient(ctx.env, "clientId");
+
+    expect(client.tenant.support_url).toBe("https://example.com/support");
   });
 });

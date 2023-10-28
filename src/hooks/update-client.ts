@@ -90,6 +90,7 @@ export async function updateClientInKV(env: Env, applicationId: string) {
       sender_email: tenant.sender_email,
       sender_name: tenant.sender_name,
       language: tenant.language,
+      support_url: tenant.support_url,
     }),
   };
 

@@ -1,11 +1,12 @@
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Controller, Get, Request, Route, Tags } from "@tsoa/runtime";
 import {
-  CERTIFICATE_EXPIRE_IN_SECONDS,
+  JWKS_CACHE_TIMEOUT_IN_SECONDS,
   contentTypes,
   headers,
 } from "../../constants";
-import { JwksKeys } from "../../types/jwks";
+import { Jwks, JwksKeys } from "../../types/jwks";
+import { Certificate } from "../../models";
 
 export interface OpenIDConfiguration {
   issuer: string;
@@ -42,19 +43,27 @@ export class JWKSRoutes extends Controller {
   ): Promise<JwksKeys> {
     const { env } = request.ctx;
 
-    const certificatesString = await env.CERTIFICATES.get("default");
-    const keys = (certificatesString ? JSON.parse(certificatesString) : []).map(
-      (cert: any) => {
-        return { kid: cert.kid, ...cert.publicKey };
-      },
-    );
+    const certificates = await env.data.certificates.listCertificates();
+    const keys = certificates.map((cert: Certificate): Jwks => {
+      const { publicKey } = cert;
+      if (!publicKey.alg || !publicKey.e || !publicKey.kty || !publicKey.n) {
+        throw new Error("Invalid public key");
+      }
+
+      return {
+        kid: cert.kid,
+        ...cert.publicKey,
+      } as Jwks;
+    });
 
     this.setHeader(headers.contentType, contentTypes.json);
     this.setHeader(headers.accessControlAllowOrigin, "*");
     this.setHeader(headers.accessControlAllowMethod, "GET");
     this.setHeader(
       headers.cacheControl,
-      `public, max-age=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-while-revalidate=${CERTIFICATE_EXPIRE_IN_SECONDS}, stale-if-error=86400`,
+      `public, max-age=${JWKS_CACHE_TIMEOUT_IN_SECONDS}, stale-while-revalidate=${
+        JWKS_CACHE_TIMEOUT_IN_SECONDS * 2
+      }, stale-if-error=86400`,
     );
 
     return { keys };

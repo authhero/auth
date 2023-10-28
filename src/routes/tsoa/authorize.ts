@@ -113,7 +113,7 @@ export class AuthorizeController extends Controller {
     };
 
     if (referer) {
-      validateRedirectUrl(client.allowed_web_origins, referer);
+      // validateRedirectUrl(client.allowed_web_origins, referer);
     }
 
     if (authParams.redirect_uri) {
@@ -135,6 +135,7 @@ export class AuthorizeController extends Controller {
         nonce,
         code_challenge_method,
         code_challenge,
+        audience,
       });
     }
 

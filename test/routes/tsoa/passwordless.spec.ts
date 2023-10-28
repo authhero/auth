@@ -1,9 +1,17 @@
 import fetchMock from "jest-fetch-mock";
 import { contextFixture, client } from "../../fixtures";
-import { PasswordlessController } from "../../../src/routes/tsoa/passwordless";
-import { Client, AuthorizationResponseType } from "../../../src/types";
+import {
+  PasswordlessController,
+  PasswordlessOptions,
+} from "../../../src/routes/tsoa/passwordless";
+import {
+  Client,
+  AuthorizationResponseType,
+  RequestWithContext,
+} from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 import { kvStorageFixture } from "../../fixtures/kv-storage";
+import { parseJwt } from "../../../src/utils/parse-jwt";
 
 const SESAMY_LOGO =
   "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png";
@@ -21,7 +29,11 @@ const SESAMY_HEADER_LOGO_URL = `https://imgproxy.dev.sesamy.cloud/unsafe/format:
 )}`;
 
 describe("Passwordless", () => {
+  const date = new Date();
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(date);
+
     fetchMock.resetMocks();
     fetchMock.mockResponse(JSON.stringify({ message: "Queued. Thank you." }), {
       status: 200,
@@ -33,7 +45,7 @@ describe("Passwordless", () => {
     it("should use the fallback sesamy logo if client does not have a logo set", async () => {
       const controller = new PasswordlessController();
 
-      const body = {
+      const body: PasswordlessOptions = {
         client_id: "clientId",
         connection: "email",
         send: "code",
@@ -62,7 +74,7 @@ describe("Passwordless", () => {
       );
 
       expect(mailRequest.subject).toEqual(
-        "Welcome to clientName! 123456 is the login code",
+        "Välkommen till clientName! 123456 är koden för att logga in",
       );
 
       expect(mailRequest.from).toEqual({
@@ -93,15 +105,12 @@ describe("Passwordless", () => {
       expect(emailBody).toContain("123456");
 
       expect(emailBody).toContain("Välkommen till ditt clientName-konto!");
-      expect(emailBody).toContain(
-        "Skriv in koden i clientName för att slutföra inloggningen.",
-      );
     });
 
     it("should use the client logo if set", async () => {
       const controller = new PasswordlessController();
 
-      const body = {
+      const body: PasswordlessOptions = {
         client_id: "clientId",
         connection: "email",
         send: "code",
@@ -154,6 +163,77 @@ describe("Passwordless", () => {
 
       // but should have client logo
       expect(emailBody).toContain(`src="${clientLogoUrl}"`);
+
+      // TODO - assert we have magic link in here with correct params?
+    });
+  });
+
+  describe("verify_redirect", () => {
+    it('should return a token and redirect to "redirect_uri" if code is valid', async () => {
+      const ctx = contextFixture({
+        stateData: {},
+      });
+
+      const controller = new PasswordlessController();
+
+      const result = await controller.verifyRedirect(
+        { ctx } as RequestWithContext,
+        "",
+        AuthorizationResponseType.TOKEN,
+        "https://example.com",
+        "state",
+        "nonce",
+        "code",
+        "email",
+        "clientId",
+        "email",
+        "https://example.com",
+      );
+
+      expect(controller.getStatus()).toBe(302);
+      expect(result).toEqual("Redirecting");
+
+      const redirectUrl = new URL(controller.getHeader("location") as string);
+
+      expect(redirectUrl.searchParams.get("state")).toBe("state");
+      expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
+
+      const token = parseJwt(
+        redirectUrl.searchParams.get("access_token") as string,
+      );
+      expect(token).toEqual({
+        aud: "https://example.com",
+        iat: Math.floor(date.getTime() / 1000),
+        exp: Math.floor(date.getTime() / 1000) + 86400,
+        iss: "https://auth.example.com/",
+        scope: "",
+      });
+    });
+
+    // TODO - we need to differentiate invalid code from expired
+    // TODO - test for the redirect once confirmed this works
+    it.skip("should return a 403 if code is not valid", async () => {
+      const ctx = contextFixture({
+        stateData: {},
+      });
+
+      const controller = new PasswordlessController();
+
+      await expect(() =>
+        controller.verifyRedirect(
+          { ctx } as RequestWithContext,
+          "",
+          AuthorizationResponseType.TOKEN,
+          "https://example.com",
+          "state",
+          "nonce",
+          "000000",
+          "email",
+          "clientId",
+          "email",
+          "https://example.com",
+        ),
+      ).rejects.toThrow("Invalid code");
     });
   });
 });

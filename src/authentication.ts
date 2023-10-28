@@ -5,7 +5,6 @@ import {
   InvalidSignatureError,
   UnauthorizedError,
 } from "./errors";
-import { getDb } from "./services/db";
 import { Env } from "./types/Env";
 import { Context, Next } from "hono";
 import { Var } from "./types/Var";
@@ -91,10 +90,8 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   if (!jwksUrls[jwksUrl]) {
     // If we're using the auth service itself for authenticating
     if (jwksUrl.startsWith(env.ISSUER)) {
-      const certificatesString = await env.CERTIFICATES.get("default");
-      const keys = (
-        certificatesString ? JSON.parse(certificatesString) : []
-      ).map((cert: any) => {
+      const certificates = await env.data.certificates.listCertificates();
+      const keys = certificates.map((cert: any) => {
         return { kid: cert.kid, ...cert.publicKey };
       });
 
@@ -116,14 +113,14 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   return jwksUrls[jwksUrl];
 }
 
-function isValidScopes(token: TokenData, scopes: string[]) {
-  if (!scopes.length) {
+function isValidPermissions(token: TokenData, permissions: string[]) {
+  if (!permissions.length) {
     return true;
   }
 
-  const tokenScopes = token.payload.scope?.split(" ") || [];
+  const tokenScopes = token.payload.permissions || [];
 
-  const match = !scopes.some((scope) => !tokenScopes.includes(scope));
+  const match = !permissions.some((p) => !tokenScopes.includes(p));
 
   return match;
 }
@@ -162,7 +159,7 @@ export async function getUser(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   securitySchemeName: SecuritySchemeName,
   bearer: string,
-  scopes: string[],
+  permissions: string[],
 ): Promise<any> {
   const token = decodeJwt(bearer);
 
@@ -173,7 +170,7 @@ export async function getUser(
     throw new ExpiredTokenError();
   }
 
-  if (!isValidScopes(token, scopes)) {
+  if (!isValidPermissions(token, permissions)) {
     throw new InvalidScopesError();
   }
 
@@ -215,14 +212,10 @@ export async function verifyTenantPermissions(
   }
 
   // Check db permissions
-  const db = getDb(ctx.env);
-  const member = await db
-    .selectFrom("members")
-    .where("members.sub", "=", ctx.var.user.sub)
-    .where("members.tenant_id", "=", tenantId)
-    .where("members.status", "=", "active")
-    .select("members.role")
-    .executeTakeFirst();
+  const { members } = await ctx.env.data.members.list(tenantId);
+  const member = members.find(
+    (m) => m.sub === ctx.state.user.sub && m.status === "active",
+  );
 
   if (!member?.role) {
     throw new UnauthorizedError();
@@ -260,7 +253,7 @@ export function authenticationHandler(
       ? SecuritySchemeName.oauth2
       : SecuritySchemeName.oauth2managementApi;
 
-  const [scope] = authProvider[securitySchemeName];
+  const [permissionString] = authProvider[securitySchemeName];
   return async function jwtMiddleware(
     ctx: Context<{ Bindings: Env; Variables: Var }>,
     next: Next,
@@ -273,9 +266,13 @@ export function authenticationHandler(
     }
     const bearer = authHeader.slice(7);
 
-    const scopes = scope?.split(" ").filter((scope) => scope) || [];
+    const permissions =
+      permissionString?.split(" ").filter((permission) => permission) || [];
 
-    ctx.set("user", await getUser(ctx, securitySchemeName, bearer, scopes));
+    ctx.set(
+      "user",
+      await getUser(ctx, securitySchemeName, bearer, permissions),
+    );
 
     await verifyTenantPermissions(ctx);
 

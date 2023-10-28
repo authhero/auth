@@ -13,6 +13,7 @@ wrangler/
 .dev.vars
 .env
 yarn-error.log
-.DS-Store
+.DS_Store
 data/
 .wrangler
+**/.DS_Store

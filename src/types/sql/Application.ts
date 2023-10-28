@@ -8,5 +8,5 @@ export interface Application {
   email_validation: "enabled" | "disabled" | "enforced";
   client_secret: string;
   created_at: string;
-  modified_at: string;
+  updated_at: string;
 }

@@ -1,3 +1,4 @@
+import { getId } from "../models";
 import { Env, Profile } from "../types";
 
 export async function handleLinkedAccount(env: Env, profile: Profile) {
@@ -6,7 +7,7 @@ export async function handleLinkedAccount(env: Env, profile: Profile) {
   }
 
   const linkedWith = env.userFactory.getInstanceByName(
-    `${profile.tenant_id}|${profile.linked_with}`,
+    getId(profile.tenant_id, profile.linked_with),
   );
 
   const { connections, ...profileWithoutConnections } = profile;

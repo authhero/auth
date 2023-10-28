@@ -71,7 +71,7 @@
           Välkommen till ditt {{vendorName}}-konto!
         </mj-text>
         <mj-text font-size="16px" line-height="19.2px">
-          Skriv in koden i {{vendorName}} för att slutföra inloggningen.
+          Skriv in koden på {{vendorName}} för att slutföra inloggningen.
         </mj-text>
         <mj-table>
           <tr>
@@ -110,7 +110,7 @@
           </tr>
         </mj-table>
         <mj-button
-          href="https://support.sesamy.com"
+          href="{{supportUrl}}"
           target="_blank"
           width="100%"
           border-radius="6px"
