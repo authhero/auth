@@ -11,7 +11,6 @@ import { serve } from "./routes/login";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
-import { addAbortListener } from "events";
 
 export const app = new Hono<{ Bindings: Env }>();
 

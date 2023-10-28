@@ -43,7 +43,6 @@ export class ConnectionsController extends Controller {
     const { data, range } = await executeQuery(query, rangeRequest);
 
     if (range) {
-      console.log("header", range);
       this.setHeader(headers.contentRange, range);
     }
 
