@@ -15,6 +15,7 @@ import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
 import { userRouter } from "../../src/models/User";
 import { Certificate } from "../../src/models";
 import { JWKS_CACHE_TIMEOUT_IN_SECONDS } from "../../src/constants";
+import { Var } from "../../src/types/Var";
 
 const caller = userRouter.createCaller({
   req: new Request("http://localhost:8787"),
@@ -87,7 +88,7 @@ export const client: Client = {
 
 export function contextFixture(
   params?: ContextFixtureParams,
-): Context<{ Bindings: Env }> {
+): Context<{ Bindings: Env; Variables: Var }> {
   const {
     stateData = {},
     userData = {},
@@ -97,6 +98,7 @@ export function contextFixture(
   } = params || {};
 
   return {
+    set: () => {},
     req: {
       header: (key) => headers[key],
     },
@@ -179,7 +181,7 @@ export function contextFixture(
         },
       },
     },
-  } as unknown as Context<{ Bindings: Env }>;
+  } as unknown as Context<{ Bindings: Env; Variables: Var }>;
 }
 
 async function listCertificates(): Promise<Certificate[]> {
