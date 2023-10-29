@@ -29,11 +29,9 @@ export default async function loggerMiddleware(
   ctx.set("startAt", new Date().getTime());
 
   try {
-    const response = await next();
+    await next();
 
-    ctx.executionCtx.waitUntil(logResponse(ctx, response!));
-
-    return response;
+    ctx.executionCtx.waitUntil(logResponse(ctx, ctx.res));
   } catch (error: any) {
     ctx.executionCtx.waitUntil(logError(ctx, error as Error));
     throw error;

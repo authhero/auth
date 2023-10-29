@@ -39,6 +39,10 @@ async function log(
     headers.authorization = "REDACTED";
   }
 
+  const body = ctx.req.header("content-type")?.startsWith("application/json")
+    ? await ctx.req.json()
+    : {};
+
   // data to log
   const data = {
     ddsource: "cloudflare",
@@ -50,12 +54,14 @@ async function log(
     http: {
       protocol: req.header("X-Forwarded-Proto") || "",
       host: req.header("host") || "",
+      path: req.path,
+      query: req.queries(),
       headers,
       status_code: response.status,
       method: req.method,
       url_details: req.url,
       referer: req.header("referer") || "",
-      // body: ctx.body,
+      body,
     },
     useragent_details: {
       ua: req.header("user-agent") || "",
@@ -67,9 +73,7 @@ async function log(
       ray: req.header("cf-ray") || "",
       visitor: req.header("cf-visitor") || "",
     },
-    app: {
-      vendorId: ctx.var.vendorId,
-    },
+    app: ctx.var,
     version: packageJson.version,
   };
 
@@ -102,6 +106,20 @@ async function err(
 
   const { req } = ctx;
 
+  const headers = instanceToJson(ctx.req.raw.headers);
+
+  if (headers.cookie) {
+    headers.cookie = "REDACTED";
+  }
+
+  if (headers.authorization) {
+    headers.authorization = "REDACTED";
+  }
+
+  const body = ctx.req.header("content-type")?.startsWith("application/json")
+    ? await ctx.req.json()
+    : {};
+
   // Get our key from secrets
   const dd_logsEndpoint = "https://http-intake.logs.datadoghq.eu/api/v2/logs";
 
@@ -124,11 +142,15 @@ async function err(
     http: {
       protocol: req.header("X-Forwarded-Proto") || "",
       host: req.header("host") || "",
-      status_code: 500,
-      message: err.message,
+      path: req.path,
+      query: req.queries(),
+      headers,
+      status_code: ctx.res.status,
+      status_text: ctx.res.statusText,
       method: req.method,
       url_details: req.url,
       referer: req.header("referer") || "",
+      body,
     },
     useragent_details: {
       ua: req.header("user-agent") || "",
@@ -143,6 +165,7 @@ async function err(
     error: {
       message: err.message,
       stack: err.stack,
+      // body: await ctx.res.text(),
     },
   };
 

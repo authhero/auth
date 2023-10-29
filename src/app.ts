@@ -60,10 +60,16 @@ app.use(
 app.use(loggerMiddleware);
 
 app.get("/", async (ctx: Context) => {
+  throw new Error("test");
+
   return ctx.json({
     name: packageJson.name,
     version: packageJson.version,
   });
+});
+
+app.post("/", async (ctx: Context) => {
+  return ctx.json(await ctx.req.json());
 });
 
 app.get("/spec", async () => {
