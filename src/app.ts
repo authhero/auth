@@ -24,9 +24,23 @@ app.onError((err, ctx) => {
 });
 
 app.use(
-  "*",
+  "/*",
   cors({
-    origin: "*",
+    origin: (origin) => {
+      if (
+        [
+          "http://localhost:3000",
+          "http://localhost:5173",
+          "https://login2.sesamy.dev",
+          "https://auth-admin.sesamy.dev",
+          "https://login2.sesamy.com",
+          "https://auth-admin.sesamy.com",
+        ].includes(origin)
+      ) {
+        return origin;
+      }
+      return "";
+    },
     allowHeaders: [
       "Tenant-Id",
       "Content-Type",
@@ -42,6 +56,7 @@ app.use(
     credentials: true,
   }),
 );
+
 app.use(loggerMiddleware);
 
 app.get("/", async (ctx: Context) => {
