@@ -214,7 +214,7 @@ export async function verifyTenantPermissions(
   // Check db permissions
   const { members } = await ctx.env.data.members.list(tenantId);
   const member = members.find(
-    (m) => m.sub === ctx.state.user.sub && m.status === "active",
+    (m) => m.sub === ctx.var.user.sub && m.status === "active",
   );
 
   if (!member?.role) {

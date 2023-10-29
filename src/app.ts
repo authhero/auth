@@ -23,8 +23,26 @@ app.onError((err, ctx) => {
   return ctx.text(err.message, 500);
 });
 
+app.use(
+  "*",
+  cors({
+    origin: "*",
+    allowHeaders: [
+      "Tenant-Id",
+      "Content-Type",
+      "Content-Range",
+      "Auth0-Client",
+      "Authorization",
+      "Range",
+      "Upgrade-Insecure-Requests",
+    ],
+    allowMethods: ["POST", "PUT", "GET", "DELETE", "PATCH", "OPTIONS"],
+    exposeHeaders: ["Content-Length", "Content-Range"],
+    maxAge: 600,
+    credentials: true,
+  }),
+);
 app.use(loggerMiddleware);
-app.use(cors());
 
 app.get("/", async (ctx: Context) => {
   return ctx.json({
