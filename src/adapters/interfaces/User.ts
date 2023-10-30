@@ -12,9 +12,8 @@ export interface ListUserParams {
   };
 }
 
-export interface ListUsersResponse {
+export interface ListUsersResponse extends Totals {
   users: UserResponse[];
-  totals?: Totals;
 }
 
 export interface UserDataAdapter {

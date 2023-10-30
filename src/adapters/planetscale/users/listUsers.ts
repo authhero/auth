@@ -21,10 +21,7 @@ function getCountAsInt(count: string | number | bigint) {
 }
 
 export function listUsers(db: Kysely<Database>) {
-  return async (
-    tenantId,
-    params: ListUserParams,
-  ): Promise<ListUsersResponse> => {
+  return async (tenantId, params: ListUserParams) => {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     if (params.sort && params.sort.sort_by) {
@@ -88,11 +85,9 @@ export function listUsers(db: Kysely<Database>) {
 
     return {
       users,
-      totals: {
-        start: (params.page - 1) * params.per_page,
-        limit: params.per_page,
-        length: countInt,
-      },
+      start: (params.page - 1) * params.per_page,
+      limit: params.per_page,
+      length: countInt,
     };
   };
 }
