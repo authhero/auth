@@ -91,15 +91,19 @@ export class UsersMgmtController extends Controller {
       throw new NotFoundError();
     }
 
+    // what is this tags field? on list route is coming back as empty arrays, on get route is a stringified array
+    // I do not see a tags fields in Auth0
+    // looks like bleeding in from the SQL and typescript doesn't complain about TOO MANY keys right?
+    const { tags, ...userTrimmed } = user;
+
     return {
-      ...user,
+      ...userTrimmed,
       // TODO: add missing properties to conform to auth0
       logins_count: 0,
       last_ip: "",
       last_login: "",
       identities: [],
       user_id: user.id,
-      username: user.email,
     };
   }
 
@@ -154,15 +158,24 @@ export class UsersMgmtController extends Controller {
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
+    @Path("userId") userId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "updated_at"> &
-      Partial<Pick<User, "created_at" | "updated_at">>,
+    user: Omit<User, "tenant_id" | "created_at" | "updated_at" | "id">,
   ): Promise<Profile> {
     const { ctx } = request;
 
+    // this is very buggy... it's creating a new user with the same email
+    // if the user doesn't exist in DO  ¯\_(ツ)_/¯
+    // I only just created this though!
+    // why don't we select by user id?
     const userInstance = ctx.env.userFactory.getInstanceByName(
       getId(tenantId, user.email),
     );
+
+    // const userInstance = ctx.env.userFactory.getInstanceById(
+    //   // what is this helper?
+    //   getId(tenantId, userId),
+    // );
 
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,

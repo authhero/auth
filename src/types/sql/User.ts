@@ -52,9 +52,11 @@ export interface BaseUser {
 }
 
 export interface User extends BaseUser {
-  tags?: UserTag[];
+  // what are these tags field? Not in Auth0 spec
+  // tags?: UserTag[];
 }
 
 export interface SqlUser extends BaseUser {
+  // remove this once have removed the field! Otherwise I think will select it anyway
   tags?: string;
 }
