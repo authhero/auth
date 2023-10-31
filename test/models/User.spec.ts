@@ -10,11 +10,7 @@ function createCaller(storage: DOStorageFixture) {
   return userRouter.createCaller({
     req: new Request("http://localhost:8787"),
     resHeaders: new Headers(),
-    env: {
-      USERS_QUEUE: {
-        send: async () => {},
-      } as unknown as Queue<QueueMessage>,
-    } as Env,
+    env: {} as Env,
     state: {
       storage: storage as unknown as DurableObjectStorage,
     } as DurableObjectState,

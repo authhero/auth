@@ -57,11 +57,12 @@ async function log(
       path: req.path,
       query: req.queries(),
       headers,
-      status_code: response.status,
       method: req.method,
       url_details: req.url,
       referer: req.header("referer") || "",
       body,
+      status_code: response.status,
+      response_headers: instanceToJson(response.headers),
     },
     useragent_details: {
       ua: req.header("user-agent") || "",

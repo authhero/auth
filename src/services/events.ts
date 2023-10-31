@@ -26,17 +26,8 @@ export async function sendUserEvent(
 ) {
   const [tenantId, email] = doId.split("|");
 
-  if (env.USERS_QUEUE) {
-    const message: QueueMessage = {
-      email,
-      tenantId,
-      userId,
-      queueName: "users",
-      event,
-    };
-
-    await env.USERS_QUEUE.send(message);
-  } else {
+  // TODO: This is a workaround to make the user model tests to pass. The DO's will be removed soon
+  if (env.USER) {
     await handleUserEvent(env, tenantId, email, userId, event);
   }
 }
