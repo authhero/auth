@@ -8,7 +8,9 @@ import { Var } from "../types/Var";
 export async function rotateKeysRoute(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
 ) {
-  return rotateKeys(ctx.env);
+  await rotateKeys(ctx.env);
+
+  return ctx.text("OK");
 }
 
 export async function rotateKeys(env: Env) {
