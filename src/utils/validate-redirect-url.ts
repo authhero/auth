@@ -122,10 +122,18 @@ export function validateRedirectUrl(
   allowedUrlsClient: string[], // should this param now be optional?
   redirectUri?: string,
 ) {
+  const allowedUrls = [...ALLOWED_CALLBACK_URLS, ...allowedUrlsClient];
+
+  return validateUrl(allowedUrls, redirectUri);
+}
+
+export function validateUrl(
+  allowedUrls: string[], // should this param now be optional?
+  redirectUri?: string,
+) {
   if (!redirectUri) {
     return;
   }
-  const allowedUrls = [...ALLOWED_CALLBACK_URLS, ...allowedUrlsClient];
 
   const matches: boolean[] = allowedUrls.map((allowedUrl) => {
     // previous Markus comment

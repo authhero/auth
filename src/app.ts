@@ -11,6 +11,7 @@ import { serve } from "./routes/login";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
+import { validateUrl } from "./utils/validate-redirect-url";
 
 export const app = new Hono<{ Bindings: Env }>();
 
@@ -23,20 +24,22 @@ app.onError((err, ctx) => {
   return ctx.text(err.message, 500);
 });
 
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://login2.sesamy.dev",
+  "https://login2.sesamy.dev",
+  "https://*.vercel.sesamy.dev",
+  "https://auth-admin.sesamy.dev",
+  "https://login2.sesamy.com",
+  "https://auth-admin.sesamy.com",
+];
+
 app.use(
   "/*",
   cors({
     origin: (origin) => {
-      if (
-        [
-          "http://localhost:3000",
-          "http://localhost:5173",
-          "https://login2.sesamy.dev",
-          "https://auth-admin.sesamy.dev",
-          "https://login2.sesamy.com",
-          "https://auth-admin.sesamy.com",
-        ].includes(origin)
-      ) {
+      if (validateUrl(ALLOWED_ORIGINS, origin)) {
         return origin;
       }
       return "";
