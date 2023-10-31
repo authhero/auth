@@ -7,6 +7,7 @@ import {
   CodeChallengeMethod,
 } from "../../../src/types";
 import { InvalidConnectionError } from "../../../src/errors";
+import { parseJwt } from "../../../src/utils/parse-jwt";
 
 describe("authorize", () => {
   const date = new Date();
@@ -55,12 +56,10 @@ describe("authorize", () => {
 
       const ctx = contextFixture({
         stateData,
+        headers: {
+          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        },
       });
-
-      ctx.headers.set(
-        "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
-      );
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,
@@ -144,12 +143,10 @@ describe("authorize", () => {
 
       const ctx = contextFixture({
         stateData,
+        headers: {
+          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        },
       });
-
-      ctx.headers.set(
-        "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
-      );
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,
@@ -186,7 +183,7 @@ describe("authorize", () => {
       expect(response.scope).toBe("openid profile email");
       expect(response.expires_in).toBeDefined();
 
-      const accessToken = JSON.parse(response.access_token);
+      const accessToken = parseJwt(response.access_token);
 
       expect(accessToken.aud).toBe("audience");
       expect(accessToken.scope).toBe("openid profile email");
@@ -195,7 +192,7 @@ describe("authorize", () => {
       expect(accessToken.iat).toBeDefined();
       expect(accessToken.exp).toBeDefined();
 
-      const idToken = JSON.parse(response.id_token);
+      const idToken = parseJwt(response.id_token);
 
       expect(idToken.aud).toBe("clientId");
       expect(idToken.sub).toBe("tenantId|test@example.com");
@@ -266,12 +263,10 @@ describe("authorize", () => {
 
       const ctx = contextFixture({
         stateData,
+        headers: {
+          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        },
       });
-
-      ctx.headers.set(
-        "cookie",
-        "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
-      );
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,
@@ -289,11 +284,11 @@ describe("authorize", () => {
         prompt: "none",
       });
 
-      const match = actual.match(/"access_token":"(\{[^}]+\})/);
+      const match = actual.match(/{"access_token":"([^,]+)/);
       if (match?.length !== 2) {
         throw new Error("No access token found");
       }
-      const accessToken = JSON.parse(match[1].replace(/\\/g, ""));
+      const accessToken = parseJwt(match[1].replace(/\\/g, ""));
 
       expect(accessToken.aud).toBe("aud2");
     });
@@ -443,7 +438,7 @@ describe("authorize", () => {
 
       expect(redirectUrl.searchParams.get("id_token")).toBeNull();
 
-      const accessToken = JSON.parse(
+      const accessToken = parseJwt(
         redirectUrl.searchParams.get("access_token") as string,
       );
 
@@ -514,7 +509,7 @@ describe("authorize", () => {
       const locationHeader = controller.getHeader("location") as string;
       const redirectUrl = new URL(locationHeader);
 
-      const idToken = JSON.parse(
+      const idToken = parseJwt(
         redirectUrl.searchParams.get("id_token") as string,
       );
 

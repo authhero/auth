@@ -149,4 +149,23 @@ describe("validateRedirectUrl", () => {
     const redirectUri = "this is not a real url";
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
+
+  describe("should read values from ALLOWED_CALLBACK_URLS", () => {
+    test("example.com", () => {
+      const allowedUrls = [];
+      const redirectUri = "http://example.com";
+      expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    });
+    test("http://localhost:3000#auth_token=foo-bar", () => {
+      const allowedUrls = [];
+      const redirectUri = "http://localhost:3000/sv";
+      expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    });
+    test("A Vercel preview domain in Swedish", () => {
+      const allowedUrls = [];
+      const redirectUri =
+        "https://test-test.vercel.sesamy.dev/sv/callback?auth_token=foo-bar";
+      expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    });
+  });
 });

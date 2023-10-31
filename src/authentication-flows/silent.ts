@@ -1,4 +1,5 @@
 import { Controller } from "@tsoa/runtime";
+import { Context } from "hono";
 import {
   getStateFromCookie,
   serializeStateInCookie,
@@ -15,9 +16,10 @@ import renderAuthIframe from "../templates/authIframe";
 import { base64ToHex } from "../utils/base64";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
+import { Var } from "../types/Var";
 
 export interface SilentAuthParams {
-  env: Env;
+  ctx: Context<{ Bindings: Env; Variables: Var }>;
   controller: Controller;
   cookie_header: string | null;
   redirect_uri: string;
@@ -37,7 +39,7 @@ interface SuperState {
 }
 
 export async function silentAuth({
-  env,
+  ctx,
   controller,
   cookie_header,
   redirect_uri,
@@ -48,6 +50,8 @@ export async function silentAuth({
   code_challenge,
   audience,
 }: SilentAuthParams) {
+  const { env } = ctx;
+
   const tokenState = getStateFromCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);
 
@@ -59,6 +63,7 @@ export async function silentAuth({
 
     if (superStateString) {
       const superState: SuperState = JSON.parse(superStateString);
+      ctx.set("userId", superState.userId);
 
       // Update the cookie
       serializeStateInCookie(tokenState).forEach((cookie) => {

@@ -1,3 +1,4 @@
+import { parseJwt } from "../../../src/utils/parse-jwt";
 import {
   InvalidClientError,
   InvalidCodeVerifierError,
@@ -56,7 +57,7 @@ describe("token", () => {
         response_type: AuthorizationResponseType.CODE,
         scope: "openid email profile",
         created_at: "created_at",
-        modified_at: "modified_at",
+        updated_at: "updated_at",
       },
     ],
     domains: [],
@@ -114,8 +115,7 @@ describe("token", () => {
         throw new Error("Should be Token");
       }
 
-      // This is a debug token with just json
-      const tokenData: CreateAccessTokenParams = JSON.parse(body.access_token);
+      const tokenData: CreateAccessTokenParams = parseJwt(body.access_token);
 
       expect(tokenData.iss).toBe("https://auth.example.com/");
       expect(tokenData.scope).toEqual("profile");
@@ -124,7 +124,7 @@ describe("token", () => {
       expect(body.id_token).toBeDefined();
 
       // should this type be IDTokenPayload? CreateIDTokenParams? has params that are not either
-      const idToken: any = JSON.parse(body.id_token!);
+      const idToken: any = parseJwt(body.id_token!);
 
       expect(idToken.aud).toBe("publisherClientId");
       expect(idToken.sub).toBe("userId");
@@ -313,8 +313,7 @@ describe("token", () => {
         throw new Error("Should be Token");
       }
 
-      // This is a debug token with just json
-      const tokenData: CreateAccessTokenParams = JSON.parse(body.access_token);
+      const tokenData: CreateAccessTokenParams = parseJwt(body.access_token);
 
       expect(tokenData.iss).toBe("https://auth.example.com/");
       expect(tokenData.scope).toEqual("profile");

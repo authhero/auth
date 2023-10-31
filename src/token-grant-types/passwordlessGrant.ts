@@ -10,15 +10,16 @@ export async function passwordlessGrant(
   params: PasswordlessGrantTypeParams,
 ): Promise<TokenResponse> {
   const client = await getClient(env, params.client_id);
+  const email = params.username.toLocaleLowerCase();
 
   const user = env.userFactory.getInstanceByName(
-    getId(client.tenant_id, params.username),
+    getId(client.tenant_id, email),
   );
 
   const profile = await user.validateAuthenticationCode.mutate({
     code: params.otp,
     tenantId: client.tenant_id,
-    email: params.username,
+    email,
   });
 
   const certificate = await getCertificate(env);

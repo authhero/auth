@@ -62,8 +62,10 @@ export class AuthenticateController extends Controller {
       throw new Error("Client not found");
     }
 
+    const email = body.username.toLocaleLowerCase();
+
     const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, body.username),
+      getId(client.tenant_id, email),
     );
 
     try {
@@ -71,14 +73,14 @@ export class AuthenticateController extends Controller {
         case "email":
           await user.validateAuthenticationCode.mutate({
             code: body.otp,
-            email: body.username,
+            email: email,
             tenantId: client.tenant_id,
           });
           break;
         case "Username-Password-Authentication":
           await user.validatePassword.mutate({
             password: body.password,
-            email: body.username,
+            email: email,
             tenantId: client.tenant_id,
           });
           break;

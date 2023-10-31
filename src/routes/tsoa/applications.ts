@@ -17,7 +17,6 @@ import {
 import { nanoid } from "nanoid";
 
 import { getDb } from "../../services/db";
-import { RequestWithContext } from "../../types/RequestWithContext";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
 import { headers } from "../../constants";
@@ -104,7 +103,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "id" | "tenant_id" | "created_at" | "modified_at">
+      Omit<Application, "id" | "tenant_id" | "created_at" | "updated_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -114,7 +113,7 @@ export class ApplicationsController extends Controller {
     const application = {
       ...body,
       tenantId,
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -136,7 +135,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<Application, "tenant_id" | "created_at" | "modified_at">
+      Omit<Application, "tenant_id" | "created_at" | "updated_at">
     > & {
       name: string;
     },
@@ -158,7 +157,7 @@ export class ApplicationsController extends Controller {
       ...body,
       tenant_id: tenantId,
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     await db.insertInto("applications").values(application).execute();
@@ -176,7 +175,7 @@ export class ApplicationsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Path("id") id: string,
     @Body()
-    body: Omit<Application, "id" | "tenant_id" | "created_at" | "modified_at">,
+    body: Omit<Application, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;
@@ -188,7 +187,7 @@ export class ApplicationsController extends Controller {
       tenant_id: tenantId,
       id,
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     try {

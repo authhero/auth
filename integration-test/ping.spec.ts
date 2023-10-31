@@ -1,4 +1,4 @@
-import { start } from "./server";
+import { start } from "./start";
 
 describe("ping", () => {
   let worker;
@@ -13,6 +13,10 @@ describe("ping", () => {
 
   it("check that the root responds with a json document", async () => {
     const response = await worker.fetch("/");
+
+    if (!response.ok) {
+      throw new Error(`Test failed with ${await response.text()}`);
+    }
 
     expect(response.status).toBe(200);
 

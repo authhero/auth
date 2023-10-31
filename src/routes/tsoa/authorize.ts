@@ -113,7 +113,7 @@ export class AuthorizeController extends Controller {
     };
 
     if (referer) {
-      validateRedirectUrl(client.allowed_web_origins, referer);
+      // validateRedirectUrl(client.allowed_web_origins, referer);
     }
 
     if (authParams.redirect_uri) {
@@ -126,9 +126,9 @@ export class AuthorizeController extends Controller {
     // Silent authentication
     if (prompt == "none") {
       return silentAuth({
-        env,
+        ctx,
         controller: this,
-        cookie_header: request.ctx.headers.get("cookie"),
+        cookie_header: request.ctx.req.header("cookie") ?? null,
         redirect_uri,
         state,
         response_type,

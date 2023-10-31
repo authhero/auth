@@ -1,5 +1,7 @@
-import { Context, ContextWithBody } from "cloudworker-router";
+import { Context } from "hono";
 import { Env } from "../types/Env";
+import { Var } from "../types/Var";
+import packageJson from "../../package.json";
 
 function instanceToJson(instance: any): any {
   return [...instance].reduce((obj, item) => {
@@ -11,7 +13,7 @@ function instanceToJson(instance: any): any {
 }
 
 async function log(
-  ctx: ContextWithBody<Env>,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   response: Response,
   message?: string,
 ) {
@@ -25,9 +27,9 @@ async function log(
   // Get our key from secrets
   const dd_logsEndpoint = "https://http-intake.logs.datadoghq.eu/api/v2/logs";
 
-  const { request } = ctx;
-  const hostname = request.headers.get("host") || "";
-  const headers = instanceToJson(ctx.headers);
+  const { req } = ctx;
+  const hostname = req.header("host") || "";
+  const headers = instanceToJson(ctx.req.raw.headers);
 
   if (headers.cookie) {
     headers.cookie = "REDACTED";
@@ -37,40 +39,42 @@ async function log(
     headers.authorization = "REDACTED";
   }
 
+  const body = ctx.req.header("content-type")?.startsWith("application/json")
+    ? await ctx.req.json()
+    : {};
+
   // data to log
   const data = {
     ddsource: "cloudflare",
     ddtags: "service:auth2, source:cloudflare, site:" + hostname,
     hostname: hostname,
     level: "info",
-    message: message || `${request.method} ${request.url}`,
+    message: message || `${req.method} ${req.url}`,
     date_access: Date.now(),
     http: {
-      protocol: request.headers.get("X-Forwarded-Proto") || "",
-      host: request.headers.get("host") || "",
+      protocol: req.header("X-Forwarded-Proto") || "",
+      host: req.header("host") || "",
+      path: req.path,
+      query: req.queries(),
       headers,
       status_code: response.status,
-      method: request.method,
-      url_details: request.url,
-      referer: request.headers.get("referer") || "",
-      body: ctx.body,
+      method: req.method,
+      url_details: req.url,
+      referer: req.header("referer") || "",
+      body,
     },
     useragent_details: {
-      ua: request.headers.get("user-agent") || "",
+      ua: req.header("user-agent") || "",
     },
     network: {
-      cc: request.headers.get("Cf-Ipcountry") || "",
+      cc: req.header("Cf-Ipcountry") || "",
     },
     cloudflare: {
-      ray: request.headers.get("cf-ray") || "",
-      visitor: request.headers.get("cf-visitor") || "",
+      ray: req.header("cf-ray") || "",
+      visitor: req.header("cf-visitor") || "",
     },
-    app: {
-      user: ctx.state.user,
-      vendorId: ctx.state.vendorId,
-    },
-    version: ctx.state.version,
-    state: ctx.state,
+    app: ctx.var,
+    version: packageJson.version,
   };
 
   const logResponse = await fetch(dd_logsEndpoint, {
@@ -88,7 +92,11 @@ async function log(
   }
 }
 
-async function err(ctx: Context<Env>, err: Error, message?: string) {
+async function err(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  err: Error,
+  message?: string,
+) {
   const ddApiKey = ctx.env.DD_API_KEY;
 
   if (!ddApiKey?.length) {
@@ -96,12 +104,26 @@ async function err(ctx: Context<Env>, err: Error, message?: string) {
     return;
   }
 
-  const { request } = ctx;
+  const { req } = ctx;
+
+  const headers = instanceToJson(ctx.req.raw.headers);
+
+  if (headers.cookie) {
+    headers.cookie = "REDACTED";
+  }
+
+  if (headers.authorization) {
+    headers.authorization = "REDACTED";
+  }
+
+  const body = ctx.req.header("content-type")?.startsWith("application/json")
+    ? await ctx.req.json()
+    : {};
 
   // Get our key from secrets
   const dd_logsEndpoint = "https://http-intake.logs.datadoghq.eu/api/v2/logs";
 
-  const hostname = request.headers.get("host") || "";
+  const hostname = req.header("host") || "";
 
   const data = {
     ddsource: "cloudflare",
@@ -111,34 +133,39 @@ async function err(ctx: Context<Env>, err: Error, message?: string) {
     message:
       message ||
       "Error processing call to route " +
-        request.method +
+        req.method +
         " " +
-        request.url +
+        req.url +
         ":" +
         err.message,
     date_access: Date.now(),
     http: {
-      protocol: request.headers.get("X-Forwarded-Proto") || "",
-      host: request.headers.get("host") || "",
-      status_code: 500,
-      message: err.message,
-      method: request.method,
-      url_details: request.url,
-      referer: request.headers.get("referer") || "",
+      protocol: req.header("X-Forwarded-Proto") || "",
+      host: req.header("host") || "",
+      path: req.path,
+      query: req.queries(),
+      headers,
+      status_code: ctx.res.status,
+      status_text: ctx.res.statusText,
+      method: req.method,
+      url_details: req.url,
+      referer: req.header("referer") || "",
+      body,
     },
     useragent_details: {
-      ua: request.headers.get("user-agent") || "",
+      ua: req.header("user-agent") || "",
     },
     network: {
-      cc: request.headers.get("Cf-Ipcountry") || "",
+      cc: req.header("Cf-Ipcountry") || "",
     },
     cloudflare: {
-      ray: request.headers.get("cf-ray") || "",
-      visitor: request.headers.get("cf-visitor") || "",
+      ray: req.header("cf-ray") || "",
+      visitor: req.header("cf-visitor") || "",
     },
     error: {
       message: err.message,
       stack: err.stack,
+      // body: await ctx.res.text(),
     },
   };
 

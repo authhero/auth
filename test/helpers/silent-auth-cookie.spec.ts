@@ -17,7 +17,7 @@ describe("silentAuthCookie", () => {
       tenant_id: "tenantId",
       email: "test@example.com",
       created_at: "",
-      modified_at: "",
+      updated_at: "",
       connections: [],
     };
 
@@ -34,7 +34,7 @@ describe("silentAuthCookie", () => {
         tenant_id: "tenantId",
         email: "test@example.com",
         created_at: "",
-        modified_at: "",
+        updated_at: "",
         connections: [],
       },
     });

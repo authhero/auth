@@ -1,20 +1,23 @@
-
 # This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Unit tests
 
-on:
-  pull_request
+on: pull_request
 
 jobs:
   node-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: "yarn"
+          node-version: "18.13"
       - uses: actions/cache@v3
         with:
-          path: '**/node_modules'
+          path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install dependencies
@@ -26,4 +29,4 @@ jobs:
       - run: yarn format:ci-cd
       - run: yarn build
       - run: yarn test
-      - run: yarn integration-test      
+      - run: yarn integration
