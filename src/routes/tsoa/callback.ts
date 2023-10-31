@@ -40,7 +40,7 @@ export class CallbackController extends Controller {
     const loginState: LoginState = JSON.parse(loginString);
 
     return socialAuthCallback({
-      env,
+      ctx: request.ctx,
       controller: this,
       state: loginState,
       code,
