@@ -1,6 +1,7 @@
 name = "auth2"
 main = "src/server.ts"
 compatibility_date = "2022-07-06"
+node_compat = true
 
 # Add your account_id here..
 account_id = "0c8c22bdcd98c3dc6a35190650ef7906"
@@ -111,3 +112,11 @@ new_classes = ["User", "State"]
 
 [env.production.triggers]
 crons = ["0 3 * * *"]
+
+[env.test.vars]
+ISSUER = "https://example.com/"
+LOGIN2_URL = 'https://login2.sesamy.com'
+JWKS_URL = "https://example.com/.well-known/jwks.json"
+READ_PERMISSION = 'auth:read'
+WRITE_PERMISSION = 'auth:write'
+IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"

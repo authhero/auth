@@ -119,8 +119,11 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
-  // should ignore fragments also! and combinations thereof
-  // add new tests to previous branch
+  it("should should ignore hash fragments", () => {
+    const allowedUrls = ["http://example.com"];
+    const redirectUri = "http://example.com#hey=ho";
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+  });
 
   it("should match one of the URLs in the list", () => {
     const allowedUrls = [
@@ -143,5 +146,24 @@ describe("validateRedirectUrl", () => {
     const allowedUrls = ["this is not a real url"];
     const redirectUri = "this is not a real url";
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+  });
+
+  describe("should read values from ALLOWED_CALLBACK_URLS", () => {
+    test("example.com", () => {
+      const allowedUrls = [];
+      const redirectUri = "http://example.com";
+      expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    });
+    test("http://localhost:3000#auth_token=foo-bar", () => {
+      const allowedUrls = [];
+      const redirectUri = "http://localhost:3000/sv";
+      expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    });
+    test("A Vercel preview domain in Swedish", () => {
+      const allowedUrls = [];
+      const redirectUri =
+        "https://test-test.vercel.sesamy.dev/sv/callback?auth_token=foo-bar";
+      expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    });
   });
 });

@@ -1,6 +1,7 @@
-import { ContextWithBody } from "cloudworker-router";
+import { Context } from "hono";
 import { Env } from ".";
+import { Var } from "./Var";
 
 export interface RequestWithContext extends Request {
-  ctx: ContextWithBody<Env>;
+  ctx: Context<{ Bindings: Env; Variables: Var }>;
 }

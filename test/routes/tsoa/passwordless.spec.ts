@@ -11,6 +11,7 @@ import {
 } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 import { kvStorageFixture } from "../../fixtures/kv-storage";
+import { parseJwt } from "../../../src/utils/parse-jwt";
 
 const SESAMY_LOGO =
   "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png";
@@ -180,13 +181,13 @@ describe("Passwordless", () => {
         "",
         AuthorizationResponseType.TOKEN,
         "https://example.com",
-        "https://example.com",
         "state",
         "nonce",
         "code",
         "email",
         "clientId",
         "email",
+        "https://example.com",
       );
 
       expect(controller.getStatus()).toBe(302);
@@ -197,8 +198,7 @@ describe("Passwordless", () => {
       expect(redirectUrl.searchParams.get("state")).toBe("state");
       expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
 
-      // Dummy token as json
-      const token = JSON.parse(
+      const token = parseJwt(
         redirectUrl.searchParams.get("access_token") as string,
       );
       expect(token).toEqual({
@@ -225,13 +225,13 @@ describe("Passwordless", () => {
           "",
           AuthorizationResponseType.TOKEN,
           "https://example.com",
-          "https://example.com",
           "state",
           "nonce",
           "000000",
           "email",
           "clientId",
           "email",
+          "https://example.com",
         ),
       ).rejects.toThrow("Invalid code");
     });

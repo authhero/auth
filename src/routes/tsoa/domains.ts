@@ -116,7 +116,7 @@ export class DomainsController extends Controller {
     @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
-      Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "modified_at">
+      Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "updated_at">
     >,
   ) {
     const { env } = request.ctx;
@@ -125,7 +125,7 @@ export class DomainsController extends Controller {
     const domain = {
       ...body,
       tenantId,
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const results = await db
@@ -161,7 +161,7 @@ export class DomainsController extends Controller {
       dkim_public_key: "",
       dkim_private_key: "",
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     await db.insertInto("domains").values(domain).execute();
@@ -180,7 +180,7 @@ export class DomainsController extends Controller {
     @Path("id") id: string,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "modified_at">,
+    body: Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<SqlDomain> {
     const { ctx } = request;
     const { env } = ctx;
@@ -192,7 +192,7 @@ export class DomainsController extends Controller {
       tenant_id: tenantId,
       id,
       created_at: new Date().toISOString(),
-      modified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     try {

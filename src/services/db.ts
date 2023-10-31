@@ -10,7 +10,6 @@ export function getDb(env: Env): Kysely<Database> {
   if (!_db) {
     // _db = new Kysely<Database>({
     //   dialect: new D1Dialect({ database: env.AUTH_DB }),
-    //   plugins: [new CamelCasePlugin()],
     // });
     _db = new Kysely<any>({
       dialect: new PlanetScaleDialect({

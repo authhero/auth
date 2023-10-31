@@ -4,5 +4,5 @@ module.exports = {
     "^.+\\.(t|j)sx?$": "ts-jest",
   },
   testRegex: "/integration-test/.*\\.spec\\.ts$",
-  collectCoverageFrom: ["src/**/*.{ts,js}"],
+  setupFilesAfterEnv: ["./jest-integration.setup.js"],
 };

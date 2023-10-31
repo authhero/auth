@@ -1,4 +1,3 @@
-import { Context, Next } from "cloudworker-router";
 import { z } from "zod";
 import {
   ExpiredTokenError,
@@ -6,8 +5,9 @@ import {
   InvalidSignatureError,
   UnauthorizedError,
 } from "./errors";
-import { getDb } from "./services/db";
 import { Env } from "./types/Env";
+import { Context, Next } from "hono";
+import { Var } from "./types/Var";
 
 export enum SecuritySchemeName {
   oauth2 = "oauth2",
@@ -90,10 +90,8 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   if (!jwksUrls[jwksUrl]) {
     // If we're using the auth service itself for authenticating
     if (jwksUrl.startsWith(env.ISSUER)) {
-      const certificatesString = await env.CERTIFICATES.get("default");
-      const keys = (
-        certificatesString ? JSON.parse(certificatesString) : []
-      ).map((cert: any) => {
+      const certificates = await env.data.certificates.listCertificates();
+      const keys = certificates.map((cert: any) => {
         return { kid: cert.kid, ...cert.publicKey };
       });
 
@@ -115,20 +113,20 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   return jwksUrls[jwksUrl];
 }
 
-function isValidScopes(token: TokenData, scopes: string[]) {
-  if (!scopes.length) {
+function isValidPermissions(token: TokenData, permissions: string[]) {
+  if (!permissions.length) {
     return true;
   }
 
-  const tokenScopes = token.payload.scope?.split(" ") || [];
+  const tokenScopes = token.payload.permissions || [];
 
-  const match = !scopes.some((scope) => !tokenScopes.includes(scope));
+  const match = !permissions.some((p) => !tokenScopes.includes(p));
 
   return match;
 }
 
 async function isValidJwtSignature(
-  ctx: Context<Env>,
+  ctx: Context,
   securitySchemeName: SecuritySchemeName,
   token: TokenData,
 ) {
@@ -158,10 +156,10 @@ async function isValidJwtSignature(
 }
 
 export async function getUser(
-  ctx: Context<Env>,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   securitySchemeName: SecuritySchemeName,
   bearer: string,
-  scopes: string[],
+  permissions: string[],
 ): Promise<any> {
   const token = decodeJwt(bearer);
 
@@ -172,7 +170,7 @@ export async function getUser(
     throw new ExpiredTokenError();
   }
 
-  if (!isValidScopes(token, scopes)) {
+  if (!isValidPermissions(token, permissions)) {
     throw new InvalidScopesError();
   }
 
@@ -183,25 +181,25 @@ export async function getUser(
   return token.payload;
 }
 
-export async function verifyTenantPermissions(ctx: Context<Env>) {
-  const tenantId = ctx.params.tenantId || ctx.headers.get("tenant-id");
+export async function verifyTenantPermissions(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+) {
+  const tenantId = ctx.req.param("tenantId") || ctx.req.header("tenant-id");
   if (!tenantId) {
     return;
   }
 
   if (
-    !["POST", "PATCH", "PUT", "DELETE", "GET", "HEAD"].includes(
-      ctx.request.method,
-    )
+    !["POST", "PATCH", "PUT", "DELETE", "GET", "HEAD"].includes(ctx.req.method)
   ) {
     // Don't bother about OPTIONS requests
     return;
   }
 
   // Check token permissions first
-  const permissions: string[] = ctx.state.user.permissions || [];
+  const permissions: string[] = ctx.var.user.permissions || [];
 
-  if (["GET", "HEAD"].includes(ctx.request.method)) {
+  if (["GET", "HEAD"].includes(ctx.req.method)) {
     // Read requets
     if (permissions.includes(ctx.env.READ_PERMISSION as string)) {
       return;
@@ -214,20 +212,16 @@ export async function verifyTenantPermissions(ctx: Context<Env>) {
   }
 
   // Check db permissions
-  const db = getDb(ctx.env);
-  const member = await db
-    .selectFrom("members")
-    .where("members.sub", "=", ctx.state.user.sub)
-    .where("members.tenant_id", "=", tenantId)
-    .where("members.status", "=", "active")
-    .select("members.role")
-    .executeTakeFirst();
+  const { members } = await ctx.env.data.members.list(tenantId);
+  const member = members.find(
+    (m) => m.sub === ctx.var.user.sub && m.status === "active",
+  );
 
   if (!member?.role) {
     throw new UnauthorizedError();
   }
 
-  if (["GET", "HEAD"].includes(ctx.request.method)) {
+  if (["GET", "HEAD"].includes(ctx.req.method)) {
     // Read requets
     if (["admin", "viewer"].includes(member.role)) {
       return;
@@ -259,12 +253,12 @@ export function authenticationHandler(
       ? SecuritySchemeName.oauth2
       : SecuritySchemeName.oauth2managementApi;
 
-  const [scope] = authProvider[securitySchemeName];
+  const [permissionString] = authProvider[securitySchemeName];
   return async function jwtMiddleware(
-    ctx: Context<Env>,
+    ctx: Context<{ Bindings: Env; Variables: Var }>,
     next: Next,
-  ): Promise<Response | undefined> {
-    const authHeader = ctx.headers.get("authorization");
+  ) {
+    const authHeader = ctx.req.header("authorization");
     if (!authHeader || !authHeader.toLowerCase().startsWith("bearer")) {
       return new Response("Forbidden", {
         status: 403,
@@ -272,9 +266,13 @@ export function authenticationHandler(
     }
     const bearer = authHeader.slice(7);
 
-    const scopes = scope?.split(" ").filter((scope) => scope) || [];
+    const permissions =
+      permissionString?.split(" ").filter((permission) => permission) || [];
 
-    ctx.state.user = await getUser(ctx, securitySchemeName, bearer, scopes);
+    ctx.set(
+      "user",
+      await getUser(ctx, securitySchemeName, bearer, permissions),
+    );
 
     await verifyTenantPermissions(ctx);
 

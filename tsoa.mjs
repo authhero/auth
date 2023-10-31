@@ -8,7 +8,10 @@ import { readFile, writeFile } from "fs/promises";
     basePath: "/",
     specVersion: 3,
     outputDirectory: "./build",
-    controllerPathGlobs: ["src/routes/tsoa/*.ts"],
+    controllerPathGlobs: [
+      "src/routes/tsoa/*.ts",
+      "src/routes/management-api/*.ts",
+    ],
     securityDefinitions: {
       oauth2managementApi: {
         type: "oauth2",
@@ -51,9 +54,12 @@ import { readFile, writeFile } from "fs/promises";
     noImplicitAdditionalProperties: "throw-on-extras",
     entryFile: "./src/server.ts",
     routesDir: "./build",
-    controllerPathGlobs: ["src/routes/tsoa/*.ts"],
+    controllerPathGlobs: [
+      "src/routes/tsoa/*.ts",
+      "src/routes/management-api/*.ts",
+    ],
     authenticationModule: "./src/authentication.ts",
-    middlewareTemplate: "node_modules/tsoa-workers/cloudworker-router.hbs",
+    middlewareTemplate: "node_modules/tsoa-hono/hono-router.hbs",
   };
 
   await generateSpec(specOptions);
