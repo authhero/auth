@@ -86,6 +86,8 @@ export async function silentAuth({
         responseType: response_type,
       });
 
+      ctx.set("log", JSON.stringify(tokenResponse));
+
       return renderAuthIframe(
         controller,
         `${redirectURL.protocol}//${redirectURL.host}`,

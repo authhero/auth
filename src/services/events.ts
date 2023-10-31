@@ -26,17 +26,5 @@ export async function sendUserEvent(
 ) {
   const [tenantId, email] = doId.split("|");
 
-  if (env.USERS_QUEUE) {
-    const message: QueueMessage = {
-      email,
-      tenantId,
-      userId,
-      queueName: "users",
-      event,
-    };
-
-    await env.USERS_QUEUE.send(message);
-  } else {
-    await handleUserEvent(env, tenantId, email, userId, event);
-  }
+  await handleUserEvent(env, tenantId, email, userId, event);
 }

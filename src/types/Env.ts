@@ -25,7 +25,6 @@ export type Env = {
   TOKEN_SERVICE: Fetcher;
   USER: DurableObjectNamespace;
   STATE: DurableObjectNamespace;
-  USERS_QUEUE: Queue<QueueMessage>;
   AUTH_DB: D1Database;
   CERTIFICATES: KVNamespace;
   CLIENTS: KVNamespace;
