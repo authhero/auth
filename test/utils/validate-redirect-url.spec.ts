@@ -13,28 +13,28 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
-  it("should allow wildcard to span multiple subdomains?", () => {
+  it("should not allow wildcard to span multiple subdomains", () => {
     const allowedUrls = ["https://*.example.com/path"];
     const redirectUri = "https://sub.sub.example.com/path";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
-  it("should allow domain wildcard like this?", () => {
+  it("should not allow domain wildcards", () => {
     const allowedUrls = ["https://*.com"];
     const redirectUri = "https://anything.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
-  it("should allow wildcard like this?", () => {
+  it("should not allow wildcard for full URL", () => {
     const allowedUrls = ["https://*"];
     const redirectUri = "https://*";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
-  it("really should not allow this", () => {
+  it("should not allow bad URLs with just wildcards", () => {
     const allowedUrls = ["*"];
     const redirectUri = "*";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should disallow redirectUri with wildcard subdomain specified but not existing", () => {
@@ -142,12 +142,10 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
-  it("should allow any kind of strings to be passed in? Looks ot me like urlPattern regexp isn't working", () => {
-    // could also test multiple allowed urls
-    // I still think there'll be some hack in this regex!
+  it("should only allow real URLs", () => {
     const allowedUrls = ["this is not a real url"];
     const redirectUri = "this is not a real url";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   describe("should read values from ALLOWED_CALLBACK_URLS", () => {
