@@ -1,5 +1,43 @@
 import { InvalidRedirectError } from "../errors";
 
+function matchHostnameWithWildcards(
+  allowedHostname: string,
+  redirectHostname: string,
+) {
+  // reverse the hostnames to simplify logic
+  const allowedHostnameParts = allowedHostname.split(".").reverse();
+  const redirectHostnameParts = redirectHostname.split(".").reverse();
+
+  if (allowedHostnameParts.length !== redirectHostnameParts.length) {
+    return false;
+  }
+
+  for (let i = 0; i < allowedHostnameParts.length; i++) {
+    const allowedHostnamePart = allowedHostnameParts[i];
+    const redirectHostnamePart = redirectHostnameParts[i];
+
+    // do not allow wildcard in TLD
+    if (i === 0 && allowedHostnamePart === "*") {
+      return false;
+    }
+
+    // do not allow wildcard in SLD
+    if (i === 1 && allowedHostnamePart === "*") {
+      return false;
+    }
+
+    if (allowedHostnamePart === "*") {
+      continue;
+    }
+
+    if (allowedHostnamePart !== redirectHostnamePart) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 const ALLOWED_CALLBACK_URLS = [
   // localhost
   "http://localhost:3000",
@@ -56,47 +94,52 @@ const ALLOWED_CALLBACK_URLS = [
   // example.com
   "http://example.com",
 ];
-// ALSO! we need the token-service. I think this is defined in the hidden DEFAULT_ENV_VARS on cloudflare
-// would be good to remove all those opaque ones so we can se what is happening her
 
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+function matchUrlWithAllowedUrl(allowedUrlStr: string, redirectUrlStr: string) {
+  const allowedUrl = new URL(allowedUrlStr);
+  const redirectUrl = new URL(redirectUrlStr);
+
+  if (allowedUrl.protocol !== redirectUrl.protocol) {
+    return false;
+  }
+
+  if (!matchHostnameWithWildcards(allowedUrl.hostname, redirectUrl.hostname)) {
+    return false;
+  }
+
+  if (allowedUrl.port !== redirectUrl.port) {
+    return false;
+  }
+
+  if (allowedUrl.pathname !== redirectUrl.pathname) {
+    return false;
+  }
+
+  return true;
 }
 
-// Regular expression to extract protocol + host and path (without query string) from a URL
-const urlPattern: RegExp = /^((?:http[s]?:\/\/)?[^\/]+)([^?]*)(\?.*)?$/;
-
 export function validateRedirectUrl(
-  allowedUrlsClient: string[], // should this param now be optional?
+  allowedUrlsClient: string[],
   redirectUri?: string,
 ) {
+  const allowedUrls = [...ALLOWED_CALLBACK_URLS, ...allowedUrlsClient];
+
+  return validateUrl(allowedUrls, redirectUri);
+}
+
+export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   if (!redirectUri) {
     return;
   }
 
-  const allowedUrls = [...ALLOWED_CALLBACK_URLS, ...allowedUrlsClient];
-
-  const regexes = allowedUrls.map((allowedUrl) => {
-    // This doesn't work in cloudflare workers for whatever reason
-    // const url = new URL(allowedUrl);
-    const match: RegExpMatchArray | null = allowedUrl.match(urlPattern);
-    if (!match) {
-      console.log(`Invalid URL: ${allowedUrl}`);
-      return null;
-    }
-
-    // This replaces * with .* and escapes any other regexes in the string
-    const host = escapeRegExp(match[1]).replace(/\\\*/g, ".*");
-    // This removes any trailing slashes in the path and escapes any other regexes in the string
-    const path = escapeRegExp(match[2] || "").replace(/\/$/, "");
-
-    return new RegExp(`^${host}${path}$`, "i");
+  const matches: boolean[] = allowedUrls.map((allowedUrl) => {
+    return matchUrlWithAllowedUrl(allowedUrl, redirectUri);
   });
 
-  // Regular expression to remove trailing slashes, query strings, and fragments
-  const cleanedUrl = redirectUri.replace(/(\/+)?(\?.*)?(#[^#]*)?$/, "");
-
-  if (!regexes.some((regex) => regex?.test(cleanedUrl))) {
-    throw new InvalidRedirectError("Invalid redirectUri");
+  if (matches.some((match) => match)) {
+    // to maintain current functionality I'm returning true, or throwing an error for false
+    return true;
   }
+
+  throw new InvalidRedirectError("Invalid redirectUri");
 }

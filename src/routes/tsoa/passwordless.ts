@@ -65,21 +65,6 @@ export class PasswordlessController extends Controller {
 
     const email = body.email.toLocaleLowerCase();
 
-    // const user = env.userFactory.getInstanceByName(
-    //   getId(client.tenant_id, email),
-    // );
-
-    // const { code } = ["ulf.lindberg@maxm.se", "markus+23@sesamy.com"].includes(
-    //   email,
-    // )
-    //   ? { code: "531523" }
-    //   : await user.createAuthenticationCode.mutate({
-    //       authParams: {
-    //         ...body.authParams,
-    //         client_id: body.client_id,
-    //       },
-    //     });
-
     const code = generateOTP();
 
     await env.data.OTP.create({
