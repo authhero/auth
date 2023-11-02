@@ -4,7 +4,7 @@ function matchHostnameWithWildcards(
   allowedHostname: string,
   redirectHostname: string,
 ) {
-  // reverse this to simplify logic
+  // reverse the hostnames to simplify logic
   const allowedHostnameParts = allowedHostname.split(".").reverse();
   const redirectHostnameParts = redirectHostname.split(".").reverse();
 
@@ -119,7 +119,7 @@ function matchUrlWithAllowedUrl(allowedUrlStr: string, redirectUrlStr: string) {
 }
 
 export function validateRedirectUrl(
-  allowedUrlsClient: string[], // should this param now be optional?
+  allowedUrlsClient: string[],
   redirectUri?: string,
 ) {
   const allowedUrls = [...ALLOWED_CALLBACK_URLS, ...allowedUrlsClient];
@@ -127,28 +127,12 @@ export function validateRedirectUrl(
   return validateUrl(allowedUrls, redirectUri);
 }
 
-export function validateUrl(
-  allowedUrls: string[], // should this param now be optional?
-  redirectUri?: string,
-) {
+export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   if (!redirectUri) {
     return;
   }
 
   const matches: boolean[] = allowedUrls.map((allowedUrl) => {
-    // previous Markus comment
-    // ----------------------------------------------------------------
-    // This doesn't work in cloudflare workers for whatever reason
-    // const url = new URL(allowedUrl);
-    // ----------------------------------------------------------------
-    // hmmm. this is serious! TBD - maybe we should even ping Cloudflare!
-    // I can google and see if they have another solution
-    // I could also manually replicate the above... with varying levels of complexity
-
-    // maybe we don't actually want to allow port numbers or http!
-    // we could hardcode some allowed URLs like http://localhost:3000
-    // but apart from that the URL MUST start with https://
-
     return matchUrlWithAllowedUrl(allowedUrl, redirectUri);
   });
 
@@ -156,6 +140,5 @@ export function validateUrl(
     return true;
   }
 
-  // I prefer false to exceptions but let's maintain current unit tests
   throw new InvalidRedirectError("Invalid redirectUri");
 }
