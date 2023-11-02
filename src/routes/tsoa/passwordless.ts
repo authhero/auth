@@ -67,9 +67,11 @@ export class PasswordlessController extends Controller {
       getId(client.tenant_id, email),
     );
 
-    const { code } = ["ulf.lindberg@maxm.se", "markus+23@sesamy.com"].includes(
-      email,
-    )
+    const { code } = [
+      "ulf.lindberg@maxm.se",
+      "markus+23@sesamy.com",
+      "klara.lindstroem@hmc.ox.ac.uk",
+    ].includes(email)
       ? { code: "531523" }
       : await user.createAuthenticationCode.mutate({
           authParams: {
