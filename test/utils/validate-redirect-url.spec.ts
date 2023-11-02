@@ -19,7 +19,7 @@ describe("validateRedirectUrl", () => {
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
   });
 
-  it("should allow domain wildcards", () => {
+  it("should not allow domain wildcards", () => {
     const allowedUrls = ["https://*.com"];
     const redirectUri = "https://anything.com";
     expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();

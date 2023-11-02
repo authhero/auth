@@ -137,6 +137,7 @@ export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   });
 
   if (matches.some((match) => match)) {
+    // to maintain current functionality I'm returning true, or throwing an error for false
     return true;
   }
 
