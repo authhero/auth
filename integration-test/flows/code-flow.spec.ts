@@ -1,5 +1,6 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
+import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("code", () => {
   let worker;
@@ -88,17 +89,28 @@ describe("code", () => {
       referrer: "https://login.example.com",
     });
     // Trade the ticket for token
-    const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`);
+    const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
+      redirect: "manual",
+    });
 
-    if (tokenResponse.status !== 200) {
-      throw new Error(
-        `Failed to exchange ticket with status: ${
-          tokenResponse.status
-        } and message: ${await response.text()}`,
-      );
-    }
+    expect(tokenResponse.status).toBe(302);
 
-    const text = await tokenResponse.text();
-    expect(text).toBe("access_token");
+    const location = tokenResponse.headers.get("location");
+    const redirectUri = new URL(location);
+
+    expect(redirectUri.hostname).toBe("login.example.com");
+    expect(redirectUri.searchParams.get("state")).toBe("state");
+
+    const accessToken = redirectUri.searchParams.get("access_token");
+
+    const accessTokenPayload = parseJwt(accessToken!);
+    expect(accessTokenPayload.aud).toBe("default");
+    expect(accessTokenPayload.iss).toBe("https://example.com/");
+    expect(accessTokenPayload.scope).toBe("openid profile email");
+
+    const idToken = redirectUri.searchParams.get("id_token");
+    const idTokenPayload = parseJwt(idToken!);
+    expect(idTokenPayload.email).toBe("test@example.com");
+    expect(idTokenPayload.aud).toBe("clientId");
   });
 });

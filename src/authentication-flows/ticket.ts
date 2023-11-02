@@ -1,9 +1,16 @@
 import { Controller } from "@tsoa/runtime";
-import { Env, AuthParams, AuthorizationResponseType, Profile } from "../types";
+import {
+  Env,
+  AuthParams,
+  AuthorizationResponseType,
+  Profile,
+  AuthorizationResponseMode,
+} from "../types";
 
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
+import { client } from "test/fixtures";
 
 export async function ticketAuth(
   env: Env,
@@ -45,6 +52,7 @@ export async function ticketAuth(
   };
 
   const authParams: AuthParams = {
+    response_mode: AuthorizationResponseMode.QUERY,
     ...ticket.authParams,
     client_id: ticket.client_id,
   };
@@ -52,11 +60,11 @@ export async function ticketAuth(
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
+    ticket.tenant_id,
+    ticket.client_id,
     profile,
     authParams,
   );
-
-  return "Hello";
 
   const tokenResponse = await generateAuthResponse({
     env,

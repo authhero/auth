@@ -8,6 +8,8 @@ import { hexToBase64 } from "../utils/base64";
 export async function setSilentAuthCookies(
   env: Env,
   controller: Controller,
+  tenant_id: string,
+  client_id: string,
   user: Profile,
   authParams: AuthParams,
 ) {
@@ -16,23 +18,19 @@ export async function setSilentAuthCookies(
     userId: user.id,
     user,
     authParams,
+    tenant_id,
+    client_id,
+    created_at: new Date(),
+    expires_at: new Date(MONTH_IN_SECONDS * 1000),
+    user_id: user.id,
   };
 
   await env.data.sessions.create(session);
 
-  const stateId = env.STATE.newUniqueId().toString();
-  const stateInstance = env.stateFactory.getInstanceById(stateId);
-  await stateInstance.createState.mutate({
-    state: JSON.stringify(payload),
-    ttl: MONTH_IN_SECONDS,
-  });
-
-  const sessionId = hexToBase64(stateId);
-
   // This should probably be done outside
-  serializeStateInCookie(sessionId).forEach((cookie) => {
+  serializeStateInCookie(session.id).forEach((cookie) => {
     controller.setHeader(headers.setCookie, cookie);
   });
 
-  return sessionId;
+  return session.id;
 }

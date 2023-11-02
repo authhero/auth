@@ -70,7 +70,8 @@ export async function generateTokens(
 ) {
   const { env, authParams, userId, state, responseType, sid, nonce } = params;
 
-  const certificate = await getCertificate(env);
+  const certificates = await env.data.certificates.listCertificates();
+  const certificate = certificates[certificates.length - 1];
   const tokenFactory = new TokenFactory(
     certificate.privateKey,
     certificate.kid,

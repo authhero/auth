@@ -3,6 +3,6 @@ module.exports = {
   transform: {
     "^.+\\.(t|j)sx?$": "ts-jest",
   },
-  testRegex: "/integration-test/flows/code-flow.spec\\.ts$",
+  testRegex: "/integration-test/.*\\.spec\\.ts$",
   setupFilesAfterEnv: ["./jest-integration.setup.js"],
 };
