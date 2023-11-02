@@ -129,7 +129,6 @@ export async function socialAuthCallback({
     client.tenant_id,
     client.id,
     profile,
-    state.authParams,
   );
 
   const tokenResponse = await generateAuthResponse({

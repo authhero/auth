@@ -49,7 +49,6 @@ export async function ticketAuth(
     ticket.tenant_id,
     ticket.client_id,
     profile,
-    authParams,
   );
 
   const tokenResponse = await generateAuthResponse({

@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { serializeStateInCookie } from "../services/cookies";
 import { Controller } from "tsoa";
 import { headers, MONTH_IN_SECONDS } from "../constants";
-import { AuthParams, Env, Profile } from "../types";
+import { AuthParams, Env, Profile, Session } from "../types";
 
 export async function setSilentAuthCookies(
   env: Env,
@@ -10,18 +10,14 @@ export async function setSilentAuthCookies(
   tenant_id: string,
   client_id: string,
   user: Profile,
-  authParams: AuthParams,
 ) {
-  const session = {
+  const session: Session = {
     id: nanoid(),
-    userId: user.id,
-    user,
-    authParams,
+    user_id: user.id,
     tenant_id,
     client_id,
     created_at: new Date(),
     expires_at: new Date(MONTH_IN_SECONDS * 1000),
-    user_id: user.id,
   };
 
   await env.data.sessions.create(session);

@@ -64,7 +64,6 @@ export async function pkceAuthorizeCodeGrant(
     client.tenant_id,
     client.id,
     state.user,
-    state.authParams,
   );
 
   return generateAuthResponse({

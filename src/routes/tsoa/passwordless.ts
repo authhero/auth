@@ -165,7 +165,6 @@ export class PasswordlessController extends Controller {
         client.tenant_id,
         client.id,
         profile,
-        authParams,
       );
 
       const tokenResponse = await generateAuthResponse({

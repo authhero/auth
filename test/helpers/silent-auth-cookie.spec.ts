@@ -26,7 +26,6 @@ describe("silentAuthCookie", () => {
       "tenantId",
       "clientId",
       profile,
-      authParams,
     );
 
     const cookie = controller.getHeader(headers.setCookie) as string;
