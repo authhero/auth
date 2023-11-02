@@ -18,5 +18,7 @@ export interface ListUsersResponse extends Totals {
 
 export interface UserDataAdapter {
   create(tenantId: string, PostUsersBody): Promise<UserResponse>;
+  // get(tenant_id: string, id: string): Promise<UserResponse>;
+  getByEmail(tenant_id: string, email: string): Promise<UserResponse | null>;
   list(tenantId: string, params: ListUserParams): Promise<ListUsersResponse>;
 }

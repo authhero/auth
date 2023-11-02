@@ -3,12 +3,22 @@ import { createCertificateAdapter } from "./certificates";
 import { createUserAdapter } from "./user";
 import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";
+import { createClientsAdapter } from "./clients";
+import { emailAdapter } from "./email";
+import { createOTPAdapter } from "./OTP";
+import { createTicketsAdapter } from "./tickets";
+import { createSessionsAdapter } from "./sessions";
 
 export default function createAdapters(): DataAdapters {
   return {
     certificates: createCertificateAdapter(),
+    clients: createClientsAdapter(),
+    email: emailAdapter(),
     members: createMembersAdapter(),
+    OTP: createOTPAdapter(),
     users: createUserAdapter(),
+    sessions: createSessionsAdapter(),
     tenants: createTenantsAdapter(),
+    tickets: createTicketsAdapter(),
   };
 }

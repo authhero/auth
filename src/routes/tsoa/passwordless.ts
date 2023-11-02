@@ -1,4 +1,3 @@
-// src/users/usersController.ts
 import {
   Body,
   Controller,
@@ -9,16 +8,19 @@ import {
   Route,
   Tags,
 } from "@tsoa/runtime";
+import { nanoid } from "nanoid";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import { AuthParams, AuthorizationResponseType } from "../../types/AuthParams";
-import { sendCode, sendLink } from "../../controllers/email";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
 import { getId } from "../../models";
+import generateOTP from "../../utils/otp";
+
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -56,27 +58,39 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const client = await getClient(env, body.client_id);
+    const client = await env.data.clients.get(body.client_id);
     if (!client) {
       throw new Error("Client not found");
     }
 
     const email = body.email.toLocaleLowerCase();
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, email),
-    );
+    // const user = env.userFactory.getInstanceByName(
+    //   getId(client.tenant_id, email),
+    // );
 
-    const { code } = ["ulf.lindberg@maxm.se", "markus+23@sesamy.com"].includes(
+    // const { code } = ["ulf.lindberg@maxm.se", "markus+23@sesamy.com"].includes(
+    //   email,
+    // )
+    //   ? { code: "531523" }
+    //   : await user.createAuthenticationCode.mutate({
+    //       authParams: {
+    //         ...body.authParams,
+    //         client_id: body.client_id,
+    //       },
+    //     });
+
+    const code = generateOTP();
+
+    await env.data.OTP.create({
+      ...body,
+      id: nanoid(),
+      code,
       email,
-    )
-      ? { code: "531523" }
-      : await user.createAuthenticationCode.mutate({
-          authParams: {
-            ...body.authParams,
-            client_id: body.client_id,
-          },
-        });
+      tenant_id: client.tenant_id,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+    });
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
@@ -111,9 +125,9 @@ export class PasswordlessController extends Controller {
       magicLink.searchParams.set("email", email);
       magicLink.searchParams.set("verification_code", code);
 
-      await sendLink(env, client, email, code, magicLink.href);
+      await env.data.email.sendLink(client, email, code, magicLink.href);
     } else {
-      await sendCode(env, client, email, code);
+      await env.data.email.sendCode(client, email, code);
     }
 
     return "OK";

@@ -1,0 +1,19 @@
+import { AuthorizationResponseType } from "./AuthParams";
+
+export interface Ticket {
+  id: string;
+  tenant_id: string;
+  client_id: string;
+  email: string;
+  send: "link" | "code";
+  authParams: {
+    nonce?: string;
+    state?: string;
+    scope?: string;
+    response_type?: AuthorizationResponseType;
+    redirect_uri?: string;
+  };
+  created_at: Date;
+  expires_at: Date;
+  used_at?: Date;
+}

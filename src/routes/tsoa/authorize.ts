@@ -99,7 +99,11 @@ export class AuthorizeController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const client = await getClient(env, client_id);
+    const client = await env.data.clients.get(client_id);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+
     const authParams: AuthParams = {
       redirect_uri,
       scope,
@@ -145,6 +149,7 @@ export class AuthorizeController extends Controller {
     } else if (loginTicket) {
       return ticketAuth(
         env,
+        client.tenant_id,
         this,
         loginTicket,
         state,
