@@ -6,12 +6,13 @@ import { RegisterRoutes } from "../build/routes";
 import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
-import rotateKeys from "./routes/rotate-keys";
+import { rotateKeysRoute } from "./routes/rotate-keys";
 import { serve } from "./routes/login";
 import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
+import { Var } from "./types/Var";
 
 export const app = new Hono<{ Bindings: Env }>();
 
@@ -62,7 +63,7 @@ app.use(
 
 app.use(loggerMiddleware);
 
-app.get("/", async (ctx: Context) => {
+app.get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
   return ctx.json({
     name: packageJson.name,
     version: packageJson.version,
@@ -76,7 +77,7 @@ app.get("/spec", async () => {
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 app.get("/static/:file{.*}", serve);
-app.post("/create-key", rotateKeys);
+app.post("/create-key", rotateKeysRoute);
 
 app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   const db = getDb(ctx.env);

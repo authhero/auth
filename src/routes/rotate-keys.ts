@@ -3,9 +3,17 @@ import { CERTIFICATE_EXPIRE_IN_SECONDS } from "../constants";
 import { Certificate } from "../models/Certificate";
 import { Env } from "../types/Env";
 import { create } from "../services/rsa-key";
+import { Var } from "../types/Var";
 
-export default async function rotateKeys(ctx: Context<{ Bindings: Env }>) {
-  const { env } = ctx;
+export async function rotateKeysRoute(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+) {
+  await rotateKeys(ctx.env);
+
+  return ctx.text("OK");
+}
+
+export async function rotateKeys(env: Env) {
   const certificates = await env.data.certificates.listCertificates();
 
   const newCertificate = await create();
@@ -18,6 +26,4 @@ export default async function rotateKeys(ctx: Context<{ Bindings: Env }>) {
   );
 
   await env.data.certificates.upsertCertificates(filteredCertificates);
-
-  return ctx.text("OK");
 }

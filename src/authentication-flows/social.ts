@@ -1,4 +1,5 @@
 import { Controller } from "@tsoa/runtime";
+import { Context } from "hono";
 import {
   AuthorizationResponseType,
   AuthParams,
@@ -16,6 +17,7 @@ import { parseJwt } from "../utils/parse-jwt";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 import { InvalidConnectionError } from "../errors";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
+import { Var } from "../types/Var";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -67,18 +69,19 @@ export async function socialAuth(
 }
 
 export interface socialAuthCallbackParams {
-  env: Env;
+  ctx: Context<{ Bindings: Env; Variables: Var }>;
   controller: Controller;
   state: LoginState;
   code: string;
 }
 
 export async function socialAuthCallback({
-  env,
+  ctx,
   controller,
   state,
   code,
 }: socialAuthCallbackParams) {
+  const { env } = ctx;
   const client = await getClient(env, state.authParams.client_id);
 
   const connection = client.connections.find(
@@ -109,6 +112,9 @@ export async function socialAuthCallback({
 
   const email = oauth2Profile.email.toLocaleLowerCase();
   const userId = getId(client.tenant_id, email);
+  ctx.set("email", email);
+  ctx.set("userId", userId);
+
   const user = env.userFactory.getInstanceByName(userId);
 
   const profile = await user.loginWithConnection.mutate({
