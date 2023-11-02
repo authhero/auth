@@ -1,25 +1,17 @@
 import { Controller } from "@tsoa/runtime";
-import {
-  Env,
-  AuthParams,
-  AuthorizationResponseType,
-  Profile,
-  AuthorizationResponseMode,
-} from "../types";
+import { nanoid } from "nanoid";
+import { Env, AuthParams, Profile, AuthorizationResponseType } from "../types";
 
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
-import { client } from "test/fixtures";
 
 export async function ticketAuth(
   env: Env,
   tenant_id: string,
   controller: Controller,
   ticketId: string,
-  state: string,
-  redirectUri: string,
-  responseType: AuthorizationResponseType,
+  authParams: AuthParams,
 ) {
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
@@ -30,7 +22,7 @@ export async function ticketAuth(
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
-      id: `${tenant_id}|${ticket.email}`,
+      id: `${tenant_id}|${nanoid()}`,
       email: ticket.email,
       name: ticket.email,
       created_at: new Date(),
@@ -51,12 +43,6 @@ export async function ticketAuth(
     connections: [],
   };
 
-  const authParams: AuthParams = {
-    response_mode: AuthorizationResponseMode.QUERY,
-    ...ticket.authParams,
-    client_id: ticket.client_id,
-  };
-
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
@@ -68,17 +54,16 @@ export async function ticketAuth(
 
   const tokenResponse = await generateAuthResponse({
     env,
-    userId: user.user_id,
-    state,
-    authParams,
+    userId: user.id,
+    state: authParams.state,
+    authParams: {
+      ...authParams,
+      scope: ticket.authParams.scope,
+    },
     sid: sessionId,
     user: profile,
-    responseType,
+    responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 
-  return applyTokenResponse(controller, tokenResponse, {
-    ...authParams,
-    redirect_uri: redirectUri,
-    state,
-  });
+  return applyTokenResponse(controller, tokenResponse, authParams);
 }

@@ -73,7 +73,7 @@ export class AuthenticateController extends Controller {
       const otp = otps.find((otp) => otp.code === body.otp);
 
       if (!otp) {
-        throw new Error("OTP not found");
+        throw new UnauthenticatedError("Code not found or expired");
       }
 
       const ticket = {

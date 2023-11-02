@@ -125,9 +125,9 @@ export class PasswordlessController extends Controller {
       magicLink.searchParams.set("email", email);
       magicLink.searchParams.set("verification_code", code);
 
-      await env.data.email.sendLink(client, email, code, magicLink.href);
+      await env.data.email.sendLink(env, client, email, code, magicLink.href);
     } else {
-      await env.data.email.sendCode(client, email, code);
+      await env.data.email.sendCode(env, client, email, code);
     }
 
     return "OK";
@@ -177,6 +177,8 @@ export class PasswordlessController extends Controller {
       const sessionId = await setSilentAuthCookies(
         env,
         this,
+        client.tenant_id,
+        client.id,
         profile,
         authParams,
       );

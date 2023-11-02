@@ -2,7 +2,6 @@ import { describe, expect, it } from "@jest/globals";
 import { contextFixture, controllerFixture } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
-import { base64ToHex } from "../../src/utils/base64";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -21,31 +20,41 @@ describe("passwordlessAuth", () => {
   });
 
   it("should redirect with implicit flow as anchor links", async () => {
-    const ticketInstanceId = base64ToHex("ticket");
-
     const ctx = contextFixture({
-      stateData: {
-        [ticketInstanceId]: JSON.stringify({
+      tickets: [
+        {
+          id: "ticketId",
+          tenant_id: "tenant_id",
+          client_id: "client_id",
           authParams: {
             scope: "openid profile email",
             response_mode: AuthorizationResponseMode.FRAGMENT,
             state: "state",
           },
-        }),
-      },
+          created_at: new Date(),
+          expires_at: new Date(Date.now() + 60 * 1000),
+          email: "test@example.com",
+        },
+      ],
     });
     const controller = controllerFixture();
-    const ticket = "ticket";
+
     const state = "state";
-    const redirectUri = "https://example.com";
+    const redirect_uri = "https://example.com";
 
     const response = await ticketAuth(
       ctx.env,
+      "tenant_id",
       controller,
-      ticket,
-      state,
-      redirectUri,
-      AuthorizationResponseType.TOKEN,
+      "ticketId",
+      {
+        client_id: "clientId",
+        state,
+        redirect_uri,
+        scope: "openid profile email",
+        response_type: AuthorizationResponseType.TOKEN,
+        response_mode: AuthorizationResponseMode.FRAGMENT,
+      },
     );
 
     const redirectHeader = controller.getHeader("location") as string;
@@ -58,6 +67,7 @@ describe("passwordlessAuth", () => {
     expect(controller.getStatus()).toEqual(302);
     expect(accessToken).toEqual({
       aud: "default",
+      sub: "tenant_id|testid",
       scope: "openid profile email",
       iss: "https://auth.example.com/",
       iat: Math.floor(date.getTime() / 1000),

@@ -1,6 +1,6 @@
 import { DataAdapters } from "../interfaces";
 import { createCertificateAdapter } from "./certificates";
-import { createUserAdapter } from "./user";
+import { createUserAdapter } from "./users";
 import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";
 import { createClientsAdapter } from "./clients";

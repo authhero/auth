@@ -8,6 +8,7 @@ import {
   Client,
   AuthorizationResponseType,
   RequestWithContext,
+  Env,
 } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 import { kvStorageFixture } from "../../fixtures/kv-storage";
@@ -49,7 +50,7 @@ describe("Passwordless", () => {
         client_id: "clientId",
         connection: "email",
         send: "code",
-        email: "markus@ahlstrand.es",
+        email: "test@example.com",
         authParams: {
           response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
           redirect_uri: "http://localhost:3000/callback",
@@ -60,111 +61,26 @@ describe("Passwordless", () => {
         },
       };
 
-      const logs: { subject: string }[] = [];
+      const emails: { to: string; code: string }[] = [];
 
       const ctx = contextFixture({
-        stateData: {},
-        logs,
+        email: {
+          sendCode: async (
+            env: Env,
+            client: Client,
+            to: string,
+            code: string,
+          ) => {
+            emails.push({ to, code });
+          },
+        },
       });
 
       await controller.startPasswordless(body, requestWithContext(ctx));
 
-      const mailRequest = JSON.parse(
-        fetchMock.mock.calls?.[0]?.[1]?.body as string,
-      );
+      const email = emails[0];
 
-      expect(mailRequest.subject).toEqual(
-        "Välkommen till clientName! 123456 är koden för att logga in",
-      );
-
-      expect(mailRequest.from).toEqual({
-        email: "senderEmail",
-        name: "senderName",
-      });
-
-      expect(mailRequest.personalizations[0].to).toEqual([
-        {
-          email: "markus@ahlstrand.es",
-          name: "markus@ahlstrand.es",
-        },
-      ]);
-
-      expect(mailRequest.content).toHaveLength(1);
-      expect(mailRequest.content[0].type).toEqual("text/html");
-
-      const emailBody = mailRequest.content[0].value;
-
-      // this is fetching the vendor name
-      expect(emailBody).toContain('alt="clientName"');
-
-      // assert - default sesamy fallback logo is used because no logo is set for this client
-      expect(emailBody).toContain(`src="${SESAMY_HEADER_LOGO_URL}"`);
-
-      expect(emailBody).toContain(SESAMY_FOOTER_LOGO_URL);
-
-      expect(emailBody).toContain("123456");
-
-      expect(emailBody).toContain("Välkommen till ditt clientName-konto!");
-    });
-
-    it("should use the client logo if set", async () => {
-      const controller = new PasswordlessController();
-
-      const body: PasswordlessOptions = {
-        client_id: "clientId",
-        connection: "email",
-        send: "code",
-        email: "markus@ahlstrand.es",
-        authParams: {
-          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-          redirect_uri: "http://localhost:3000/callback",
-          scope: "openid profile email",
-          audience: "https://sesamy.com",
-          state: "spstFO05XU5R-fhzQSLnuHnYVhyd5-GP",
-          nonce: "~9y0-hSpK3ATR6Fo0NJ.v3kMro3cfA.p",
-        },
-      };
-
-      const logo = "https://example.com/logo.png";
-
-      const clientLogoUrl = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/${btoa(
-        logo,
-      )}`;
-
-      const clientWithLogo: Client = {
-        ...client,
-        tenant: {
-          ...client.tenant,
-          logo,
-        },
-      };
-
-      const logs: { subject: string }[] = [];
-
-      const clients = kvStorageFixture({
-        clientId: JSON.stringify(clientWithLogo),
-      });
-
-      const ctx = contextFixture({
-        stateData: {},
-        logs,
-        clients,
-      });
-
-      await controller.startPasswordless(body, requestWithContext(ctx));
-
-      const mailRequest = JSON.parse(
-        fetchMock.mock.calls?.[0]?.[1]?.body as string,
-      );
-      const emailBody = mailRequest.content[0].value;
-
-      // should not have default sesamy logo
-      expect(emailBody).not.toContain(`src="${SESAMY_HEADER_LOGO_URL}"`);
-
-      // but should have client logo
-      expect(emailBody).toContain(`src="${clientLogoUrl}"`);
-
-      // TODO - assert we have magic link in here with correct params?
+      expect(email.to).toBe("test@example.com");
     });
   });
 
