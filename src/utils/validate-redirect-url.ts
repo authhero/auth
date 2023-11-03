@@ -103,7 +103,9 @@ export function matchUrlWithAllowedUrl(
   allowedUrlStr: string,
   redirectUrlStr: string,
 ) {
-  const match = urlPattern.exec(allowedUrlStr) as RegExpExecArray & {
+  const match = urlPattern.exec(
+    allowedUrlStr.toLocaleLowerCase(),
+  ) as RegExpExecArray & {
     groups: { protocol: string; host: string; port?: string; path?: string };
   };
 
@@ -114,7 +116,7 @@ export function matchUrlWithAllowedUrl(
 
   const { protocol, host, port = "", path = "/" } = match.groups;
 
-  const redirectUrl = new URL(redirectUrlStr.toLocaleLowerCase());
+  const redirectUrl = new URL(redirectUrlStr);
 
   if (protocol !== redirectUrl.protocol) {
     return false;
