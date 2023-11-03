@@ -175,6 +175,8 @@ export async function getUser(
   }
 
   if (!(await isValidJwtSignature(ctx, securitySchemeName, token))) {
+    console.log("failed here");
+
     throw new InvalidSignatureError();
   }
 

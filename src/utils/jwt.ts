@@ -104,7 +104,7 @@ export async function createToken(params: CreateTokenParams) {
   };
 
   // Convert header and payload to base64Url-encoded strings
-  const encodedHeader = encodeToBase64(JSON.stringify(header));
+  const encodedHeader = base64UrlEncode(JSON.stringify(header));
   const encodedPayload = encodeToBase64(JSON.stringify(params.payload));
 
   const unsignedToken = `${encodedHeader}.${encodedPayload}`;
@@ -117,7 +117,7 @@ export async function createToken(params: CreateTokenParams) {
   );
 
   // Concatenate the unsignedToken with the base64Url-encoded signature to get the JWT
-  const signedToken = `${unsignedToken}.${encodeToBase64(
+  const signedToken = `${unsignedToken}.${base64UrlEncode(
     String.fromCharCode.apply(null, Array.from(new Uint8Array(signature))),
   )}`;
 

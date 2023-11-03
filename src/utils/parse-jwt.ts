@@ -8,18 +8,15 @@ export function parseJwt(token: string): any {
 }
 
 export function decodeBase64(base64: string): string {
-  // Decode the Base64 string to a "binary string"
-  const binaryString = atob(base64);
+  const decodedString = atob(base64);
 
-  // Convert the binary string to a Uint8Array
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-
-  // Now use TextDecoder to decode the UTF-8 bytes to a string
+  // Ensure that the decoded string is interpreted as UTF-8
+  const utf8Bytes = new Uint8Array(
+    [...decodedString].map((char) => char.charCodeAt(0)),
+  );
   const decoder = new TextDecoder("utf-8");
-  return decoder.decode(bytes);
+
+  return decoder.decode(utf8Bytes);
 }
 
 export function encodeToBase64(text: string): string {
@@ -34,5 +31,8 @@ export function encodeToBase64(text: string): string {
   });
 
   // Encode the binary string to Base64
-  return btoa(binaryString);
+  return btoa(binaryString)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
 }
