@@ -603,8 +603,8 @@ export const userRouter = router({
         message: "Login with code",
       });
 
-      // Remove once used
-      await ctx.state.storage.put(StorageKeys.authenticationCode, "");
+      // Remove once used. Skip for now
+      // await ctx.state.storage.put(StorageKeys.authenticationCode, "");
 
       return profile;
     }),
