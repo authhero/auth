@@ -87,7 +87,28 @@ describe("Passwordless", () => {
   describe("verify_redirect", () => {
     it('should return a token and redirect to "redirect_uri" if code is valid', async () => {
       const ctx = contextFixture({
-        stateData: {},
+        otps: [
+          {
+            id: "id",
+            code: "111111",
+            email: "test@example.com",
+            tenant_id: "tenantId",
+            client_id: "clientId",
+            created_at: new Date(),
+            expires_at: new Date(Date.now() + 1000 * 60),
+            send: "link",
+            authParams: {},
+          },
+        ],
+        users: [
+          {
+            id: "userId",
+            tenant_id: "tenantId",
+            email: "test@example.com",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ],
       });
 
       const controller = new PasswordlessController();
@@ -99,10 +120,10 @@ describe("Passwordless", () => {
         "https://example.com",
         "state",
         "nonce",
-        "code",
+        "111111",
         "email",
         "clientId",
-        "email",
+        "test@example.com",
         "https://example.com",
       );
 
@@ -122,6 +143,7 @@ describe("Passwordless", () => {
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
         iss: "https://auth.example.com/",
+        sub: "userId",
         scope: "",
       });
     });

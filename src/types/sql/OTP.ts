@@ -7,13 +7,11 @@ export interface SqlOTP {
   email: string;
   code: string;
   send: "link" | "code";
-
   nonce?: string;
   state?: string;
   scope?: string;
   response_type?: AuthorizationResponseType;
   redirect_uri?: string;
-
   created_at: string;
   expires_at: string;
   used_at?: string;
