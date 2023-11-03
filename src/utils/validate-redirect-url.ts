@@ -30,7 +30,10 @@ function matchHostnameWithWildcards(
       continue;
     }
 
-    if (allowedHostnamePart !== redirectHostnamePart) {
+    if (
+      allowedHostnamePart.toLocaleLowerCase() !==
+      redirectHostnamePart.toLocaleLowerCase()
+    ) {
       return false;
     }
   }
@@ -95,23 +98,40 @@ const ALLOWED_CALLBACK_URLS = [
   "http://example.com",
 ];
 
-function matchUrlWithAllowedUrl(allowedUrlStr: string, redirectUrlStr: string) {
-  const allowedUrl = new URL(allowedUrlStr);
+// Regular expression to extract protocol + host and path (without query string) from a URL
+const urlPattern: RegExp =
+  /^(?<protocol>[a-z]+:)\/\/(?<host>[^\/:\s]+)(?::(?<port>\d+))?(?<path>\/.*)?$/;
+
+export function matchUrlWithAllowedUrl(
+  allowedUrlStr: string,
+  redirectUrlStr: string,
+) {
+  const match = urlPattern.exec(allowedUrlStr) as RegExpExecArray & {
+    groups: { protocol: string; host: string; port?: string; path?: string };
+  };
+
+  if (!match) {
+    console.log(`Invalid URL: ${allowedUrlStr}`);
+    return false;
+  }
+
+  const { protocol, host, port = "", path = "/" } = match.groups;
+
   const redirectUrl = new URL(redirectUrlStr);
 
-  if (allowedUrl.protocol !== redirectUrl.protocol) {
+  if (protocol !== redirectUrl.protocol) {
     return false;
   }
 
-  if (!matchHostnameWithWildcards(allowedUrl.hostname, redirectUrl.hostname)) {
+  if (!matchHostnameWithWildcards(host, redirectUrl.hostname)) {
     return false;
   }
 
-  if (allowedUrl.port !== redirectUrl.port) {
+  if (port !== redirectUrl.port) {
     return false;
   }
 
-  if (allowedUrl.pathname !== redirectUrl.pathname) {
+  if (path !== redirectUrl.pathname) {
     return false;
   }
 
