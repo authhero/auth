@@ -10,15 +10,14 @@ import {
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getClient } from "../../services/clients";
 import { AuthParams, AuthorizationResponseType } from "../../types/AuthParams";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
-import { getId } from "../../models";
 import generateOTP from "../../utils/otp";
+import { UnauthenticatedError } from "../../errors";
 
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -62,7 +61,6 @@ export class PasswordlessController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
-
     const email = body.email.toLocaleLowerCase();
 
     const code = generateOTP();
@@ -136,22 +134,25 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const client = await getClient(env, client_id);
+    const client = await env.data.clients.get(client_id);
     if (!client) {
       throw new Error("Client not found");
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, email),
-    );
-
     try {
-      const profile = await user.validateAuthenticationCode.mutate({
-        code: verification_code,
-        email,
-        tenantId: client.tenant_id,
-      });
-      validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
+      const otps = await env.data.OTP.list(client.tenant_id, email);
+      const otp = otps.find((otp) => otp.code === verification_code);
+
+      if (!otp) {
+        throw new UnauthenticatedError("Code not found or expired");
+      }
+
+      const user = await env.data.users.getByEmail(client.tenant_id, email);
+      if (!user) {
+        throw new UnauthenticatedError("User not found");
+      }
+
+      // validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
 
       const authParams: AuthParams = {
         client_id,
@@ -159,6 +160,11 @@ export class PasswordlessController extends Controller {
         state,
         scope,
         audience,
+      };
+
+      const profile = {
+        ...user,
+        connections: [],
       };
 
       const sessionId = await setSilentAuthCookies(
@@ -172,7 +178,7 @@ export class PasswordlessController extends Controller {
       const tokenResponse = await generateAuthResponse({
         responseType: response_type,
         env,
-        userId: profile.id,
+        userId: user.id,
         sid: sessionId,
         state,
         nonce,

@@ -2,14 +2,15 @@ import { Database, Ticket } from "../../../types";
 import { Kysely } from "kysely";
 
 export function get(db: Kysely<Database>) {
-  return async (id: string): Promise<Ticket | null> => {
-    const session = await db
+  return async (tenant_id: string, id: string): Promise<Ticket | null> => {
+    const ticket = await db
       .selectFrom("tickets")
+      .where("tickets.tenant_id", "=", tenant_id)
       .where("tickets.id", "=", id)
       .selectAll()
       .executeTakeFirst();
 
-    if (!session) {
+    if (!ticket) {
       return null;
     }
 
@@ -21,7 +22,7 @@ export function get(db: Kysely<Database>) {
       response_mode,
       redirect_uri,
       ...rest
-    } = session;
+    } = ticket;
 
     return {
       ...rest,
