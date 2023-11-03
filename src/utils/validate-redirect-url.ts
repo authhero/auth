@@ -30,10 +30,7 @@ function matchHostnameWithWildcards(
       continue;
     }
 
-    if (
-      allowedHostnamePart.toLocaleLowerCase() !==
-      redirectHostnamePart.toLocaleLowerCase()
-    ) {
+    if (allowedHostnamePart !== redirectHostnamePart) {
       return false;
     }
   }
@@ -117,7 +114,7 @@ export function matchUrlWithAllowedUrl(
 
   const { protocol, host, port = "", path = "/" } = match.groups;
 
-  const redirectUrl = new URL(redirectUrlStr);
+  const redirectUrl = new URL(redirectUrlStr.toLocaleLowerCase());
 
   if (protocol !== redirectUrl.protocol) {
     return false;
