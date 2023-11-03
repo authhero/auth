@@ -1,5 +1,6 @@
 name = "auth2"
 main = "src/server.ts"
+# main = "integration-test/test-server.ts"
 compatibility_date = "2022-07-06"
 node_compat = true
 

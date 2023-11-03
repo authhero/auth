@@ -1,4 +1,12 @@
-import { pemToBuffer, getKeyFormat, getAlgorithm } from "../../src/utils/jwt";
+import { base64UrlEncode } from "../../src/utils/base64";
+import { getCertificate } from "../../integration-test/helpers/token";
+import {
+  pemToBuffer,
+  getKeyFormat,
+  getAlgorithm,
+  createToken,
+} from "../../src/utils/jwt";
+import { decodeBase64, parseJwt } from "../../src/utils/parse-jwt";
 
 describe("pemToBuffer", () => {
   it("converts PEM string to ArrayBuffer", () => {
@@ -45,5 +53,25 @@ describe("getAlgorithm", () => {
     expect(() => getAlgorithm("unsupported-algorithm" as any, "sign")).toThrow(
       "Unsupported JWT algorithm: unsupported-algorithm",
     );
+  });
+});
+
+describe("payload", () => {
+  it("should return a JWT with correct encoding for special characters", async () => {
+    const certificate = getCertificate();
+
+    const encoder = new TextEncoder();
+
+    const token = await createToken({
+      pemKey: certificate.privateKey,
+      payload: {
+        name: "ÅÄÖ",
+      },
+      alg: "RS256",
+      headerAdditions: {},
+    });
+
+    const parsedToken = parseJwt(token);
+    expect(parsedToken.name).toBe("ÅÄÖ");
   });
 });
