@@ -3,6 +3,8 @@ import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";
 import { Env } from "../../types";
 import { createSessionsAdapter } from "./sessions";
+import { createTicketsAdapter } from "./tickets";
+import { createOTPAdapter } from "./otps";
 
 export default function createAdapters(env: Env) {
   return {
@@ -10,5 +12,7 @@ export default function createAdapters(env: Env) {
     users: createUsersAdapter(env),
     sessions: createSessionsAdapter(env),
     tenants: createTenantsAdapter(env),
+    tickets: createTicketsAdapter(env),
+    otps: createOTPAdapter(env),
   };
 }

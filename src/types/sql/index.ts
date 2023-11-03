@@ -5,4 +5,6 @@ export * from "./User";
 export * from "./Member";
 export * from "./Migration";
 export * from "./Domain";
+export * from "./OTP";
+export * from "./Ticket";
 export * from "./db";

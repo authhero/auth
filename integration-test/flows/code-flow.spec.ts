@@ -88,12 +88,16 @@ describe("code", () => {
       state,
       referrer: "https://login.example.com",
     });
+
+    console.log(`/authorize?${query.toString()}`);
+
     // Trade the ticket for token
     const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
       redirect: "manual",
     });
 
     expect(tokenResponse.status).toBe(302);
+    expect(await tokenResponse.text()).toBe("Redirecting");
 
     const location = tokenResponse.headers.get("location");
     const redirectUri = new URL(location);
