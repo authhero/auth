@@ -80,6 +80,8 @@ export class PasswordlessController extends Controller {
           },
         });
 
+    request.ctx.set("log", `Code: ${code}`);
+
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
       magicLink.pathname = "passwordless/verify_redirect";
