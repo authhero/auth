@@ -1,46 +1,49 @@
-import { validateRedirectUrl } from "../../src/utils/validate-redirect-url";
+import {
+  validateRedirectUrl,
+  validateUrl,
+} from "../../src/utils/validate-redirect-url";
 
-describe("validateRedirectUrl", () => {
+describe("validateUrl", () => {
   it("should allow valid redirectUri with wildcard", () => {
     const allowedUrls = ["https://*.example.com"];
     const redirectUri = "https://sub.example.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
   it("should allow valid redirectUri with a wildcard and a path", () => {
     const allowedUrls = ["https://*.example.com/path"];
     const redirectUri = "https://sub.example.com/path";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
   it("should not allow wildcard to span multiple subdomains", () => {
     const allowedUrls = ["https://*.example.com/path"];
     const redirectUri = "https://sub.sub.example.com/path";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should not allow domain wildcards", () => {
     const allowedUrls = ["https://*.com"];
     const redirectUri = "https://anything.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should not allow wildcard for full URL", () => {
     const allowedUrls = ["https://*"];
     const redirectUri = "https://*";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should not allow bad URLs with just wildcards", () => {
     const allowedUrls = ["*"];
     const redirectUri = "*";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should disallow redirectUri with wildcard subdomain specified but not existing", () => {
     const allowedUrls = ["https://*.example.com"];
     const redirectUri = "https://notexample.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow(
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow(
       "Invalid redirectUri",
     );
   });
@@ -48,37 +51,37 @@ describe("validateRedirectUrl", () => {
   it("should be case insensitive", () => {
     const allowedUrls = ["https://*.EXAMPLE.com"];
     const redirectUri = "https://sub.example.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
   it("should handle URLs without wildcards", () => {
     const allowedUrls = ["https://sub.example.com"];
     const redirectUri = "https://sub.example.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
   it("should handle bad URLs without wildcards", () => {
     const allowedUrls = ["https://sub.example.com"];
     const redirectUri = "https://bad.example.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should handle exact matches of urls with ports", () => {
     const allowedUrls = ["http://localhost:3000"];
     const redirectUri = "http://localhost:3000";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).not.toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).not.toThrow();
   });
 
   it("should fail when no exact match of urls with ports", () => {
     const allowedUrls = ["http://localhost:3000"];
     const redirectUri = "http://localhost:3001";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow();
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow();
   });
 
   it("should throw error for URLs that don't exactly match", () => {
     const allowedUrls = ["https://sub.example.com"];
     const redirectUri = "https://sub2.example.com";
-    expect(() => validateRedirectUrl(allowedUrls, redirectUri)).toThrow(
+    expect(() => validateUrl(allowedUrls, redirectUri)).toThrow(
       "Invalid redirectUri",
     );
   });
