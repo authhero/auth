@@ -1,4 +1,5 @@
 import { base64UrlEncode } from "./base64";
+import { encodeToBase64 } from "./parse-jwt";
 
 export function pemToBuffer(pem: string): ArrayBuffer {
   const base64String = pem
@@ -98,12 +99,13 @@ export async function createToken(params: CreateTokenParams) {
 
   const header = {
     alg: params.alg,
+    typ: "JWT",
     ...params.headerAdditions,
   };
 
   // Convert header and payload to base64Url-encoded strings
-  const encodedHeader = base64UrlEncode(JSON.stringify(header));
-  const encodedPayload = base64UrlEncode(JSON.stringify(params.payload));
+  const encodedHeader = encodeToBase64(JSON.stringify(header));
+  const encodedPayload = encodeToBase64(JSON.stringify(params.payload));
 
   const unsignedToken = `${encodedHeader}.${encodedPayload}`;
 
@@ -115,7 +117,7 @@ export async function createToken(params: CreateTokenParams) {
   );
 
   // Concatenate the unsignedToken with the base64Url-encoded signature to get the JWT
-  const signedToken = `${unsignedToken}.${base64UrlEncode(
+  const signedToken = `${unsignedToken}.${encodeToBase64(
     String.fromCharCode.apply(null, Array.from(new Uint8Array(signature))),
   )}`;
 
