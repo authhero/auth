@@ -7,7 +7,12 @@ export function create(db: Kysely<Database>) {
 
     await db
       .insertInto("otps")
-      .values({ ...rest, ...authParams })
+      .values({
+        ...rest,
+        ...authParams,
+        created_at: rest.created_at.toISOString(),
+        expires_at: rest.expires_at.toISOString(),
+      })
       .execute();
   };
 }

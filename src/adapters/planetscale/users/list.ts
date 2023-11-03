@@ -1,8 +1,5 @@
-import { UserResponse, Totals } from "../../../types/auth0";
-import {
-  ListUserParams,
-  ListUsersResponse,
-} from "../../../adapters/interfaces/User";
+import { UserResponse } from "../../../types/auth0";
+import { ListUserParams, ListUsersResponse } from "../../interfaces/User";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
@@ -21,7 +18,10 @@ function getCountAsInt(count: string | number | bigint) {
 }
 
 export function listUsers(db: Kysely<Database>) {
-  return async (tenantId, params: ListUserParams) => {
+  return async (
+    tenantId,
+    params: ListUserParams,
+  ): Promise<ListUsersResponse> => {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
 
     if (params.sort && params.sort.sort_by) {
@@ -41,41 +41,41 @@ export function listUsers(db: Kysely<Database>) {
 
     const usersRaw = await filteredQuery.selectAll().execute();
 
-    const users: UserResponse[] = usersRaw.map((user) => {
-      const { id, updated_at, ...userWithoutFields } = user;
+    // const users: UserResponse[] = usersRaw.map((user) => {
+    //   const { id, updated_at, ...userWithoutFields } = user;
 
-      const tags = JSON.parse(user.tags || "[]");
+    //   const tags = JSON.parse(user.tags || "[]");
 
-      const userResponse: UserResponse = {
-        user_id: user.id,
-        // TODO: store this field in sql
-        email_verified: true,
-        username: user.email,
-        phone_number: "",
-        phone_verified: false,
-        updated_at,
-        logins_count: 0,
-        identities: tags.map((tag) => ({
-          profileData: {
-            email: user.email,
-            user_id: user.id,
-            is_social: true,
-            connection: tag,
-          },
-        })),
-        ...userWithoutFields,
-        // Deprecated
-        tags,
-      };
+    //   const userResponse: UserResponse = {
+    //     user_id: user.id,
+    //     // TODO: store this field in sql
+    //     email_verified: true,
+    //     username: user.email,
+    //     phone_number: "",
+    //     phone_verified: false,
+    //     updated_at,
+    //     logins_count: 0,
+    //     identities: tags.map((tag) => ({
+    //       profileData: {
+    //         email: user.email,
+    //         user_id: user.id,
+    //         is_social: true,
+    //         connection: tag,
+    //       },
+    //     })),
+    //     ...userWithoutFields,
+    //     // Deprecated
+    //     tags,
+    //   };
 
-      return userResponse;
-    });
+    //   return userResponse;
+    // });
 
-    if (!params.include_totals) {
-      return {
-        users,
-      };
-    }
+    // if (!params.include_totals) {
+    //   return {
+    //     users,
+    //   };
+    // }
 
     const [{ count }] = await query
       .select((eb) => eb.fn.countAll().as("count"))
@@ -84,7 +84,7 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      users,
+      users: usersRaw,
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,

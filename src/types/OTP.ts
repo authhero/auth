@@ -14,8 +14,8 @@ export interface OTP {
     response_type?: AuthorizationResponseType;
     redirect_uri?: string;
   };
-  created_at: string;
-  expires_at: string;
+  created_at: Date;
+  expires_at: Date;
   used_at?: string;
   user_id?: string;
 }

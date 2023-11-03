@@ -89,8 +89,6 @@ describe("code-flow", () => {
       referrer: "https://login.example.com",
     });
 
-    console.log(`/authorize?${query.toString()}`);
-
     // Trade the ticket for token
     const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
       redirect: "manual",

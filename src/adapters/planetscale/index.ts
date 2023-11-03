@@ -13,6 +13,6 @@ export default function createAdapters(env: Env) {
     sessions: createSessionsAdapter(env),
     tenants: createTenantsAdapter(env),
     tickets: createTicketsAdapter(env),
-    otps: createOTPAdapter(env),
+    OTP: createOTPAdapter(env),
   };
 }

@@ -2,18 +2,9 @@
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
-import { getClient } from "../../services/clients";
-import { contentTypes, headers } from "../../constants";
-import {
-  AuthenticationCodeExpiredError,
-  InvalidCodeError,
-  UnauthenticatedError,
-} from "../../errors";
+import { UnauthenticatedError } from "../../errors";
 import randomString from "../../utils/random-string";
-import { hexToBase64 } from "../../utils/base64";
-import { handleLinkedAccount } from "../../helpers/account-linking";
-import { getId } from "../../models";
-import { nan } from "zod";
+import { Ticket } from "../../types";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -76,12 +67,11 @@ export class AuthenticateController extends Controller {
         throw new UnauthenticatedError("Code not found or expired");
       }
 
-      const ticket = {
+      const ticket: Ticket = {
         id: nanoid(),
         tenant_id: client.tenant_id,
         client_id: client.id,
         email: otp.email,
-        send: otp.send,
         authParams: otp.authParams,
         created_at: new Date(),
         expires_at: new Date(Date.now() + TICKET_EXPIRATION_TIME),

@@ -7,6 +7,7 @@ import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
 import createAdapters from "./adapters/planetscale";
 import { updateTenantClientsInKV } from "./hooks/update-client";
 import { createClientsAdapter } from "./adapters/kv-storage/clients";
+import createEmailAdapter from "./adapters/email";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -25,6 +26,7 @@ const server = {
         data: {
           certificates: createCertificatesAdapter(env),
           clients: createClientsAdapter(env),
+          ...createEmailAdapter(env),
           ...createAdapters(env),
         },
         hooks: {

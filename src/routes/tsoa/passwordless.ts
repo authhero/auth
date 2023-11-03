@@ -68,10 +68,12 @@ export class PasswordlessController extends Controller {
     const code = generateOTP();
 
     await env.data.OTP.create({
-      ...body,
       id: nanoid(),
       code,
       email,
+      client_id: body.client_id,
+      send: body.send,
+      authParams: body.authParams,
       tenant_id: client.tenant_id,
       created_at: new Date(),
       expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),

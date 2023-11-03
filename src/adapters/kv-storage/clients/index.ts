@@ -1,8 +1,8 @@
+import { getClient } from "../../../services/clients";
 import { Env } from "../../../types";
-import { get } from "./get";
 
 export function createClientsAdapter(env: Env) {
   return {
-    get: get(env.CLIENTS),
+    get: (id: string) => getClient(env, id),
   };
 }
