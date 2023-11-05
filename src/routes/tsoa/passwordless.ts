@@ -149,9 +149,15 @@ export class PasswordlessController extends Controller {
         throw new UnauthenticatedError("Code not found or expired");
       }
 
-      const user = await env.data.users.getByEmail(client.tenant_id, email);
+      let user = await env.data.users.getByEmail(client.tenant_id, email);
       if (!user) {
-        throw new UnauthenticatedError("User not found");
+        user = await env.data.users.create(client.tenant_id, {
+          id: `${client.tenant_id}|${nanoid()}`,
+          email,
+          name: email,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
       }
 
       // validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
