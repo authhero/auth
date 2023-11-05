@@ -555,59 +555,7 @@ export const userRouter = router({
         bcrypt.hashSync(input, 10),
       );
     }),
-  validateAuthenticationCode: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        tenantId: z.string(),
-        code: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const code = [
-        "ulf.lindberg@maxm.se",
-        "markus+23@sesamy.com",
-        "klara.lindstroem@hmc.ox.ac.uk",
-      ].includes(input.email)
-        ? { code: "531523", expireAt: Date.now() + THIRTY_MINUTES_IN_MS }
-        : await getAuthenticationCode(ctx.state.storage);
 
-      if (!code) {
-        throw new NoCodeError();
-      }
-
-      if (input.code !== code.code) {
-        throw new InvalidCodeError();
-      }
-
-      if (!code.expireAt || Date.now() > code.expireAt) {
-        throw new AuthenticationCodeExpiredError();
-      }
-
-      const profile = await updateProfile(ctx, {
-        email: input.email,
-        tenant_id: input.tenantId,
-        connections: [
-          {
-            name: "email",
-            profile: {
-              email: input.email,
-              validated: true,
-            },
-          },
-        ],
-      });
-
-      await writeLog(ctx.state.storage, {
-        category: "login",
-        message: "Login with code",
-      });
-
-      // Remove once used. Skip for now
-      // await ctx.state.storage.put(StorageKeys.authenticationCode, "");
-
-      return profile;
-    }),
   validateEmailValidationCode: publicProcedure
     .input(
       z.object({

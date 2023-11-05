@@ -22,17 +22,6 @@ import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
 
-const caller = userRouter.createCaller({
-  req: new Request("http://localhost:8787"),
-  resHeaders: new Headers(),
-  env: {} as Env,
-  state: {} as DurableObjectState,
-});
-
-type ValidateAuthenticationCodeParams = Parameters<
-  typeof caller.validateAuthenticationCode
->[0];
-
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
@@ -232,21 +221,6 @@ export function contextFixture(
               }
 
               return true;
-            },
-          },
-          validateAuthenticationCode: {
-            mutate: async (input: ValidateAuthenticationCodeParams) => {
-              const { code, email, tenantId } = input;
-              if (code === "000000") {
-                throw new InvalidCodeError();
-              }
-
-              caller.validateAuthenticationCode;
-
-              return {
-                client_id: "clientId",
-                email: "test@example.com",
-              };
             },
           },
         }),
