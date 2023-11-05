@@ -160,7 +160,7 @@ export class PasswordlessController extends Controller {
         });
       }
 
-      // validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
+      validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
 
       const authParams: AuthParams = {
         client_id,

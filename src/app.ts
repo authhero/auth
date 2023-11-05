@@ -40,10 +40,10 @@ app.use(
   "/*",
   cors({
     origin: (origin) => {
-      // if (validateUrl(ALLOWED_ORIGINS, origin)) {
-      return origin;
-      // }
-      // return "";
+      if (validateUrl(ALLOWED_ORIGINS, origin)) {
+        return origin;
+      }
+      return "";
     },
     allowHeaders: [
       "Tenant-Id",

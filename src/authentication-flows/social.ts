@@ -96,10 +96,10 @@ export async function socialAuthCallback({
     throw new Error("Redirect URI not defined");
   }
 
-  // validateRedirectUrl(
-  //   client.allowed_callback_urls,
-  //   state.authParams.redirect_uri,
-  // );
+  validateRedirectUrl(
+    client.allowed_callback_urls,
+    state.authParams.redirect_uri,
+  );
 
   const oauth2Client = env.oauth2ClientFactory.create(
     connection,
