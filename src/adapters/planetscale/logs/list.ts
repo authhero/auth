@@ -4,22 +4,42 @@ import { ListParams } from "../../../adapters/interfaces/ListParams";
 
 export function listLogs(db: Kysely<Database>) {
   return async (tenantId, params: ListParams) => {
-    let query = db.selectFrom("logs").where("logs.tenant_id", "=", tenantId);
-
-    if (params.q) {
-      query = query.where((eb) =>
-        eb.or([eb("logs.user_id", "like", `%${params.q}%`)]),
-      );
+    if (!params.q) {
+      throw new Error("No user_id provided");
     }
 
-    if (params.sort && params.sort.sort_by) {
-      const { ref } = db.dynamic;
-      query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
+    const userId = params.q.split("user_id:")[1];
+
+    console.log("userId ", userId);
+
+    if (!userId) {
+      throw new Error("No user_id provided");
     }
 
-    const filteredQuery = query
-      .offset((params.page - 1) * params.per_page)
-      .limit(params.per_page);
+    let query = db
+      .selectFrom("logs")
+      .where("logs.tenant_id", "=", tenantId)
+      .where("logs.user_id", "=", userId);
+
+    // user_id
+
+    console.log("params: ", params);
+
+    // this kept blowing up for me but we could reinstate it...
+    // if (params.q) {
+    //   query = query.where((eb) =>
+    //     eb.or([eb("logs.user_id", "like", `%${params.q}%`)]),
+    //   );
+    // }
+
+    // if (params.sort && params.sort.sort_by) {
+    //   const { ref } = db.dynamic;
+    //   query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
+    // }
+
+    const filteredQuery = query;
+    // .offset((params.page - 1) * params.per_page)
+    // .limit(params.per_page);
 
     const logs = await filteredQuery.selectAll().execute();
 
