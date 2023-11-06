@@ -91,15 +91,16 @@ export class UsersMgmtController extends Controller {
       throw new NotFoundError();
     }
 
+    const { tags, ...userTrimmed } = user;
+
     return {
-      ...user,
+      ...userTrimmed,
       // TODO: add missing properties to conform to auth0
       logins_count: 0,
       last_ip: "",
       last_login: "",
       identities: [],
       user_id: user.id,
-      username: user.email,
     };
   }
 
@@ -154,9 +155,9 @@ export class UsersMgmtController extends Controller {
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
+    @Path("userId") userId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "updated_at"> &
-      Partial<Pick<User, "created_at" | "updated_at">>,
+    user: Omit<User, "tenant_id" | "created_at" | "updated_at" | "id">,
   ): Promise<Profile> {
     const { ctx } = request;
 
