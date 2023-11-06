@@ -91,9 +91,6 @@ export class UsersMgmtController extends Controller {
       throw new NotFoundError();
     }
 
-    // what is this tags field? on list route is coming back as empty arrays, on get route is a stringified array
-    // I do not see a tags fields in Auth0
-    // looks like bleeding in from the SQL and typescript doesn't complain about TOO MANY keys right?
     const { tags, ...userTrimmed } = user;
 
     return {
