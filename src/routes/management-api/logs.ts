@@ -29,7 +29,6 @@ export class LogsController extends Controller {
     @Query() per_page = 20,
     @Query() include_totals = false,
     @Query() sort?: string,
-    @Query() connection?: string,
     @Query() fields?: string,
     @Query() include_fields?: boolean,
     @Query() q?: string,
@@ -47,7 +46,6 @@ export class LogsController extends Controller {
     });
 
     if (include_totals) {
-      // don't like this type casting. copied from users route...
       return result as ListLogsResponse;
     }
 
