@@ -169,11 +169,6 @@ export class UsersMgmtController extends Controller {
       getId(tenantId, user.email),
     );
 
-    // const userInstance = ctx.env.userFactory.getInstanceById(
-    //   // what is this helper?
-    //   getId(tenantId, userId),
-    // );
-
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       tenant_id: tenantId,
