@@ -51,12 +51,9 @@ export interface BaseUser {
   locale?: string;
 }
 
-export interface User extends BaseUser {
-  // what are these tags field? Not in Auth0 spec
-  // tags?: UserTag[];
-}
+export interface User extends BaseUser {}
 
 export interface SqlUser extends BaseUser {
-  // remove this once have removed the field! Otherwise I think will select it anyway
+  // TODO - remove this field from SQL
   tags?: string;
 }

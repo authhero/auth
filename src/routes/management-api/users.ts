@@ -161,10 +161,6 @@ export class UsersMgmtController extends Controller {
   ): Promise<Profile> {
     const { ctx } = request;
 
-    // this is very buggy... it's creating a new user with the same email
-    // if the user doesn't exist in DO  ¯\_(ツ)_/¯
-    // I only just created this though!
-    // why don't we select by user id?
     const userInstance = ctx.env.userFactory.getInstanceByName(
       getId(tenantId, user.email),
     );
