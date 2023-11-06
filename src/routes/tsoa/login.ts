@@ -197,7 +197,6 @@ export class LoginController extends Controller {
     magicLink.searchParams.set("email", loginState.authParams.username);
     magicLink.searchParams.set("verification_code", code);
 
-    // typescript error here? damn! is this serious? seems like we should be going through all these routes <8-0
     await sendCode(env, client, params.username, code, magicLink.href);
 
     this.setHeader(

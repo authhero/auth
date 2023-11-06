@@ -169,7 +169,7 @@ export class UsersMgmtController extends Controller {
     });
     const { tenant_id, id } = result;
     await ctx.env.data.logs.create({
-      category: "update", // ooops! check all categories...
+      category: "update",
       message: "User profile",
       tenant_id,
       user_id: id,
@@ -226,9 +226,8 @@ export class UsersMgmtController extends Controller {
     const linkedUserProfile = await linkedUser.getProfile.query();
     const currentUserProfile = await currentUser.getProfile.query();
 
-    // I might have these logs the wrong way round!
     await env.data.logs.create({
-      category: "login",
+      category: "link",
       message: `Linked to ${currentUserProfile.email}`,
       tenant_id: linkedUserProfile.tenant_id,
       user_id: linkedUserProfile.id,
@@ -241,7 +240,7 @@ export class UsersMgmtController extends Controller {
       linkWithEmail: linkedDbUser.email,
     });
     await env.data.logs.create({
-      category: "login",
+      category: "link",
       message: `Added ${linkedUserProfile.email} as linked user`,
       tenant_id: currentUserProfile.tenant_id,
       user_id: currentUserProfile.id,

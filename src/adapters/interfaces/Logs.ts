@@ -7,7 +7,7 @@ export interface CreateLogParams {
   message: string;
   tenant_id: string;
   user_id: string;
-} // this is the same as Omit<Log, "timestamp" | "id"> - any reason to define it?
+}
 
 export interface ListLogsResponse {
   logs: Log[];
