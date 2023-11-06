@@ -506,10 +506,11 @@ export const userRouter = router({
         ],
       });
 
-      await writeLog(ctx, {
-        category: "login",
-        message: "Login with code",
-      });
+      // is this as far as I got then?
+      // await writeLog(ctx, {
+      //   category: "login",
+      //   message: "Login with code",
+      // });
 
       // Remove once used. Skip for now
       // await ctx.state.storage.put(StorageKeys.authenticationCode, "");
