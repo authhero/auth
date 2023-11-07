@@ -18,6 +18,7 @@ import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
 import generateOTP from "../../utils/otp";
 import { UnauthenticatedError } from "../../errors";
+import { Profile } from "../../types";
 
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -78,14 +79,6 @@ export class PasswordlessController extends Controller {
     });
 
     request.ctx.set("log", `Code: ${code}`);
-    const userProfile = await user.getProfile.query();
-    const { tenant_id, id } = userProfile;
-    await env.data.logs.create({
-      category: "login",
-      message: "Create authentication code",
-      tenant_id,
-      user_id: id,
-    });
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
@@ -170,14 +163,6 @@ export class PasswordlessController extends Controller {
 
       validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
 
-      const { tenant_id, id } = client;
-      await env.data.logs.create({
-        category: "login",
-        message: "Login with code",
-        tenant_id,
-        user_id: user.id,
-      });
-
       const authParams: AuthParams = {
         client_id,
         redirect_uri,
@@ -186,9 +171,11 @@ export class PasswordlessController extends Controller {
         audience,
       };
 
-      const profile = {
+      const profile: Profile = {
         ...user,
         connections: [],
+        id: user.user_id,
+        tenant_id: client.tenant_id,
       };
 
       const sessionId = await setSilentAuthCookies(
