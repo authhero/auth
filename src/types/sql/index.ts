@@ -7,4 +7,5 @@ export * from "./Migration";
 export * from "./Domain";
 export * from "./OTP";
 export * from "./Ticket";
+export * from "./Log";
 export * from "./db";

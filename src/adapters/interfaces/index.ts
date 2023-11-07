@@ -6,7 +6,8 @@ import { OTPAdapter } from "./OTP";
 import { SessionsAdapter } from "./Sessions";
 import { TenantsDataAdapter } from "./Tenants";
 import { TicketsAdapter } from "./Tickets";
-import { UserDataAdapter } from "./User";
+import { UserDataAdapter } from "./Users";
+import { LogsDataAdapter } from "./Logs";
 
 export interface DataAdapters {
   certificates: CertificatesAdapter;
@@ -18,4 +19,5 @@ export interface DataAdapters {
   tenants: TenantsDataAdapter;
   tickets: TicketsAdapter;
   users: UserDataAdapter;
+  logs: LogsDataAdapter;
 }

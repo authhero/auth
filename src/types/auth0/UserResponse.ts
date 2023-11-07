@@ -32,7 +32,6 @@ export interface PostUsersBody extends BaseUser {
 
 export interface UserResponse extends BaseUser {
   email: string; // Overriding: email is mandatory in GetUserResponse
-  username: string;
   created_at: string;
   updated_at: string;
   identities: Identity[];

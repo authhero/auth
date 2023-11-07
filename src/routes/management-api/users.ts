@@ -34,8 +34,6 @@ export interface LinkBodyParams {
 
 @Route("api/v2/users")
 @Tags("management-api")
-// TODO - check with NPM lib auth0/node @ https://github.com/sesamyab/auth0-management-api-demo/ - that this can create the correct token
-// ALSO - are we checking these scopes? read:users update:users create:users delete:users
 @Security("oauth2managementApi", [""])
 export class UsersMgmtController extends Controller {
   @Get("")
@@ -91,15 +89,16 @@ export class UsersMgmtController extends Controller {
       throw new NotFoundError();
     }
 
+    const { tags, ...userTrimmed } = user;
+
     return {
-      ...user,
+      ...userTrimmed,
       // TODO: add missing properties to conform to auth0
       logins_count: 0,
       last_ip: "",
       last_login: "",
       identities: [],
       user_id: user.id,
-      username: user.email,
     };
   }
 
@@ -154,9 +153,9 @@ export class UsersMgmtController extends Controller {
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
+    @Path("userId") userId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "updated_at"> &
-      Partial<Pick<User, "created_at" | "updated_at">>,
+    user: Omit<User, "tenant_id" | "created_at" | "updated_at" | "id">,
   ): Promise<Profile> {
     const { ctx } = request;
 
@@ -167,6 +166,13 @@ export class UsersMgmtController extends Controller {
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       tenant_id: tenantId,
+    });
+    const { tenant_id, id } = result;
+    await ctx.env.data.logs.create({
+      category: "update",
+      message: "User profile",
+      tenant_id,
+      user_id: id,
     });
     return result;
   }
@@ -217,12 +223,28 @@ export class UsersMgmtController extends Controller {
       email: linkedDbUser.email,
       linkWithEmail: currentDbUser.email,
     });
+    const linkedUserProfile = await linkedUser.getProfile.query();
+    const currentUserProfile = await currentUser.getProfile.query();
+
+    await env.data.logs.create({
+      category: "link",
+      message: `Linked to ${currentUserProfile.email}`,
+      tenant_id: linkedUserProfile.tenant_id,
+      user_id: linkedUserProfile.id,
+    });
 
     // Link the parent account
-    return currentUser.linkWithUser.mutate({
+    const returnUser = currentUser.linkWithUser.mutate({
       tenantId,
       email: currentDbUser.email,
       linkWithEmail: linkedDbUser.email,
     });
+    await env.data.logs.create({
+      category: "link",
+      message: `Added ${linkedUserProfile.email} as linked user`,
+      tenant_id: currentUserProfile.tenant_id,
+      user_id: currentUserProfile.id,
+    });
+    return returnUser;
   }
 }

@@ -78,6 +78,14 @@ export class PasswordlessController extends Controller {
     });
 
     request.ctx.set("log", `Code: ${code}`);
+    const userProfile = await user.getProfile.query();
+    const { tenant_id, id } = userProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: "Create authentication code",
+      tenant_id,
+      user_id: id,
+    });
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
@@ -161,6 +169,14 @@ export class PasswordlessController extends Controller {
       }
 
       validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
+
+      const { tenant_id, id } = client;
+      await env.data.logs.create({
+        category: "login",
+        message: "Login with code",
+        tenant_id,
+        user_id: user.id,
+      });
 
       const authParams: AuthParams = {
         client_id,

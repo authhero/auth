@@ -237,6 +237,9 @@ export function contextFixture(
       data: {
         ...data,
         email,
+        logs: {
+          create: () => {},
+        },
       },
     },
   } as unknown as Context<{ Bindings: Env; Variables: Var }>;

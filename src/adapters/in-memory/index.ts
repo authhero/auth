@@ -8,6 +8,7 @@ import { emailAdapter } from "./email";
 import { createOTPAdapter } from "./OTP";
 import { createTicketsAdapter } from "./tickets";
 import { createSessionsAdapter } from "./sessions";
+import { createLogsAdapter } from "./logs";
 
 export default function createAdapters(): DataAdapters {
   return {
@@ -20,5 +21,6 @@ export default function createAdapters(): DataAdapters {
     sessions: createSessionsAdapter(),
     tenants: createTenantsAdapter(),
     tickets: createTicketsAdapter(),
+    logs: createLogsAdapter(),
   };
 }

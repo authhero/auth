@@ -1,5 +1,5 @@
 import { SqlUser } from "../../../types";
-import { UserDataAdapter } from "../../interfaces/User";
+import { UserDataAdapter } from "../../interfaces/Users";
 import { createUser } from "./createUser";
 import { get } from "./get";
 import { getByEmail } from "./getByEmail";
