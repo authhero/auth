@@ -7,10 +7,11 @@ import {
   Route,
   Tags,
   Path,
+  SuccessResponse,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getId, User } from "../../models/User";
-import { getClient } from "../../services/clients";
+import { InvalidRequestError } from "../../errors";
+import { HTTPException } from "hono/http-exception";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -41,6 +42,7 @@ export interface RegisterParams {
 @Tags("dbconnection")
 export class DbConnectionController extends Controller {
   @Post("register")
+  @SuccessResponse(201, "Created")
   public async registerUser(
     @Body() body: RegisterParams,
     @Request() request: RequestWithContext,
@@ -48,24 +50,37 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const client = await getClient(ctx.env, clientId);
+    const client = await ctx.env.data.clients.get(clientId);
 
-    const user = User.getInstanceByName(
-      ctx.env.USER,
-      getId(client.tenant_id, body.email),
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+
+    // Ensure the user exists
+    let user = await ctx.env.data.users.getByEmail(
+      client.tenant_id,
+      body.email,
     );
-    // This throws if if fails
-    const profile = await user.registerPassword.mutate(body.password);
-    // type errors! we have type errors all over this file... is it used? We're not typechecking all our code...
+    if (!user) {
+      user = await ctx.env.data.users.create(client.tenant_id, {
+        email: body.email,
+        email_verified: false,
+      });
+    }
 
-    const { tenant_id, id } = profile;
+    // Store the password
+    await ctx.env.data.passwords.create(client.tenant_id, {
+      user_id: user.id,
+      password: body.password,
+    });
+
+    this.setStatus(201);
     await ctx.env.data.logs.create({
       category: "login",
       message: "User created with password",
-      tenant_id,
-      user_id: id,
+      tenant_id: client.tenant_id,
+      user_id: user.id,
     });
-
     return "OK";
   }
 
@@ -75,42 +90,14 @@ export class DbConnectionController extends Controller {
     @Request() request: RequestWithContext,
     @Path("clientId") clientId: string,
   ): Promise<string> {
-    const { env } = request.ctx;
+    throw new Error("Not implemented");
 
-    const user = User.getInstanceByName(env.USER, getId(clientId, body.email));
-    const { code } = await user.createPasswordResetCode.mutate();
-    const userProfile = await user.getProfile.query();
-    const { tenant_id, id } = userProfile;
-    await env.data.logs.create({
-      category: "login",
-      message: "Send password reset",
-      tenant_id,
-      user_id: id,
-    });
-
-    const client = await getClient(env, clientId);
-    if (!client) {
-      throw new Error("Client not found");
-    }
-
-    const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?email=${body.email}&code=${code}`;
-
-    await env.sendEmail({
-      to: [{ email: body.email, name: "" }],
-      from: {
-        email: client.senderEmail,
-        name: client.senderName,
-      },
-      content: [
-        {
-          type: "text/plain",
-          value: message,
-        },
-      ],
-      subject: "Reset password",
-    });
-
-    return "ok";
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Send password reset",
+    //   tenant_id,
+    //   user_id: id,
+    // });
   }
 
   @Post("verify_email")
@@ -119,22 +106,13 @@ export class DbConnectionController extends Controller {
     @Request() request: RequestWithContext,
     @Path("clientId") clientId: string,
   ): Promise<string> {
-    const { ctx } = request;
+    throw new Error("Not implemented");
 
-    const user = User.getInstanceByName(
-      ctx.env.USER,
-      getId(clientId, body.email),
-    );
-    const profile = await user.validateEmailValidationCode.query(body.code);
-
-    const { tenant_id, id } = profile;
-    await ctx.env.data.logs.create({
-      category: "validation",
-      message: "Validate with code",
-      tenant_id,
-      user_id: id,
-    });
-
-    return "ok";
+    // await ctx.env.data.logs.create({
+    //   category: "validation",
+    //   message: "Validate with code",
+    //   tenant_id,
+    //   user_id: id,
+    // });
   }
 }

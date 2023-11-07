@@ -6,6 +6,7 @@ import {
   AuthorizationResponseType,
   Client,
   Env,
+  PasswordParams,
   SqlUser,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
@@ -28,6 +29,7 @@ export interface ContextFixtureParams {
   tickets?: Ticket[];
   sessions?: Session[];
   otps?: OTP[];
+  passwords?: PasswordParams[];
   users?: PostUsersBody[];
   clients?: KVNamespace;
   userData?: { [key: string]: string | boolean };
@@ -101,6 +103,7 @@ export function contextFixture(
     sessions,
     users,
     otps,
+    passwords,
     email,
   } = params || {};
 
@@ -127,6 +130,12 @@ export function contextFixture(
   if (users) {
     users.forEach((user) => {
       data.users.create("tenantId", user);
+    });
+  }
+
+  if (passwords) {
+    passwords.forEach((password) => {
+      data.passwords.create("tenantId", password);
     });
   }
 

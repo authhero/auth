@@ -9,6 +9,7 @@ import {
   SqlDomain,
   SqlTicket,
   SqlOTP,
+  SqlPassword,
   Log,
 } from "../";
 
@@ -21,6 +22,7 @@ export interface Database {
   connections: SqlConnection;
   migrations: Migration;
   otps: SqlOTP;
+  passwords: SqlPassword;
   sessions: Session;
   tenants: Tenant;
   tickets: SqlTicket;

@@ -60,7 +60,7 @@ export async function ticketAuth(
     state: authParams.state,
     authParams: {
       ...authParams,
-      scope: ticket.authParams.scope,
+      scope: ticket.authParams?.scope,
     },
     sid: sessionId,
     user: profile,
