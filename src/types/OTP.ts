@@ -1,4 +1,7 @@
-import { AuthorizationResponseType } from "./AuthParams";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "./AuthParams";
 
 export interface OTP {
   id: string;
@@ -12,6 +15,7 @@ export interface OTP {
     state?: string;
     scope?: string;
     response_type?: AuthorizationResponseType;
+    response_mode?: AuthorizationResponseMode;
     redirect_uri?: string;
   };
   created_at: Date;

@@ -1,4 +1,4 @@
-import { Context, Hono } from "hono";
+import { Context, Hono, ErrorHandler } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { Env } from "./types/Env";

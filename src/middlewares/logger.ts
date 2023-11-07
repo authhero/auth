@@ -34,6 +34,7 @@ export default async function loggerMiddleware(
     ctx.executionCtx.waitUntil(logResponse(ctx, ctx.res));
   } catch (error: any) {
     ctx.executionCtx.waitUntil(logError(ctx, error as Error));
+
     throw error;
   }
 }

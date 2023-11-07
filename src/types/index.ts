@@ -10,3 +10,5 @@ export * from "./sql";
 export * from "./Session";
 export * from "./OTP";
 export * from "./Ticket";
+export * from "./Code";
+export * from "./Password";

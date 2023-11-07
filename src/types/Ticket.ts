@@ -8,7 +8,7 @@ export interface Ticket {
   tenant_id: string;
   client_id: string;
   email: string;
-  authParams: {
+  authParams?: {
     nonce?: string;
     state?: string;
     scope?: string;

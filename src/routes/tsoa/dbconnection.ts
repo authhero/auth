@@ -7,10 +7,12 @@ import {
   Route,
   Tags,
   Path,
+  SuccessResponse,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId, User } from "../../models/User";
 import { getClient } from "../../services/clients";
+import { InvalidRequestError } from "../../errors";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -41,6 +43,7 @@ export interface RegisterParams {
 @Tags("dbconnection")
 export class DbConnectionController extends Controller {
   @Post("register")
+  @SuccessResponse(201, "Created")
   public async registerUser(
     @Body() body: RegisterParams,
     @Request() request: RequestWithContext,
@@ -48,16 +51,31 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const client = await getClient(ctx.env, clientId);
+    const client = await ctx.env.data.clients.get(clientId);
 
-    const user = User.getInstanceByName(
-      ctx.env.USER,
-      getId(client.tenant_id, body.email),
+    if (!client) {
+      throw new InvalidRequestError("Client not found");
+    }
+
+    // Ensure the user exists
+    let user = await ctx.env.data.users.getByEmail(
+      client.tenant_id,
+      body.email,
     );
-    // This throws if if fails
-    await user.registerPassword.mutate(body.password);
-    // type errors! we have type errors all over this file... is it used? We're not typechecking all our code...
+    if (!user) {
+      user = await ctx.env.data.users.create(client.tenant_id, {
+        email: body.email,
+        email_verified: false,
+      });
+    }
 
+    // Store the password
+    await ctx.env.data.passwords.create(client.tenant_id, {
+      user_id: user.id,
+      password: body.password,
+    });
+
+    this.setStatus(201);
     return "OK";
   }
 

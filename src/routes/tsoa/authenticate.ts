@@ -4,7 +4,8 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
 import { UnauthenticatedError } from "../../errors";
 import randomString from "../../utils/random-string";
-import { Ticket } from "../../types";
+import { AuthParams, Client, Env, Ticket } from "../../types";
+import { HTTPException } from "hono/http-exception";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -49,7 +50,7 @@ export class AuthenticateController extends Controller {
   public async authenticate(
     @Body() body: CodeAuthenticateParams | PasswordAuthenticateParams,
     @Request() request: RequestWithContext,
-  ): Promise<LoginTicket | LoginError> {
+  ): Promise<LoginTicket | LoginError | string> {
     const { env } = request.ctx;
 
     const client = await env.data.clients.get(body.client_id);
@@ -58,122 +59,48 @@ export class AuthenticateController extends Controller {
     }
 
     const email = body.username.toLocaleLowerCase();
+    let ticket: Ticket = {
+      id: nanoid(),
+      tenant_id: client.tenant_id,
+      client_id: client.id,
+      email: email,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + TICKET_EXPIRATION_TIME),
+    };
 
-    const otps = await env.data.OTP.list(client.tenant_id, email);
     if ("otp" in body) {
+      const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
 
       if (!otp) {
-        throw new UnauthenticatedError("Code not found or expired");
+        throw new HTTPException(403);
       }
 
-      const ticket: Ticket = {
-        id: nanoid(),
-        tenant_id: client.tenant_id,
-        client_id: client.id,
-        email: otp.email,
-        authParams: otp.authParams,
-        created_at: new Date(),
-        expires_at: new Date(Date.now() + TICKET_EXPIRATION_TIME),
-      };
-
-      await env.data.tickets.create(ticket);
-
-      return {
-        login_ticket: ticket.id,
-        // TODO: I guess these should be validated when accepting the ticket
-        co_verifier: randomString(32),
-        co_id: randomString(12),
-      };
+      ticket.authParams = otp.authParams;
     } else {
-      throw new Error("Password not supported yet");
+      const user = await env.data.users.getByEmail(client.tenant_id, email);
+
+      if (!user) {
+        throw new HTTPException(403);
+      }
+
+      const { valid } = await env.data.passwords.validate(client.tenant_id, {
+        user_id: user.id,
+        password: body.password,
+      });
+
+      if (!valid) {
+        throw new HTTPException(403);
+      }
     }
 
-    // const user = env.userFactory.getInstanceByName(
-    //   getId(client.tenant_id, email),
-    // );
+    await env.data.tickets.create(ticket);
 
-    // try {
-    //   switch (body.realm) {
-    //     case "email":
-    //       await user.validateAuthenticationCode.mutate({
-    //         code: body.otp,
-    //         email: email,
-    //         tenantId: client.tenant_id,
-    //       });
-    //       break;
-    //     case "Username-Password-Authentication":
-    //       await user.validatePassword.mutate({
-    //         password: body.password,
-    //         email: email,
-    //         tenantId: client.tenant_id,
-    //       });
-    //       break;
-    //     default:
-    //       throw new Error("Unsupported realm");
-    //   }
-
-    //   const coVerifier = randomString(32);
-    //   const coID = randomString(12);
-
-    //   const profile = await handleLinkedAccount(
-    //     env,
-    //     await user.getProfile.query(),
-    //   );
-
-    //   const payload = {
-    //     coVerifier,
-    //     coID,
-    //     username: profile.email,
-    //     userId: `${client.tenant_id}|${profile.email}`,
-    //     authParams: {
-    //       client_id: body.client_id,
-    //       user: profile,
-    //     },
-    //   };
-
-    //   const stateId = env.STATE.newUniqueId().toString();
-    //   const stateInstance = env.stateFactory.getInstanceById(stateId);
-    //   await stateInstance.createState.mutate({
-    //     state: JSON.stringify(payload),
-    //   });
-
-    //   this.setHeader(headers.contentType, contentTypes.json);
-    //   return {
-    //     login_ticket: hexToBase64(stateId),
-    //     co_verifier: coVerifier,
-    //     co_id: coID,
-    //   };
-    // } catch (err: any) {
-    //   this.setStatus(403);
-    //   this.setHeader(headers.contentType, contentTypes.json);
-
-    //   if (err instanceof AuthenticationCodeExpiredError) {
-    //     return {
-    //       error: "access_denied",
-    //       error_description:
-    //         "The verification code has expired. Please try to login again.",
-    //     };
-    //   }
-
-    //   if (err instanceof InvalidCodeError) {
-    //     return {
-    //       error: "access_denied",
-    //       error_description: "Wrong email or verification code.",
-    //     };
-    //   }
-
-    //   if (err instanceof UnauthenticatedError) {
-    //     return {
-    //       error: "access_denied",
-    //       error_description: "Wrong email or password.",
-    //     };
-    //   }
-
-    //   return {
-    //     error: "access_denied",
-    //     error_description: `Server error: ${err.message}`,
-    //   };
-    // }
+    return {
+      login_ticket: ticket.id,
+      // TODO: I guess these should be validated when accepting the ticket
+      co_verifier: randomString(32),
+      co_id: randomString(12),
+    };
   }
 }
