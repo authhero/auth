@@ -51,10 +51,9 @@ export interface BaseUser {
   locale?: string;
 }
 
-export interface User extends BaseUser {
-  tags?: UserTag[];
-}
+export interface User extends BaseUser {}
 
 export interface SqlUser extends BaseUser {
+  // TODO - remove this field from SQL
   tags?: string;
 }

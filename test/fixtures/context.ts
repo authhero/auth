@@ -21,14 +21,14 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-
+import { PostUsersBody } from "../../src/types/auth0/UserResponse";
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
   tickets?: Ticket[];
   sessions?: Session[];
   otps?: OTP[];
-  users?: SqlUser[];
+  users?: PostUsersBody[];
   clients?: KVNamespace;
   userData?: { [key: string]: string | boolean };
   email?: {
@@ -237,6 +237,9 @@ export function contextFixture(
       data: {
         ...data,
         email,
+        logs: {
+          create: () => {},
+        },
       },
     },
   } as unknown as Context<{ Bindings: Env; Variables: Var }>;

@@ -101,6 +101,12 @@ export class AuthenticateController extends Controller {
     //         email: email,
     //         tenantId: client.tenant_id,
     //       });
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Login with code",
+    //   tenant_id,
+    //   user_id: id,
+    // });
     //       break;
     //     case "Username-Password-Authentication":
     //       await user.validatePassword.mutate({
@@ -108,6 +114,12 @@ export class AuthenticateController extends Controller {
     //         email: email,
     //         tenantId: client.tenant_id,
     //       });
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Login with password",
+    //   tenant_id,
+    //   user_id: id,
+    // });
     //       break;
     //     default:
     //       throw new Error("Unsupported realm");

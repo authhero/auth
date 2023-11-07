@@ -18,6 +18,7 @@ import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
 import generateOTP from "../../utils/otp";
 import { UnauthenticatedError } from "../../errors";
+import { Profile } from "../../types";
 
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -152,7 +153,11 @@ export class PasswordlessController extends Controller {
       let user = await env.data.users.getByEmail(client.tenant_id, email);
       if (!user) {
         user = await env.data.users.create(client.tenant_id, {
-          id: `${client.tenant_id}|${nanoid()}`,
+          // this is inconsitent. In other places the ID is just the ID
+          // I think this is where we're going to hit serious issues...
+          // Shouldn't this be done in the sub?
+          // OR IDEALLY have the users.create handle this?
+          // id: `${client.tenant_id}|${nanoid()}`,
           email,
           name: email,
           created_at: new Date(),
@@ -170,9 +175,11 @@ export class PasswordlessController extends Controller {
         audience,
       };
 
-      const profile = {
+      const profile: Profile = {
         ...user,
         connections: [],
+        id: user.user_id,
+        tenant_id: client.tenant_id,
       };
 
       const sessionId = await setSilentAuthCookies(

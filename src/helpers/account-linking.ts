@@ -12,12 +12,22 @@ export async function handleLinkedAccount(env: Env, profile: Profile) {
 
   const { connections, ...profileWithoutConnections } = profile;
 
-  return linkedWith.loginWithConnection.mutate({
+  const connectionName = `linked-user|${profile.email}`;
+
+  const returnProfile = await linkedWith.loginWithConnection.mutate({
     tenantId: profile.tenant_id,
     email: profile.linked_with,
     connection: {
-      name: `linked-user|${profile.email}`,
+      name: connectionName,
       profile: profileWithoutConnections,
     },
+  });
+
+  const { tenant_id, id } = returnProfile;
+  await env.data.logs.create({
+    category: "login",
+    message: `Login with ${connectionName}`,
+    tenant_id,
+    user_id: id,
   });
 }

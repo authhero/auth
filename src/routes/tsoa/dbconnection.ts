@@ -55,8 +55,16 @@ export class DbConnectionController extends Controller {
       getId(client.tenant_id, body.email),
     );
     // This throws if if fails
-    await user.registerPassword.mutate(body.password);
+    const profile = await user.registerPassword.mutate(body.password);
     // type errors! we have type errors all over this file... is it used? We're not typechecking all our code...
+
+    const { tenant_id, id } = profile;
+    await ctx.env.data.logs.create({
+      category: "login",
+      message: "User created with password",
+      tenant_id,
+      user_id: id,
+    });
 
     return "OK";
   }
@@ -71,6 +79,14 @@ export class DbConnectionController extends Controller {
 
     const user = User.getInstanceByName(env.USER, getId(clientId, body.email));
     const { code } = await user.createPasswordResetCode.mutate();
+    const userProfile = await user.getProfile.query();
+    const { tenant_id, id } = userProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: "Send password reset",
+      tenant_id,
+      user_id: id,
+    });
 
     const client = await getClient(env, clientId);
     if (!client) {
@@ -109,7 +125,15 @@ export class DbConnectionController extends Controller {
       ctx.env.USER,
       getId(clientId, body.email),
     );
-    await user.validateEmailValidationCode.query(body.code);
+    const profile = await user.validateEmailValidationCode.query(body.code);
+
+    const { tenant_id, id } = profile;
+    await ctx.env.data.logs.create({
+      category: "validation",
+      message: "Validate with code",
+      tenant_id,
+      user_id: id,
+    });
 
     return "ok";
   }
