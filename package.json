@@ -15,7 +15,8 @@
     "integration": "jest --config jest-integration.config.js --verbose",
     "test-with-coverage": "jest --config jest.config.js --coverage",
     "semantic-release": "semantic-release",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "type-check": "tsc"
   },
   "author": "",
   "license": "MIT",
