@@ -10,6 +10,7 @@ import {
   SqlTicket,
   SqlOTP,
   SqlPassword,
+  Log,
 } from "../";
 
 // Keys of this interface are table names.
@@ -25,4 +26,5 @@ export interface Database {
   sessions: Session;
   tenants: Tenant;
   tickets: SqlTicket;
+  logs: Log;
 }

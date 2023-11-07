@@ -4,7 +4,10 @@ import { PostUsersBody, UserResponse } from "../../../types/auth0";
 import { Database, SqlUser } from "../../../types";
 
 export function createUser(db: Kysely<Database>) {
-  return async (tenantId: string, user: PostUsersBody): Promise<SqlUser> => {
+  return async (
+    tenantId: string,
+    user: PostUsersBody,
+  ): Promise<UserResponse> => {
     // TODO - is POSTing user_id allowed in Auth0 mgmt API?
     const user_id = user.user_id || nanoid();
     const sqlUser: SqlUser = {

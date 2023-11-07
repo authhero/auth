@@ -3,12 +3,10 @@ import { initTRPC } from "@trpc/server";
 import { z, ZodSchema } from "zod";
 import { Context } from "trpc-durable-objects";
 import { nanoid } from "nanoid";
-
 import { NoUserFoundError, NotFoundError, ConflictError } from "../errors";
 import { Env, ProfileSchema } from "../types";
 import { sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
-import { LogMessage } from "../types/LogMessage";
 
 const UserSchema = z.object({
   email: z.string(),
@@ -33,8 +31,6 @@ const UserSchema = z.object({
     )
     .optional(),
 });
-
-const MAX_LOGS_LENGTH = 500;
 
 const t = initTRPC.context<Context<Env>>().create();
 
@@ -80,32 +76,6 @@ async function getProfile(storage: DurableObjectStorage) {
   });
 
   return parseStringToType<Profile>(ProfileSchema, patchedJsonData);
-}
-
-async function getLogs(storage: DurableObjectStorage) {
-  const jsonData = await storage.get<string>(StorageKeys.logs);
-  if (!jsonData) {
-    return [];
-  }
-
-  // return parseStringToType<LogMessage[]>(LogMessageSchemaList, jsonData) || [];
-  return JSON.parse(jsonData) as LogMessage[];
-}
-
-async function writeLog(
-  storage: DurableObjectStorage,
-  message: Omit<LogMessage, "timestamp" | "id">,
-) {
-  // Make space for the new log row
-  const logs = (await getLogs(storage)).slice(-MAX_LOGS_LENGTH + 1);
-
-  logs.push({
-    ...message,
-    id: nanoid(),
-    timestamp: new Date().toISOString(),
-  });
-
-  await storage.put(StorageKeys.logs, JSON.stringify(logs));
 }
 
 // Stores information about the current operation and ensures that the user has an id.
@@ -175,11 +145,6 @@ export const userRouter = router({
 
       const profile = await updateProfile(ctx, input);
 
-      await writeLog(ctx.state.storage, {
-        category: "update",
-        message: "User created",
-      });
-
       return profile;
     }),
   delete: publicProcedure.mutation(async ({ ctx }) => {
@@ -198,7 +163,6 @@ export const userRouter = router({
       UserEvent.userDeleted,
     );
   }),
-  getLogs: publicProcedure.query(async ({ ctx }) => getLogs(ctx.state.storage)),
   getProfile: publicProcedure.query(async ({ ctx }) => {
     const profile = await getProfile(ctx.state.storage);
     if (!profile) {
@@ -227,22 +191,12 @@ export const userRouter = router({
         connections: [input.connection],
       });
 
-      await writeLog(ctx.state.storage, {
-        category: "login",
-        message: `Login with ${input.connection.name}`,
-      });
-
       return profile;
     }),
   patchProfile: publicProcedure
     .input(UserSchema)
     .mutation(async ({ input, ctx }) => {
       const profile = await updateProfile(ctx, input);
-
-      await writeLog(ctx.state.storage, {
-        category: "update",
-        message: "User profile",
-      });
 
       return profile;
     }),

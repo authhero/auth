@@ -74,6 +74,12 @@ export class DbConnectionController extends Controller {
     });
 
     this.setStatus(201);
+    await ctx.env.data.logs.create({
+      category: "login",
+      message: "User created with password",
+      tenant_id: client.tenant_id,
+      user_id: user.id,
+    });
     return "OK";
   }
 
@@ -84,6 +90,13 @@ export class DbConnectionController extends Controller {
     @Path("clientId") clientId: string,
   ): Promise<string> {
     throw new Error("Not implemented");
+
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Send password reset",
+    //   tenant_id,
+    //   user_id: id,
+    // });
   }
 
   @Post("verify_email")
@@ -93,5 +106,12 @@ export class DbConnectionController extends Controller {
     @Path("clientId") clientId: string,
   ): Promise<string> {
     throw new Error("Not implemented");
+
+    // await ctx.env.data.logs.create({
+    //   category: "validation",
+    //   message: "Validate with code",
+    //   tenant_id,
+    //   user_id: id,
+    // });
   }
 }
