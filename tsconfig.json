@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["es2020", "DOM"],
+    "lib": [
+      "es2020",
+      "DOM"
+    ],
     "module": "ESNext",
     "target": "es2020",
     "strict": true,
@@ -24,7 +27,9 @@
       "@types/service-worker-mock"
     ],
     "paths": {
-      "*": ["node_modules/*"]
+      "*": [
+        "node_modules/*"
+      ]
     }
   },
   "include": [
@@ -32,5 +37,10 @@
     "test/**/*",
     "integration-test/test-server.ts",
     "scripts/**/*"
+  ],
+  "exclude": [
+    "build/**/*",
+    "build/routes.ts",
+    "build/*",
   ]
 }
