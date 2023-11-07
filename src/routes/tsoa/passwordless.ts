@@ -153,7 +153,11 @@ export class PasswordlessController extends Controller {
       let user = await env.data.users.getByEmail(client.tenant_id, email);
       if (!user) {
         user = await env.data.users.create(client.tenant_id, {
-          id: `${client.tenant_id}|${nanoid()}`,
+          // this is inconsitent. In other places the ID is just the ID
+          // I think this is where we're going to hit serious issues...
+          // Shouldn't this be done in the sub?
+          // OR IDEALLY have the users.create handle this?
+          // id: `${client.tenant_id}|${nanoid()}`,
           email,
           name: email,
           created_at: new Date(),
