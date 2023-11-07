@@ -11,7 +11,7 @@ export function createUser(users: SqlUser[]) {
       ...user,
       email: user.email || "",
       tenant_id: tenantId,
-      id: nanoid(),
+      id: user.user_id || nanoid(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

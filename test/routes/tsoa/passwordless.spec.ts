@@ -102,11 +102,8 @@ describe("Passwordless", () => {
         ],
         users: [
           {
-            id: "userId",
-            tenant_id: "tenantId",
+            user_id: "userId",
             email: "test@example.com",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
           },
         ],
       });
