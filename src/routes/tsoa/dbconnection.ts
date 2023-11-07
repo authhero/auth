@@ -11,6 +11,7 @@ import {
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { InvalidRequestError } from "../../errors";
+import { HTTPException } from "hono/http-exception";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -52,7 +53,7 @@ export class DbConnectionController extends Controller {
     const client = await ctx.env.data.clients.get(clientId);
 
     if (!client) {
-      throw new InvalidRequestError("Client not found");
+      throw new HTTPException(400, { message: "Client not found" });
     }
 
     // Ensure the user exists

@@ -24,7 +24,7 @@ export function validate(db: Kysely<Database>) {
     if (!bcrypt.compareSync(params.password, password.password)) {
       return {
         valid: false,
-        message: "No password exists",
+        message: "Incorrect password",
       };
     }
 

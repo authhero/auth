@@ -14,7 +14,7 @@ describe("password-flow", () => {
   });
 
   describe("Register password", () => {
-    it.skip("should return a 400 if a invalid client is passed", async () => {
+    it("should return a 400 if an invalid client is passed", async () => {
       await setup(worker);
 
       const response = await worker.fetch(
