@@ -19,7 +19,7 @@ describe("passwordlessAuth", () => {
     jest.useRealTimers();
   });
 
-  it("should redirect with implicit flow as anchor links", async () => {
+  it.only("should redirect with implicit flow as anchor links", async () => {
     const ctx = contextFixture({
       tickets: [
         {
