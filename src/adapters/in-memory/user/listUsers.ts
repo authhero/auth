@@ -9,6 +9,10 @@ export function listUsers(users: UserResponse[]) {
   ): Promise<ListUsersResponse> => {
     return {
       users,
+      // no pagination for now
+      start: 0,
+      limit: 0,
+      length: users.length,
     };
   };
 }
