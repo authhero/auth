@@ -4,7 +4,7 @@ import { PostUsersBody, UserResponse } from "../../types/auth0/UserResponse";
 import { ListParams } from "./ListParams";
 
 export interface ListUsersResponse extends Totals {
-  users: SqlUser[];
+  users: UserResponse[];
 }
 
 export interface UserDataAdapter {
