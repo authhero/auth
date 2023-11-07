@@ -22,7 +22,8 @@ export async function ticketAuth(
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
-      id: `${tenant_id}|${nanoid()}`,
+      // this isn't what we're doing in the database! we store the ID, and we store the tenant_id
+      // id: `${tenant_id}|${nanoid()}`,
       email: ticket.email,
       name: ticket.email,
       created_at: new Date(),
@@ -53,7 +54,9 @@ export async function ticketAuth(
 
   const tokenResponse = await generateAuthResponse({
     env,
-    userId: user.id,
+    // userId: user.id,
+    // should this be called sub?
+    userId: `${tenant_id}|${nanoid()}`,
     state: authParams.state,
     authParams: {
       ...authParams,
