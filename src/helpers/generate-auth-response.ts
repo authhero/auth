@@ -4,7 +4,7 @@ import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { hexToBase64 } from "../utils/base64";
 // import { createRefreshToken } from '../controllers/refresh-tokens';
-import { Profile as User } from "../types";
+import { Profile } from "../types";
 import { TokenFactory } from "../services/token-factory";
 
 export interface GenerateAuthResponseParamsBase {
@@ -19,7 +19,7 @@ export interface GenerateAuthResponseParamsBase {
 export interface GenerateAuthResponseParamsForCode
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.CODE;
-  user: User;
+  user: Profile;
 }
 
 export interface GenerateAuthResponseParamsForToken
