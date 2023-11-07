@@ -8,7 +8,6 @@ export interface ListUsersResponse extends Totals {
 }
 
 export interface UserDataAdapter {
-  create(tenantId: string, PostUsersBody): Promise<SqlUser>;
   get(tenant_id: string, id: string): Promise<SqlUser | null>;
   getByEmail(tenant_id: string, email: string): Promise<SqlUser | null>;
   create(tenantId: string, PostUsersBody): Promise<UserResponse>;

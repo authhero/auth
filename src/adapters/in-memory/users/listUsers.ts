@@ -1,10 +1,11 @@
 import { SqlUser } from "../../../types";
-import { ListUserParams, ListUsersResponse } from "../../interfaces/User";
+import { ListUsersResponse } from "../../interfaces/Users";
+import { ListParams } from "../../interfaces/ListParams";
 
 export function listUsers(users: SqlUser[]) {
   return async (
     tenantId,
-    { page, per_page, include_totals, q }: ListUserParams,
+    { page, per_page, include_totals, q }: ListParams,
   ): Promise<ListUsersResponse> => {
     return {
       users,
