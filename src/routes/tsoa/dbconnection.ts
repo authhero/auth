@@ -11,6 +11,7 @@ import {
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId, User } from "../../models/User";
 import { getClient } from "../../services/clients";
+import sendEmail from "../../services/email";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -54,9 +55,11 @@ export class DbConnectionController extends Controller {
       ctx.env.USER,
       getId(client.tenant_id, body.email),
     );
-    // This throws if if fails
-    const profile = await user.registerPassword.mutate(body.password);
-    // type errors! we have type errors all over this file... is it used? We're not typechecking all our code...
+    const profile = await user.registerPassword.mutate({
+      password: body.password,
+      email: body.email,
+      tenantId: client.tenant_id,
+    });
 
     const { tenant_id, id } = profile;
     await ctx.env.data.logs.create({
@@ -95,11 +98,11 @@ export class DbConnectionController extends Controller {
 
     const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?email=${body.email}&code=${code}`;
 
-    await env.sendEmail({
+    await sendEmail(client, {
       to: [{ email: body.email, name: "" }],
       from: {
-        email: client.senderEmail,
-        name: client.senderName,
+        email: client.tenant.sender_email,
+        name: client.tenant.sender_name,
       },
       content: [
         {
