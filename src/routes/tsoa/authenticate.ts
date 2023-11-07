@@ -102,5 +102,17 @@ export class AuthenticateController extends Controller {
       co_verifier: randomString(32),
       co_id: randomString(12),
     };
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Login with code",
+    //   tenant_id,
+    //   user_id: id,
+    // });
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Login with password",
+    //   tenant_id,
+    //   user_id: id,
+    // });
   }
 }

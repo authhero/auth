@@ -13,7 +13,7 @@ describe("silent-auth", () => {
     worker.stop();
   });
 
-  it("should return a 403 for a invalid silent auth request", async () => {
+  it("should return a 403 for an invalid silent auth request", async () => {
     await setup(worker);
 
     const response = await worker.fetch(

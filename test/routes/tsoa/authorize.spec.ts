@@ -11,6 +11,7 @@ import { InvalidConnectionError } from "../../../src/errors";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
+import { PostUsersBody } from "../../../src/types/auth0/UserResponse";
 
 describe("authorize", () => {
   const date = new Date();
@@ -48,12 +49,9 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const user: SqlUser = {
-        id: "userId",
-        tenant_id: "tenantId",
+      const user: PostUsersBody = {
+        user_id: "userId",
         email: "",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
       const ctx = contextFixture({
@@ -112,12 +110,9 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const user: SqlUser = {
-        id: "userId",
-        tenant_id: "tenantId",
+      const user: PostUsersBody = {
+        user_id: "userId",
         email: "test@example.com",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
       const ctx = contextFixture({

@@ -10,6 +10,7 @@ import { createTicketsAdapter } from "./tickets";
 import { createSessionsAdapter } from "./sessions";
 import { createCodesAdapter } from "./Codes";
 import { createPasswordsAdapter } from "./Passwords";
+import { createLogsAdapter } from "./logs";
 
 export default function createAdapters(): DataAdapters {
   return {
@@ -24,5 +25,6 @@ export default function createAdapters(): DataAdapters {
     sessions: createSessionsAdapter(),
     tenants: createTenantsAdapter(),
     tickets: createTicketsAdapter(),
+    logs: createLogsAdapter(),
   };
 }

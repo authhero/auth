@@ -3,8 +3,6 @@ import { Env, AuthParams, AuthorizationResponseType, Profile } from "../types";
 import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { hexToBase64 } from "../utils/base64";
-// import { createRefreshToken } from '../controllers/refresh-tokens';
-import { Profile as User } from "../types";
 import { TokenFactory } from "../services/token-factory";
 
 export interface GenerateAuthResponseParamsBase {
@@ -19,7 +17,7 @@ export interface GenerateAuthResponseParamsBase {
 export interface GenerateAuthResponseParamsForCode
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.CODE;
-  user: User;
+  user: Profile;
 }
 
 export interface GenerateAuthResponseParamsForToken
@@ -81,6 +79,8 @@ export async function generateTokens(
     aud: authParams.audience,
     scope: authParams.scope || "",
     sub: userId,
+    // TODO - IMHO we should pass this in here to consistently generate just here
+    // sub: `${"tenant_id"}|${userId}`,
     iss: env.ISSUER,
   });
 
