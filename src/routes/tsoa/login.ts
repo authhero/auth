@@ -36,7 +36,7 @@ import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import {
-  sendCode,
+  sendLink,
   sendEmailValidation,
   sendResetPassword,
 } from "../../controllers/email";
@@ -197,7 +197,7 @@ export class LoginController extends Controller {
     magicLink.searchParams.set("email", loginState.authParams.username);
     magicLink.searchParams.set("verification_code", code);
 
-    await sendCode(env, client, params.username, code, magicLink.href);
+    await sendLink(env, client, params.username, code, magicLink.href);
 
     this.setHeader(
       headers.location,
