@@ -1,38 +1,14 @@
 import { createProxy } from "trpc-durable-objects";
-import bcrypt from "bcryptjs";
 import { initTRPC } from "@trpc/server";
 import { z, ZodSchema } from "zod";
 import { Context } from "trpc-durable-objects";
 import { nanoid } from "nanoid";
 
-import generateOTP from "../utils/otp";
-import {
-  UnauthenticatedError,
-  NoUserFoundError,
-  UserConflictError,
-  InvalidCodeError,
-  AuthenticationCodeExpiredError,
-  NoCodeError,
-  NotFoundError,
-  ConflictError,
-} from "../errors";
-import { AuthParams } from "../types/AuthParams";
+import { NoUserFoundError, NotFoundError, ConflictError } from "../errors";
 import { Env, ProfileSchema } from "../types";
 import { sendUserEvent, UserEvent } from "../services/events";
 import { Profile } from "../types";
-import { migratePasswordHook } from "../hooks/migrate-password";
 import { LogMessage } from "../types/LogMessage";
-
-// do these need changing? I'm thinking I've been too aggressive here and these are the DOs which should remain camelcase?
-// BUT if Auth0 does all the user profile (and ONLY the user profile) snake_case everywhere, I think we should copy
-// else we'll end up painting ourselves into a corner
-// TBD
-const CodeSchema = z.object({
-  authParams: z.custom<AuthParams>().optional(),
-  code: z.string(),
-  expireAt: z.number().optional(),
-  password: z.string().optional(),
-});
 
 const UserSchema = z.object({
   email: z.string(),
@@ -60,8 +36,6 @@ const UserSchema = z.object({
 
 const MAX_LOGS_LENGTH = 500;
 
-type Code = z.infer<typeof CodeSchema>;
-
 const t = initTRPC.context<Context<Env>>().create();
 
 const publicProcedure = t.procedure;
@@ -69,10 +43,6 @@ const publicProcedure = t.procedure;
 const router = t.router;
 
 enum StorageKeys {
-  authenticationCode = "authentication-code",
-  emailValidationCode = "email-validation-code",
-  passwordResetCode = "password-reset-code",
-  passwordHash = "password-hash",
   profile = "profile",
   logs = "logs",
 }
@@ -110,24 +80,6 @@ async function getProfile(storage: DurableObjectStorage) {
   });
 
   return parseStringToType<Profile>(ProfileSchema, patchedJsonData);
-}
-
-async function getPasswordResetCode(storage: DurableObjectStorage) {
-  const jsonData = await storage.get<string>(StorageKeys.passwordResetCode);
-
-  return parseStringToType<Code>(CodeSchema, jsonData);
-}
-
-async function getAuthenticationCode(storage: DurableObjectStorage) {
-  const jsonData = await storage.get<string>(StorageKeys.authenticationCode);
-
-  return parseStringToType<Code>(CodeSchema, jsonData);
-}
-
-async function getEmailValidationCode(storage: DurableObjectStorage) {
-  const jsonData = await storage.get<string>(StorageKeys.emailValidationCode);
-
-  return parseStringToType<Code>(CodeSchema, jsonData);
 }
 
 async function getLogs(storage: DurableObjectStorage) {
@@ -211,86 +163,7 @@ async function updateProfile(
   return updatedProfile;
 }
 
-const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
-
-function getNewCodeOrUseExisting(existingCode?: Code | null) {
-  if (
-    existingCode &&
-    existingCode.expireAt &&
-    Date.now() <= existingCode.expireAt
-  ) {
-    return existingCode.code;
-  }
-
-  return generateOTP();
-}
-
 export const userRouter = router({
-  createAuthenticationCode: publicProcedure
-    .input(
-      z.object({
-        authParams: z.custom<AuthParams>(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const existingCode = await getAuthenticationCode(ctx.state.storage);
-
-      const code = getNewCodeOrUseExisting(existingCode);
-
-      const result: Code = {
-        code,
-        expireAt: Date.now() + THIRTY_MINUTES_IN_MS,
-        authParams: input.authParams,
-      };
-
-      await ctx.state.storage.put(
-        StorageKeys.authenticationCode,
-        JSON.stringify(result),
-      );
-
-      await writeLog(ctx.state.storage, {
-        category: "login",
-        message: "Create authentication code",
-      });
-
-      return result;
-    }),
-  createEmailValidationCode: publicProcedure.mutation(async ({ ctx }) => {
-    const result: Code = {
-      code: generateOTP(),
-      expireAt: Date.now() + 300 * 1000,
-    };
-
-    await ctx.state.storage.put(
-      StorageKeys.emailValidationCode,
-      JSON.stringify(result),
-    );
-
-    await writeLog(ctx.state.storage, {
-      category: "login",
-      message: "Create email validation code",
-    });
-
-    return result;
-  }),
-  createPasswordResetCode: publicProcedure.mutation(async ({ ctx }) => {
-    const result: Code = {
-      code: generateOTP(),
-      expireAt: Date.now() + 300 * 1000,
-    };
-
-    await ctx.state.storage.put(
-      StorageKeys.passwordResetCode,
-      JSON.stringify(result),
-    );
-
-    await writeLog(ctx.state.storage, {
-      category: "login",
-      message: "Send password reset",
-    });
-
-    return result;
-  }),
   createUser: publicProcedure
     .input(UserSchema)
     .mutation(async ({ input, ctx }) => {
@@ -334,71 +207,6 @@ export const userRouter = router({
 
     return profile;
   }),
-  linkToUser: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        linkWithEmail: z.string(),
-        tenantId: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const existingProfile = await getProfile(ctx.state.storage);
-      if (!existingProfile) {
-        throw new NotFoundError();
-      }
-
-      if (existingProfile.linked_with) {
-        throw new ConflictError();
-      }
-
-      const profile = await updateProfile(ctx, {
-        tenant_id: input.tenantId,
-        email: input.email,
-        linked_with: input.linkWithEmail,
-      });
-
-      await writeLog(ctx.state.storage, {
-        category: "link",
-        message: `Linked to ${input.linkWithEmail}`,
-      });
-
-      return profile;
-    }),
-  linkWithUser: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        linkWithEmail: z.string(),
-        tenantId: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const existingProfile = await getProfile(ctx.state.storage);
-      if (!existingProfile) {
-        throw new NotFoundError();
-      }
-
-      const profile = await updateProfile(ctx, {
-        tenant_id: input.tenantId,
-        email: input.email,
-        connections: [
-          {
-            name: `linked-user|${input.linkWithEmail}`,
-            profile: {
-              email: input.linkWithEmail,
-            },
-          },
-        ],
-      });
-
-      await writeLog(ctx.state.storage, {
-        category: "link",
-        message: `Added ${input.linkWithEmail} as linked user`,
-      });
-
-      return profile;
-    }),
   loginWithConnection: publicProcedure
     .input(
       z.object({
@@ -437,209 +245,6 @@ export const userRouter = router({
       });
 
       return profile;
-    }),
-  registerPassword: publicProcedure
-    .input(
-      z.object({
-        tenantId: z.string(),
-        email: z.string(),
-        password: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const passwordHash = await getPasswordResetCode(ctx.state.storage);
-
-      if (passwordHash) {
-        throw new UserConflictError();
-      }
-
-      await ctx.state.storage.put(
-        StorageKeys.passwordHash,
-        bcrypt.hashSync(input.password, 10),
-      );
-
-      await writeLog(ctx.state.storage, {
-        category: "login",
-        message: "User created with password",
-      });
-
-      return updateProfile(ctx, {
-        email: input.email,
-        tenant_id: input.tenantId,
-        connections: [
-          {
-            name: "auth",
-            profile: {
-              email: input.email,
-              validated: false,
-            },
-          },
-        ],
-      });
-    }),
-  resetPasswordWithCode: publicProcedure
-    .input(
-      z.object({
-        code: z.string(),
-        password: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const passwordResetCode = await getPasswordResetCode(ctx.state.storage);
-
-      if (!passwordResetCode) {
-        throw new InvalidCodeError("No code set");
-      }
-
-      if (input.code !== passwordResetCode.code) {
-        throw new InvalidCodeError();
-      }
-
-      if (
-        !passwordResetCode.expireAt ||
-        Date.now() > passwordResetCode.expireAt
-      ) {
-        throw new InvalidCodeError("Code expired");
-      }
-
-      await ctx.state.storage.put(
-        StorageKeys.passwordHash,
-        bcrypt.hashSync(input.password, 10),
-      );
-
-      await writeLog(ctx.state.storage, {
-        category: "update",
-        message: "Reset password with code",
-      });
-
-      ctx.state.storage.delete(StorageKeys.passwordResetCode);
-    }),
-  setEmailValidated: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        tenantId: z.string(),
-        validated: z.boolean(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx.state.storage, {
-        category: "update",
-        message: "Set email validated",
-      });
-
-      return updateProfile(ctx, {
-        email: input.email,
-        tenant_id: input.tenantId,
-        connections: [
-          {
-            name: "auth",
-            profile: {
-              email: input.email,
-              validated: input.validated,
-            },
-          },
-        ],
-      });
-    }),
-  setPassword: publicProcedure
-    .input(z.string())
-    .mutation(async ({ input, ctx }) => {
-      await writeLog(ctx.state.storage, {
-        category: "update",
-        message: "Set password",
-      });
-
-      await ctx.state.storage.put(
-        StorageKeys.passwordHash,
-        bcrypt.hashSync(input, 10),
-      );
-    }),
-
-  validateEmailValidationCode: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        tenantId: z.string(),
-        code: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const emailValidation = await getEmailValidationCode(ctx.state.storage);
-
-      if (!emailValidation) {
-        throw new UnauthenticatedError();
-      }
-
-      if (input.code !== emailValidation.code) {
-        throw new InvalidCodeError();
-      }
-
-      if (!emailValidation.expireAt || Date.now() > emailValidation.expireAt) {
-        throw new AuthenticationCodeExpiredError();
-      }
-
-      await writeLog(ctx.state.storage, {
-        category: "validation",
-        message: "Validate with code",
-      });
-
-      // Remove once used
-      await ctx.state.storage.delete(StorageKeys.emailValidationCode);
-
-      // Set the email to validated
-      return updateProfile(ctx, {
-        email: input.email,
-        tenant_id: input.tenantId,
-        connections: [
-          {
-            name: "auth",
-            profile: {
-              email: input.email,
-              validated: true,
-            },
-          },
-        ],
-      });
-    }),
-  validatePassword: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        tenantId: z.string(),
-        password: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const passwordHash = await ctx.state.storage.get<string>(
-        StorageKeys.passwordHash,
-      );
-
-      if (!passwordHash) {
-        if (
-          await migratePasswordHook(
-            ctx.env,
-            input.tenantId,
-            input.email,
-            input.password,
-          )
-        ) {
-          // Hash and store the password used
-          await ctx.state.storage.put(
-            StorageKeys.passwordHash,
-            bcrypt.hashSync(input.password, 10),
-          );
-        } else {
-          throw new NoUserFoundError();
-        }
-      } else if (!bcrypt.compareSync(input.password, passwordHash)) {
-        throw new UnauthenticatedError();
-      }
-
-      await writeLog(ctx.state.storage, {
-        category: "login",
-        message: "Login with password",
-      });
     }),
 });
 

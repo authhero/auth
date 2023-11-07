@@ -10,8 +10,6 @@ import {
   SuccessResponse,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getId, User } from "../../models/User";
-import { getClient } from "../../services/clients";
 import { InvalidRequestError } from "../../errors";
 
 export interface RegisterUserParams {
@@ -85,34 +83,7 @@ export class DbConnectionController extends Controller {
     @Request() request: RequestWithContext,
     @Path("clientId") clientId: string,
   ): Promise<string> {
-    const { env } = request.ctx;
-
-    const user = User.getInstanceByName(env.USER, getId(clientId, body.email));
-    const { code } = await user.createPasswordResetCode.mutate();
-
-    const client = await getClient(env, clientId);
-    if (!client) {
-      throw new Error("Client not found");
-    }
-
-    const message = `Click this link to reset your password: ${env.ISSUER}u/reset-password?email=${body.email}&code=${code}`;
-
-    await env.sendEmail({
-      to: [{ email: body.email, name: "" }],
-      from: {
-        email: client.senderEmail,
-        name: client.senderName,
-      },
-      content: [
-        {
-          type: "text/plain",
-          value: message,
-        },
-      ],
-      subject: "Reset password",
-    });
-
-    return "ok";
+    throw new Error("Not implemented");
   }
 
   @Post("verify_email")
@@ -121,14 +92,6 @@ export class DbConnectionController extends Controller {
     @Request() request: RequestWithContext,
     @Path("clientId") clientId: string,
   ): Promise<string> {
-    const { ctx } = request;
-
-    const user = User.getInstanceByName(
-      ctx.env.USER,
-      getId(clientId, body.email),
-    );
-    await user.validateEmailValidationCode.query(body.code);
-
-    return "ok";
+    throw new Error("Not implemented");
   }
 }

@@ -4,10 +4,10 @@ import { create } from "./create";
 import { list } from "./list";
 
 export function createCodesAdapter(): CodesAdapter {
-  const otpStorage: Code[] = [];
+  const codesStorage: Code[] = [];
 
   return {
-    create: create(otpStorage),
-    list: list(otpStorage),
+    create: create(codesStorage),
+    list: list(codesStorage),
   };
 }
