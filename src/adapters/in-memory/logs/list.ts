@@ -5,7 +5,6 @@ import { Log } from "../../../types";
 export function listLogs(logs: Log[]) {
   return async (
     tenantId,
-    userId,
     { page, per_page, include_totals, q }: ListParams,
   ): Promise<ListLogsResponse> => {
     return {
