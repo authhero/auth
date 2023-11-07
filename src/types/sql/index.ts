@@ -5,4 +5,5 @@ export * from "./User";
 export * from "./Member";
 export * from "./Migration";
 export * from "./Domain";
+export * from "./Log";
 export * from "./db";

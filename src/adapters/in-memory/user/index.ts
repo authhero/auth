@@ -1,10 +1,9 @@
-import { Env } from "../../../types";
 import { UserResponse } from "../../../types/auth0";
-import { UserDataAdapter } from "../../interfaces/User";
+import { UserDataAdapter } from "../../interfaces/Users";
 import { createUser } from "./createUser";
 import { listUsers } from "./listUsers";
 
-export function createUserAdapter(): UserDataAdapter {
+export function createUsersAdapter(): UserDataAdapter {
   const users: UserResponse[] = [];
 
   return {

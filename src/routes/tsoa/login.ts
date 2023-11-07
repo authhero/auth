@@ -152,6 +152,15 @@ export class LoginController extends Controller {
 
     const { code } = await user.createAuthenticationCode.mutate(loginState);
 
+    const userProfile = await user.getProfile.query();
+    const { tenant_id, id } = userProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: "Create authentication code",
+      tenant_id,
+      user_id: id,
+    });
+
     // Add the username to the state
     loginState.authParams.username = params.username;
     await setLoginState(env, state, loginState);
@@ -238,10 +247,18 @@ export class LoginController extends Controller {
     );
 
     try {
-      await user.validateAuthenticationCode.mutate({
+      const profile = await user.validateAuthenticationCode.mutate({
         code: params.code,
         email: loginState.authParams.username,
         tenantId: client.tenant_id,
+      });
+
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "login",
+        message: "Login with code",
+        tenant_id,
+        user_id: id,
       });
     } catch (err) {
       return renderEnterCode(env.AUTH_TEMPLATES, this, {
@@ -285,6 +302,14 @@ export class LoginController extends Controller {
         code: params.code,
         email,
         tenantId: client.tenant_id,
+      });
+
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "validation",
+        message: "Validate with code",
+        tenant_id,
+        user_id: id,
       });
 
       return handleLogin(env, this, profile, loginState);
@@ -337,7 +362,21 @@ export class LoginController extends Controller {
         password: loginParams.password,
       });
 
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "login",
+        message: "User created with password",
+        tenant_id,
+        user_id: id,
+      });
+
       const { code } = await user.createEmailValidationCode.mutate();
+      await env.data.logs.create({
+        category: "login",
+        message: "Create email validation code",
+        tenant_id,
+        user_id: id,
+      });
       await sendEmailValidation(env, client, loginParams.username, code);
 
       if (client.email_validation === "enforced") {
@@ -410,6 +449,14 @@ export class LoginController extends Controller {
     }
 
     const { code } = await user.createPasswordResetCode.mutate();
+    const userProfile = await user.getProfile.query();
+    const { tenant_id, id } = userProfile;
+    await env.data.logs.create({
+      category: "login",
+      message: "Send password reset",
+      tenant_id,
+      user_id: id,
+    });
 
     await sendResetPassword(env, client, params.username, code, state);
 
@@ -460,9 +507,17 @@ export class LoginController extends Controller {
     );
 
     try {
-      await user.resetPasswordWithCode.mutate({
+      const profile = await user.resetPasswordWithCode.mutate({
         code,
         password: params.password,
+      });
+
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "update",
+        message: "Reset password with code",
+        tenant_id,
+        user_id: id,
       });
     } catch (err) {
       return renderResetPassword(env.AUTH_TEMPLATES, this, {
@@ -502,6 +557,14 @@ export class LoginController extends Controller {
       });
       const profile = await user.getProfile.query();
 
+      const { tenant_id, id } = profile;
+      await env.data.logs.create({
+        category: "login",
+        message: "Login with password",
+        tenant_id,
+        user_id: id,
+      });
+
       const authConnection = profile.connections.find((c) => c.name === "auth");
       if (
         !authConnection?.profile?.validated &&
@@ -517,6 +580,14 @@ export class LoginController extends Controller {
         });
 
         const { code } = await user.createEmailValidationCode.mutate();
+        const userProfile = await user.getProfile.query();
+        const { tenant_id, id } = userProfile;
+        await env.data.logs.create({
+          category: "login",
+          message: "Create email validation code",
+          tenant_id,
+          user_id: id,
+        });
         await sendEmailValidation(env, client, profile.email, code);
 
         return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);

@@ -68,6 +68,9 @@ export class AuthenticateController extends Controller {
       getId(client.tenant_id, email),
     );
 
+    const profile = await user.getProfile.query();
+    const { tenant_id, id } = profile;
+
     try {
       switch (body.realm) {
         case "email":
@@ -76,6 +79,13 @@ export class AuthenticateController extends Controller {
             email: email,
             tenantId: client.tenant_id,
           });
+
+          await env.data.logs.create({
+            category: "login",
+            message: "Login with code",
+            tenant_id,
+            user_id: id,
+          });
           break;
         case "Username-Password-Authentication":
           await user.validatePassword.mutate({
@@ -83,6 +93,14 @@ export class AuthenticateController extends Controller {
             email: email,
             tenantId: client.tenant_id,
           });
+
+          await env.data.logs.create({
+            category: "login",
+            message: "Login with password",
+            tenant_id,
+            user_id: id,
+          });
+
           break;
         default:
           throw new Error("Unsupported realm");
@@ -91,10 +109,7 @@ export class AuthenticateController extends Controller {
       const coVerifier = randomString(32);
       const coID = randomString(12);
 
-      const profile = await handleLinkedAccount(
-        env,
-        await user.getProfile.query(),
-      );
+      await handleLinkedAccount(env, await user.getProfile.query());
 
       const payload = {
         coVerifier,

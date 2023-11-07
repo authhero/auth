@@ -1,6 +1,6 @@
 import { getDb } from "../../../services/db";
 import { Env } from "../../../types";
-import { UserDataAdapter } from "../../interfaces/User";
+import { UserDataAdapter } from "../../interfaces/Users";
 import { createUser } from "./createUser";
 import { listUsers } from "./listUsers";
 
