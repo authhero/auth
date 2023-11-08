@@ -69,12 +69,6 @@ export function listUsers(db: Kysely<Database>) {
       return userResponse;
     });
 
-    if (!params.include_totals) {
-      return {
-        users,
-      };
-    }
-
     const [{ count }] = await query
       .select((eb) => eb.fn.countAll().as("count"))
       .execute();

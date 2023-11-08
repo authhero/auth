@@ -15,7 +15,7 @@ import {
   Put,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-
+import { RequestWithContext } from "../../types/RequestWithContext";
 import { getDb } from "../../services/db";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
