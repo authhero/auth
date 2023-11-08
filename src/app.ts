@@ -34,6 +34,7 @@ const ALLOWED_ORIGINS = [
   "https://auth-admin.sesamy.dev",
   "https://login2.sesamy.com",
   "https://auth-admin.sesamy.com",
+  "https://appleid.apple.com",
 ];
 
 app.use(
@@ -66,6 +67,7 @@ app.use(loggerMiddleware);
 app.get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
   return ctx.json({
     name: packageJson.name,
+    foo: "bar",
     version: packageJson.version,
   });
 });
