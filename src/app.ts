@@ -67,7 +67,6 @@ app.use(loggerMiddleware);
 app.get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
   return ctx.json({
     name: packageJson.name,
-    foo: "bar",
     version: packageJson.version,
   });
 });
