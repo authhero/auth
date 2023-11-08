@@ -39,35 +39,35 @@ export function listUsers(db: Kysely<Database>) {
 
     const usersRaw = await filteredQuery.selectAll().execute();
 
-    // const users: UserResponse[] = usersRaw.map((user) => {
-    //   const { id, updated_at, ...userWithoutFields } = user;
+    const users: UserResponse[] = usersRaw.map((user) => {
+      const { id, updated_at, ...userWithoutFields } = user;
 
-    //   const tags = JSON.parse(user.tags || "[]");
+      const tags = JSON.parse(user.tags || "[]");
 
-    //   const userResponse: UserResponse = {
-    //     user_id: user.id,
-    //     // TODO: store this field in sql
-    //     email_verified: true,
-    //     username: user.email,
-    //     phone_number: "",
-    //     phone_verified: false,
-    //     updated_at,
-    //     logins_count: 0,
-    //     identities: tags.map((tag) => ({
-    //       profileData: {
-    //         email: user.email,
-    //         user_id: user.id,
-    //         is_social: true,
-    //         connection: tag,
-    //       },
-    //     })),
-    //     ...userWithoutFields,
-    //     // Deprecated
-    //     tags,
-    //   };
+      const userResponse: UserResponse = {
+        user_id: user.id,
+        // TODO: store this field in sql
+        email_verified: true,
+        username: user.email,
+        phone_number: "",
+        phone_verified: false,
+        updated_at,
+        logins_count: 0,
+        identities: tags.map((tag) => ({
+          profileData: {
+            email: user.email,
+            user_id: user.id,
+            is_social: true,
+            connection: tag,
+          },
+        })),
+        ...userWithoutFields,
+        // Deprecated
+        tags,
+      };
 
-    //   return userResponse;
-    // });
+      return userResponse;
+    });
 
     // if (!params.include_totals) {
     //   return {
@@ -82,7 +82,7 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      users: usersRaw,
+      users,
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,
