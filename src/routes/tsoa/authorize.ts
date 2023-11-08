@@ -117,10 +117,14 @@ export class AuthorizeController extends Controller {
     }
 
     if (authParams.redirect_uri) {
-      validateRedirectUrl(
-        client.allowed_callback_urls,
-        authParams.redirect_uri,
-      );
+      if (
+        !validateRedirectUrl(
+          client.allowed_callback_urls,
+          authParams.redirect_uri,
+        )
+      ) {
+        throw new Error("Invalid redirect URI");
+      }
     }
 
     // Silent authentication
