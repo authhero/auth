@@ -1,4 +1,4 @@
-import { InvalidRedirectError } from "../errors";
+import { HTTPException } from "hono/http-exception";
 
 function matchHostnameWithWildcards(
   allowedHostname: string,
@@ -160,5 +160,7 @@ export function validateUrl(allowedUrls: string[], redirectUri?: string) {
     return true;
   }
 
-  throw new InvalidRedirectError("Invalid redirectUri");
+  throw new HTTPException(400, {
+    message: `Invalid redirectUri: ${redirectUri}`,
+  });
 }
