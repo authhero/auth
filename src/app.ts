@@ -34,6 +34,7 @@ const ALLOWED_ORIGINS = [
   "https://auth-admin.sesamy.dev",
   "https://login2.sesamy.com",
   "https://auth-admin.sesamy.com",
+  "https://appleid.apple.com",
 ];
 
 app.use(
