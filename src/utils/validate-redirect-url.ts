@@ -1,5 +1,4 @@
 import { HTTPException } from "hono/http-exception";
-import { InvalidRedirectError } from "../errors";
 
 function matchHostnameWithWildcards(
   allowedHostname: string,
