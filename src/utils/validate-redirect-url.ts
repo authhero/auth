@@ -148,7 +148,8 @@ export function validateRedirectUrl(
 
 export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   if (!redirectUri) {
-    return;
+    // I'm not sure about this one... I'm matching existing tests
+    return false;
   }
 
   const matches: boolean[] = allowedUrls.map((allowedUrl) => {
@@ -160,7 +161,5 @@ export function validateUrl(allowedUrls: string[], redirectUri?: string) {
     return true;
   }
 
-  throw new HTTPException(400, {
-    message: `Invalid redirectUri: ${redirectUri}`,
-  });
+  return false;
 }
