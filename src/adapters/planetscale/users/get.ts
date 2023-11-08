@@ -11,6 +11,18 @@ export function get(db: Kysely<Database>) {
       .selectAll()
       .executeTakeFirst();
 
-    return user || null;
+    if (!user) {
+      return null;
+    }
+
+    const userResponse: UserResponse = {
+      ...user,
+      logins_count: 0,
+      username: user.email,
+      identities: [],
+      user_id: user.id,
+    };
+
+    return userResponse;
   };
 }
