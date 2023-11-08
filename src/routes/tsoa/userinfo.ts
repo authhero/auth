@@ -18,8 +18,10 @@ export class UserinfoController extends Controller {
     const db = getDb(env);
     const dbUser = await db
       .selectFrom("users")
-      // what should be happening here? state is not a key on ctx...
-      .where("users.id", "=", ctx.state.user.sub)
+      // previously this was this
+      // .where("users.id", "=", ctx.state.user.sub)
+      // this fixes typescript, but we need to test this!
+      .where("users.id", "=", ctx.var.userId)
       .selectAll()
       .executeTakeFirst();
 
