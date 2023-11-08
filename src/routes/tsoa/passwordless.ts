@@ -171,7 +171,7 @@ export class PasswordlessController extends Controller {
         user_id: id,
       });
 
-      if (validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
+      if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
         throw new Error("Invalid redirect URI");
       }
 
