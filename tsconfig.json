@@ -32,6 +32,5 @@
     "test/**/*",
     "integration-test/test-server.ts",
     "scripts/**/*"
-  ],
-  "exclude": ["build/**/*", "build/routes.ts", "build/*"]
+  ]
 }
