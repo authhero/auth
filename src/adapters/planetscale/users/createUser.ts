@@ -1,14 +1,10 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { PostUsersBody, UserResponse } from "../../../types/auth0";
+import { PostUsersBody } from "../../../types/auth0";
 import { Database, SqlUser } from "../../../types";
 
 export function createUser(db: Kysely<Database>) {
-  return async (
-    tenantId: string,
-    user: PostUsersBody,
-  ): Promise<UserResponse> => {
-    // TODO - is POSTing user_id allowed in Auth0 mgmt API?
+  return async (tenantId: string, user: PostUsersBody): Promise<SqlUser> => {
     const user_id = user.user_id || nanoid();
     const sqlUser: SqlUser = {
       id: user_id,
@@ -26,28 +22,6 @@ export function createUser(db: Kysely<Database>) {
 
     await db.insertInto("users").values(sqlUser).execute();
 
-    // TODO - use type SqlUser everywhere internally
-    // return sqlUser;
-
-    const userResponse: UserResponse = {
-      ...sqlUser,
-      logins_count: 0,
-      username: sqlUser.email,
-      identities: [],
-      user_id,
-    };
-
-    return userResponse;
-
-    // const { updated_at, id, ...userWithoutFields } = sqlUser;
-
-    // return {
-    //   ...userWithoutFields,
-    //   updated_at,
-    //   logins_count: 0,
-    //   username: sqlUser.email,
-    //   identities: [],
-    //   user_id,
-    // };
+    return sqlUser;
   };
 }
