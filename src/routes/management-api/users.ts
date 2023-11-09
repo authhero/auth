@@ -168,7 +168,16 @@ export class UsersMgmtController extends Controller {
     const data = await env.data.users.create(tenantId, user);
 
     this.setStatus(201);
-    return data;
+    const userResponse: UserResponse = {
+      ...data,
+      user_id: data.id,
+      logins_count: 0,
+      last_ip: "",
+      last_login: "",
+      identities: [],
+    };
+
+    return userResponse;
   }
 
   @Patch("{userId}")
