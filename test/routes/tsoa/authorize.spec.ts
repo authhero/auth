@@ -5,13 +5,12 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
   CodeChallengeMethod,
-  SqlUser,
+  SqlCreateUser,
 } from "../../../src/types";
 import { InvalidConnectionError } from "../../../src/errors";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
-import { PostUsersBody } from "../../../src/types/auth0/UserResponse";
 
 describe("authorize", () => {
   const date = new Date();
@@ -49,9 +48,10 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const user: PostUsersBody = {
-        user_id: "userId",
+      const user: SqlCreateUser = {
+        id: "userId",
         email: "",
+        tenant_id: "tenantId",
       };
 
       const ctx = contextFixture({
@@ -110,9 +110,10 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const user: PostUsersBody = {
-        user_id: "userId",
+      const user: SqlCreateUser = {
+        id: "userId",
         email: "test@example.com",
+        tenant_id: "tenantId",
       };
 
       const ctx = contextFixture({

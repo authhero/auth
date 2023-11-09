@@ -102,8 +102,9 @@ describe("Passwordless", () => {
         ],
         users: [
           {
-            user_id: "userId",
+            id: "userId",
             email: "test@example.com",
+            tenant_id: "tenantId",
           },
         ],
       });
