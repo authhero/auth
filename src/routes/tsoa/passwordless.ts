@@ -178,7 +178,6 @@ export class PasswordlessController extends Controller {
       const profile: Profile = {
         ...user,
         connections: [],
-        id: user.user_id,
         tenant_id: client.tenant_id,
       };
 
