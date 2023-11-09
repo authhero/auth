@@ -34,14 +34,16 @@ import { z } from "zod";
 //   "family_name": ""
 // }
 
+// what is this used for? ahhh, I think this is just the same Auth0 type I've made in UserResponse...  compare and combine... BUT name after Auth0
 interface Connection {
   name: string;
   profile?: { [key: string]: string | boolean | number };
 }
 
+// can we nuke this now? and the profile schema? that's the whole point of this ticket!
 export type Profile = {
-  id: string;
-  tenant_id: string;
+  id: string; // nope, this doesn't match auth0
+  tenant_id: string; // and this also doesn't exist on auth0!
   email: string;
   created_at: string;
   updated_at: string;
@@ -51,8 +53,9 @@ export type Profile = {
   name?: string;
   picture?: string;
   locale?: string;
+  // up until here it's just SQL user, but then with Connections also... which isn't an Auth0 field
   linked_with?: string;
-  connections: Connection[];
+  connections: Connection[]; // and another one! looks more like SqlUser
 };
 
 const ConnectionSchema = z.object({

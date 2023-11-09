@@ -1,4 +1,3 @@
-import { UserResponse, Totals } from "../../../types/auth0";
 import { ListUsersResponse } from "../../interfaces/Users";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
