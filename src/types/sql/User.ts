@@ -3,12 +3,13 @@ export interface UserTag {
   category: string;
 }
 
-export interface BaseSqlUser {
-  id: string;
+interface BaseSqlUser {
+  // should this be optional?
+  // I want the adapter interface to only use Sql types right?
+  // SO YES! then extend from this...
+  // SqlCreateUser? Hmmmm TBD
   email: string;
   tenant_id: string;
-  created_at: string;
-  updated_at: string;
   given_name?: string;
   family_name?: string;
   nickname?: string;
@@ -17,7 +18,14 @@ export interface BaseSqlUser {
   locale?: string;
 }
 
+export interface SqlCreateUser extends BaseSqlUser {
+  id?: string;
+}
+
 export interface SqlUser extends BaseSqlUser {
+  id: string;
   // TODO - remove this field from SQL
   tags?: string;
+  created_at: string;
+  updated_at: string;
 }
