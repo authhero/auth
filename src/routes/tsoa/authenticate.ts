@@ -68,8 +68,8 @@ export class AuthenticateController extends Controller {
       getId(client.tenant_id, email),
     );
 
-    const profile = await user.getProfile.query();
-    const { tenant_id, id } = profile;
+    // const profile = await user.getProfile.query();
+    // const { tenant_id, id } = profile;
 
     try {
       switch (body.realm) {
@@ -80,12 +80,12 @@ export class AuthenticateController extends Controller {
             tenantId: client.tenant_id,
           });
 
-          await env.data.logs.create({
-            category: "login",
-            message: "Login with code",
-            tenant_id,
-            user_id: id,
-          });
+          // await env.data.logs.create({
+          //   category: "login",
+          //   message: "Login with code",
+          //   tenant_id,
+          //   user_id: id,
+          // });
           break;
         case "Username-Password-Authentication":
           await user.validatePassword.mutate({
@@ -94,12 +94,12 @@ export class AuthenticateController extends Controller {
             tenantId: client.tenant_id,
           });
 
-          await env.data.logs.create({
-            category: "login",
-            message: "Login with password",
-            tenant_id,
-            user_id: id,
-          });
+          // await env.data.logs.create({
+          //   category: "login",
+          //   message: "Login with password",
+          //   tenant_id,
+          //   user_id: id,
+          // });
 
           break;
         default:
@@ -109,7 +109,9 @@ export class AuthenticateController extends Controller {
       const coVerifier = randomString(32);
       const coID = randomString(12);
 
-      await handleLinkedAccount(env, await user.getProfile.query());
+      const profile = await user.getProfile.query();
+
+      await handleLinkedAccount(env, profile);
 
       const payload = {
         coVerifier,
