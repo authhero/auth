@@ -26,6 +26,7 @@ import {
   // and then we want internal types... which are defined on our interfaces... TBD
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
+import { SqlCreateUser } from "../../types";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -166,7 +167,19 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const data = await env.data.users.create(tenantId, user);
+    const { email } = user;
+
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
+    const sqlCreateUser: SqlCreateUser = {
+      ...user,
+      tenant_id: tenantId,
+      email,
+    };
+
+    const data = await env.data.users.create(tenantId, sqlCreateUser);
 
     this.setStatus(201);
     const userResponse: UserResponse = {

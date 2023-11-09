@@ -160,8 +160,7 @@ export class PasswordlessController extends Controller {
           // id: `${client.tenant_id}|${nanoid()}`,
           email,
           name: email,
-          created_at: new Date(),
-          updated_at: new Date(),
+          tenant_id: client.tenant_id,
         });
       }
 
