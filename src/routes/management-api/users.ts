@@ -18,7 +18,6 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
-import { User } from "../../types/sql/User";
 import { Profile } from "../../types";
 import {
   UserResponse,
@@ -188,17 +187,26 @@ export class UsersMgmtController extends Controller {
     @Header("tenant-id") tenantId: string,
     @Path("userId") userId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "updated_at" | "id">,
+    user: PostUsersBody,
   ): Promise<Profile> {
     const { ctx } = request;
 
+    const { email } = user;
+
+    // this is how our system works... doesn't match auth0 though
+    // but if our Id for the DO requires an email... it is
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
     const userInstance = ctx.env.userFactory.getInstanceByName(
-      getId(tenantId, user.email),
+      getId(tenantId, email),
     );
 
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       tenant_id: tenantId,
+      email,
     });
     const { tenant_id, id } = result;
     await ctx.env.data.logs.create({

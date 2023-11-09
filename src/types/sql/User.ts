@@ -3,7 +3,7 @@ export interface UserTag {
   category: string;
 }
 
-export interface BaseUser {
+export interface BaseSqlUser {
   id: string;
   email: string;
   tenant_id: string;
@@ -17,9 +17,7 @@ export interface BaseUser {
   locale?: string;
 }
 
-export interface User extends BaseUser {}
-
-export interface SqlUser extends BaseUser {
+export interface SqlUser extends BaseSqlUser {
   // TODO - remove this field from SQL
   tags?: string;
 }
