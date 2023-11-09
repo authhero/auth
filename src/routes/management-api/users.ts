@@ -23,6 +23,8 @@ import { Profile } from "../../types";
 import {
   UserResponse,
   PostUsersBody,
+  // naming is start to get odd here. I suppose we want auth0 types that mirror the mgmt api
+  // and then we want internal types... which are defined on our interfaces... TBD
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 
