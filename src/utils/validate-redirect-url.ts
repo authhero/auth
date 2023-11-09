@@ -151,13 +151,7 @@ export function validateUrl(allowedUrls: string[], redirectUri?: string) {
     return true;
   }
 
-  const matches: boolean[] = allowedUrls.map((allowedUrl) => {
-    return matchUrlWithAllowedUrl(allowedUrl, redirectUri);
-  });
-
-  if (matches.some((match) => match)) {
-    return true;
-  }
-
-  return false;
+  return allowedUrls.some((allowedUrl) =>
+    matchUrlWithAllowedUrl(allowedUrl, redirectUri),
+  );
 }
