@@ -1,11 +1,10 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { PostUsersBody } from "../../../types/auth0";
-import { Database, SqlUser } from "../../../types";
+import { Database, SqlUser, SqlCreateUser } from "../../../types";
 
 export function createUser(db: Kysely<Database>) {
-  return async (tenantId: string, user: PostUsersBody): Promise<SqlUser> => {
-    const user_id = user.user_id || nanoid();
+  return async (tenantId: string, user: SqlCreateUser): Promise<SqlUser> => {
+    const user_id = user.id || nanoid();
     const sqlUser: SqlUser = {
       id: user_id,
       email: user.email || "",

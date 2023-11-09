@@ -1,14 +1,13 @@
-import { SqlUser } from "../../../types";
-import { PostUsersBody } from "../../../types/auth0/UserResponse";
+import { SqlUser, SqlCreateUser } from "../../../types";
 import { nanoid } from "nanoid";
 
 export function createUser(users: SqlUser[]) {
-  return async (tenantId: string, user: PostUsersBody): Promise<SqlUser> => {
+  return async (tenantId: string, user: SqlCreateUser): Promise<SqlUser> => {
     const sqlUser: SqlUser = {
       ...user,
       email: user.email || "",
       tenant_id: tenantId,
-      id: user.user_id || nanoid(),
+      id: user.id || nanoid(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
