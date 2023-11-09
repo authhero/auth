@@ -42,10 +42,10 @@ app.use(
   cors({
     origin: (origin) => {
       if (!origin) return "";
-      if (!validateUrl(ALLOWED_ORIGINS, origin)) {
-        throw new Error("Invalid origin");
+      if (validateUrl(ALLOWED_ORIGINS, origin)) {
+        return origin;
       }
-      return origin;
+      return "";
     },
     allowHeaders: [
       "Tenant-Id",
