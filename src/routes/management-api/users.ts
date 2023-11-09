@@ -27,6 +27,7 @@ import {
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 import { SqlCreateUser } from "../../types";
+import { HTTPException } from "hono/http-exception";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -170,7 +171,7 @@ export class UsersMgmtController extends Controller {
     const { email } = user;
 
     if (!email) {
-      throw new Error("Email is required");
+      throw new HTTPException(400, { message: "Email is required" });
     }
 
     const sqlCreateUser: SqlCreateUser = {
