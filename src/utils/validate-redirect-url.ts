@@ -148,8 +148,7 @@ export function validateRedirectUrl(
 
 export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   if (!redirectUri) {
-    // I'm not sure about this one... I'm matching existing tests
-    return false;
+    return true;
   }
 
   const matches: boolean[] = allowedUrls.map((allowedUrl) => {
@@ -157,7 +156,6 @@ export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   });
 
   if (matches.some((match) => match)) {
-    // to maintain current functionality I'm returning true, or throwing an error for false
     return true;
   }
 

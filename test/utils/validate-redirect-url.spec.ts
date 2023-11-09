@@ -121,11 +121,10 @@ describe("validateRedirectUrl", () => {
     expect(validateRedirectUrl(allowedUrls, redirectUri)).toBe(true);
   });
 
-  // should this throw na exception?
-  it("should return false if no redirect uri is provided", () => {
+  it("should return true if no redirect uri is provided", () => {
     const allowedUrls = ["http://foo.com"];
     const redirectUri = undefined;
-    expect(validateRedirectUrl(allowedUrls, redirectUri)).toBe(false);
+    expect(validateRedirectUrl(allowedUrls, redirectUri)).toBe(true);
   });
 
   it("should throw an exception if redirectUri is no a real URL", () => {
