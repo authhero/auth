@@ -62,11 +62,33 @@ export class UsersMgmtController extends Controller {
       q,
     });
 
+    const users: UserResponse[] = result.users.map((user) => {
+      const { tags, ...userTrimmed } = user;
+
+      return {
+        ...userTrimmed,
+        user_id: user.id,
+        logins_count: 0,
+        last_ip: "",
+        last_login: "",
+        identities: [],
+      };
+    });
+
     if (include_totals) {
-      return result as GetUserResponseWithTotals;
+      // ah but don't we need to actually provide the totals here?
+      // this "as" is going to hide issues
+      const res: GetUserResponseWithTotals = {
+        users,
+        length: result.length,
+        start: result.start,
+        limit: result.limit,
+      };
+
+      return res;
     }
 
-    return result.users;
+    return users;
   }
 
   @Get("{userId}")
