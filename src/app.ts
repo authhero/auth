@@ -41,6 +41,7 @@ app.use(
   "/*",
   cors({
     origin: (origin) => {
+      if (!origin) return "";
       if (validateUrl(ALLOWED_ORIGINS, origin)) {
         return origin;
       }

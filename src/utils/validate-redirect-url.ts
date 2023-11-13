@@ -148,19 +148,10 @@ export function validateRedirectUrl(
 
 export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   if (!redirectUri) {
-    return;
-  }
-
-  const matches: boolean[] = allowedUrls.map((allowedUrl) => {
-    return matchUrlWithAllowedUrl(allowedUrl, redirectUri);
-  });
-
-  if (matches.some((match) => match)) {
-    // to maintain current functionality I'm returning true, or throwing an error for false
     return true;
   }
 
-  throw new HTTPException(400, {
-    message: `Invalid redirectUri: ${redirectUri}`,
-  });
+  return allowedUrls.some((allowedUrl) =>
+    matchUrlWithAllowedUrl(allowedUrl, redirectUri),
+  );
 }
