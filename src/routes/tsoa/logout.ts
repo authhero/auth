@@ -12,7 +12,7 @@ import { getClient } from "../../services/clients";
 import { serializeClearCookie } from "../../services/cookies";
 import { headers } from "../../constants";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
-
+import { HTTPException } from "hono/http-exception";
 @Route("v2/logout")
 @Tags("logout")
 export class LogoutController extends Controller {
@@ -34,7 +34,9 @@ export class LogoutController extends Controller {
     }
 
     if (!validateRedirectUrl(client.allowed_logout_urls, redirectUri)) {
-      throw new Error("Invalid logout url");
+      throw new HTTPException(403, {
+        message: `Invalid logout URI - ${redirectUri}`,
+      });
     }
 
     this.setStatus(302);
