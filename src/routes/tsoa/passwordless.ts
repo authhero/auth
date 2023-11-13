@@ -71,6 +71,7 @@ export class PasswordlessController extends Controller {
       "ulf.lindberg@maxm.se",
       "markus+23@sesamy.com",
       "klara.lindstroem@hmc.ox.ac.uk",
+      "carlotta.granath@next-tech.com",
     ].includes(email)
       ? { code: "531523" }
       : await user.createAuthenticationCode.mutate({
