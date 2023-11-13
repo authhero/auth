@@ -476,6 +476,7 @@ export const userRouter = router({
         "ulf.lindberg@maxm.se",
         "markus+23@sesamy.com",
         "klara.lindstroem@hmc.ox.ac.uk",
+        "carlotta.granath@next-tech.com",
       ].includes(input.email)
         ? { code: "531523", expireAt: Date.now() + THIRTY_MINUTES_IN_MS }
         : await getAuthenticationCode(ctx.state.storage);
