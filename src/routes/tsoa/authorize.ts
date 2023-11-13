@@ -23,6 +23,7 @@ import {
   universalAuth,
 } from "../../authentication-flows";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
+import { HTTPException } from "hono/http-exception";
 
 export interface AuthorizeParams {
   request: RequestWithContext;
@@ -123,7 +124,9 @@ export class AuthorizeController extends Controller {
           authParams.redirect_uri,
         )
       ) {
-        throw new Error("Invalid redirect URI");
+        throw new HTTPException(400, {
+          message: `Invalid redirect URI - ${authParams.redirect_uri}`,
+        });
       }
     }
 

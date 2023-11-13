@@ -19,7 +19,7 @@ import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
 import { getId } from "../../models";
-
+import { HTTPException } from "hono/http-exception";
 export interface PasswordlessOptions {
   client_id: string;
   client_secret?: string;
@@ -172,7 +172,9 @@ export class PasswordlessController extends Controller {
       });
 
       if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
-        throw new Error("Invalid redirect URI");
+        throw new HTTPException(400, {
+          message: `Invalid redirect URI - ${redirect_uri}`,
+        });
       }
 
       const authParams: AuthParams = {
