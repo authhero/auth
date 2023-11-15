@@ -41,6 +41,9 @@ import {
   sendResetPassword,
 } from "../../controllers/email";
 
+// duplicated from /passwordless route
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
+
 export interface LoginParams {
   username: string;
   password: string;
@@ -147,9 +150,6 @@ export class LoginController extends Controller {
     const client = await getClient(env, loginState.authParams.client_id);
 
     const code = generateOTP();
-
-    // duplicated from /passwordless route
-    const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
     await env.data.OTP.create({
       id: nanoid(),
@@ -354,61 +354,89 @@ export class LoginController extends Controller {
     const loginState = await getLoginState(env, state);
 
     const client = await getClient(env, loginState.authParams.client_id);
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, loginParams.username),
-    );
 
     if (loginState.authParams.username !== loginParams.username) {
       loginState.authParams.username = loginParams.username;
       await setLoginState(env, state, loginState);
     }
 
-    throw new Error("Not implemented");
+    try {
+      // I don't think this is used on any public facing routes so far
+      await env.data.passwords.create(client.tenant_id, {
+        user_id: loginParams.username,
+        password: loginParams.password,
+      });
 
-    // try {
-    //   const profile = await user.registerPassword.mutate({
-    //     email: loginParams.username,
-    //     tenantId: client.tenant_id,
-    //     password: loginParams.password,
-    //   });
+      // are we safe to put these logs in?
+      // await env.data.logs.create({
+      //   category: "login",
+      //   message: "User created with password",
+      //   tenant_id,
+      //   user_id: id,
+      // });
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "User created with password",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
+      const code = generateOTP();
 
-    //   const { code } = await user.createEmailValidationCode.mutate();
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "Create email validation code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
-    //   await sendEmailValidation(env, client, loginParams.username, code);
+      await env.data.OTP.create({
+        id: nanoid(),
+        code,
+        // is this a reasonable assumption?
+        email: loginParams.username,
+        client_id: loginState.authParams.client_id,
+        send: "code",
+        authParams: loginState.authParams,
+        tenant_id: client.tenant_id,
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+      });
 
-    //   if (client.email_validation === "enforced") {
-    //     // Update the username in the state
-    //     await setLoginState(env, state, {
-    //       ...loginState,
-    //       authParams: {
-    //         ...loginState.authParams,
-    //         username: loginParams.username,
-    //       },
-    //     });
+      request.ctx.set("log", `Code: ${code}`);
 
-    //     return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-    //   }
+      // await env.data.logs.create({
+      //   category: "login",
+      //   message: "Create email validation code",
+      //   tenant_id,
+      //   user_id: id,
+      // });
+      await sendEmailValidation(env, client, loginParams.username, code);
 
-    //   return handleLogin(env, this, profile, loginState);
-    // } catch (err: any) {
-    //   return renderSignup(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: err.message,
-    //   });
-    // }
+      if (client.email_validation === "enforced") {
+        // Update the username in the state
+        await setLoginState(env, state, {
+          ...loginState,
+          authParams: {
+            ...loginState.authParams,
+            username: loginParams.username,
+          },
+        });
+
+        return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+      }
+
+      let user = await env.data.users.getByEmail(
+        client.tenant_id,
+        loginParams.username,
+      );
+      if (!user) {
+        throw new Error("Something wrong with our implementation!");
+      }
+
+      const profile: Profile = {
+        id: loginParams.username,
+        email: loginParams.username,
+        connections: [],
+        tenant_id: client.tenant_id,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+      };
+
+      return handleLogin(env, this, profile, loginState);
+    } catch (err: any) {
+      return renderSignup(env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        errorMessage: err.message,
+      });
+    }
   }
 
   /**
