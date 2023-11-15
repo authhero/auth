@@ -254,38 +254,50 @@ export class LoginController extends Controller {
     }
 
     const client = await getClient(env, loginState.authParams.client_id);
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, loginState.authParams.username),
-    );
 
-    throw new Error("Not implemented");
+    try {
+      // this is duplicated from passwordless/verify_redirect
+      // previously we had all this code inside the User Model
+      // should we extract it out into a helper function?
 
-    // try {
-    //   const profile = await user.validateAuthenticationCode.mutate({
-    //     code: params.code,
-    //     email: loginState.authParams.username,
-    //     tenantId: client.tenant_id,
-    //   });
+      const otps = await env.data.OTP.list(
+        client.tenant_id,
+        loginState.authParams.username,
+      );
+      const otp = otps.find((otp) => otp.code === params.code);
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "Login with code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
-    // } catch (err) {
-    //   return renderEnterCode(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: "Invalid code",
-    //   });
-    // }
+      if (!otp) {
+        return renderEnterCode(env.AUTH_TEMPLATES, this, {
+          ...loginState,
+          errorMessage: "Code not found or expired",
+        });
+      }
 
-    // return renderMessage(env.AUTH_TEMPLATES, this, {
-    //   ...loginState,
-    //   page_title: "Logged in",
-    //   message: "You are logged in",
-    // });
+      let user = await env.data.users.getByEmail(
+        client.tenant_id,
+        loginState.authParams.username,
+      );
+      if (!user) {
+        user = await env.data.users.create(client.tenant_id, {
+          // id - TODO when decide structure...
+          email: loginState.authParams.username,
+          name: loginState.authParams.username,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+      }
+    } catch (err) {
+      return renderEnterCode(env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        errorMessage: "Invalid code",
+      });
+    }
+
+    return renderMessage(env.AUTH_TEMPLATES, this, {
+      ...loginState,
+      page_title: "Logged in",
+      message: "You are logged in",
+    });
   }
 
   /**
