@@ -259,33 +259,6 @@ export class LoginController extends Controller {
       // this is duplicated from passwordless/verify_redirect
       // previously we had all this code inside the User Model
       // should we extract it out into a helper function?
-
-      const otps = await env.data.OTP.list(
-        client.tenant_id,
-        loginState.authParams.username,
-      );
-      const otp = otps.find((otp) => otp.code === params.code);
-
-      if (!otp) {
-        return renderEnterCode(env.AUTH_TEMPLATES, this, {
-          ...loginState,
-          errorMessage: "Code not found or expired",
-        });
-      }
-
-      let user = await env.data.users.getByEmail(
-        client.tenant_id,
-        loginState.authParams.username,
-      );
-      if (!user) {
-        user = await env.data.users.create(client.tenant_id, {
-          // id - TODO when decide structure...
-          email: loginState.authParams.username,
-          name: loginState.authParams.username,
-          created_at: new Date(),
-          updated_at: new Date(),
-        });
-      }
     } catch (err) {
       return renderEnterCode(env.AUTH_TEMPLATES, this, {
         ...loginState,
@@ -319,34 +292,41 @@ export class LoginController extends Controller {
     }
 
     const client = await getClient(env, loginState.authParams.client_id);
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, email),
-    );
 
-    throw new Error("Not implemented");
+    try {
+      // another duplicate here - DRY rule of three!
+      const otps = await env.data.OTP.list(client.tenant_id, email);
+      const otp = otps.find((otp) => otp.code === params.code);
 
-    // try {
-    //   const profile = await user.validateEmailValidationCode.mutate({
-    //     code: params.code,
-    //     email,
-    //     tenantId: client.tenant_id,
-    //   });
+      if (!otp) {
+        return renderEnterCode(env.AUTH_TEMPLATES, this, {
+          ...loginState,
+          errorMessage: "Code not found or expired",
+        });
+      }
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "validation",
-    //     message: "Validate with code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
+      let user = await env.data.users.getByEmail(client.tenant_id, email);
+      if (!user) {
+        throw new Error("Something wrong with our implementation!");
+      }
 
-    //   return handleLogin(env, this, profile, loginState);
-    // } catch (err: any) {
-    //   return renderEmailValidation(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: err.message,
-    //   });
-    // }
+      const profile: Profile = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        connections: [],
+        tenant_id: client.tenant_id,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+      };
+
+      return handleLogin(env, this, profile, loginState);
+    } catch (err: any) {
+      return renderEmailValidation(env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        errorMessage: err.message,
+      });
+    }
   }
 
   /**
