@@ -165,6 +165,20 @@ export class PasswordlessController extends Controller {
         });
       }
 
+      /*
+      we also need to set this like in the User Model
+
+      connections: [
+        {
+          name: "email",
+          profile: {
+            email: input.email,
+            validated: true,
+          },
+        },
+      ],
+      */
+
       validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
 
       const authParams: AuthParams = {

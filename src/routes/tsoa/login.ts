@@ -305,6 +305,20 @@ export class LoginController extends Controller {
         });
       }
 
+      // in the users model we're doing this
+      /*
+         connections: [
+          {
+            name: "auth",
+            profile: {
+              email: input.email,
+              validated: input.validated,
+            },
+          },
+        ],
+        */
+      //  currently this route doesn't do a whole lot otherwise!
+
       let user = await env.data.users.getByEmail(client.tenant_id, email);
       if (!user) {
         throw new Error("Something wrong with our implementation!");
@@ -366,6 +380,19 @@ export class LoginController extends Controller {
         user_id: loginParams.username,
         password: loginParams.password,
       });
+
+      // In the users model we're doing this
+      /*
+          connections: [
+          {
+            name: "auth",
+            profile: {
+              email: input.email,
+              validated: false,
+            },
+          },
+        ],
+        */
 
       // are we safe to put these logs in?
       // await env.data.logs.create({
@@ -555,11 +582,6 @@ export class LoginController extends Controller {
     );
 
     try {
-      // const profile = await user.resetPasswordWithCode.mutate({
-      //   code,
-      //   password: params.password,
-      // });
-
       // another duplicate here - DRY rule of three!
       const otps = await env.data.OTP.list(
         client.tenant_id,
@@ -587,6 +609,19 @@ export class LoginController extends Controller {
       //   tenant_id,
       //   user_id: id,
       // });
+
+      /*
+      I think this also needs setting
+      connections: [
+          {
+            name: "auth",
+            profile: {
+              email: input.email,
+              validated: true,
+            },
+          },
+        ],
+      */
     } catch (err) {
       return renderResetPassword(env.AUTH_TEMPLATES, this, {
         ...loginState,
