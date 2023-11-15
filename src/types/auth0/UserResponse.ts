@@ -38,10 +38,7 @@ import { UserMetadata } from "./UserMetadata";
 // }
 
 interface BaseUser {
-  // can we make a union type here? so ONE of the fields is required right? user_id or email?
-  // so make a base type, and then extend that with two types with each of these required fields
-  // and then have the exported type being the union... Does make handling the type a bit harder though as
-  // have to check existence of a field... IIRC easier with a string key (from using DatoCMS)
+  // TODO - to match auth0 we should make a union type so either email or user_id are required
   email?: string;
   phone_number?: string;
   user_metadata?: UserMetadata;

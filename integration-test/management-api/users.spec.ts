@@ -45,7 +45,6 @@ describe("users", () => {
   });
 
   // this is different to Auth0 where user_id OR email is required
-  // should we fix this? but then how to look up DOs...
   it("should return a 403 if try and create a new user for a tenant without an email", async () => {
     const token = await getAdminToken();
 

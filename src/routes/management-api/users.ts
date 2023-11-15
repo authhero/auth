@@ -22,8 +22,6 @@ import { Profile } from "../../types";
 import {
   UserResponse,
   PostUsersBody,
-  // naming is start to get odd here. I suppose we want auth0 types that mirror the mgmt api
-  // and then we want internal types... which are defined on our interfaces... TBD
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 import { SqlCreateUser } from "../../types";
@@ -79,8 +77,6 @@ export class UsersMgmtController extends Controller {
     });
 
     if (include_totals) {
-      // ah but don't we need to actually provide the totals here?
-      // this "as" is going to hide issues
       const res: GetUserResponseWithTotals = {
         users,
         length: result.length,
@@ -207,8 +203,7 @@ export class UsersMgmtController extends Controller {
 
     const { email } = user;
 
-    // this is how our system works... doesn't match auth0 though
-    // but if our Id for the DO requires an email... it is
+    // This does not match Auth0 but we really require an email address
     if (!email) {
       throw new Error("Email is required");
     }

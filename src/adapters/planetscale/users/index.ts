@@ -10,7 +10,6 @@ export function createUsersAdapter(env: Env): UserDataAdapter {
   const db = getDb(env);
 
   return {
-    // why is this not failing when type is different? interesting...
     create: createUser(db),
     get: get(db),
     getByEmail: getByEmail(db),

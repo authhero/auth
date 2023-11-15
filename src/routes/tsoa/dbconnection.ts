@@ -68,7 +68,7 @@ export class DbConnectionController extends Controller {
       user = await ctx.env.data.users.create(client.tenant_id, {
         email: body.email,
         tenant_id: client.tenant_id,
-        // what should happen here then? should this in SQL?
+        // TBD - this field isn't in SQL
         // email_verified: false,
       });
     }

@@ -4,10 +4,7 @@ export interface UserTag {
 }
 
 interface BaseSqlUser {
-  // should this be optional?
-  // I want the adapter interface to only use Sql types right?
-  // SO YES! then extend from this...
-  // SqlCreateUser? Hmmmm TBD
+  // TODO - Auth0 requires the id OR the email but for our current usage with durable objects and Sesamy's architecture, we need email!
   email: string;
   tenant_id: string;
   given_name?: string;
