@@ -477,20 +477,28 @@ export class LoginController extends Controller {
       throw new Error("Client not found");
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, params.username),
-    );
-
     if (loginState.authParams.username !== params.username) {
       loginState.authParams.username = params.username;
       await setLoginState(env, state, loginState);
     }
 
-    throw new Error("Not implemented");
+    const code = generateOTP();
 
-    // const { code } = await user.createPasswordResetCode.mutate();
-    // const userProfile = await user.getProfile.query();
-    // const { tenant_id, id } = userProfile;
+    await env.data.OTP.create({
+      id: nanoid(),
+      code,
+      // I'm doing this everyhwere!
+      email: params.username,
+      client_id: loginState.authParams.client_id,
+      send: "code",
+      authParams: loginState.authParams,
+      tenant_id: client.tenant_id,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+    });
+
+    request.ctx.set("log", `Code: ${code}`);
+
     // await env.data.logs.create({
     //   category: "login",
     //   message: "Send password reset",
@@ -498,13 +506,13 @@ export class LoginController extends Controller {
     //   user_id: id,
     // });
 
-    // await sendResetPassword(env, client, params.username, code, state);
+    await sendResetPassword(env, client, params.username, code, state);
 
-    // return renderMessage(env.AUTH_TEMPLATES, this, {
-    //   ...loginState,
-    //   page_title: "Password reset",
-    //   message: "A code has been sent to your email address",
-    // });
+    return renderMessage(env.AUTH_TEMPLATES, this, {
+      ...loginState,
+      page_title: "Password reset",
+      message: "A code has been sent to your email address",
+    });
   }
 
   /**
