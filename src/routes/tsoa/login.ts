@@ -9,7 +9,7 @@ import {
   Query,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-
+import generateOTP from "../../utils/otp";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getId } from "../../models/User";
 import { LoginState } from "../../types/LoginState";
@@ -132,7 +132,7 @@ export class LoginController extends Controller {
   }
 
   /**
-   * Validates a code entered in the code form
+   * Sends a code to the email (username) entered
    * @param request
    */
   @Post("code")
@@ -146,68 +146,78 @@ export class LoginController extends Controller {
 
     const client = await getClient(env, loginState.authParams.client_id);
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, params.username),
+    const code = generateOTP();
+
+    // duplicated from /passwordless route
+    const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
+
+    await env.data.OTP.create({
+      id: nanoid(),
+      code,
+      // is this a reasonable assumption?
+      email: params.username,
+      client_id: loginState.authParams.client_id,
+      send: "code",
+      authParams: loginState.authParams,
+      tenant_id: client.tenant_id,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+    });
+
+    request.ctx.set("log", `Code: ${code}`);
+
+    await env.data.logs.create({
+      category: "login",
+      message: "Create authentication code",
+      tenant_id: client.tenant_id,
+      user_id: params.username,
+    });
+
+    // Add the username to the state
+    loginState.authParams.username = params.username;
+    await setLoginState(env, state, loginState);
+
+    const magicLink = new URL(env.ISSUER);
+    magicLink.pathname = "passwordless/verify_redirect";
+    if (loginState.authParams.scope) {
+      magicLink.searchParams.set("scope", loginState.authParams.scope);
+    }
+    if (loginState.authParams.response_type) {
+      magicLink.searchParams.set(
+        "response_type",
+        loginState.authParams.response_type,
+      );
+    }
+    if (loginState.authParams.redirect_uri) {
+      magicLink.searchParams.set(
+        "redirect_uri",
+        loginState.authParams.redirect_uri,
+      );
+    }
+    if (loginState.authParams.audience) {
+      magicLink.searchParams.set("audience", loginState.authParams.audience);
+    }
+    if (loginState.authParams.state) {
+      magicLink.searchParams.set("state", loginState.authParams.state);
+    }
+    if (loginState.authParams.nonce) {
+      magicLink.searchParams.set("nonce", loginState.authParams.nonce);
+    }
+
+    magicLink.searchParams.set("connection", "email");
+    magicLink.searchParams.set("client_id", loginState.authParams.client_id);
+    magicLink.searchParams.set("email", loginState.authParams.username);
+    magicLink.searchParams.set("verification_code", code);
+
+    await sendLink(env, client, params.username, code, magicLink.href);
+
+    this.setHeader(
+      headers.location,
+      `/u/enter-code?state=${state}&username=${params.username}`,
     );
+    this.setStatus(302);
 
-    throw new Error("Not implemented");
-
-    // const { code } = await user.createAuthenticationCode.mutate(loginState);
-
-    // const userProfile = await user.getProfile.query();
-    // const { tenant_id, id } = userProfile;
-    // await env.data.logs.create({
-    //   category: "login",
-    //   message: "Create authentication code",
-    //   tenant_id,
-    //   user_id: id,
-    // });
-
-    // // Add the username to the state
-    // loginState.authParams.username = params.username;
-    // await setLoginState(env, state, loginState);
-
-    // const magicLink = new URL(env.ISSUER);
-    // magicLink.pathname = "passwordless/verify_redirect";
-    // if (loginState.authParams.scope) {
-    //   magicLink.searchParams.set("scope", loginState.authParams.scope);
-    // }
-    // if (loginState.authParams.response_type) {
-    //   magicLink.searchParams.set(
-    //     "response_type",
-    //     loginState.authParams.response_type,
-    //   );
-    // }
-    // if (loginState.authParams.redirect_uri) {
-    //   magicLink.searchParams.set(
-    //     "redirect_uri",
-    //     loginState.authParams.redirect_uri,
-    //   );
-    // }
-    // if (loginState.authParams.audience) {
-    //   magicLink.searchParams.set("audience", loginState.authParams.audience);
-    // }
-    // if (loginState.authParams.state) {
-    //   magicLink.searchParams.set("state", loginState.authParams.state);
-    // }
-    // if (loginState.authParams.nonce) {
-    //   magicLink.searchParams.set("nonce", loginState.authParams.nonce);
-    // }
-
-    // magicLink.searchParams.set("connection", "email");
-    // magicLink.searchParams.set("client_id", loginState.authParams.client_id);
-    // magicLink.searchParams.set("email", loginState.authParams.username);
-    // magicLink.searchParams.set("verification_code", code);
-
-    // await sendLink(env, client, params.username, code, magicLink.href);
-
-    // this.setHeader(
-    //   headers.location,
-    //   `/u/enter-code?state=${state}&username=${params.username}`,
-    // );
-    // this.setStatus(302);
-
-    // return "Redirect";
+    return "Redirect";
   }
 
   /**
