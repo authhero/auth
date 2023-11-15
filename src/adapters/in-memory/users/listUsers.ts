@@ -8,7 +8,7 @@ export function listUsers(users: SqlUser[]) {
     { page, per_page, include_totals, q }: ListParams,
   ): Promise<ListUsersResponse> => {
     return {
-      users: users,
+      users,
       // This might not be 100% correct, but it's close enough for now.
       start: (page - 1) * per_page,
       limit: per_page,
