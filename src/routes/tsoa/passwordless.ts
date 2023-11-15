@@ -22,6 +22,8 @@ import { Profile } from "../../types";
 
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
+import { getId } from "../../models";
+import { HTTPException } from "hono/http-exception";
 export interface PasswordlessOptions {
   client_id: string;
   client_secret?: string;
@@ -79,6 +81,16 @@ export class PasswordlessController extends Controller {
     });
 
     request.ctx.set("log", `Code: ${code}`);
+
+    /* hardcoded user codes
+      "ulf.lindberg@maxm.se",
+      "markus+23@sesamy.com",
+      "klara.lindstroem@hmc.ox.ac.uk",
+      "carlotta.granath@next-tech.com",
+
+      should be 531523
+
+    */
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
@@ -165,7 +177,11 @@ export class PasswordlessController extends Controller {
         });
       }
 
-      validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
+      if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
+        throw new HTTPException(400, {
+          message: `Invalid redirect URI - ${redirect_uri}`,
+        });
+      }
 
       const authParams: AuthParams = {
         client_id,
