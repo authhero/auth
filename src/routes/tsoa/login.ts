@@ -652,60 +652,74 @@ export class LoginController extends Controller {
       getId(client.tenant_id, loginParams.username),
     );
 
-    throw new Error("Not implemented");
+    try {
+      const { valid } = await env.data.passwords.validate(client.tenant_id, {
+        user_id: loginParams.username,
+        password: loginParams.password,
+      });
 
-    // try {
-    //   await user.validatePassword.mutate({
-    //     password: loginParams.password,
-    //     tenantId: client.tenant_id,
-    //     email: loginParams.username,
-    //   });
-    //   const profile = await user.getProfile.query();
+      if (!valid) {
+        return renderLogin(env.AUTH_TEMPLATES, this, {
+          ...loginState,
+          errorMessage: "Invalid password",
+          state,
+        });
+      }
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "Login with password",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
+      // await env.data.logs.create({
+      //   category: "login",
+      //   message: "Login with password",
+      //   tenant_id,
+      //   user_id: id,
+      // });
 
-    //   const authConnection = profile.connections.find((c) => c.name === "auth");
-    //   if (
-    //     !authConnection?.profile?.validated &&
-    //     client.email_validation === "enforced"
-    //   ) {
-    //     // Update the username in the state
-    //     await setLoginState(env, state, {
-    //       ...loginState,
-    //       authParams: {
-    //         ...loginState.authParams,
-    //         username: loginParams.username,
-    //       },
-    //     });
+      // What to do here? We're not actually doing connection profiles are we? OR this appears under tags?
+      // const authConnection = profile.connections.find((c) => c.name === "auth");
+      // if (
+      //   !authConnection?.profile?.validated &&
+      //   client.email_validation === "enforced"
+      // ) {
+      //   // Update the username in the state
+      //   await setLoginState(env, state, {
+      //     ...loginState,
+      //     authParams: {
+      //       ...loginState.authParams,
+      //       username: loginParams.username,
+      //     },
+      //   });
 
-    //     const { code } = await user.createEmailValidationCode.mutate();
-    //     const userProfile = await user.getProfile.query();
-    //     const { tenant_id, id } = userProfile;
-    //     await env.data.logs.create({
-    //       category: "login",
-    //       message: "Create email validation code",
-    //       tenant_id,
-    //       user_id: id,
-    //     });
-    //     await sendEmailValidation(env, client, profile.email, code);
+      //   const { code } = await user.createEmailValidationCode.mutate();
+      //   const userProfile = await user.getProfile.query();
+      //   const { tenant_id, id } = userProfile;
+      //   await env.data.logs.create({
+      //     category: "login",
+      //     message: "Create email validation code",
+      //     tenant_id,
+      //     user_id: id,
+      //   });
+      //   await sendEmailValidation(env, client, profile.email, code);
 
-    //     return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-    //   }
+      //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+      // }
 
-    //   return handleLogin(env, this, profile, loginState);
-    // } catch (err: any) {
-    //   return renderLogin(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: err.message,
-    //     state,
-    //   });
-    // }
+      const profile: Profile = {
+        id: loginParams.username,
+        email: loginParams.username,
+        connections: [],
+        tenant_id: client.tenant_id,
+        // we don't actually use these fields in the login handler so not worth a SQL call here?
+        created_at: "0",
+        updated_at: "0",
+      };
+
+      return handleLogin(env, this, profile, loginState);
+    } catch (err: any) {
+      return renderLogin(env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        errorMessage: err.message,
+        state,
+      });
+    }
   }
 
   /**
