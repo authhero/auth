@@ -67,7 +67,9 @@ export class DbConnectionController extends Controller {
     if (!user) {
       user = await ctx.env.data.users.create(client.tenant_id, {
         email: body.email,
-        email_verified: false,
+        tenant_id: client.tenant_id,
+        // TBD - this field isn't in SQL
+        // email_verified: false,
       });
     }
 

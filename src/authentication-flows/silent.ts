@@ -70,7 +70,6 @@ export async function silentAuth({
       const profile: Profile = {
         ...user,
         connections: [],
-        id: user.user_id,
         tenant_id,
       };
 

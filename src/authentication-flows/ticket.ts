@@ -26,8 +26,7 @@ export async function ticketAuth(
       // id: `${tenant_id}|${nanoid()}`,
       email: ticket.email,
       name: ticket.email,
-      created_at: new Date(),
-      updated_at: new Date(),
+      tenant_id,
     });
   }
 

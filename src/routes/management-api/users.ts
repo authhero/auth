@@ -18,13 +18,14 @@ import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { NotFoundError } from "../../errors";
 import { getId } from "../../models";
-import { User } from "../../types/sql/User";
 import { Profile } from "../../types";
 import {
   UserResponse,
   PostUsersBody,
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
+import { SqlCreateUser } from "../../types";
+import { HTTPException } from "hono/http-exception";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -62,11 +63,50 @@ export class UsersMgmtController extends Controller {
       q,
     });
 
+    const users: UserResponse[] = result.users.map((user) => {
+      const { tags, ...userTrimmed } = user;
+
+      const tagsObj = JSON.parse(tags || "[]");
+
+      const identities = tagsObj.map((tag) => ({
+        profileData: {
+          email: user.email,
+          user_id: user.id,
+          is_social: true,
+          connection: tag,
+        },
+      }));
+
+      return {
+        ...userTrimmed,
+        user_id: user.id,
+        logins_count: 0,
+        last_ip: "",
+        last_login: "",
+        identities,
+        // some fields copied from previous adapter/planetscale/list mapping
+        // TODO: store this field in sql
+        email_verified: true,
+        username: user.email,
+        phone_number: "",
+        phone_verified: false,
+        // Deprecated
+        tags,
+      };
+    });
+
     if (include_totals) {
-      return result as GetUserResponseWithTotals;
+      const res: GetUserResponseWithTotals = {
+        users,
+        length: result.length,
+        start: result.start,
+        limit: result.limit,
+      };
+
+      return res;
     }
 
-    return result.users;
+    return users;
   }
 
   @Get("{userId}")
@@ -143,10 +183,31 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const data = await env.data.users.create(tenantId, user);
+    const { email } = user;
+
+    if (!email) {
+      throw new HTTPException(400, { message: "Email is required" });
+    }
+
+    const sqlCreateUser: SqlCreateUser = {
+      ...user,
+      tenant_id: tenantId,
+      email,
+    };
+
+    const data = await env.data.users.create(tenantId, sqlCreateUser);
 
     this.setStatus(201);
-    return data;
+    const userResponse: UserResponse = {
+      ...data,
+      user_id: data.id,
+      logins_count: 0,
+      last_ip: "",
+      last_login: "",
+      identities: [],
+    };
+
+    return userResponse;
   }
 
   @Patch("{userId}")
@@ -155,17 +216,25 @@ export class UsersMgmtController extends Controller {
     @Header("tenant-id") tenantId: string,
     @Path("userId") userId: string,
     @Body()
-    user: Omit<User, "tenant_id" | "created_at" | "updated_at" | "id">,
+    user: PostUsersBody,
   ): Promise<Profile> {
     const { ctx } = request;
 
+    const { email } = user;
+
+    // This does not match Auth0 but we really require an email address
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
     const userInstance = ctx.env.userFactory.getInstanceByName(
-      getId(tenantId, user.email),
+      getId(tenantId, email),
     );
 
     const result: Profile = await userInstance.patchProfile.mutate({
       ...user,
       tenant_id: tenantId,
+      email,
     });
     const { tenant_id, id } = result;
     await ctx.env.data.logs.create({
