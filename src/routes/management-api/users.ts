@@ -66,13 +66,32 @@ export class UsersMgmtController extends Controller {
     const users: UserResponse[] = result.users.map((user) => {
       const { tags, ...userTrimmed } = user;
 
+      const tagsObj = JSON.parse(tags || "[]");
+
+      const identities = tagsObj.map((tag) => ({
+        profileData: {
+          email: user.email,
+          user_id: user.id,
+          is_social: true,
+          connection: tag,
+        },
+      }));
+
       return {
         ...userTrimmed,
         user_id: user.id,
         logins_count: 0,
         last_ip: "",
         last_login: "",
-        identities: [],
+        identities,
+        // some fields copied from previous adapter/planetscale/list mapping
+        // TODO: store this field in sql
+        email_verified: true,
+        username: user.email,
+        phone_number: "",
+        phone_verified: false,
+        // Deprecated
+        tags,
       };
     });
 
