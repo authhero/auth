@@ -184,67 +184,69 @@ export class UsersMgmtController extends Controller {
     @Path("userId") userId: string,
     @Body() body: LinkBodyParams,
   ): Promise<Profile> {
-    const { env } = request.ctx;
+    throw new Error("Not implemented");
 
-    const db = getDb(env);
-    const currentDbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.id", "=", userId)
-      .select(["users.email"])
-      .executeTakeFirst();
+    // const { env } = request.ctx;
 
-    if (!currentDbUser) {
-      throw new NotFoundError("Current user not found");
-    }
+    // const db = getDb(env);
+    // const currentDbUser = await db
+    //   .selectFrom("users")
+    //   .where("users.tenant_id", "=", tenantId)
+    //   .where("users.id", "=", userId)
+    //   .select(["users.email"])
+    //   .executeTakeFirst();
 
-    const linkedDbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.id", "=", body.link_with)
-      .select(["users.email"])
-      .executeTakeFirst();
+    // if (!currentDbUser) {
+    //   throw new NotFoundError("Current user not found");
+    // }
 
-    if (!linkedDbUser) {
-      throw new NotFoundError("Linked user not found");
-    }
+    // const linkedDbUser = await db
+    //   .selectFrom("users")
+    //   .where("users.tenant_id", "=", tenantId)
+    //   .where("users.id", "=", body.link_with)
+    //   .select(["users.email"])
+    //   .executeTakeFirst();
 
-    const currentUser = env.userFactory.getInstanceByName(
-      getId(tenantId, currentDbUser.email),
-    );
+    // if (!linkedDbUser) {
+    //   throw new NotFoundError("Linked user not found");
+    // }
 
-    const linkedUser = env.userFactory.getInstanceByName(
-      getId(tenantId, linkedDbUser.email),
-    );
+    // const currentUser = env.userFactory.getInstanceByName(
+    //   getId(tenantId, currentDbUser.email),
+    // );
 
-    // Link the child account
-    await linkedUser.linkToUser.mutate({
-      tenantId,
-      email: linkedDbUser.email,
-      linkWithEmail: currentDbUser.email,
-    });
-    const linkedUserProfile = await linkedUser.getProfile.query();
-    const currentUserProfile = await currentUser.getProfile.query();
+    // const linkedUser = env.userFactory.getInstanceByName(
+    //   getId(tenantId, linkedDbUser.email),
+    // );
 
-    await env.data.logs.create({
-      category: "link",
-      message: `Linked to ${currentUserProfile.email}`,
-      tenant_id: linkedUserProfile.tenant_id,
-      user_id: linkedUserProfile.id,
-    });
+    // // Link the child account
+    // await linkedUser.linkToUser.mutate({
+    //   tenantId,
+    //   email: linkedDbUser.email,
+    //   linkWithEmail: currentDbUser.email,
+    // });
+    // const linkedUserProfile = await linkedUser.getProfile.query();
+    // const currentUserProfile = await currentUser.getProfile.query();
 
-    // Link the parent account
-    const returnUser = currentUser.linkWithUser.mutate({
-      tenantId,
-      email: currentDbUser.email,
-      linkWithEmail: linkedDbUser.email,
-    });
-    await env.data.logs.create({
-      category: "link",
-      message: `Added ${linkedUserProfile.email} as linked user`,
-      tenant_id: currentUserProfile.tenant_id,
-      user_id: currentUserProfile.id,
-    });
-    return returnUser;
+    // await env.data.logs.create({
+    //   category: "link",
+    //   message: `Linked to ${currentUserProfile.email}`,
+    //   tenant_id: linkedUserProfile.tenant_id,
+    //   user_id: linkedUserProfile.id,
+    // });
+
+    // // Link the parent account
+    // const returnUser = currentUser.linkWithUser.mutate({
+    //   tenantId,
+    //   email: currentDbUser.email,
+    //   linkWithEmail: linkedDbUser.email,
+    // });
+    // await env.data.logs.create({
+    //   category: "link",
+    //   message: `Added ${linkedUserProfile.email} as linked user`,
+    //   tenant_id: currentUserProfile.tenant_id,
+    //   user_id: currentUserProfile.id,
+    // });
+    // return returnUser;
   }
 }

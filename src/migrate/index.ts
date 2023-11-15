@@ -1,4 +1,5 @@
 import { Migrator } from "kysely";
+// is this dependency still correct?
 import { Context } from "cloudworker-router";
 import { Env } from "../types/Env";
 import migrations from "./migrations";

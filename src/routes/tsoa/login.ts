@@ -36,7 +36,7 @@ import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import {
-  sendCode,
+  sendLink,
   sendEmailValidation,
   sendResetPassword,
 } from "../../controllers/email";
@@ -150,62 +150,64 @@ export class LoginController extends Controller {
       getId(client.tenant_id, params.username),
     );
 
-    const { code } = await user.createAuthenticationCode.mutate(loginState);
+    throw new Error("Not implemented");
 
-    const userProfile = await user.getProfile.query();
-    const { tenant_id, id } = userProfile;
-    await env.data.logs.create({
-      category: "login",
-      message: "Create authentication code",
-      tenant_id,
-      user_id: id,
-    });
+    // const { code } = await user.createAuthenticationCode.mutate(loginState);
 
-    // Add the username to the state
-    loginState.authParams.username = params.username;
-    await setLoginState(env, state, loginState);
+    // const userProfile = await user.getProfile.query();
+    // const { tenant_id, id } = userProfile;
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Create authentication code",
+    //   tenant_id,
+    //   user_id: id,
+    // });
 
-    const magicLink = new URL(env.ISSUER);
-    magicLink.pathname = "passwordless/verify_redirect";
-    if (loginState.authParams.scope) {
-      magicLink.searchParams.set("scope", loginState.authParams.scope);
-    }
-    if (loginState.authParams.response_type) {
-      magicLink.searchParams.set(
-        "response_type",
-        loginState.authParams.response_type,
-      );
-    }
-    if (loginState.authParams.redirect_uri) {
-      magicLink.searchParams.set(
-        "redirect_uri",
-        loginState.authParams.redirect_uri,
-      );
-    }
-    if (loginState.authParams.audience) {
-      magicLink.searchParams.set("audience", loginState.authParams.audience);
-    }
-    if (loginState.authParams.state) {
-      magicLink.searchParams.set("state", loginState.authParams.state);
-    }
-    if (loginState.authParams.nonce) {
-      magicLink.searchParams.set("nonce", loginState.authParams.nonce);
-    }
+    // // Add the username to the state
+    // loginState.authParams.username = params.username;
+    // await setLoginState(env, state, loginState);
 
-    magicLink.searchParams.set("connection", "email");
-    magicLink.searchParams.set("client_id", loginState.authParams.client_id);
-    magicLink.searchParams.set("email", loginState.authParams.username);
-    magicLink.searchParams.set("verification_code", code);
+    // const magicLink = new URL(env.ISSUER);
+    // magicLink.pathname = "passwordless/verify_redirect";
+    // if (loginState.authParams.scope) {
+    //   magicLink.searchParams.set("scope", loginState.authParams.scope);
+    // }
+    // if (loginState.authParams.response_type) {
+    //   magicLink.searchParams.set(
+    //     "response_type",
+    //     loginState.authParams.response_type,
+    //   );
+    // }
+    // if (loginState.authParams.redirect_uri) {
+    //   magicLink.searchParams.set(
+    //     "redirect_uri",
+    //     loginState.authParams.redirect_uri,
+    //   );
+    // }
+    // if (loginState.authParams.audience) {
+    //   magicLink.searchParams.set("audience", loginState.authParams.audience);
+    // }
+    // if (loginState.authParams.state) {
+    //   magicLink.searchParams.set("state", loginState.authParams.state);
+    // }
+    // if (loginState.authParams.nonce) {
+    //   magicLink.searchParams.set("nonce", loginState.authParams.nonce);
+    // }
 
-    await sendCode(env, client, params.username, code, magicLink.href);
+    // magicLink.searchParams.set("connection", "email");
+    // magicLink.searchParams.set("client_id", loginState.authParams.client_id);
+    // magicLink.searchParams.set("email", loginState.authParams.username);
+    // magicLink.searchParams.set("verification_code", code);
 
-    this.setHeader(
-      headers.location,
-      `/u/enter-code?state=${state}&username=${params.username}`,
-    );
-    this.setStatus(302);
+    // await sendLink(env, client, params.username, code, magicLink.href);
 
-    return "Redirect";
+    // this.setHeader(
+    //   headers.location,
+    //   `/u/enter-code?state=${state}&username=${params.username}`,
+    // );
+    // this.setStatus(302);
+
+    // return "Redirect";
   }
 
   /**
@@ -246,32 +248,34 @@ export class LoginController extends Controller {
       getId(client.tenant_id, loginState.authParams.username),
     );
 
-    try {
-      const profile = await user.validateAuthenticationCode.mutate({
-        code: params.code,
-        email: loginState.authParams.username,
-        tenantId: client.tenant_id,
-      });
+    throw new Error("Not implemented");
 
-      const { tenant_id, id } = profile;
-      await env.data.logs.create({
-        category: "login",
-        message: "Login with code",
-        tenant_id,
-        user_id: id,
-      });
-    } catch (err) {
-      return renderEnterCode(env.AUTH_TEMPLATES, this, {
-        ...loginState,
-        errorMessage: "Invalid code",
-      });
-    }
+    // try {
+    //   const profile = await user.validateAuthenticationCode.mutate({
+    //     code: params.code,
+    //     email: loginState.authParams.username,
+    //     tenantId: client.tenant_id,
+    //   });
 
-    return renderMessage(env.AUTH_TEMPLATES, this, {
-      ...loginState,
-      page_title: "Logged in",
-      message: "You are logged in",
-    });
+    //   const { tenant_id, id } = profile;
+    //   await env.data.logs.create({
+    //     category: "login",
+    //     message: "Login with code",
+    //     tenant_id,
+    //     user_id: id,
+    //   });
+    // } catch (err) {
+    //   return renderEnterCode(env.AUTH_TEMPLATES, this, {
+    //     ...loginState,
+    //     errorMessage: "Invalid code",
+    //   });
+    // }
+
+    // return renderMessage(env.AUTH_TEMPLATES, this, {
+    //   ...loginState,
+    //   page_title: "Logged in",
+    //   message: "You are logged in",
+    // });
   }
 
   /**
@@ -297,28 +301,30 @@ export class LoginController extends Controller {
       getId(client.tenant_id, email),
     );
 
-    try {
-      const profile = await user.validateEmailValidationCode.mutate({
-        code: params.code,
-        email,
-        tenantId: client.tenant_id,
-      });
+    throw new Error("Not implemented");
 
-      const { tenant_id, id } = profile;
-      await env.data.logs.create({
-        category: "validation",
-        message: "Validate with code",
-        tenant_id,
-        user_id: id,
-      });
+    // try {
+    //   const profile = await user.validateEmailValidationCode.mutate({
+    //     code: params.code,
+    //     email,
+    //     tenantId: client.tenant_id,
+    //   });
 
-      return handleLogin(env, this, profile, loginState);
-    } catch (err: any) {
-      return renderEmailValidation(env.AUTH_TEMPLATES, this, {
-        ...loginState,
-        errorMessage: err.message,
-      });
-    }
+    //   const { tenant_id, id } = profile;
+    //   await env.data.logs.create({
+    //     category: "validation",
+    //     message: "Validate with code",
+    //     tenant_id,
+    //     user_id: id,
+    //   });
+
+    //   return handleLogin(env, this, profile, loginState);
+    // } catch (err: any) {
+    //   return renderEmailValidation(env.AUTH_TEMPLATES, this, {
+    //     ...loginState,
+    //     errorMessage: err.message,
+    //   });
+    // }
   }
 
   /**
@@ -355,50 +361,52 @@ export class LoginController extends Controller {
       await setLoginState(env, state, loginState);
     }
 
-    try {
-      const profile = await user.registerPassword.mutate({
-        email: loginParams.username,
-        tenantId: client.tenant_id,
-        password: loginParams.password,
-      });
+    throw new Error("Not implemented");
 
-      const { tenant_id, id } = profile;
-      await env.data.logs.create({
-        category: "login",
-        message: "User created with password",
-        tenant_id,
-        user_id: id,
-      });
+    // try {
+    //   const profile = await user.registerPassword.mutate({
+    //     email: loginParams.username,
+    //     tenantId: client.tenant_id,
+    //     password: loginParams.password,
+    //   });
 
-      const { code } = await user.createEmailValidationCode.mutate();
-      await env.data.logs.create({
-        category: "login",
-        message: "Create email validation code",
-        tenant_id,
-        user_id: id,
-      });
-      await sendEmailValidation(env, client, loginParams.username, code);
+    //   const { tenant_id, id } = profile;
+    //   await env.data.logs.create({
+    //     category: "login",
+    //     message: "User created with password",
+    //     tenant_id,
+    //     user_id: id,
+    //   });
 
-      if (client.email_validation === "enforced") {
-        // Update the username in the state
-        await setLoginState(env, state, {
-          ...loginState,
-          authParams: {
-            ...loginState.authParams,
-            username: loginParams.username,
-          },
-        });
+    //   const { code } = await user.createEmailValidationCode.mutate();
+    //   await env.data.logs.create({
+    //     category: "login",
+    //     message: "Create email validation code",
+    //     tenant_id,
+    //     user_id: id,
+    //   });
+    //   await sendEmailValidation(env, client, loginParams.username, code);
 
-        return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-      }
+    //   if (client.email_validation === "enforced") {
+    //     // Update the username in the state
+    //     await setLoginState(env, state, {
+    //       ...loginState,
+    //       authParams: {
+    //         ...loginState.authParams,
+    //         username: loginParams.username,
+    //       },
+    //     });
 
-      return handleLogin(env, this, profile, loginState);
-    } catch (err: any) {
-      return renderSignup(env.AUTH_TEMPLATES, this, {
-        ...loginState,
-        errorMessage: err.message,
-      });
-    }
+    //     return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+    //   }
+
+    //   return handleLogin(env, this, profile, loginState);
+    // } catch (err: any) {
+    //   return renderSignup(env.AUTH_TEMPLATES, this, {
+    //     ...loginState,
+    //     errorMessage: err.message,
+    //   });
+    // }
   }
 
   /**
@@ -448,23 +456,25 @@ export class LoginController extends Controller {
       await setLoginState(env, state, loginState);
     }
 
-    const { code } = await user.createPasswordResetCode.mutate();
-    const userProfile = await user.getProfile.query();
-    const { tenant_id, id } = userProfile;
-    await env.data.logs.create({
-      category: "login",
-      message: "Send password reset",
-      tenant_id,
-      user_id: id,
-    });
+    throw new Error("Not implemented");
 
-    await sendResetPassword(env, client, params.username, code, state);
+    // const { code } = await user.createPasswordResetCode.mutate();
+    // const userProfile = await user.getProfile.query();
+    // const { tenant_id, id } = userProfile;
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Send password reset",
+    //   tenant_id,
+    //   user_id: id,
+    // });
 
-    return renderMessage(env.AUTH_TEMPLATES, this, {
-      ...loginState,
-      page_title: "Password reset",
-      message: "A code has been sent to your email address",
-    });
+    // await sendResetPassword(env, client, params.username, code, state);
+
+    // return renderMessage(env.AUTH_TEMPLATES, this, {
+    //   ...loginState,
+    //   page_title: "Password reset",
+    //   message: "A code has been sent to your email address",
+    // });
   }
 
   /**
@@ -506,32 +516,34 @@ export class LoginController extends Controller {
       getId(client.tenant_id, loginState.authParams.username),
     );
 
-    try {
-      const profile = await user.resetPasswordWithCode.mutate({
-        code,
-        password: params.password,
-      });
+    throw new Error("Not implemented");
 
-      const { tenant_id, id } = profile;
-      await env.data.logs.create({
-        category: "update",
-        message: "Reset password with code",
-        tenant_id,
-        user_id: id,
-      });
-    } catch (err) {
-      return renderResetPassword(env.AUTH_TEMPLATES, this, {
-        ...loginState,
-        state,
-        errorMessage: "Invalid code",
-      });
-    }
+    // try {
+    //   const profile = await user.resetPasswordWithCode.mutate({
+    //     code,
+    //     password: params.password,
+    //   });
 
-    return renderMessage(env.AUTH_TEMPLATES, this, {
-      ...loginState,
-      page_title: "Password reset",
-      message: "The password has been reset",
-    });
+    //   const { tenant_id, id } = profile;
+    //   await env.data.logs.create({
+    //     category: "update",
+    //     message: "Reset password with code",
+    //     tenant_id,
+    //     user_id: id,
+    //   });
+    // } catch (err) {
+    //   return renderResetPassword(env.AUTH_TEMPLATES, this, {
+    //     ...loginState,
+    //     state,
+    //     errorMessage: "Invalid code",
+    //   });
+    // }
+
+    // return renderMessage(env.AUTH_TEMPLATES, this, {
+    //   ...loginState,
+    //   page_title: "Password reset",
+    //   message: "The password has been reset",
+    // });
   }
 
   @Post("login")
@@ -549,58 +561,60 @@ export class LoginController extends Controller {
       getId(client.tenant_id, loginParams.username),
     );
 
-    try {
-      await user.validatePassword.mutate({
-        password: loginParams.password,
-        tenantId: client.tenant_id,
-        email: loginParams.username,
-      });
-      const profile = await user.getProfile.query();
+    throw new Error("Not implemented");
 
-      const { tenant_id, id } = profile;
-      await env.data.logs.create({
-        category: "login",
-        message: "Login with password",
-        tenant_id,
-        user_id: id,
-      });
+    // try {
+    //   await user.validatePassword.mutate({
+    //     password: loginParams.password,
+    //     tenantId: client.tenant_id,
+    //     email: loginParams.username,
+    //   });
+    //   const profile = await user.getProfile.query();
 
-      const authConnection = profile.connections.find((c) => c.name === "auth");
-      if (
-        !authConnection?.profile?.validated &&
-        client.email_validation === "enforced"
-      ) {
-        // Update the username in the state
-        await setLoginState(env, state, {
-          ...loginState,
-          authParams: {
-            ...loginState.authParams,
-            username: loginParams.username,
-          },
-        });
+    //   const { tenant_id, id } = profile;
+    //   await env.data.logs.create({
+    //     category: "login",
+    //     message: "Login with password",
+    //     tenant_id,
+    //     user_id: id,
+    //   });
 
-        const { code } = await user.createEmailValidationCode.mutate();
-        const userProfile = await user.getProfile.query();
-        const { tenant_id, id } = userProfile;
-        await env.data.logs.create({
-          category: "login",
-          message: "Create email validation code",
-          tenant_id,
-          user_id: id,
-        });
-        await sendEmailValidation(env, client, profile.email, code);
+    //   const authConnection = profile.connections.find((c) => c.name === "auth");
+    //   if (
+    //     !authConnection?.profile?.validated &&
+    //     client.email_validation === "enforced"
+    //   ) {
+    //     // Update the username in the state
+    //     await setLoginState(env, state, {
+    //       ...loginState,
+    //       authParams: {
+    //         ...loginState.authParams,
+    //         username: loginParams.username,
+    //       },
+    //     });
 
-        return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-      }
+    //     const { code } = await user.createEmailValidationCode.mutate();
+    //     const userProfile = await user.getProfile.query();
+    //     const { tenant_id, id } = userProfile;
+    //     await env.data.logs.create({
+    //       category: "login",
+    //       message: "Create email validation code",
+    //       tenant_id,
+    //       user_id: id,
+    //     });
+    //     await sendEmailValidation(env, client, profile.email, code);
 
-      return handleLogin(env, this, profile, loginState);
-    } catch (err: any) {
-      return renderLogin(env.AUTH_TEMPLATES, this, {
-        ...loginState,
-        errorMessage: err.message,
-        state,
-      });
-    }
+    //     return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+    //   }
+
+    //   return handleLogin(env, this, profile, loginState);
+    // } catch (err: any) {
+    //   return renderLogin(env.AUTH_TEMPLATES, this, {
+    //     ...loginState,
+    //     errorMessage: err.message,
+    //     state,
+    //   });
+    // }
   }
 
   /**

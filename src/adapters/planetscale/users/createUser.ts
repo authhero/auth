@@ -26,7 +26,18 @@ export function createUser(db: Kysely<Database>) {
 
     await db.insertInto("users").values(sqlUser).execute();
 
-    return sqlUser;
+    // TODO - use type SqlUser everywhere internally
+    // return sqlUser;
+
+    const userResponse: UserResponse = {
+      ...sqlUser,
+      logins_count: 0,
+      username: sqlUser.email,
+      identities: [],
+      user_id,
+    };
+
+    return userResponse;
 
     // const { updated_at, id, ...userWithoutFields } = sqlUser;
 
