@@ -554,34 +554,52 @@ export class LoginController extends Controller {
       getId(client.tenant_id, loginState.authParams.username),
     );
 
-    throw new Error("Not implemented");
+    try {
+      // const profile = await user.resetPasswordWithCode.mutate({
+      //   code,
+      //   password: params.password,
+      // });
 
-    // try {
-    //   const profile = await user.resetPasswordWithCode.mutate({
-    //     code,
-    //     password: params.password,
-    //   });
+      // another duplicate here - DRY rule of three!
+      const otps = await env.data.OTP.list(
+        client.tenant_id,
+        loginState.authParams.username,
+      );
+      const otp = otps.find((otp) => otp.code === code);
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "update",
-    //     message: "Reset password with code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
-    // } catch (err) {
-    //   return renderResetPassword(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     state,
-    //     errorMessage: "Invalid code",
-    //   });
-    // }
+      if (!otp) {
+        return renderEnterCode(env.AUTH_TEMPLATES, this, {
+          ...loginState,
+          errorMessage: "Code not found or expired",
+        });
+      }
 
-    // return renderMessage(env.AUTH_TEMPLATES, this, {
-    //   ...loginState,
-    //   page_title: "Password reset",
-    //   message: "The password has been reset",
-    // });
+      // we need an update password here right???? OR a delete one and then we can create again...
+      await env.data.passwords.create(client.tenant_id, {
+        user_id: loginState.authParams.username,
+        password: params.password,
+      });
+
+      // const { tenant_id, id } = profile;
+      // await env.data.logs.create({
+      //   category: "update",
+      //   message: "Reset password with code",
+      //   tenant_id,
+      //   user_id: id,
+      // });
+    } catch (err) {
+      return renderResetPassword(env.AUTH_TEMPLATES, this, {
+        ...loginState,
+        state,
+        errorMessage: "Invalid code",
+      });
+    }
+
+    return renderMessage(env.AUTH_TEMPLATES, this, {
+      ...loginState,
+      page_title: "Password reset",
+      message: "The password has been reset",
+    });
   }
 
   @Post("login")
