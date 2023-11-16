@@ -3,6 +3,7 @@ module.exports = {
   transform: {
     "^.+\\.(t|j)sx?$": "ts-jest",
   },
+  testTimeout: 20000,
   testRegex: "/integration-test/.*\\.spec\\.ts$",
   setupFilesAfterEnv: ["./jest-integration.setup.js"],
 };

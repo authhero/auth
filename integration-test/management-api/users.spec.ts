@@ -44,7 +44,8 @@ describe("users", () => {
     expect(body.length).toBe(0);
   });
 
-  it("should create a new user for a tenant", async () => {
+  // this is different to Auth0 where user_id OR email is required
+  it("should return a 403 if try and create a new user for a tenant without an email", async () => {
     const token = await getAdminToken();
 
     const createUserResponse = await worker.fetch("/api/v2/users", {
@@ -59,10 +60,28 @@ describe("users", () => {
       },
     });
 
+    expect(createUserResponse.status).toBe(400);
+  });
+
+  it("should create a new user for a tenant", async () => {
+    const token = await getAdminToken();
+
+    const createUserResponse = await worker.fetch("/api/v2/users", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "test@example.com",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "test",
+        "content-type": "application/json",
+      },
+    });
+
     expect(createUserResponse.status).toBe(201);
 
     const newUser = await createUserResponse.json();
-    expect(newUser.username).toBe("test@example.com");
+    expect(newUser.email).toBe("test@example.com");
 
     const usersResponse = await worker.fetch("/api/v2/users", {
       headers: {

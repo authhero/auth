@@ -1,4 +1,3 @@
-// src/users/usersController.ts
 import {
   Body,
   Controller,
@@ -9,15 +8,20 @@ import {
   Route,
   Tags,
 } from "@tsoa/runtime";
+import { nanoid } from "nanoid";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getClient } from "../../services/clients";
 import { AuthParams, AuthorizationResponseType } from "../../types/AuthParams";
-import { sendCode, sendLink } from "../../controllers/email";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
+import generateOTP from "../../utils/otp";
+import { UnauthenticatedError } from "../../errors";
+import { Profile } from "../../types";
+
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
+
 import { getId } from "../../models";
 import { HTTPException } from "hono/http-exception";
 export interface PasswordlessOptions {
@@ -56,40 +60,37 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const client = await getClient(env, body.client_id);
+    const client = await env.data.clients.get(body.client_id);
     if (!client) {
       throw new Error("Client not found");
     }
-
     const email = body.email.toLocaleLowerCase();
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, email),
-    );
+    const code = generateOTP();
 
-    const { code } = [
+    await env.data.OTP.create({
+      id: nanoid(),
+      code,
+      email,
+      client_id: body.client_id,
+      send: body.send,
+      authParams: body.authParams,
+      tenant_id: client.tenant_id,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+    });
+
+    request.ctx.set("log", `Code: ${code}`);
+
+    /* hardcoded user codes
       "ulf.lindberg@maxm.se",
       "markus+23@sesamy.com",
       "klara.lindstroem@hmc.ox.ac.uk",
       "carlotta.granath@next-tech.com",
-    ].includes(email)
-      ? { code: "531523" }
-      : await user.createAuthenticationCode.mutate({
-          authParams: {
-            ...body.authParams,
-            client_id: body.client_id,
-          },
-        });
 
-    request.ctx.set("log", `Code: ${code}`);
-    // const userProfile = await user.getProfile.query();
-    // const { tenant_id, id } = userProfile;
-    // await env.data.logs.create({
-    //   category: "login",
-    //   message: "Create authentication code",
-    //   tenant_id,
-    //   user_id: id,
-    // });
+      should be 531523
+
+    */
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
@@ -124,9 +125,9 @@ export class PasswordlessController extends Controller {
       magicLink.searchParams.set("email", email);
       magicLink.searchParams.set("verification_code", code);
 
-      await sendLink(env, client, email, code, magicLink.href);
+      await env.data.email.sendLink(env, client, email, code, magicLink.href);
     } else {
-      await sendCode(env, client, email, code);
+      await env.data.email.sendCode(env, client, email, code);
     }
 
     return "OK";
@@ -148,29 +149,32 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const client = await getClient(env, client_id);
+    const client = await env.data.clients.get(client_id);
     if (!client) {
       throw new Error("Client not found");
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, email),
-    );
-
     try {
-      const profile = await user.validateAuthenticationCode.mutate({
-        code: verification_code,
-        email,
-        tenantId: client.tenant_id,
-      });
+      const otps = await env.data.OTP.list(client.tenant_id, email);
+      const otp = otps.find((otp) => otp.code === verification_code);
 
-      const { tenant_id, id } = profile;
-      await env.data.logs.create({
-        category: "login",
-        message: "Login with code",
-        tenant_id,
-        user_id: id,
-      });
+      if (!otp) {
+        throw new UnauthenticatedError("Code not found or expired");
+      }
+
+      let user = await env.data.users.getByEmail(client.tenant_id, email);
+      if (!user) {
+        user = await env.data.users.create(client.tenant_id, {
+          // this is inconsitent. In other places the ID is just the ID
+          // I think this is where we're going to hit serious issues...
+          // Shouldn't this be done in the sub?
+          // OR IDEALLY have the users.create handle this?
+          // id: `${client.tenant_id}|${nanoid()}`,
+          email,
+          name: email,
+          tenant_id: client.tenant_id,
+        });
+      }
 
       if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
         throw new HTTPException(400, {
@@ -186,17 +190,24 @@ export class PasswordlessController extends Controller {
         audience,
       };
 
+      const profile: Profile = {
+        ...user,
+        connections: [],
+        tenant_id: client.tenant_id,
+      };
+
       const sessionId = await setSilentAuthCookies(
         env,
         this,
+        client.tenant_id,
+        client.id,
         profile,
-        authParams,
       );
 
       const tokenResponse = await generateAuthResponse({
         responseType: response_type,
         env,
-        userId: profile.id,
+        userId: user.id,
         sid: sessionId,
         state,
         nonce,

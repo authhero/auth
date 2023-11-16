@@ -1,17 +1,13 @@
 // src/users/usersController.ts
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getClient } from "../../services/clients";
-import { contentTypes, headers } from "../../constants";
-import {
-  AuthenticationCodeExpiredError,
-  InvalidCodeError,
-  UnauthenticatedError,
-} from "../../errors";
+import { nanoid } from "nanoid";
+import { UnauthenticatedError } from "../../errors";
 import randomString from "../../utils/random-string";
-import { hexToBase64 } from "../../utils/base64";
-import { handleLinkedAccount } from "../../helpers/account-linking";
-import { getId } from "../../models";
+import { AuthParams, Client, Env, Ticket } from "../../types";
+import { HTTPException } from "hono/http-exception";
+
+const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
 export interface LoginError {
   error: string;
@@ -54,118 +50,82 @@ export class AuthenticateController extends Controller {
   public async authenticate(
     @Body() body: CodeAuthenticateParams | PasswordAuthenticateParams,
     @Request() request: RequestWithContext,
-  ): Promise<LoginTicket | LoginError> {
+  ): Promise<LoginTicket | LoginError | string> {
     const { env } = request.ctx;
 
-    const client = await getClient(env, body.client_id);
+    const client = await env.data.clients.get(body.client_id);
     if (!client) {
       throw new Error("Client not found");
     }
 
     const email = body.username.toLocaleLowerCase();
+    let ticket: Ticket = {
+      id: nanoid(),
+      tenant_id: client.tenant_id,
+      client_id: client.id,
+      email: email,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + TICKET_EXPIRATION_TIME),
+    };
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, email),
-    );
+    if ("otp" in body) {
+      const otps = await env.data.OTP.list(client.tenant_id, email);
+      const otp = otps.find((otp) => otp.code === body.otp);
 
-    // const profile = await user.getProfile.query();
-    // const { tenant_id, id } = profile;
-
-    try {
-      switch (body.realm) {
-        case "email":
-          await user.validateAuthenticationCode.mutate({
-            code: body.otp,
-            email: email,
-            tenantId: client.tenant_id,
-          });
-
-          // await env.data.logs.create({
-          //   category: "login",
-          //   message: "Login with code",
-          //   tenant_id,
-          //   user_id: id,
-          // });
-          break;
-        case "Username-Password-Authentication":
-          await user.validatePassword.mutate({
-            password: body.password,
-            email: email,
-            tenantId: client.tenant_id,
-          });
-
-          // await env.data.logs.create({
-          //   category: "login",
-          //   message: "Login with password",
-          //   tenant_id,
-          //   user_id: id,
-          // });
-
-          break;
-        default:
-          throw new Error("Unsupported realm");
+      if (!otp) {
+        throw new HTTPException(403, {
+          res: new Response(
+            JSON.stringify({
+              error: "access_denied",
+              error_description: "Wrong email or verification code.",
+            }),
+            {
+              status: 403, // without this it returns a 200
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          ),
+        });
       }
 
-      const coVerifier = randomString(32);
-      const coID = randomString(12);
+      ticket.authParams = otp.authParams;
+    } else {
+      const user = await env.data.users.getByEmail(client.tenant_id, email);
 
-      const profile = await user.getProfile.query();
+      if (!user) {
+        throw new HTTPException(403);
+      }
 
-      await handleLinkedAccount(env, profile);
-
-      const payload = {
-        coVerifier,
-        coID,
-        username: profile.email,
-        userId: `${client.tenant_id}|${profile.email}`,
-        authParams: {
-          client_id: body.client_id,
-          user: profile,
-        },
-      };
-
-      const stateId = env.STATE.newUniqueId().toString();
-      const stateInstance = env.stateFactory.getInstanceById(stateId);
-      await stateInstance.createState.mutate({
-        state: JSON.stringify(payload),
+      const { valid } = await env.data.passwords.validate(client.tenant_id, {
+        user_id: user.id,
+        password: body.password,
       });
 
-      this.setHeader(headers.contentType, contentTypes.json);
-      return {
-        login_ticket: hexToBase64(stateId),
-        co_verifier: coVerifier,
-        co_id: coID,
-      };
-    } catch (err: any) {
-      this.setStatus(403);
-      this.setHeader(headers.contentType, contentTypes.json);
-
-      if (err instanceof AuthenticationCodeExpiredError) {
-        return {
-          error: "access_denied",
-          error_description:
-            "The verification code has expired. Please try to login again.",
-        };
+      if (!valid) {
+        throw new HTTPException(403);
       }
-
-      if (err instanceof InvalidCodeError) {
-        return {
-          error: "access_denied",
-          error_description: "Wrong email or verification code.",
-        };
-      }
-
-      if (err instanceof UnauthenticatedError) {
-        return {
-          error: "access_denied",
-          error_description: "Wrong email or password.",
-        };
-      }
-
-      return {
-        error: "access_denied",
-        error_description: `Server error: ${err.message}`,
-      };
     }
+
+    await env.data.tickets.create(ticket);
+
+    return {
+      login_ticket: ticket.id,
+      // TODO: I guess these should be validated when accepting the ticket
+      co_verifier: randomString(32),
+      co_id: randomString(12),
+    };
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Login with code",
+    //   tenant_id,
+    //   user_id: id,
+    // });
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Login with password",
+    //   tenant_id,
+    //   user_id: id,
+    // });
   }
 }

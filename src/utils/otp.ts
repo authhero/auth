@@ -4,5 +4,5 @@ export default function generateOTP() {
   for (let i = 0; i < 6; i += 1) {
     otp += digits[Math.floor(Math.random() * 10)];
   }
-  return otp;
+  return otp.toString();
 }

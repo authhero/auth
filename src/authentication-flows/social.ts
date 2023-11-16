@@ -141,8 +141,9 @@ export async function socialAuthCallback({
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
+    client.tenant_id,
+    client.id,
     profile,
-    state.authParams,
   );
 
   const tokenResponse = await generateAuthResponse({

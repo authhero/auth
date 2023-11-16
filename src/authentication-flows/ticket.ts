@@ -1,59 +1,70 @@
 import { Controller } from "@tsoa/runtime";
-import { Env, AuthParams, AuthorizationResponseType } from "../types";
+import { nanoid } from "nanoid";
+import { Env, AuthParams, Profile, AuthorizationResponseType } from "../types";
 
-import { base64ToHex } from "../utils/base64";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 
-interface PasswordlessState {
-  clientId: string;
-  username: string;
-  userId: string;
-  authParams: AuthParams;
-}
-
 export async function ticketAuth(
   env: Env,
+  tenant_id: string,
   controller: Controller,
-  ticket: string,
-  state: string,
-  redirectUri: string,
-  responseType: AuthorizationResponseType,
+  ticketId: string,
+  authParams: AuthParams,
 ) {
-  const ticketInstance = env.stateFactory.getInstanceById(base64ToHex(ticket));
-
-  const ticketString = await ticketInstance.getState.query();
-  if (!ticketString) {
+  const ticket = await env.data.tickets.get(tenant_id, ticketId);
+  if (!ticket) {
     throw new Error("Ticket not found");
   }
 
-  const ticketJson: PasswordlessState = JSON.parse(ticketString);
-  const { userId, authParams } = ticketJson;
+  let user = await env.data.users.getByEmail(tenant_id, ticket.email);
 
-  const user = await env.userFactory.getInstanceByName(userId);
-  const profile = await user.getProfile.query();
+  if (!user) {
+    user = await env.data.users.create(tenant_id, {
+      // this isn't what we're doing in the database! we store the ID, and we store the tenant_id
+      // id: `${tenant_id}|${nanoid()}`,
+      email: ticket.email,
+      name: ticket.email,
+      tenant_id,
+    });
+  }
+
+  // TODO: Fallback to old profile
+  const profile: Profile = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    nickname: user.nickname,
+    picture: user.picture,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+    tenant_id: user.tenant_id,
+    connections: [],
+  };
 
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
+    ticket.tenant_id,
+    ticket.client_id,
     profile,
-    authParams,
   );
 
   const tokenResponse = await generateAuthResponse({
     env,
-    userId,
-    state,
-    authParams,
+    // userId: user.id,
+    // should this be called sub?
+    userId: `${tenant_id}|${nanoid()}`,
+    state: authParams.state,
+    authParams: {
+      ...authParams,
+      scope: ticket.authParams?.scope,
+    },
     sid: sessionId,
     user: profile,
-    responseType,
+    responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 
-  return applyTokenResponse(controller, tokenResponse, {
-    ...authParams,
-    redirect_uri: redirectUri,
-    state,
-  });
+  return applyTokenResponse(controller, tokenResponse, authParams);
 }

@@ -1,34 +1,31 @@
+import { nanoid } from "nanoid";
 import { serializeStateInCookie } from "../services/cookies";
 import { Controller } from "tsoa";
 import { headers, MONTH_IN_SECONDS } from "../constants";
-import { AuthParams, Env, Profile } from "../types";
-import { hexToBase64 } from "../utils/base64";
+import { AuthParams, Env, Profile, Session } from "../types";
 
 export async function setSilentAuthCookies(
   env: Env,
   controller: Controller,
+  tenant_id: string,
+  client_id: string,
   user: Profile,
-  authParams: AuthParams,
 ) {
-  const payload = {
-    userId: user.id,
-    user,
-    authParams,
+  const session: Session = {
+    id: nanoid(),
+    user_id: user.id,
+    tenant_id,
+    client_id,
+    created_at: new Date(),
+    expires_at: new Date(MONTH_IN_SECONDS * 1000),
   };
 
-  const stateId = env.STATE.newUniqueId().toString();
-  const stateInstance = env.stateFactory.getInstanceById(stateId);
-  await stateInstance.createState.mutate({
-    state: JSON.stringify(payload),
-    ttl: MONTH_IN_SECONDS,
-  });
-
-  const sessionId = hexToBase64(stateId);
+  await env.data.sessions.create(session);
 
   // This should probably be done outside
-  serializeStateInCookie(sessionId).forEach((cookie) => {
+  serializeStateInCookie(session.id).forEach((cookie) => {
     controller.setHeader(headers.setCookie, cookie);
   });
 
-  return sessionId;
+  return session.id;
 }

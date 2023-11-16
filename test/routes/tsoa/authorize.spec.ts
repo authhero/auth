@@ -5,9 +5,12 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
   CodeChallengeMethod,
+  SqlCreateUser,
 } from "../../../src/types";
 import { InvalidConnectionError } from "../../../src/errors";
 import { parseJwt } from "../../../src/utils/parse-jwt";
+import { Session } from "../../../src/types/Session";
+import { Ticket } from "../../../src/types/Ticket";
 
 describe("authorize", () => {
   const date = new Date();
@@ -36,28 +39,26 @@ describe("authorize", () => {
       //     & auth0Client=eyJuYW1lIjoiYXV0aDAtcmVhY3QiLCJ2ZXJzaW9uIjoiMi4xLjAifQ % 3D % 3D
       const controller = new AuthorizeController();
 
-      const stateData: { [key: string]: any } = {
-        // This id corresponds to the base64 token below
-        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
-          JSON.stringify({
-            userId: "tenantId|test@example.com",
-            authParams: {
-              redirect_uri: "https://example.com",
-              scope: "openid profile email",
-              state:
-                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
-              client_id: "clientId",
-              nonce:
-                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-              response_type: "code",
-            },
-          }),
+      const session: Session = {
+        id: "sessionId",
+        user_id: "userId",
+        tenant_id: "tenantId",
+        client_id: "clientId",
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + 60 * 1000),
+      };
+
+      const user: SqlCreateUser = {
+        id: "userId",
+        email: "",
+        tenant_id: "tenantId",
       };
 
       const ctx = contextFixture({
-        stateData,
+        sessions: [session],
+        users: [user],
         headers: {
-          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+          cookie: "auth-token=sessionId",
         },
       });
 
@@ -83,27 +84,6 @@ describe("authorize", () => {
       expect(actual).toContain('response: {"code":"AAAAAA4","state":"state"');
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
-
-      const stateJson = JSON.parse(stateData.newUniqueId);
-
-      // This is what should be persisted in the state for the code
-      expect(stateJson).toEqual({
-        userId: "tenantId|test@example.com",
-        authParams: {
-          audience: "audience",
-          redirect_uri: "https://example.com",
-          scope: "openid profile email",
-          state: "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
-          client_id: "clientId",
-          nonce: "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-          response_type: "code",
-          code_challenge_method: CodeChallengeMethod.S265,
-          code_challenge: "Aci0drFQuKXZ5KU4uqEfzSOWzNKqIOM2hNfLYA8qfJo",
-        },
-        nonce: "nonce",
-        state: "state",
-        sid: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
-      });
     });
 
     it("should return an iframe document with a new access and id-token", async () => {
@@ -121,30 +101,26 @@ describe("authorize", () => {
       //     & auth0Client=eyJuYW1lIjoiYXV0aDAtcmVhY3QiLCJ2ZXJzaW9uIjoiMi4xLjAifQ % 3D % 3D
       const controller = new AuthorizeController();
 
-      const stateData: { [key: string]: any } = {
-        // This id corresponds to the base64 token below
-        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
-          JSON.stringify({
-            userId: "tenantId|test@example.com",
-            authParams: {
-              redirect_uri: "https://example.com",
-              scope: "openid profile email",
-              state:
-                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
-              client_id: "clientId",
-              nonce:
-                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-            },
-            user: {
-              email: "foo@bar.com",
-            },
-          }),
+      const session: Session = {
+        id: "sessionId",
+        user_id: "userId",
+        tenant_id: "tenantId",
+        client_id: "clientId",
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + 60 * 1000),
+      };
+
+      const user: SqlCreateUser = {
+        id: "userId",
+        email: "test@example.com",
+        tenant_id: "tenantId",
       };
 
       const ctx = contextFixture({
-        stateData,
+        sessions: [session],
+        users: [user],
         headers: {
-          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+          cookie: "auth-token=sessionId",
         },
       });
 
@@ -152,7 +128,7 @@ describe("authorize", () => {
         request: { ctx } as RequestWithContext,
         client_id: "clientId",
         redirect_uri: "https://example.com",
-        scope: "openid+profile+email",
+        scope: "openid profile email",
         state: "state",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
         response_mode: AuthorizationResponseMode.WEB_MESSAGE,
@@ -187,7 +163,7 @@ describe("authorize", () => {
 
       expect(accessToken.aud).toBe("audience");
       expect(accessToken.scope).toBe("openid profile email");
-      expect(accessToken.sub).toBe("tenantId|test@example.com");
+      expect(accessToken.sub).toBe("userId");
       expect(accessToken.iss).toBe("https://auth.example.com/");
       expect(accessToken.iat).toBeDefined();
       expect(accessToken.exp).toBeDefined();
@@ -195,12 +171,12 @@ describe("authorize", () => {
       const idToken = parseJwt(response.id_token);
 
       expect(idToken.aud).toBe("clientId");
-      expect(idToken.sub).toBe("tenantId|test@example.com");
+      expect(idToken.sub).toBe("userId");
       expect(idToken.nonce).toBe("nonce");
       expect(idToken.iss).toBe("https://auth.example.com/");
       expect(idToken.iat).toBeDefined();
       expect(idToken.exp).toBeDefined();
-      expect(idToken.email).toBe("foo@bar.com");
+      expect(idToken.email).toBe("test@example.com");
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
@@ -235,62 +211,6 @@ describe("authorize", () => {
 
       expect(actual).toBe("Redirect to login");
       expect(controller.getStatus()).toBe(302);
-    });
-
-    it("should use audience from the request for the silent auth", async () => {
-      const controller = new AuthorizeController();
-
-      const stateData: { [key: string]: any } = {
-        // This id corresponds to the base64 token below
-        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
-          JSON.stringify({
-            userId: "tenantId|test@example.com",
-            authParams: {
-              redirect_uri: "https://example.com",
-              scope: "openid profile email",
-              state:
-                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
-              client_id: "clientId",
-              audience: "",
-              nonce:
-                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-            },
-            user: {
-              email: "foo@bar.com",
-            },
-          }),
-      };
-
-      const ctx = contextFixture({
-        stateData,
-        headers: {
-          cookie: "auth-token=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
-        },
-      });
-
-      const actual = await controller.authorizeWithParams({
-        request: { ctx } as RequestWithContext,
-        client_id: "clientId",
-        redirect_uri: "https://example.com",
-        scope: "openid+profile+email",
-        state: "state",
-        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-        response_mode: AuthorizationResponseMode.WEB_MESSAGE,
-        audience: "aud2",
-        nonce: "nonce",
-        code_challenge_method: CodeChallengeMethod.S265,
-        // When using PKCE the client generates a random code challenge
-        code_challenge: "Aci0drFQuKXZ5KU4uqEfzSOWzNKqIOM2hNfLYA8qfJo",
-        prompt: "none",
-      });
-
-      const match = actual.match(/{"access_token":"([^,]+)/);
-      if (match?.length !== 2) {
-        throw new Error("No access token found");
-      }
-      const accessToken = parseJwt(match[1].replace(/\\/g, ""));
-
-      expect(accessToken.aud).toBe("aud2");
     });
   });
 
@@ -341,17 +261,17 @@ describe("authorize", () => {
         redirect_uri: "https://example.com",
         state: "state",
         scope: "openid profile email",
-        connection: "facebook",
+        connection: "google-oauth2",
         response_type: AuthorizationResponseType.TOKEN,
       });
 
       const locationHeader = controller.getHeader("location") as string;
 
       expect(locationHeader).toBe(
-        "https://graph.facebook.com/oauth/access_token?scope=email+public_profile&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=facebookClientId&response_type=code&response_mode=query",
+        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=googleClientId&response_type=code&response_mode=query",
       );
 
-      expect(actual).toBe("Redirecting to facebook");
+      expect(actual).toBe("Redirecting to google-oauth2");
       expect(controller.getStatus()).toBe(302);
     });
 
@@ -399,25 +319,20 @@ describe("authorize", () => {
 
       const controller = new AuthorizeController();
 
-      const stateData: { [key: string]: any } = {
-        // This id corresponds to the base64 token below
-        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
-          JSON.stringify({
-            userId: "tenantId|test@example.com",
-            authParams: {
-              redirect_uri: "https://example.com",
-              scope: "openid profile email",
-              state:
-                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
-              client_id: "clientId",
-              nonce:
-                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-            },
-          }),
+      const ticket: Ticket = {
+        id: "ticketId",
+        tenant_id: "tenantId",
+        client_id: "clientId",
+        email: "test@example.com",
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + 60 * 1000),
+        authParams: {
+          scope: "openid profile email",
+        },
       };
 
       const ctx = contextFixture({
-        stateData,
+        tickets: [ticket],
       });
 
       const actual = await controller.authorizeWithParams({
@@ -425,8 +340,7 @@ describe("authorize", () => {
         client_id: "clientId",
         redirect_uri: "https://example.com",
         state: "state",
-        scope: "openid profile email",
-        loginTicket: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        loginTicket: "ticketId",
         realm: "Username-Password-Authentication",
         response_type: AuthorizationResponseType.TOKEN,
       });
@@ -445,7 +359,7 @@ describe("authorize", () => {
       expect(accessToken).toEqual({
         aud: "default",
         scope: "openid profile email",
-        sub: "tenantId|test@example.com",
+        sub: "tenantId|testid",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
@@ -474,25 +388,18 @@ describe("authorize", () => {
 
       const controller = new AuthorizeController();
 
-      const stateData: { [key: string]: any } = {
-        // This id corresponds to the base64 token below
-        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
-          JSON.stringify({
-            userId: "tenantId|test@example.com",
-            authParams: {
-              redirect_uri: "https://example.com",
-              scope: "openid profile email",
-              state:
-                "Rk1BbzJYSEFEVU9fTGd4cGdidGh0OHJnRHIwWTFrWFdOYlNySDMuU3YxMw==",
-              client_id: "clientId",
-              nonce:
-                "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-            },
-          }),
+      const ticket: Ticket = {
+        id: "ticketId",
+        tenant_id: "tenantId",
+        client_id: "clientId",
+        email: "test@example.com",
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + 60 * 1000),
+        authParams: {},
       };
 
       const ctx = contextFixture({
-        stateData,
+        tickets: [ticket],
       });
 
       await controller.authorizeWithParams({
@@ -500,8 +407,9 @@ describe("authorize", () => {
         client_id: "clientId",
         redirect_uri: "https://example.com",
         state: "state",
+        nonce: "nonce",
         scope: "openid profile email",
-        loginTicket: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        loginTicket: "ticketId",
         realm: "Username-Password-Authentication",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       });
@@ -515,44 +423,32 @@ describe("authorize", () => {
 
       expect(idToken).toEqual({
         aud: "clientId",
-        sub: "tenantId|test@example.com",
-        nonce: "Y0QuU09HRDB3TGszTX41QmlvM1BVTWRSWDA0WFpJdkZoMUwtNmJqYlFDdg==",
-        sid: "AAAAAA4",
+        sub: "tenantId|testid",
+        nonce: "nonce",
+        sid: "testid",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
-        email: "foo@bar.com",
+        email: "test@example.com",
+        name: "test@example.com",
       });
     });
 
     it("should login using a ticket and return a code for response type code", async () => {
-      // https://auth2.sesamy.dev/authorize
-      // ?client_id=clientId
-      // &response_type=code
-      // &redirect_uri=https%3A%2F%2Fexample.com%2Fcallback
-      // &scope=openid%20profile%20email
-      // &audience=https%3A%2F%2Fexample.com
-      // &realm=Username-Password-Authentication
-      // &state=o2GJk9-Gic6DoVYp_abmjl34GIKYLFbr
-      // &login_ticket=wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc
-      // &auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMC4yIn0%3D
-
       const controller = new AuthorizeController();
 
-      const stateData: { [key: string]: any } = {
-        // This id corresponds to the base64 loginTicket below
-        c20e9b02adc8f69944f036aeff415335c63ede250696a606ae73c5d4db016217:
-          JSON.stringify({
-            userId: "tenantId|test@example.com",
-            authParams: {
-              scope: "openid profile email",
-              client_id: "clientId",
-            },
-          }),
+      const ticket: Ticket = {
+        id: "ticketId",
+        tenant_id: "tenantId",
+        client_id: "clientId",
+        email: "test@example.com",
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + 60 * 1000),
+        authParams: {},
       };
 
       const ctx = contextFixture({
-        stateData,
+        tickets: [ticket],
       });
 
       const actual = await controller.authorizeWithParams({
@@ -561,7 +457,7 @@ describe("authorize", () => {
         redirect_uri: "https://example.com",
         state: "state",
         scope: "openid profile email",
-        loginTicket: "wg6bAq3I9plE8Dau_0FTNcY-3iUGlqYGrnPF1NsBYhc",
+        loginTicket: "ticketId",
         realm: "Username-Password-Authentication",
         response_type: AuthorizationResponseType.CODE,
       });

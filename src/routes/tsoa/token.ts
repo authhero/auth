@@ -8,7 +8,6 @@ import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import {
   authorizeCodeGrant,
   passwordGrant,
-  passwordlessGrant,
   pkceAuthorizeCodeGrant,
   clientCredentialsGrant,
 } from "../../token-grant-types";
@@ -41,8 +40,6 @@ export class TokenRoutes extends Controller {
         return clientCredentialsGrant(ctx.env, body);
       case GrantType.Password:
         return passwordGrant(ctx.env, body);
-      case GrantType.Passwordless:
-        return passwordlessGrant(ctx.env, body);
     }
   }
 }

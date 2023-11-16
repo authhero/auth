@@ -13,13 +13,13 @@ import {
   Profile,
 } from "../types";
 import renderAuthIframe from "../templates/authIframe";
-import { base64ToHex } from "../utils/base64";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
 import { Var } from "../types/Var";
 
 export interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
+  tenant_id: string;
   controller: Controller;
   cookie_header: string | null;
   redirect_uri: string;
@@ -29,17 +29,12 @@ export interface SilentAuthParams {
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
   audience?: string;
-  State?: typeof StateModel;
-}
-
-interface SuperState {
-  userId: string;
-  authParams: AuthParams;
-  user: Profile;
+  scope?: string;
 }
 
 export async function silentAuth({
   ctx,
+  tenant_id,
   controller,
   cookie_header,
   redirect_uri,
@@ -49,6 +44,7 @@ export async function silentAuth({
   code_challenge_method,
   code_challenge,
   audience,
+  scope,
 }: SilentAuthParams) {
   const { env } = ctx;
 
@@ -56,32 +52,40 @@ export async function silentAuth({
   const redirectURL = new URL(redirect_uri);
 
   if (tokenState) {
-    const stateInstance = env.stateFactory.getInstanceById(
-      base64ToHex(tokenState),
-    );
-    const superStateString = await stateInstance.getState.query();
+    const session = await env.data.sessions.get(tokenState);
 
-    if (superStateString) {
-      const superState: SuperState = JSON.parse(superStateString);
-      ctx.set("userId", superState.userId);
+    if (session) {
+      ctx.set("userId", session.user_id);
 
       // Update the cookie
       serializeStateInCookie(tokenState).forEach((cookie) => {
         controller.setHeader(headers.setCookie, cookie);
       });
 
+      const user = await env.data.users.get(tenant_id, session.user_id);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const profile: Profile = {
+        ...user,
+        connections: [],
+        tenant_id,
+      };
+
       const tokenResponse = await generateAuthResponse({
         env,
         state,
         nonce,
-        userId: superState.userId,
+        userId: session.user_id,
         authParams: {
-          ...superState.authParams,
+          client_id: session.client_id,
           audience,
           code_challenge_method,
           code_challenge,
+          scope,
         },
-        user: superState.user as Profile,
+        user: profile,
         sid: tokenState,
         responseType: response_type,
       });

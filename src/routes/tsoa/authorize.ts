@@ -100,7 +100,11 @@ export class AuthorizeController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const client = await getClient(env, client_id);
+    const client = await env.data.clients.get(client_id);
+    if (!client) {
+      throw new Error("Client not found");
+    }
+
     const authParams: AuthParams = {
       redirect_uri,
       scope,
@@ -134,6 +138,7 @@ export class AuthorizeController extends Controller {
     if (prompt == "none") {
       return silentAuth({
         ctx,
+        tenant_id: client.tenant_id,
         controller: this,
         cookie_header: request.ctx.req.header("cookie") ?? null,
         redirect_uri,
@@ -143,6 +148,7 @@ export class AuthorizeController extends Controller {
         code_challenge_method,
         code_challenge,
         audience,
+        scope,
       });
     }
 
@@ -150,14 +156,7 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
-      return ticketAuth(
-        env,
-        this,
-        loginTicket,
-        state,
-        redirect_uri,
-        response_type,
-      );
+      return ticketAuth(env, client.tenant_id, this, loginTicket, authParams);
     }
 
     return universalAuth({ env, controller: this, authParams });

@@ -11,7 +11,6 @@ export type TokenParams =
   | AuthorizationCodeGrantTypeParams
   | PKCEAuthorizationCodeGrantTypeParams
   | ClientCredentialGrantTypeParams
-  | PasswordlessGrantTypeParams
   | PasswordGrantTypeParams;
 
 export interface RefreshTokenGrantTypeParams {

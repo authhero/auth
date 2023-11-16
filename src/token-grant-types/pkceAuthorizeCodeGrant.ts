@@ -58,7 +58,13 @@ export async function pkceAuthorizeCodeGrant(
     throw new InvalidCodeVerifierError();
   }
 
-  await setSilentAuthCookies(env, controller, state.user, state.authParams);
+  await setSilentAuthCookies(
+    env,
+    controller,
+    client.tenant_id,
+    client.id,
+    state.user,
+  );
 
   return generateAuthResponse({
     env,

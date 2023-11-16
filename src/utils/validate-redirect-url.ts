@@ -93,6 +93,7 @@ const ALLOWED_CALLBACK_URLS = [
   "https://*.vercel.sesamy.dev/sv/breakit-user-not-found",
   // example.com
   "http://example.com",
+  "http://login.example.com",
 ];
 
 // Regular expression to extract protocol + host and path (without query string) from a URL
