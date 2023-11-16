@@ -73,27 +73,19 @@ export class AuthenticateController extends Controller {
       const otp = otps.find((otp) => otp.code === body.otp);
 
       if (!otp) {
-        const headers = new Headers();
-        headers.set("Content-Type", "application/json");
-
-        // create ReadableStream<Uint8Array> from string
-        const body = new ReadableStream({
-          start(controller) {
-            const encoder = new TextEncoder();
-            controller.enqueue(encoder.encode("hello"));
-            controller.close();
-          },
-        });
-
         throw new HTTPException(403, {
-          res: {
-            // body: JSON.stringify({
-            //   error: "access_denied",
-            //   error_description: "Wrong email or verification code.",
-            // }),
-            body,
-            headers,
-          },
+          res: new Response(
+            JSON.stringify({
+              error: "access_denied",
+              error_description: "Wrong email or verification code.",
+            }),
+            {
+              status: 403, // without this it returns a 200
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          ),
         });
       }
 
