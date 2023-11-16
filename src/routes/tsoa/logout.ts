@@ -12,7 +12,7 @@ import { getClient } from "../../services/clients";
 import { serializeClearCookie } from "../../services/cookies";
 import { headers } from "../../constants";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
-
+import { HTTPException } from "hono/http-exception";
 @Route("v2/logout")
 @Tags("logout")
 export class LogoutController extends Controller {
@@ -33,7 +33,11 @@ export class LogoutController extends Controller {
       throw new Error("No return to url found");
     }
 
-    validateRedirectUrl(client.allowed_logout_urls, redirectUri);
+    if (!validateRedirectUrl(client.allowed_logout_urls, redirectUri)) {
+      throw new HTTPException(403, {
+        message: `Invalid logout URI - ${redirectUri}`,
+      });
+    }
 
     this.setStatus(302);
     serializeClearCookie().forEach((cookie) => {

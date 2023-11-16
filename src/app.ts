@@ -34,12 +34,14 @@ const ALLOWED_ORIGINS = [
   "https://auth-admin.sesamy.dev",
   "https://login2.sesamy.com",
   "https://auth-admin.sesamy.com",
+  "https://appleid.apple.com",
 ];
 
 app.use(
   "/*",
   cors({
     origin: (origin) => {
+      if (!origin) return "";
       if (validateUrl(ALLOWED_ORIGINS, origin)) {
         return origin;
       }

@@ -5,6 +5,7 @@ import * as m4_logTable from "./2023-10-26T08:14:09_log_table";
 import * as m5_userProfile from "./2023-10-27T16:00:11_picture-length";
 import * as m6_sessions from "./2023-11-02T23:18:12_sessions";
 import * as m7_passwords from "./2023-11-07T23:18:12_passwords";
+import * as m8_logsTableNewFields from "./2023-11-08T17:12:09_logs-table-new-fields";
 
 // These need to be in alphabetic order
 export default {
@@ -15,4 +16,5 @@ export default {
   m5_userProfile,
   m6_sessions,
   m7_passwords,
+  m8_logsTableNewFields,
 };
