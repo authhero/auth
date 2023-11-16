@@ -73,7 +73,20 @@ export class AuthenticateController extends Controller {
       const otp = otps.find((otp) => otp.code === body.otp);
 
       if (!otp) {
-        throw new HTTPException(403);
+        throw new HTTPException(403, {
+          res: new Response(
+            JSON.stringify({
+              error: "access_denied",
+              error_description: "Wrong email or verification code.",
+            }),
+            {
+              status: 403, // without this it returns a 200
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          ),
+        });
       }
 
       ticket.authParams = otp.authParams;
