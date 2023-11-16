@@ -6,6 +6,7 @@ import { Env } from "../../types";
 import { createSessionsAdapter } from "./sessions";
 import { createTicketsAdapter } from "./tickets";
 import { createOTPAdapter } from "./otps";
+import { createPasswordAdapter } from "./passwords";
 
 export default function createAdapters(env: Env) {
   return {
@@ -16,5 +17,6 @@ export default function createAdapters(env: Env) {
     tickets: createTicketsAdapter(env),
     OTP: createOTPAdapter(env),
     logs: createLogsAdapter(env),
+    passwords: createPasswordAdapter(env),
   };
 }
