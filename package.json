@@ -5,7 +5,8 @@
   "main": "build/src/server.js",
   "scripts": {
     "build": "node tsoa.mjs",
-    "dev": "node tsoa.mjs && wrangler dev --remote",
+    "dev:bun": "bun tsoa.mjs && bun run src/bun.ts --watch",
+    "dev:wrangler": "node tsoa.mjs && wrangler dev --remote",
     "dev:https": "node tsoa.mjs && wrangler dev --remote --local-protocol=https",
     "mf": "node tsoa.mjs && tsc & miniflare",
     "format": "prettier --write '**/*.{ts,css,json,md}'",

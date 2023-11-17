@@ -1,5 +1,5 @@
 import { Env } from "../src/types/Env";
-import { app } from "../src/app";
+import app from "../src/app";
 import { User, State } from "../src/models";
 import { getCertificate } from "./helpers/token";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";

@@ -14,7 +14,7 @@ import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
 
-export const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env }>();
 
 app.onError((err, ctx) => {
   if (err instanceof HTTPException) {
@@ -99,3 +99,5 @@ app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
 });
 
 RegisterRoutes(app as unknown as Hono);
+
+export default app;

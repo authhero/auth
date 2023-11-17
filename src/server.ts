@@ -1,5 +1,5 @@
 import { Env } from "./types/Env";
-import { app } from "./app";
+import app from "./app";
 import { rotateKeys } from "./routes/rotate-keys";
 import { User, State } from "./models";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
