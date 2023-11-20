@@ -29,6 +29,8 @@ export async function validateCode(env: Env, params: LoginParams) {
       email: params.email,
       name: params.email,
       tenant_id: client.tenant_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
   }
 

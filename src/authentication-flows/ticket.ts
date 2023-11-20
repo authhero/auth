@@ -26,6 +26,8 @@ export async function ticketAuth(
       email: ticket.email,
       name: ticket.email,
       tenant_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
   }
 
