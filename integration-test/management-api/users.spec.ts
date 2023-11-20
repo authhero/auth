@@ -45,7 +45,7 @@ describe("users", () => {
   });
 
   // this is different to Auth0 where user_id OR email is required
-  it("should return a 403 if try and create a new user for a tenant without an email", async () => {
+  it("should return a 400 if try and create a new user for a tenant without an email", async () => {
     const token = await getAdminToken();
 
     const createUserResponse = await worker.fetch("/api/v2/users", {
