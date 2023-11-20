@@ -52,7 +52,7 @@ export type Profile = {
   picture?: string;
   locale?: string;
   linked_with?: string;
-  connections: Connection[];
+  connections?: Connection[];
 };
 
 const ConnectionSchema = z.object({
@@ -72,5 +72,5 @@ export const ProfileSchema = z.object({
   name: z.string().optional(),
   picture: z.string().optional(),
   locale: z.string().optional(),
-  connections: z.array(ConnectionSchema),
+  connections: z.array(ConnectionSchema).optional(),
 });

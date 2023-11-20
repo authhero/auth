@@ -10,11 +10,8 @@ import {
   SuccessResponse,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { InvalidRequestError } from "../../errors";
 import { HTTPException } from "hono/http-exception";
-import { getId, User } from "../../models/User";
-import { getClient } from "../../services/clients";
-import sendEmail from "../../services/email";
+import { nanoid } from "nanoid";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -66,6 +63,7 @@ export class DbConnectionController extends Controller {
     );
     if (!user) {
       user = await ctx.env.data.users.create(client.tenant_id, {
+        id: `email|${nanoid()}`,
         email: body.email,
         tenant_id: client.tenant_id,
         // TBD - this field isn't in SQL

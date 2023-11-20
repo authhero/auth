@@ -22,33 +22,19 @@ export async function ticketAuth(
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
-      // this isn't what we're doing in the database! we store the ID, and we store the tenant_id
-      // id: `${tenant_id}|${nanoid()}`,
+      id: `email|${nanoid()}`,
       email: ticket.email,
       name: ticket.email,
       tenant_id,
     });
   }
 
-  // TODO: Fallback to old profile
-  const profile: Profile = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    nickname: user.nickname,
-    picture: user.picture,
-    created_at: user.created_at,
-    updated_at: user.updated_at,
-    tenant_id: user.tenant_id,
-    connections: [],
-  };
-
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
     ticket.tenant_id,
     ticket.client_id,
-    profile,
+    user,
   );
 
   const tokenResponse = await generateAuthResponse({
@@ -62,7 +48,7 @@ export async function ticketAuth(
       scope: ticket.authParams?.scope,
     },
     sid: sessionId,
-    user: profile,
+    user,
     responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 

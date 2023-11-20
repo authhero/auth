@@ -12,3 +12,4 @@ export * from "./OTP";
 export * from "./Ticket";
 export * from "./Code";
 export * from "./Password";
+export * from "./User";

@@ -1,9 +1,9 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { Database, SqlUser, SqlCreateUser } from "../../../types";
+import { Database, SqlUser, User } from "../../../types";
 
 export function createUser(db: Kysely<Database>) {
-  return async (tenantId: string, user: SqlCreateUser): Promise<SqlUser> => {
+  return async (tenantId: string, user: User): Promise<SqlUser> => {
     const user_id = user.id || nanoid();
     const sqlUser: SqlUser = {
       id: user_id,

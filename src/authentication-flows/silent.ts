@@ -4,14 +4,7 @@ import {
   getStateFromCookie,
   serializeStateInCookie,
 } from "../services/cookies";
-import { State as StateModel } from "../models";
-import {
-  AuthorizationResponseType,
-  AuthParams,
-  CodeChallengeMethod,
-  Env,
-  Profile,
-} from "../types";
+import { AuthorizationResponseType, CodeChallengeMethod, Env } from "../types";
 import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
@@ -67,12 +60,6 @@ export async function silentAuth({
         throw new Error("User not found");
       }
 
-      const profile: Profile = {
-        ...user,
-        connections: [],
-        tenant_id,
-      };
-
       const tokenResponse = await generateAuthResponse({
         env,
         state,
@@ -85,7 +72,7 @@ export async function silentAuth({
           code_challenge,
           scope,
         },
-        user: profile,
+        user,
         sid: tokenState,
         responseType: response_type,
       });

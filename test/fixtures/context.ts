@@ -8,6 +8,7 @@ import {
   Env,
   PasswordParams,
   SqlUser,
+  User,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
@@ -22,7 +23,6 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-import { SqlCreateUser } from "../../src/types";
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
@@ -30,7 +30,7 @@ export interface ContextFixtureParams {
   sessions?: Session[];
   otps?: OTP[];
   passwords?: PasswordParams[];
-  users?: SqlCreateUser[];
+  users?: User[];
   clients?: KVNamespace;
   userData?: { [key: string]: string | boolean };
   email?: {

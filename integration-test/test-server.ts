@@ -12,6 +12,7 @@ export { User, State };
 const data = createAdapter();
 // Add a known certificate
 data.certificates.upsertCertificates([getCertificate()]);
+
 // A test client
 if (!data.clients.create) {
   throw new Error("Missing create method on clients adapter");

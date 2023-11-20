@@ -5,8 +5,7 @@ import {
   CodeAuthenticateParams,
   PasswordAuthenticateParams,
 } from "../../../src/routes/tsoa/authenticate";
-import { PasswordParams } from "../../../src/types";
-import { SqlCreateUser } from "../../../src/types";
+import { PasswordParams, User } from "../../../src/types";
 
 describe("Authenticated", () => {
   describe("password", () => {
@@ -22,7 +21,8 @@ describe("Authenticated", () => {
       };
 
       const logs = [];
-      const user: SqlCreateUser = {
+
+      const user: User = {
         id: "userId",
         email: "test@example.com",
         tenant_id: "tenantId",

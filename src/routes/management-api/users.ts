@@ -24,8 +24,8 @@ import {
   PostUsersBody,
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
-import { SqlCreateUser } from "../../types";
 import { HTTPException } from "hono/http-exception";
+import { nanoid } from "nanoid";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -189,17 +189,18 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(400, { message: "Email is required" });
     }
 
-    const sqlCreateUser: SqlCreateUser = {
-      ...user,
-      tenant_id: tenantId,
+    const data = await env.data.users.create(tenantId, {
       email,
-    };
-
-    const data = await env.data.users.create(tenantId, sqlCreateUser);
+      id: `email|${nanoid()}`,
+      tenant_id: tenantId,
+    });
 
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
+      // TODO: this should be available on the user
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       user_id: data.id,
       logins_count: 0,
       last_ip: "",

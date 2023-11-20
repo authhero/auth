@@ -14,7 +14,6 @@ import {
   AuthParams,
   CodeChallengeMethod,
 } from "../../types";
-import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import {
   silentAuth,

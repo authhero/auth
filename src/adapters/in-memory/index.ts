@@ -11,9 +11,12 @@ import { createSessionsAdapter } from "./sessions";
 import { createCodesAdapter } from "./Codes";
 import { createPasswordsAdapter } from "./Passwords";
 import { createLogsAdapter } from "./logs";
+import { createApplicationsAdapter } from "./applications";
+import { createUniversalLoginSessionsAdapter } from "./universal-auth-sessions";
 
 export default function createAdapters(): DataAdapters {
   return {
+    applications: createApplicationsAdapter(),
     certificates: createCertificateAdapter(),
     codes: createCodesAdapter(),
     clients: createClientsAdapter(),
@@ -21,10 +24,14 @@ export default function createAdapters(): DataAdapters {
     members: createMembersAdapter(),
     OTP: createOTPAdapter(),
     passwords: createPasswordsAdapter(),
+    universalLoginSessions: createUniversalLoginSessionsAdapter(),
     users: createUserAdapter(),
     sessions: createSessionsAdapter(),
     tenants: createTenantsAdapter(),
     tickets: createTicketsAdapter(),
     logs: createLogsAdapter(),
+    templates: {
+      get: async () => "<div>Temp</div>",
+    },
   };
 }

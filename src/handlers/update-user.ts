@@ -40,11 +40,6 @@ async function updateUser(env: Env, tenantId: string, email: string) {
 
   const db = getDb(env);
 
-  const tags: UserTag[] = profile.connections.map((connection) => ({
-    category: "connection",
-    name: connection.name,
-  }));
-
   const user: SqlUser = {
     id: profile.id,
     email: profile.email,
@@ -55,7 +50,6 @@ async function updateUser(env: Env, tenantId: string, email: string) {
     picture: profile.picture || "",
     created_at: profile.created_at,
     updated_at: profile.updated_at,
-    tags: JSON.stringify(tags),
     tenant_id: tenantId,
   };
 
