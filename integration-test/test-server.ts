@@ -1,13 +1,13 @@
 import { Env } from "../src/types/Env";
 import { app } from "../src/app";
-import { User, State } from "../src/models";
+import { State } from "../src/models";
 import { getCertificate } from "./helpers/token";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";
 import createAdapter from "../src/adapters/in-memory";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
-export { User, State };
+export { State };
 
 const data = createAdapter();
 // Add a known certificate
