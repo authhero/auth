@@ -1,10 +1,10 @@
 import { CodesAdapter } from "../../interfaces/Codes";
-import { Code } from "../../../types";
+import { SqlCode } from "../../../types";
 import { create } from "./create";
 import { list } from "./list";
 
 export function createCodesAdapter(): CodesAdapter {
-  const codesStorage: Code[] = [];
+  const codesStorage: SqlCode[] = [];
 
   return {
     create: create(codesStorage),

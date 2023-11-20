@@ -8,6 +8,7 @@ import createAdapters from "./adapters/planetscale";
 import { updateTenantClientsInKV } from "./hooks/update-client";
 import { createClientsAdapter } from "./adapters/kv-storage/clients";
 import createEmailAdapter from "./adapters/email";
+import createR2Adapter from "./adapters/r2";
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
@@ -28,6 +29,7 @@ const server = {
           clients: createClientsAdapter(env),
           ...createEmailAdapter(env),
           ...createAdapters(env),
+          ...createR2Adapter(env),
         },
         hooks: {
           tenant: {

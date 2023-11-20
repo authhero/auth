@@ -20,14 +20,6 @@ export class InvalidRequestError extends Error {
   status = 400;
 }
 
-export class InvalidRedirectError extends InvalidRequestError {
-  constructor(message = "Invalid Redirect Uri") {
-    super();
-
-    this.message = message;
-  }
-}
-
 export class InvalidConnectionError extends InvalidRequestError {
   constructor(message = "Invalid Connection") {
     super();

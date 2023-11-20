@@ -23,3 +23,5 @@ export const contentTypes = {
   html: "text/html",
   text: "text/plain",
 };
+
+export const UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24; // 1 day

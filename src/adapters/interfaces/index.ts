@@ -10,8 +10,12 @@ import { TenantsDataAdapter } from "./Tenants";
 import { TicketsAdapter } from "./Tickets";
 import { UserDataAdapter } from "./Users";
 import { LogsDataAdapter } from "./Logs";
+import { ApplicationsAdapter } from "./Applications";
+import { UniversalLoginSessionsAdapter } from "./UniversalLoginSession";
+import { TemplatesAdapter } from "./Templates";
 
 export interface DataAdapters {
+  applications: ApplicationsAdapter;
   certificates: CertificatesAdapter;
   codes: CodesAdapter;
   clients: ClientsAdapter;
@@ -22,6 +26,8 @@ export interface DataAdapters {
   sessions: SessionsAdapter;
   tenants: TenantsDataAdapter;
   tickets: TicketsAdapter;
+  universalLoginSessions: UniversalLoginSessionsAdapter;
   users: UserDataAdapter;
   logs: LogsDataAdapter;
+  templates: TemplatesAdapter;
 }

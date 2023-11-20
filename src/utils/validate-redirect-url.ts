@@ -1,4 +1,4 @@
-import { InvalidRedirectError } from "../errors";
+import { HTTPException } from "hono/http-exception";
 
 function matchHostnameWithWildcards(
   allowedHostname: string,
@@ -149,17 +149,10 @@ export function validateRedirectUrl(
 
 export function validateUrl(allowedUrls: string[], redirectUri?: string) {
   if (!redirectUri) {
-    return;
-  }
-
-  const matches: boolean[] = allowedUrls.map((allowedUrl) => {
-    return matchUrlWithAllowedUrl(allowedUrl, redirectUri);
-  });
-
-  if (matches.some((match) => match)) {
-    // to maintain current functionality I'm returning true, or throwing an error for false
     return true;
   }
 
-  throw new InvalidRedirectError("Invalid redirectUri");
+  return allowedUrls.some((allowedUrl) =>
+    matchUrlWithAllowedUrl(allowedUrl, redirectUri),
+  );
 }

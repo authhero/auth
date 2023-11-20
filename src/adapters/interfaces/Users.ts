@@ -1,15 +1,14 @@
-import { SqlUser } from "../../types";
+import { SqlUser, User } from "../../types";
 import { Totals } from "../../types/auth0/Totals";
-import { PostUsersBody, UserResponse } from "../../types/auth0/UserResponse";
 import { ListParams } from "./ListParams";
 
 export interface ListUsersResponse extends Totals {
-  users: UserResponse[];
+  users: SqlUser[];
 }
 
 export interface UserDataAdapter {
-  get(tenant_id: string, id: string): Promise<UserResponse | null>;
-  getByEmail(tenant_id: string, email: string): Promise<UserResponse | null>;
-  create(tenantId: string, PostUsersBody): Promise<UserResponse>;
+  get(tenant_id: string, id: string): Promise<User | null>;
+  getByEmail(tenant_id: string, email: string): Promise<User | null>;
+  create(tenantId: string, user: User): Promise<User>;
   list(tenantId: string, params: ListParams): Promise<ListUsersResponse>;
 }

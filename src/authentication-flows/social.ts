@@ -18,6 +18,7 @@ import { applyTokenResponse } from "../helpers/apply-token-response";
 import { InvalidConnectionError } from "../errors";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
 import { Var } from "../types/Var";
+import { HTTPException } from "hono/http-exception";
 
 export interface SocialAuthState {
   authParams: AuthParams;
@@ -96,10 +97,16 @@ export async function socialAuthCallback({
     throw new Error("Redirect URI not defined");
   }
 
-  validateRedirectUrl(
-    client.allowed_callback_urls,
-    state.authParams.redirect_uri,
-  );
+  if (
+    !validateRedirectUrl(
+      client.allowed_callback_urls,
+      state.authParams.redirect_uri,
+    )
+  ) {
+    throw new HTTPException(403, {
+      message: `Invalid redirect URI - ${state.authParams.redirect_uri}`,
+    });
+  }
 
   const oauth2Client = env.oauth2ClientFactory.create(
     connection,

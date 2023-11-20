@@ -14,7 +14,6 @@ import {
   AuthParams,
   CodeChallengeMethod,
 } from "../../types";
-import { getClient } from "../../services/clients";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import {
   silentAuth,
@@ -23,6 +22,7 @@ import {
   universalAuth,
 } from "../../authentication-flows";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
+import { HTTPException } from "hono/http-exception";
 
 export interface AuthorizeParams {
   request: RequestWithContext;
@@ -121,10 +121,16 @@ export class AuthorizeController extends Controller {
     }
 
     if (authParams.redirect_uri) {
-      validateRedirectUrl(
-        client.allowed_callback_urls,
-        authParams.redirect_uri,
-      );
+      if (
+        !validateRedirectUrl(
+          client.allowed_callback_urls,
+          authParams.redirect_uri,
+        )
+      ) {
+        throw new HTTPException(400, {
+          message: `Invalid redirect URI - ${authParams.redirect_uri}`,
+        });
+      }
     }
 
     // Silent authentication

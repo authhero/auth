@@ -67,13 +67,6 @@ export async function silentAuth({
         throw new Error("User not found");
       }
 
-      const profile: Profile = {
-        ...user,
-        connections: [],
-        id: user.user_id,
-        tenant_id,
-      };
-
       const tokenResponse = await generateAuthResponse({
         env,
         state,
@@ -86,7 +79,7 @@ export async function silentAuth({
           code_challenge,
           scope,
         },
-        user: profile,
+        user,
         sid: tokenState,
         responseType: response_type,
       });

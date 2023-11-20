@@ -134,35 +134,44 @@ export class ApplicationsController extends Controller {
     @Request() request: RequestWithContext,
     @Path("tenantId") tenantId: string,
     @Body()
-    body: Partial<
-      Omit<Application, "tenant_id" | "created_at" | "updated_at">
-    > & {
+    body: {
+      id?: string;
       name: string;
+      tenant_id: string;
+      allowed_web_origins: string;
+      allowed_callback_urls: string;
+      allowed_logout_urls: string;
+      email_validation: "enabled" | "disabled" | "enforced";
+      client_secret: string;
     },
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const application = await env.data.applications.create(tenantId, body);
 
-    const application: Application = {
-      allowed_web_origins: "",
-      allowed_callback_urls: "",
-      allowed_logout_urls: "",
-      email_validation: "enabled",
-      // twoFactorAuthentication: "enabled",
-      // enableSignup: true,
-      client_secret: nanoid(),
-      id: nanoid(),
-      ...body,
-      tenant_id: tenantId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    // const db = getDb(env);
 
-    await db.insertInto("applications").values(application).execute();
+    // const application: Application = {
+    //   allowed_web_origins: "",
+    //   allowed_callback_urls: "",
+    //   allowed_logout_urls: "",
+    //   email_validation: "enabled",
+    //   // twoFactorAuthentication: "enabled",
+    //   // enableSignup: true,
+    //   client_secret: nanoid(),
+    //   id: nanoid(),
+    //   ...body,
+    //   tenant_id: tenantId,
+    //   created_at: new Date().toISOString(),
+    //   updated_at: new Date().toISOString(),
+    // };
 
-    await updateClientInKV(env, application.id);
+    // await db.insertInto("applications").values(application).execute();
+
+    if (env.hooks?.application?.onCreated) {
+      await env.hooks.application.onCreated(env, application);
+    }
 
     this.setStatus(201);
     return application;

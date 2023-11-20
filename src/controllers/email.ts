@@ -166,6 +166,7 @@ export async function sendResetPassword(
   const response = await env.AUTH_TEMPLATES.get(
     "templates/email/password-reset.liquid",
   );
+
   if (!response) {
     throw new Error("Code template not found");
   }

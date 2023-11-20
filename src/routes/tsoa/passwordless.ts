@@ -17,10 +17,11 @@ import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
 import generateOTP from "../../utils/otp";
-import { UnauthenticatedError } from "../../errors";
-import { Profile } from "../../types";
 
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
+
+import { HTTPException } from "hono/http-exception";
+import { validateCode } from "../../authentication-flows/passwordless";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -79,6 +80,16 @@ export class PasswordlessController extends Controller {
     });
 
     request.ctx.set("log", `Code: ${code}`);
+
+    /* hardcoded user codes
+      "ulf.lindberg@maxm.se",
+      "markus+23@sesamy.com",
+      "klara.lindstroem@hmc.ox.ac.uk",
+      "carlotta.granath@next-tech.com",
+
+      should be 531523
+
+    */
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);
@@ -143,43 +154,17 @@ export class PasswordlessController extends Controller {
     }
 
     try {
-      const otps = await env.data.OTP.list(client.tenant_id, email);
-      const otp = otps.find((otp) => otp.code === verification_code);
+      const user = await validateCode(env, {
+        client_id,
+        email,
+        verification_code,
+      });
 
-      if (!otp) {
-        throw new UnauthenticatedError("Code not found or expired");
-      }
-
-      let user = await env.data.users.getByEmail(client.tenant_id, email);
-      if (!user) {
-        user = await env.data.users.create(client.tenant_id, {
-          // this is inconsitent. In other places the ID is just the ID
-          // I think this is where we're going to hit serious issues...
-          // Shouldn't this be done in the sub?
-          // OR IDEALLY have the users.create handle this?
-          // id: `${client.tenant_id}|${nanoid()}`,
-          email,
-          name: email,
-          created_at: new Date(),
-          updated_at: new Date(),
+      if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
+        throw new HTTPException(400, {
+          message: `Invalid redirect URI - ${redirect_uri}`,
         });
       }
-
-      /*
-      we also need to set this like in the User Model
-
-      connections: [
-        {
-          name: "email",
-          profile: {
-            email: input.email,
-            validated: true,
-          },
-        },
-      ],
-      */
-
-      validateRedirectUrl(client.allowed_callback_urls, redirect_uri);
 
       const authParams: AuthParams = {
         client_id,
@@ -189,19 +174,12 @@ export class PasswordlessController extends Controller {
         audience,
       };
 
-      const profile: Profile = {
-        ...user,
-        connections: [],
-        id: user.user_id,
-        tenant_id: client.tenant_id,
-      };
-
       const sessionId = await setSilentAuthCookies(
         env,
         this,
         client.tenant_id,
         client.id,
-        profile,
+        user,
       );
 
       const tokenResponse = await generateAuthResponse({
@@ -211,7 +189,7 @@ export class PasswordlessController extends Controller {
         sid: sessionId,
         state,
         nonce,
-        user: profile,
+        user,
         authParams,
       });
 
