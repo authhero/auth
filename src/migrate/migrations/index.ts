@@ -6,7 +6,7 @@ import * as m5_userProfile from "./2023-10-27T16:00:11_picture-length";
 import * as m6_sessions from "./2023-11-02T23:18:12_sessions";
 import * as m7_passwords from "./2023-11-07T23:18:12_passwords";
 import * as m8_logsTableNewFields from "./2023-11-08T17:12:09_logs-table-new-fields";
-import * as m9_passwordTableNewField from "./2023-11-16T14:27:00_passwords-table-password copy";
+import * as m9_passwordTableNewField from "./2023-11-16T14:27:00_passwords-table-password";
 import * as n01_codesTable from "./2023-11-17T10:34:00_codes-fields";
 import * as n11_universalLoginSession from "./2023-11-19T20:53:00_univeral-login-session";
 

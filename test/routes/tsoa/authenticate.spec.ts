@@ -21,6 +21,7 @@ describe("Authenticated", () => {
       };
 
       const logs = [];
+
       const user: User = {
         id: "userId",
         email: "test@example.com",

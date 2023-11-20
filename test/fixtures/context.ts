@@ -23,7 +23,6 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };

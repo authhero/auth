@@ -4,14 +4,7 @@ import {
   getStateFromCookie,
   serializeStateInCookie,
 } from "../services/cookies";
-import { State as StateModel } from "../models";
-import {
-  AuthorizationResponseType,
-  AuthParams,
-  CodeChallengeMethod,
-  Env,
-  Profile,
-} from "../types";
+import { AuthorizationResponseType, CodeChallengeMethod, Env } from "../types";
 import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
