@@ -10,7 +10,6 @@ import {
 import { headers } from "../constants";
 import { hexToBase64 } from "../utils/base64";
 import { getClient } from "../services/clients";
-import { getId } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
@@ -118,24 +117,19 @@ export async function socialAuthCallback({
   const oauth2Profile = parseJwt(token.id_token!);
 
   const email = oauth2Profile.email.toLocaleLowerCase();
-  const userId = getId(client.tenant_id, email);
+  const user = await env.data.users.getByEmail(client.tenant_id, email);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   ctx.set("email", email);
-  ctx.set("userId", userId);
+  ctx.set("userId", user.id);
 
-  const user = env.userFactory.getInstanceByName(userId);
-
-  const profile = await user.loginWithConnection.mutate({
-    email,
-    tenantId: client.tenant_id,
-    connection: { name: connection.name, profile: oauth2Profile },
-  });
-  const userProfile = await user.getProfile.query();
-  const { tenant_id, id } = userProfile;
   await env.data.logs.create({
     category: "login",
     message: `Login with ${connection.name}`,
-    tenant_id,
-    user_id: id,
+    tenant_id: client.tenant_id,
+    user_id: user.id,
   });
 
   const sessionId = await setSilentAuthCookies(
@@ -143,17 +137,17 @@ export async function socialAuthCallback({
     controller,
     client.tenant_id,
     client.id,
-    profile,
+    user,
   );
 
   const tokenResponse = await generateAuthResponse({
     env,
-    userId,
+    userId: user.id,
     sid: sessionId,
     state: state.authParams.state,
     nonce: state.authParams.nonce,
     authParams: state.authParams,
-    user: profile,
+    user,
     responseType:
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });

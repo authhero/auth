@@ -1,39 +1,22 @@
 import { Controller, Get, Request, Route, Security, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getDb } from "../../services/db";
-import { NotFoundError } from "../../errors";
-import { getId } from "../../models";
+import { User } from "../../types";
+import { HTTPException } from "hono/http-exception";
 
 @Route("")
 @Tags("userinfo")
 export class UserinfoController extends Controller {
   @Get("userinfo")
   @Security("oauth2", ["openid profile"])
-  public async getUser(
-    @Request() request: RequestWithContext,
-  ): Promise<{ id: string }> {
+  public async getUser(@Request() request: RequestWithContext): Promise<User> {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
-    const dbUser = await db
-      .selectFrom("users")
-      // previously this was this
-      // .where("users.id", "=", ctx.state.user.sub)
-      // this fixes typescript, but we need to test this!
-      .where("users.id", "=", ctx.var.userId)
-      .selectAll()
-      .executeTakeFirst();
-
-    if (!dbUser) {
-      throw new NotFoundError();
+    const user = await env.data.users.get(ctx.var.user.azp, ctx.var.userId);
+    if (!user) {
+      throw new HTTPException(404, { message: "User not found" });
     }
 
-    // Fetch the user from durable object
-    const user = env.userFactory.getInstanceByName(
-      getId(dbUser.tenant_id, dbUser.email),
-    );
-
-    return user.getProfile.query();
+    return user;
   }
 }

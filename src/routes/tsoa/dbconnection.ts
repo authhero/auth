@@ -66,6 +66,8 @@ export class DbConnectionController extends Controller {
         id: `email|${nanoid()}`,
         email: body.email,
         tenant_id: client.tenant_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         // TBD - this field isn't in SQL
         // email_verified: false,
       });

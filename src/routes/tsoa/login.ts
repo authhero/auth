@@ -12,8 +12,6 @@ import { nanoid } from "nanoid";
 import { HTTPException } from "hono/http-exception";
 import generateOTP from "../../utils/otp";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getId } from "../../models/User";
-import { base64ToHex } from "../../utils/base64";
 import { getClient } from "../../services/clients";
 import {
   renderMessage,
@@ -25,14 +23,7 @@ import {
   renderEnterCode,
   renderEmailValidation,
 } from "../../templates/render";
-import {
-  AuthParams,
-  AuthorizationResponseType,
-  Env,
-  Profile,
-  User,
-} from "../../types";
-import { InvalidRequestError } from "../../errors";
+import { AuthorizationResponseType, Env, User } from "../../types";
 import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";

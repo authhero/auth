@@ -8,11 +8,9 @@ import {
   Header,
   Security,
 } from "@tsoa/runtime";
-import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { NotFoundError } from "../../errors";
-import { getId } from "../../models";
-import { Profile } from "../../types";
+import { User } from "../../types";
+import { HTTPException } from "hono/http-exception";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -27,27 +25,16 @@ export class UsersByEmailController extends Controller {
   @Get("")
   public async getUserByEmail(
     @Request() request: RequestWithContext,
-    @Query("email") userEmail: string,
-    @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
+    @Query("email") email: string,
+    @Header("tenant-id") tenant_id: string,
+  ): Promise<User> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
-    const dbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.email", "=", userEmail)
-      .select("users.email")
-      .executeTakeFirst();
-
-    if (!dbUser) {
-      throw new NotFoundError();
+    const user = await env.data.users.getByEmail(tenant_id, email);
+    if (!user) {
+      throw new HTTPException(404, { message: "User not found" });
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.getProfile.query();
+    return user;
   }
 }

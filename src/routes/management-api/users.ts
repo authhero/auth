@@ -95,10 +95,10 @@ export class UsersMgmtController extends Controller {
     return users;
   }
 
-  @Get("{userId}")
+  @Get("{user_id}")
   public async getUser(
     @Request() request: RequestWithContext,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Header("tenant-id") tenantId: string,
   ): Promise<UserResponse> {
     const { env } = request.ctx;
@@ -120,11 +120,11 @@ export class UsersMgmtController extends Controller {
     };
   }
 
-  @Delete("{userId}")
+  @Delete("{user_id}")
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Header("tenant-id") tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
@@ -177,7 +177,7 @@ export class UsersMgmtController extends Controller {
     return userResponse;
   }
 
-  @Patch("{userId}")
+  @Patch("{user_id}")
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenant_id: string,
@@ -199,11 +199,11 @@ export class UsersMgmtController extends Controller {
     return results;
   }
 
-  @Post("{userId}/identities")
+  @Post("{user_id}/identities")
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Body() body: LinkBodyParams,
   ): Promise<Profile> {
     throw new Error("Not implemented");
