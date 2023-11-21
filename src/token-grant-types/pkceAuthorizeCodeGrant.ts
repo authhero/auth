@@ -4,8 +4,8 @@ import {
   CodeResponse,
   Env,
   PKCEAuthorizationCodeGrantTypeParams,
-  Profile,
   TokenResponse,
+  User,
 } from "../types";
 import { Controller } from "tsoa";
 import { base64ToHex } from "../utils/base64";
@@ -31,7 +31,7 @@ export async function pkceAuthorizeCodeGrant(
   const state: {
     userId: string;
     authParams: AuthParams;
-    user: Profile;
+    user: User;
     sid: string;
   } = JSON.parse(stateString);
 

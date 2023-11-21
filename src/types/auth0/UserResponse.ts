@@ -1,3 +1,4 @@
+import { BaseUser } from "../User";
 import { AppMetadata } from "./AppMetadata";
 import { Identity } from "./Identity";
 import { Totals } from "./Totals";
@@ -36,27 +37,6 @@ import { UserMetadata } from "./UserMetadata";
 //   "given_name": "",
 //   "family_name": ""
 // }
-
-interface BaseUser {
-  // TODO - to match auth0 we should make a union type so either email or user_id are required
-  email?: string;
-  phone_number?: string;
-  user_metadata?: UserMetadata;
-  app_metadata?: AppMetadata;
-  given_name?: string;
-  family_name?: string;
-  name?: string;
-  nickname?: string;
-  picture?: string;
-  // I think we should be stricter with this
-  // I need to check the auth0-mgmt-api library
-  // I'm not too sure if it's required from the docs
-  // https://auth0.com/docs/api/management/v2/users/post-users
-  user_id?: string;
-  blocked?: boolean;
-  email_verified?: boolean;
-  phone_verified?: boolean;
-}
 
 export interface PostUsersBody extends BaseUser {
   password?: string;

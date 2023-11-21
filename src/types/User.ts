@@ -11,6 +11,13 @@ export interface BaseUser {
 
 export interface User extends BaseUser {
   id: string;
+  email_verified: boolean;
+  last_ip?: string;
+  last_login?: string;
+  login_count: number;
+  provider: string;
+  connection: string;
+  is_social: boolean;
   tenant_id: string;
   created_at: string;
   updated_at: string;

@@ -1,10 +1,11 @@
 import { Controller } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-import { Env, AuthParams, Profile, AuthorizationResponseType } from "../types";
+import { Env, AuthParams, AuthorizationResponseType } from "../types";
 
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
+import { HTTPException } from "hono/http-exception";
 
 export async function ticketAuth(
   env: Env,
@@ -15,7 +16,7 @@ export async function ticketAuth(
 ) {
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
-    throw new Error("Ticket not found");
+    throw new HTTPException(403, { message: "Ticket not found" });
   }
 
   let user = await env.data.users.getByEmail(tenant_id, ticket.email);
@@ -26,6 +27,13 @@ export async function ticketAuth(
       email: ticket.email,
       name: ticket.email,
       tenant_id,
+      provider: "email",
+      connection: "email",
+      email_verified: true,
+      login_count: 1,
+      is_social: false,
+      last_ip: "",
+      last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

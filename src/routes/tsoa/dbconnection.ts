@@ -1,4 +1,3 @@
-// src/users/usersController.ts
 import {
   Body,
   Controller,
@@ -68,8 +67,11 @@ export class DbConnectionController extends Controller {
         tenant_id: client.tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        // TBD - this field isn't in SQL
-        // email_verified: false,
+        email_verified: false,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        login_count: 0,
       });
     }
 
