@@ -89,11 +89,11 @@ export async function socialAuthCallback({
   );
 
   if (!connection) {
-    throw new Error("Connection not found");
+    throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
-    throw new Error("Redirect URI not defined");
+    throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
 
   if (
@@ -119,7 +119,7 @@ export async function socialAuthCallback({
   const email = oauth2Profile.email.toLocaleLowerCase();
   const user = await env.data.users.getByEmail(client.tenant_id, email);
   if (!user) {
-    throw new Error("User not found");
+    throw new HTTPException(403, { message: "User not found" });
   }
 
   ctx.set("email", email);

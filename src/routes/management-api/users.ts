@@ -14,9 +14,7 @@ import {
   Path,
   Body,
 } from "@tsoa/runtime";
-import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { NotFoundError } from "../../errors";
 import { Profile } from "../../types";
 import {
   UserResponse,
@@ -129,8 +127,13 @@ export class UsersMgmtController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    if (await env.data.users.remove(tenantId, userId)) return "OK";
-    else throw new HTTPException(404);
+    const result = await env.data.users.remove(tenantId, userId);
+
+    if (!result) {
+      throw new HTTPException(404);
+    }
+
+    return "OK";
   }
 
   @Post("")
@@ -164,9 +167,6 @@ export class UsersMgmtController extends Controller {
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
-      // TODO: this should be available on the user
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
       user_id: data.id,
       logins_count: 0,
       last_ip: "",
