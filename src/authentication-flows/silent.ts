@@ -9,6 +9,7 @@ import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
 import { Var } from "../types/Var";
+import { HTTPException } from "hono/http-exception";
 
 export interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
@@ -56,34 +57,32 @@ export async function silentAuth({
       });
 
       const user = await env.data.users.get(tenant_id, session.user_id);
-      if (!user) {
-        throw new Error("User not found");
+      if (user) {
+        const tokenResponse = await generateAuthResponse({
+          env,
+          state,
+          nonce,
+          userId: session.user_id,
+          authParams: {
+            client_id: session.client_id,
+            audience,
+            code_challenge_method,
+            code_challenge,
+            scope,
+          },
+          user,
+          sid: tokenState,
+          responseType: response_type,
+        });
+
+        ctx.set("log", JSON.stringify(tokenResponse));
+
+        return renderAuthIframe(
+          controller,
+          `${redirectURL.protocol}//${redirectURL.host}`,
+          JSON.stringify(tokenResponse),
+        );
       }
-
-      const tokenResponse = await generateAuthResponse({
-        env,
-        state,
-        nonce,
-        userId: session.user_id,
-        authParams: {
-          client_id: session.client_id,
-          audience,
-          code_challenge_method,
-          code_challenge,
-          scope,
-        },
-        user,
-        sid: tokenState,
-        responseType: response_type,
-      });
-
-      ctx.set("log", JSON.stringify(tokenResponse));
-
-      return renderAuthIframe(
-        controller,
-        `${redirectURL.protocol}//${redirectURL.host}`,
-        JSON.stringify(tokenResponse),
-      );
     }
   }
 

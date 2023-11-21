@@ -2,7 +2,7 @@ import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
 import { Database, SqlUser, User } from "../../../types";
 
-export function createUser(db: Kysely<Database>) {
+export function create(db: Kysely<Database>) {
   return async (tenantId: string, user: User): Promise<SqlUser> => {
     const user_id = user.id || nanoid();
     const sqlUser: SqlUser = {
@@ -15,7 +15,6 @@ export function createUser(db: Kysely<Database>) {
       picture: user.picture,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      tags: JSON.stringify([]),
       tenant_id: tenantId,
     };
 

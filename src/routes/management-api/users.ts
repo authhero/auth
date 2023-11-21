@@ -14,10 +14,7 @@ import {
   Path,
   Body,
 } from "@tsoa/runtime";
-import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { NotFoundError } from "../../errors";
-import { getId } from "../../models";
 import { Profile } from "../../types";
 import {
   UserResponse,
@@ -64,21 +61,10 @@ export class UsersMgmtController extends Controller {
     });
 
     const users: UserResponse[] = result.users.map((user) => {
-      const { tags, ...userTrimmed } = user;
-
-      const tagsObj = JSON.parse(tags || "[]");
-
-      const identities = tagsObj.map((tag) => ({
-        profileData: {
-          email: user.email,
-          user_id: user.id,
-          is_social: true,
-          connection: tag,
-        },
-      }));
+      const identities = [];
 
       return {
-        ...userTrimmed,
+        ...user,
         user_id: user.id,
         logins_count: 0,
         last_ip: "",
@@ -90,8 +76,6 @@ export class UsersMgmtController extends Controller {
         username: user.email,
         phone_number: "",
         phone_verified: false,
-        // Deprecated
-        tags,
       };
     });
 
@@ -109,30 +93,22 @@ export class UsersMgmtController extends Controller {
     return users;
   }
 
-  @Get("{userId}")
+  @Get("{user_id}")
   public async getUser(
     @Request() request: RequestWithContext,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Header("tenant-id") tenantId: string,
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
-    const user = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.id", "=", userId)
-      .selectAll()
-      .executeTakeFirst();
+    const user = await env.data.users.get(tenantId, userId);
 
     if (!user) {
-      throw new NotFoundError();
+      throw new HTTPException(404);
     }
 
-    const { tags, ...userTrimmed } = user;
-
     return {
-      ...userTrimmed,
+      ...user,
       // TODO: add missing properties to conform to auth0
       logins_count: 0,
       last_ip: "",
@@ -142,32 +118,22 @@ export class UsersMgmtController extends Controller {
     };
   }
 
-  @Delete("{userId}")
+  @Delete("{user_id}")
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
+  ): Promise<string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
-    const dbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.id", "=", userId)
-      .select("users.email")
-      .executeTakeFirst();
+    const result = await env.data.users.remove(tenantId, userId);
 
-    if (!dbUser) {
-      throw new NotFoundError();
+    if (!result) {
+      throw new HTTPException(404);
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.delete.mutate();
+    return "OK";
   }
 
   @Post("")
@@ -193,14 +159,14 @@ export class UsersMgmtController extends Controller {
       email,
       id: `email|${nanoid()}`,
       tenant_id: tenantId,
+      name: email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
 
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
-      // TODO: this should be available on the user
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
       user_id: data.id,
       logins_count: 0,
       last_ip: "",
@@ -211,47 +177,33 @@ export class UsersMgmtController extends Controller {
     return userResponse;
   }
 
-  @Patch("{userId}")
+  @Patch("{user_id}")
   public async patchUser(
     @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-    @Path("userId") userId: string,
+    @Header("tenant-id") tenant_id: string,
+    @Path("user_id") user_id: string,
     @Body()
     user: PostUsersBody,
-  ): Promise<Profile> {
-    const { ctx } = request;
+  ): Promise<boolean> {
+    const { env } = request.ctx;
 
-    const { email } = user;
+    const results = await env.data.users.update(tenant_id, user_id, user);
 
-    // This does not match Auth0 but we really require an email address
-    if (!email) {
-      throw new Error("Email is required");
-    }
-
-    const userInstance = ctx.env.userFactory.getInstanceByName(
-      getId(tenantId, email),
-    );
-
-    const result: Profile = await userInstance.patchProfile.mutate({
-      ...user,
-      tenant_id: tenantId,
-      email,
-    });
-    const { tenant_id, id } = result;
-    await ctx.env.data.logs.create({
+    await env.data.logs.create({
       category: "update",
       message: "User profile",
       tenant_id,
-      user_id: id,
+      user_id,
     });
-    return result;
+
+    return results;
   }
 
-  @Post("{userId}/identities")
+  @Post("{user_id}/identities")
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Body() body: LinkBodyParams,
   ): Promise<Profile> {
     throw new Error("Not implemented");

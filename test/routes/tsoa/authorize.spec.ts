@@ -52,6 +52,8 @@ describe("authorize", () => {
         id: "userId",
         email: "",
         tenant_id: "tenantId",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       const ctx = contextFixture({
@@ -114,6 +116,8 @@ describe("authorize", () => {
         id: "userId",
         email: "test@example.com",
         tenant_id: "tenantId",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       const ctx = contextFixture({

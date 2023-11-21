@@ -6,6 +6,7 @@ export type Var = {
   log: string;
   user: {
     sub: string;
+    azp: string;
     permissions: string[];
   };
 };
