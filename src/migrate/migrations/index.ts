@@ -9,6 +9,7 @@ import * as m8_logsTableNewFields from "./2023-11-08T17:12:09_logs-table-new-fie
 import * as m9_passwordTableNewField from "./2023-11-16T14:27:00_passwords-table-password";
 import * as n01_codesTable from "./2023-11-17T10:34:00_codes-fields";
 import * as n11_universalLoginSession from "./2023-11-19T20:53:00_univeral-login-session";
+import * as n12_userFields from "./2023-11-21T12:30:00_user-fields";
 
 // These need to be in alphabetic order
 export default {
@@ -23,4 +24,5 @@ export default {
   m9_passwordTableNewField,
   n01_codesTable,
   n11_universalLoginSession,
+  n12_userFields,
 };

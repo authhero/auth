@@ -7,6 +7,13 @@ export interface BaseUser {
   name?: string;
   picture?: string;
   locale?: string;
+  email_verified: boolean;
+  last_ip?: string;
+  last_login?: string;
+  login_count: number;
+  provider: string;
+  connection: string;
+  is_social: boolean;
 }
 
 export interface User extends BaseUser {

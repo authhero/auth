@@ -368,6 +368,13 @@ export class LoginController extends Controller {
           tenant_id: client.tenant_id,
           email: loginParams.username,
           name: loginParams.username,
+          provider: "auth2",
+          connection: "Username-Password-Authentication",
+          email_verified: false,
+          last_ip: "",
+          login_count: 0,
+          is_social: false,
+          last_login: new Date().toISOString(),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });

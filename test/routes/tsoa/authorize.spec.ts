@@ -11,6 +11,7 @@ import { InvalidConnectionError } from "../../../src/errors";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
+import { testUser } from "../../fixtures/user";
 
 describe("authorize", () => {
   const date = new Date();
@@ -52,6 +53,13 @@ describe("authorize", () => {
         id: "userId",
         email: "",
         tenant_id: "tenantId",
+        last_ip: "1.1.1.1",
+        login_count: 0,
+        last_login: new Date().toISOString(),
+        is_social: false,
+        provider: "email",
+        connection: "email",
+        email_verified: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -112,17 +120,9 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const user: User = {
-        id: "userId",
-        email: "test@example.com",
-        tenant_id: "tenantId",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
       const ctx = contextFixture({
         sessions: [session],
-        users: [user],
+        users: [testUser],
         headers: {
           cookie: "auth-token=sessionId",
         },
@@ -434,6 +434,7 @@ describe("authorize", () => {
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
         email: "test@example.com",
+        email_verified: true,
         name: "test@example.com",
       });
     });

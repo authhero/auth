@@ -107,12 +107,12 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(404);
     }
 
+    const { id, ...userWithoutId } = user;
+
     return {
-      ...user,
-      // TODO: add missing properties to conform to auth0
+      // TODO: Default value. Patch all users to have this value
       logins_count: 0,
-      last_ip: "",
-      last_login: "",
+      ...userWithoutId,
       identities: [],
       user_id: user.id,
     };
@@ -160,6 +160,13 @@ export class UsersMgmtController extends Controller {
       id: `email|${nanoid()}`,
       tenant_id: tenantId,
       name: email,
+      provider: "email",
+      connection: "email",
+      email_verified: false,
+      last_ip: "",
+      login_count: 0,
+      is_social: false,
+      last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
