@@ -43,6 +43,10 @@ bindings = [{ name = "STATE", class_name = "State" }]
 tag = "v1"
 new_classes = ["User", "State"]
 
+[[migrations]]
+tag = "v2"
+deleted_classes = ["User"]
+
 [triggers]
 crons = ["0 3 * * *"]
 
@@ -82,6 +86,10 @@ bindings = [{ name = "STATE", class_name = "State" }]
 [[env.production.migrations]]
 tag = "v1"
 new_classes = ["User", "State"]
+
+[[env.production.migrations]]
+tag = "v2"
+new_classes = ["State"]
 
 [env.production.triggers]
 crons = ["0 3 * * *"]
