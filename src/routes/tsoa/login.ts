@@ -368,6 +368,8 @@ export class LoginController extends Controller {
           tenant_id: client.tenant_id,
           email: loginParams.username,
           name: loginParams.username,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
       }
 
