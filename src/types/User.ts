@@ -7,6 +7,10 @@ export interface BaseUser {
   name?: string;
   picture?: string;
   locale?: string;
+}
+
+export interface User extends BaseUser {
+  id: string;
   email_verified: boolean;
   last_ip?: string;
   last_login?: string;
@@ -14,10 +18,6 @@ export interface BaseUser {
   provider: string;
   connection: string;
   is_social: boolean;
-}
-
-export interface User extends BaseUser {
-  id: string;
   tenant_id: string;
   created_at: string;
   updated_at: string;

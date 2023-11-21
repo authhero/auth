@@ -144,8 +144,7 @@ export class UsersMgmtController extends Controller {
   public async postUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Body()
-    user: PostUsersBody,
+    @Body() user: PostUsersBody,
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
