@@ -27,10 +27,10 @@ export async function renderForgotPassword(
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const content = await engine.render(template, context);
+  const content = await engine.render(template, { ...context, state });
   return engine.render(layoutTemplate, {
     ...context,
-    state,
+    state, // seems inconsistent doing this here... does it need doing in both places?
     content,
   });
 }
@@ -39,6 +39,7 @@ export async function renderLogin(
   env: Env,
   controller: Controller,
   context: UniversalLoginSession,
+  state: string,
   errorMessage?: string,
 ) {
   const layoutTemplate = await getTemplate(env, "layout");
@@ -78,7 +79,9 @@ export async function renderLogin(
   const content = await engine.render(template, {
     ...context,
     connections,
+    // in some places this is in the template render, in others it's in the layout renderer... which is it?
     errorMessage,
+    state,
   });
 
   return engine.render(layoutTemplate, {
@@ -156,6 +159,7 @@ export async function renderSignup(
   env: Env,
   controller: Controller,
   context: UniversalLoginSession,
+  state: string,
   errorMessage?: string,
 ) {
   const layoutTemplate = await getTemplate(env, "layout");
@@ -165,7 +169,7 @@ export async function renderSignup(
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const content = await engine.render(template, context);
+  const content = await engine.render(template, { ...context, state });
   return engine.render(layoutTemplate, {
     ...context,
     content,
