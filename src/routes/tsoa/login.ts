@@ -330,7 +330,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    return renderSignup(env, this, session);
+    return renderSignup(env, this, session, state);
   }
 
   @Post("signup")
