@@ -99,7 +99,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    return renderLogin(env, this, session);
+    return renderLogin(env, this, session, state);
   }
 
   /**

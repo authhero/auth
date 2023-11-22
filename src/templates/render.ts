@@ -39,6 +39,7 @@ export async function renderLogin(
   env: Env,
   controller: Controller,
   context: UniversalLoginSession,
+  state: string,
   errorMessage?: string,
 ) {
   const layoutTemplate = await getTemplate(env, "layout");
@@ -79,6 +80,7 @@ export async function renderLogin(
     ...context,
     connections,
     errorMessage,
+    state,
   });
 
   return engine.render(layoutTemplate, {
