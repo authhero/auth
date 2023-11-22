@@ -422,7 +422,7 @@ export class LoginController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
     const session = await env.data.universalLoginSessions.get(state);
-    if (!session?.username) {
+    if (!session) {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
