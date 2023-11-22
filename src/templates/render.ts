@@ -27,10 +27,10 @@ export async function renderForgotPassword(
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const content = await engine.render(template, context);
+  const content = await engine.render(template, { ...context, state });
   return engine.render(layoutTemplate, {
     ...context,
-    state,
+    state, // seems inconsistent doing this here... does it need doing in both places?
     content,
   });
 }
