@@ -2,7 +2,7 @@ import datadogLogger from "../services/datadog";
 import { Env } from "../types/Env";
 import { Context, Next } from "hono";
 import { Var } from "../types/Var";
-import { waitUntil } from "src/utils/wait-until";
+import { waitUntil } from "../utils/wait-until";
 
 async function logResponse(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
