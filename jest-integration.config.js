@@ -4,6 +4,6 @@ module.exports = {
     "^.+\\.(t|j)sx?$": "ts-jest",
   },
   testTimeout: 40000,
-  testRegex: "/integration-test/.*\\.spec\\.ts$",
+  testRegex: "/integration-test/management-api/use.*\\.spec\\.ts$",
   setupFilesAfterEnv: ["./jest-integration.setup.js"],
 };

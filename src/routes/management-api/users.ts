@@ -61,18 +61,19 @@ export class UsersMgmtController extends Controller {
     });
 
     const users: UserResponse[] = result.users.map((user) => {
-      const identities = [];
-
       return {
         ...user,
         user_id: user.id,
-        logins_count: 0,
-        last_ip: "",
-        last_login: "",
-        identities,
+        identities: [
+          {
+            connection: user.connection,
+            provider: user.provider,
+            user_id: user.id,
+            isSocial: user.is_social,
+          },
+        ],
         // some fields copied from previous adapter/planetscale/list mapping
         // TODO: store this field in sql
-        email_verified: true,
         username: user.email,
         phone_number: "",
         phone_verified: false,
@@ -110,10 +111,15 @@ export class UsersMgmtController extends Controller {
     const { id, ...userWithoutId } = user;
 
     return {
-      // TODO: Default value. Patch all users to have this value
-      logins_count: 0,
       ...userWithoutId,
-      identities: [],
+      identities: [
+        {
+          connection: user.connection,
+          provider: user.provider,
+          user_id: user.id,
+          isSocial: user.is_social,
+        },
+      ],
       user_id: user.id,
     };
   }
@@ -163,7 +169,7 @@ export class UsersMgmtController extends Controller {
       connection: "email",
       email_verified: false,
       last_ip: "",
-      login_count: 0,
+      logins_count: 0,
       is_social: false,
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
@@ -174,10 +180,14 @@ export class UsersMgmtController extends Controller {
     const userResponse: UserResponse = {
       ...data,
       user_id: data.id,
-      logins_count: 0,
-      last_ip: "",
-      last_login: "",
-      identities: [],
+      identities: [
+        {
+          connection: data.connection,
+          provider: data.provider,
+          user_id: data.id,
+          isSocial: data.is_social,
+        },
+      ],
     };
 
     return userResponse;

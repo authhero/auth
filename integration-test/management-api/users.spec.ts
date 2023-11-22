@@ -95,5 +95,13 @@ describe("users", () => {
     const body = await usersResponse.json();
     expect(body.length).toBe(1);
     expect(body[0].user_id).toBe(newUser.user_id);
+    expect(body[0].identities).toEqual([
+      {
+        connection: "email",
+        user_id: newUser.user_id,
+        provider: "email",
+        isSocial: false,
+      },
+    ]);
   });
 });
