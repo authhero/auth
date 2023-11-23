@@ -106,7 +106,7 @@ export class UsersMgmtController extends Controller {
   public async getUser(
     @Request() request: RequestWithContext,
     @Path() user_id: string,
-    @Header() tenant_id: string,
+    @Header("tenant-id") tenant_id: string,
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
