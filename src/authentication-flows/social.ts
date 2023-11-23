@@ -124,12 +124,12 @@ export async function socialAuthCallback({
   ctx.set("email", email);
   ctx.set("userId", user.id);
 
+  const idToken = parseJwt(token.id_token!);
+
+  const { iss, azp, aud, at_hash, iat, exp, ...profileData } = idToken;
+
   await env.data.users.update(client.tenant_id, ctx.get("userId"), {
-    // DG: we defintiely don't want to store this but I'm doing this temp just to investigate!
-    profileData: JSON.stringify({
-      id_token: token.id_token,
-      access_token: token.access_token,
-    }),
+    profileData: JSON.stringify(profileData),
   });
 
   await env.data.logs.create({
