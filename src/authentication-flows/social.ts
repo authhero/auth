@@ -116,6 +116,11 @@ export async function socialAuthCallback({
   const oauth2Profile = parseJwt(token.id_token!);
 
   const email = oauth2Profile.email.toLocaleLowerCase();
+
+  // log out oauth2Profile so we know the structure of each...
+  // then we can pull out the id!
+
+  // this should actually be id! the social id pulled out before
   let user = await env.data.users.getByEmail(client.tenant_id, email);
   if (!user) {
     // throw new HTTPException(403, { message: "User not found" });
