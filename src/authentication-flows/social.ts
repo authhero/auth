@@ -83,7 +83,6 @@ export async function socialAuthCallback({
 }: socialAuthCallbackParams) {
   const { env } = ctx;
   const client = await getClient(env, state.authParams.client_id);
-
   const connection = client.connections.find(
     (p) => p.name === state.connection,
   );
@@ -113,15 +112,8 @@ export async function socialAuthCallback({
   );
 
   const token = await oauth2Client.exchangeCodeForTokenResponse(code);
-  const oauth2Profile = parseJwt(token.id_token!);
 
-  await env.data.users.update(client.tenant_id, ctx.get("userId"), {
-    // DG: we defintiely don't want to store this but I'm doing this temp just to investigate!
-    profileData: JSON.stringify({
-      id_token: token.id_token,
-      access_token: token.access_token,
-    }),
-  });
+  const oauth2Profile = parseJwt(token.id_token!);
 
   const email = oauth2Profile.email.toLocaleLowerCase();
   const user = await env.data.users.getByEmail(client.tenant_id, email);
@@ -131,6 +123,14 @@ export async function socialAuthCallback({
 
   ctx.set("email", email);
   ctx.set("userId", user.id);
+
+  const idToken = parseJwt(token.id_token!);
+
+  const { iss, azp, aud, at_hash, iat, exp, sub, hd, ...profileData } = idToken;
+
+  await env.data.users.update(client.tenant_id, ctx.get("userId"), {
+    profileData: JSON.stringify(profileData),
+  });
 
   await env.data.logs.create({
     category: "login",
