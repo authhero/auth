@@ -116,9 +116,34 @@ export async function socialAuthCallback({
   const oauth2Profile = parseJwt(token.id_token!);
 
   const email = oauth2Profile.email.toLocaleLowerCase();
-  const user = await env.data.users.getByEmail(client.tenant_id, email);
+
+  // TODO - this should actually be id! the social id pulled out before
+  // we can fix once we've done account linking
+  let user = await env.data.users.getByEmail(client.tenant_id, email);
+
+  if (!state.connection) {
+    throw new HTTPException(403, { message: "Connection not found" });
+  }
+
+  // for now just create a new user with the correct structure IF does not already existing
+  // TODO - intelligent account linking!
   if (!user) {
-    throw new HTTPException(403, { message: "User not found" });
+    user = await env.data.users.create(client.tenant_id, {
+      email,
+      tenant_id: client.tenant_id,
+      // this works for Google! but not sure about others  8-)
+      id: oauth2Profile.sub,
+      name: email,
+      provider: state.connection,
+      connection: state.connection,
+      email_verified: false,
+      last_ip: "",
+      login_count: 0,
+      is_social: false,
+      last_login: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
   }
 
   ctx.set("email", email);
