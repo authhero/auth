@@ -184,7 +184,7 @@ export class UsersMgmtController extends Controller {
       connection: "email",
       email_verified: false,
       last_ip: "",
-      logins_count: 0,
+      login_count: 0,
       is_social: false,
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),

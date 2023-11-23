@@ -15,7 +15,7 @@ export interface User extends BaseUser {
   email_verified: boolean;
   last_ip?: string;
   last_login?: string;
-  logins_count: number;
+  login_count: number;
   provider: string;
   connection: string;
   is_social: boolean;
