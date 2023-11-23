@@ -113,12 +113,15 @@ export async function socialAuthCallback({
   );
 
   const socialResponse = await oauth2Client.exchangeCodeForTokenResponse(code);
+  const oauth2ProfileStr = socialResponse.id_token;
 
-  const oauth2Profile = parseJwt(socialResponse.id_token!);
+  const oauth2Profile = parseJwt(oauth2ProfileStr!);
 
-  await env.data.users.update(client.tenant_id, ctx.get("userId"), {
-    profileData: JSON.stringify(socialResponse.id_token),
-  });
+  if (!!oauth2ProfileStr) {
+    await env.data.users.update(client.tenant_id, ctx.get("userId"), {
+      profileData: JSON.stringify(socialResponse.id_token),
+    });
+  }
 
   const email = oauth2Profile.email.toLocaleLowerCase();
   const user = await env.data.users.getByEmail(client.tenant_id, email);
