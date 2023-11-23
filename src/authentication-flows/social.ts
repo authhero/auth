@@ -116,9 +116,28 @@ export async function socialAuthCallback({
   const oauth2Profile = parseJwt(token.id_token!);
 
   const email = oauth2Profile.email.toLocaleLowerCase();
-  const user = await env.data.users.getByEmail(client.tenant_id, email);
+  let user = await env.data.users.getByEmail(client.tenant_id, email);
   if (!user) {
-    throw new HTTPException(403, { message: "User not found" });
+    // throw new HTTPException(403, { message: "User not found" });
+    // we need to create the user!
+
+    user = await env.data.users.create(client.tenant_id, {
+      email,
+      tenant_id: client.tenant_id,
+      id: `email|${email}`,
+      name: email,
+      // ahhhh, this is the issue here. this is actually the bit we need to fix :-)
+      provider: "email",
+      // this should be the social connection...
+      connection: "email",
+      email_verified: false,
+      last_ip: "",
+      login_count: 0,
+      is_social: false,
+      last_login: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
   }
 
   ctx.set("email", email);
