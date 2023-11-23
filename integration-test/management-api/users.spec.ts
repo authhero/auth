@@ -52,6 +52,7 @@ describe("users", () => {
       method: "POST",
       body: JSON.stringify({
         username: "test@example.com",
+        connection: "email",
       }),
       headers: {
         authorization: `Bearer ${token}`,
@@ -70,6 +71,7 @@ describe("users", () => {
       method: "POST",
       body: JSON.stringify({
         email: "test@example.com",
+        connection: "email",
       }),
       headers: {
         authorization: `Bearer ${token}`,
@@ -103,5 +105,104 @@ describe("users", () => {
         isSocial: false,
       },
     ]);
+  });
+
+  describe("link user", () => {
+    it("should link two users", async () => {
+      const token = await getAdminToken();
+
+      const createUserResponse1 = await worker.fetch("/api/v2/users", {
+        method: "POST",
+        body: JSON.stringify({
+          email: "test1@example.com",
+          connection: "email",
+        }),
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "test",
+          "content-type": "application/json",
+        },
+      });
+
+      expect(createUserResponse1.status).toBe(201);
+      const newUser1 = await createUserResponse1.json();
+
+      const createUserResponse2 = await worker.fetch("/api/v2/users", {
+        method: "POST",
+        body: JSON.stringify({
+          email: "test2@example.com",
+          connection: "email",
+        }),
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "test",
+          "content-type": "application/json",
+        },
+      });
+
+      expect(createUserResponse2.status).toBe(201);
+      const newUser2 = await createUserResponse2.json();
+
+      const linkUserResponse = await worker.fetch(
+        `/api/v2/users/${newUser1.id}/identities`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            link_with: newUser2.id,
+          }),
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "test",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(linkUserResponse.status).toBe(201);
+
+      // Fetch all users
+      const listUsersResponse = await worker.fetch("/api/v2/users", {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "test",
+        },
+      });
+
+      expect(listUsersResponse.status).toBe(200);
+
+      const usersList = await listUsersResponse.json();
+      expect(usersList.length).toBe(1);
+      expect(usersList[0].user_id).toBe(newUser2.user_id);
+
+      // Fetch a single users
+      const userResponse = await worker.fetch(
+        `/api/v2/users/${newUser2.user_id}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "test",
+          },
+        },
+      );
+
+      expect(userResponse.status).toBe(200);
+
+      const body = await userResponse.json();
+      expect(body.user_id).toBe(newUser2.user_id);
+      expect(body.identities).toEqual([
+        {
+          connection: "email",
+          user_id: newUser2.user_id,
+          provider: "email",
+          isSocial: false,
+        },
+        {
+          connection: "email",
+          user_id: newUser1.user_id,
+          provider: "email",
+          isSocial: false,
+        },
+      ]);
+    });
   });
 });
