@@ -17,8 +17,11 @@ function getCountAsInt(count: string | number | bigint) {
   return count;
 }
 
+const searchableColumns = ["email", "name"];
+
 // This could probably be made generic
 function luceneFilter(
+  db: Kysely<Database>,
   qb: SelectQueryBuilder<Database, "users", {}>,
   query: string,
 ) {
@@ -34,11 +37,16 @@ function luceneFilter(
       key = filter.substring(9); // Remove '_exists_:' part
       isExistsQuery = true;
       isNegation = false;
-    } else {
+    } else if (filter.includes(":")) {
       isNegation = filter.startsWith("-");
       [key, value] = isNegation
         ? filter.substring(1).split(":")
         : filter.split(":");
+      isExistsQuery = false;
+    } else {
+      // Single word search case
+      key = null;
+      value = filter;
       isExistsQuery = false;
     }
 
@@ -47,18 +55,28 @@ function luceneFilter(
 
   // Apply filters to the query builder
   filters.forEach(({ key, value, isNegation, isExistsQuery }) => {
-    if (isExistsQuery) {
-      if (isNegation) {
-        qb = qb.where(key, "is", null);
+    if (key) {
+      if (isExistsQuery) {
+        if (isNegation) {
+          qb = qb.where(key, "is", null);
+        } else {
+          qb = qb.where(key, "is not", null);
+        }
       } else {
-        qb = qb.where(key, "is not", null);
+        if (isNegation) {
+          qb = qb.where(key, "!=", value);
+        } else {
+          qb = qb.where(key, "=", value);
+        }
       }
     } else {
-      if (isNegation) {
-        qb = qb.where(key, "!=", value);
-      } else {
-        qb = qb.where(key, "=", value);
-      }
+      const { ref } = db.dynamic;
+      // Generic single-word search across specified columns
+      qb = qb.where((eb) =>
+        eb.or(
+          searchableColumns.map((col) => eb(ref(col), "like", `%${value}%`)),
+        ),
+      );
     }
   });
 
@@ -69,7 +87,7 @@ export function listUsers(db: Kysely<Database>) {
   return async (tenantId, params: ListParams): Promise<ListUsersResponse> => {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
     if (params.q) {
-      query = luceneFilter(query, params.q);
+      query = luceneFilter(db, query, params.q);
     }
 
     if (params.sort && params.sort.sort_by) {
