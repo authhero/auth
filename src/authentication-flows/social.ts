@@ -118,6 +118,7 @@ export async function socialAuthCallback({
   const email = oauth2Profile.email.toLocaleLowerCase();
 
   // TODO - this should actually be id! the social id pulled out before
+  // we can fix once we've done account linking
   let user = await env.data.users.getByEmail(client.tenant_id, email);
 
   if (!state.connection) {
@@ -127,11 +128,11 @@ export async function socialAuthCallback({
   // for now just create a new user with the correct structure IF does not already existing
   // TODO - intelligent account linking!
   if (!user) {
-    // we need to create the user!
     user = await env.data.users.create(client.tenant_id, {
       email,
       tenant_id: client.tenant_id,
-      id: `email|${email}`,
+      // this works for Google! but not sure about others  8-)
+      id: oauth2Profile.sub,
       name: email,
       provider: state.connection,
       connection: state.connection,
