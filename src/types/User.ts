@@ -8,6 +8,7 @@ export interface BaseUser {
   picture?: string;
   locale?: string;
   linked_to?: string;
+  profileData?: string;
 }
 
 export interface User extends BaseUser {
