@@ -117,24 +117,24 @@ export async function socialAuthCallback({
 
   const email = oauth2Profile.email.toLocaleLowerCase();
 
-  // log out oauth2Profile so we know the structure of each...
-  // then we can pull out the id!
-
-  // this should actually be id! the social id pulled out before
+  // TODO - this should actually be id! the social id pulled out before
   let user = await env.data.users.getByEmail(client.tenant_id, email);
-  if (!user) {
-    // throw new HTTPException(403, { message: "User not found" });
-    // we need to create the user!
 
+  if (!state.connection) {
+    throw new HTTPException(403, { message: "Connection not found" });
+  }
+
+  // for now just create a new user with the correct structure IF does not already existing
+  // TODO - intelligent account linking!
+  if (!user) {
+    // we need to create the user!
     user = await env.data.users.create(client.tenant_id, {
       email,
       tenant_id: client.tenant_id,
       id: `email|${email}`,
       name: email,
-      // ahhhh, this is the issue here. this is actually the bit we need to fix :-)
-      provider: "email",
-      // this should be the social connection...
-      connection: "email",
+      provider: state.connection,
+      connection: state.connection,
       email_verified: false,
       last_ip: "",
       login_count: 0,
