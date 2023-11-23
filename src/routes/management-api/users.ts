@@ -38,8 +38,9 @@ export class UsersMgmtController extends Controller {
   public async listUsers(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    // Auth0
+    // @minimum 0
     @Query() page = 0,
+    // @minimum 1
     @Query() per_page = 20,
     @Query() include_totals = false,
     @Query() sort?: string,
@@ -67,8 +68,10 @@ export class UsersMgmtController extends Controller {
     });
 
     const users: UserResponse[] = result.users.map((user) => {
+      const { id, ...userWithoutId } = user;
+
       return {
-        ...user,
+        ...userWithoutId,
         user_id: user.id,
         identities: [
           {
@@ -78,7 +81,6 @@ export class UsersMgmtController extends Controller {
             isSocial: user.is_social,
           },
         ],
-        // some fields copied from previous adapter/planetscale/list mapping
         // TODO: store this field in sql
         username: user.email,
         phone_number: "",
