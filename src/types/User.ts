@@ -7,6 +7,7 @@ export interface BaseUser {
   name?: string;
   picture?: string;
   locale?: string;
+  linked_to?: string;
 }
 
 export interface User extends BaseUser {

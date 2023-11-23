@@ -50,7 +50,7 @@ export interface UserResponse extends BaseUser {
   created_at: string;
   updated_at: string;
   identities: Identity[];
-  logins_count: number;
+  login_count: number;
   multifactor?: string[];
   last_ip?: string;
   last_login?: string;

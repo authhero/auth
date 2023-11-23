@@ -15,7 +15,6 @@ import {
   Body,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { Profile } from "../../types";
 import {
   UserResponse,
   PostUsersBody,
@@ -23,6 +22,7 @@ import {
 } from "../../types/auth0/UserResponse";
 import { HTTPException } from "hono/http-exception";
 import { nanoid } from "nanoid";
+import { Identity } from "../../types/auth0/Identity";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -38,8 +38,9 @@ export class UsersMgmtController extends Controller {
   public async listUsers(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    // Auth0
+    // @minimum 0
     @Query() page = 0,
+    // @minimum 1
     @Query() per_page = 20,
     @Query() include_totals = false,
     @Query() sort?: string,
@@ -51,28 +52,36 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { env } = request.ctx;
 
+    // Filter out linked userss
+    const query: string[] = ["-_exists_:linked_to"];
+    if (q) {
+      query.push(q);
+    }
+
     const result = await env.data.users.list(tenantId, {
       page,
       per_page,
       include_totals,
       // TODO - sorting!
       // sort: parseSort(sort),
-      q,
+      q: query.join(" "),
     });
 
     const users: UserResponse[] = result.users.map((user) => {
-      const identities = [];
+      const { id, ...userWithoutId } = user;
 
       return {
-        ...user,
+        ...userWithoutId,
         user_id: user.id,
-        logins_count: 0,
-        last_ip: "",
-        last_login: "",
-        identities,
-        // some fields copied from previous adapter/planetscale/list mapping
+        identities: [
+          {
+            connection: user.connection,
+            provider: user.provider,
+            user_id: user.id,
+            isSocial: user.is_social,
+          },
+        ],
         // TODO: store this field in sql
-        email_verified: true,
         username: user.email,
         phone_number: "",
         phone_verified: false,
@@ -96,24 +105,36 @@ export class UsersMgmtController extends Controller {
   @Get("{user_id}")
   public async getUser(
     @Request() request: RequestWithContext,
-    @Path("user_id") userId: string,
-    @Header("tenant-id") tenantId: string,
+    @Path() user_id: string,
+    @Header("tenant-id") tenant_id: string,
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const user = await env.data.users.get(tenantId, userId);
+    const user = await env.data.users.get(tenant_id, user_id);
 
     if (!user) {
       throw new HTTPException(404);
     }
 
+    const linkedusers = await env.data.users.list(tenant_id, {
+      page: 0,
+      per_page: 10,
+      include_totals: false,
+      q: `linked_to:${user_id}`,
+    });
+
+    const identities = [user, ...linkedusers.users].map((u) => ({
+      connection: u.connection,
+      provider: u.provider,
+      user_id: u.id,
+      isSocial: u.is_social,
+    }));
+
     const { id, ...userWithoutId } = user;
 
     return {
-      // TODO: Default value. Patch all users to have this value
-      logins_count: 0,
       ...userWithoutId,
-      identities: [],
+      identities,
       user_id: user.id,
     };
   }
@@ -174,10 +195,14 @@ export class UsersMgmtController extends Controller {
     const userResponse: UserResponse = {
       ...data,
       user_id: data.id,
-      logins_count: 0,
-      last_ip: "",
-      last_login: "",
-      identities: [],
+      identities: [
+        {
+          connection: data.connection,
+          provider: data.provider,
+          user_id: data.id,
+          isSocial: data.is_social,
+        },
+      ],
     };
 
     return userResponse;
@@ -211,70 +236,35 @@ export class UsersMgmtController extends Controller {
     @Header("tenant-id") tenantId: string,
     @Path("user_id") userId: string,
     @Body() body: LinkBodyParams,
-  ): Promise<Profile> {
-    throw new Error("Not implemented");
+  ): Promise<Identity[]> {
+    const { env } = request.ctx;
 
-    // const { env } = request.ctx;
+    const user = await env.data.users.get(tenantId, body.link_with);
+    if (!user) {
+      throw new HTTPException(400, {
+        message: "Linking to an inexistent identity is not allowed.",
+      });
+    }
 
-    // const db = getDb(env);
-    // const currentDbUser = await db
-    //   .selectFrom("users")
-    //   .where("users.tenant_id", "=", tenantId)
-    //   .where("users.id", "=", userId)
-    //   .select(["users.email"])
-    //   .executeTakeFirst();
+    await env.data.users.update(tenantId, userId, {
+      linked_to: body.link_with,
+    });
 
-    // if (!currentDbUser) {
-    //   throw new NotFoundError("Current user not found");
-    // }
+    const linkedusers = await env.data.users.list(tenantId, {
+      page: 0,
+      per_page: 10,
+      include_totals: false,
+      q: `linked_to:${body.link_with}`,
+    });
 
-    // const linkedDbUser = await db
-    //   .selectFrom("users")
-    //   .where("users.tenant_id", "=", tenantId)
-    //   .where("users.id", "=", body.link_with)
-    //   .select(["users.email"])
-    //   .executeTakeFirst();
+    const identities = [user, ...linkedusers.users].map((u) => ({
+      connection: u.connection,
+      provider: u.provider,
+      user_id: u.id,
+      isSocial: u.is_social,
+    }));
 
-    // if (!linkedDbUser) {
-    //   throw new NotFoundError("Linked user not found");
-    // }
-
-    // const currentUser = env.userFactory.getInstanceByName(
-    //   getId(tenantId, currentDbUser.email),
-    // );
-
-    // const linkedUser = env.userFactory.getInstanceByName(
-    //   getId(tenantId, linkedDbUser.email),
-    // );
-
-    // // Link the child account
-    // await linkedUser.linkToUser.mutate({
-    //   tenantId,
-    //   email: linkedDbUser.email,
-    //   linkWithEmail: currentDbUser.email,
-    // });
-    // const linkedUserProfile = await linkedUser.getProfile.query();
-    // const currentUserProfile = await currentUser.getProfile.query();
-
-    // await env.data.logs.create({
-    //   category: "link",
-    //   message: `Linked to ${currentUserProfile.email}`,
-    //   tenant_id: linkedUserProfile.tenant_id,
-    //   user_id: linkedUserProfile.id,
-    // });
-
-    // // Link the parent account
-    // const returnUser = currentUser.linkWithUser.mutate({
-    //   tenantId,
-    //   email: currentDbUser.email,
-    //   linkWithEmail: linkedDbUser.email,
-    // });
-    // await env.data.logs.create({
-    //   category: "link",
-    //   message: `Added ${linkedUserProfile.email} as linked user`,
-    //   tenant_id: currentUserProfile.tenant_id,
-    //   user_id: currentUserProfile.id,
-    // });
-    // return returnUser;
+    this.setStatus(201);
+    return identities;
   }
 }

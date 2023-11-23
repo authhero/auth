@@ -6,7 +6,7 @@ export interface Identity {
   access_token?: string;
   access_token_secret?: string;
   refresh_token?: string;
-  profileData: {
+  profileData?: {
     email?: string;
     email_verified?: boolean;
     name?: string;
