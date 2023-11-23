@@ -112,16 +112,16 @@ export async function socialAuthCallback({
     `${env.ISSUER}callback`,
   );
 
-  const socialResponse = await oauth2Client.exchangeCodeForTokenResponse(code);
-  const oauth2ProfileStr = socialResponse.id_token;
+  const token = await oauth2Client.exchangeCodeForTokenResponse(code);
+  const oauth2Profile = parseJwt(token.id_token!);
 
-  const oauth2Profile = parseJwt(oauth2ProfileStr!);
-
-  if (!!oauth2ProfileStr) {
-    await env.data.users.update(client.tenant_id, ctx.get("userId"), {
-      profileData: JSON.stringify(socialResponse.id_token),
-    });
-  }
+  await env.data.users.update(client.tenant_id, ctx.get("userId"), {
+    // DG: we defintiely don't want to store this but I'm doing this temp just to investigate!
+    profileData: JSON.stringify({
+      id_token: token.id_token,
+      access_token: token.access_token,
+    }),
+  });
 
   const email = oauth2Profile.email.toLocaleLowerCase();
   const user = await env.data.users.getByEmail(client.tenant_id, email);
