@@ -126,7 +126,7 @@ export async function socialAuthCallback({
 
   const idToken = parseJwt(token.id_token!);
 
-  const { iss, azp, aud, at_hash, iat, exp, ...profileData } = idToken;
+  const { iss, azp, aud, at_hash, iat, exp, sub, hd, ...profileData } = idToken;
 
   await env.data.users.update(client.tenant_id, ctx.get("userId"), {
     profileData: JSON.stringify(profileData),
