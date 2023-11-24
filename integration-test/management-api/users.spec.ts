@@ -107,6 +107,42 @@ describe("users", () => {
     ]);
   });
 
+  describe("search for user", () => {
+    it("should search for a user with wildcard search", async () => {
+      const token = await getAdminToken();
+
+      const createUserResponse = await worker.fetch("/api/v2/users", {
+        method: "POST",
+        body: JSON.stringify({
+          email: "test@example.com",
+          connection: "email",
+        }),
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "test",
+          "content-type": "application/json",
+        },
+      });
+
+      expect(createUserResponse.status).toBe(201);
+
+      const usersResponse = await worker.fetch(
+        "/api/v2/users?page=0&per_page=2&q=example",
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "test",
+          },
+        },
+      );
+
+      expect(usersResponse.status).toBe(200);
+
+      const body = await usersResponse.json();
+      expect(body.length).toBe(1);
+    });
+  });
+
   describe("link user", () => {
     it("should link two users", async () => {
       const token = await getAdminToken();

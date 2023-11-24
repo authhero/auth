@@ -11,7 +11,7 @@ export function list(users: SqlUser[]) {
     const tenantUsers = users.filter((user) => user.tenant_id === tenantId);
     const filteredUsers = filterItems(tenantUsers, q);
 
-    const start = (page - 1) * per_page;
+    const start = page * per_page;
 
     return {
       users: filteredUsers.slice(start, per_page),
