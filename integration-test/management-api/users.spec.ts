@@ -245,12 +245,20 @@ describe("users", () => {
           user_id: newUser2Id,
           provider: "email",
           isSocial: false,
+          profileData: {
+            email: "test2@example.com",
+            email_verified: false,
+          },
         },
         {
           connection: "email",
           user_id: newUser1Id,
           provider: "email",
           isSocial: false,
+          profileData: {
+            email: "test1@example.com",
+            email_verified: false,
+          },
         },
       ]);
 
