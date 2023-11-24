@@ -6,6 +6,7 @@ import {
   Client,
   Env,
   LoginState,
+  BaseUser,
 } from "../types";
 import { headers } from "../constants";
 import { hexToBase64 } from "../utils/base64";
@@ -166,11 +167,21 @@ export async function socialAuthCallback({
   ctx.set("email", email);
   ctx.set("userId", user.id);
 
-  await env.data.users.update(client.tenant_id, ctx.get("userId"), {
+  const newUserFields: Partial<BaseUser> = {
     profileData: JSON.stringify(profileData),
     email,
-    email_verified,
-  });
+  };
+
+  if (email_verified) {
+    const strictEmailVerified = !!email_verified;
+    newUserFields.email_verified = strictEmailVerified;
+  }
+
+  await env.data.users.update(
+    client.tenant_id,
+    ctx.get("userId"),
+    newUserFields,
+  );
 
   await env.data.logs.create({
     category: "login",
