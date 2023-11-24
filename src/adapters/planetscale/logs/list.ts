@@ -32,12 +32,6 @@ export function listLogs(db: Kysely<Database>) {
 
     const logs = await filteredQuery.selectAll().execute();
 
-    if (!params.include_totals) {
-      return {
-        logs,
-      };
-    }
-
     const [{ count }] = await query
       .select((eb) => eb.fn.countAll().as("count"))
       .execute();
