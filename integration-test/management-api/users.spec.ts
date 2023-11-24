@@ -84,6 +84,12 @@ describe("users", () => {
 
     const newUser = await createUserResponse.json();
     expect(newUser.email).toBe("test@example.com");
+    expect(newUser.user_id).toContain("|");
+
+    const [provider, id] = newUser.user_id.split("|");
+
+    expect(provider).toBe("email");
+    expect(id.length).toBe(24);
 
     const usersResponse = await worker.fetch("/api/v2/users", {
       headers: {
@@ -101,7 +107,7 @@ describe("users", () => {
       {
         connection: "email",
         // inside the identity the user_id isn't prefixed with the provider
-        user_id: newUser.user_id.split("|")[1],
+        user_id: id,
         provider: "email",
         isSocial: false,
       },
@@ -185,6 +191,7 @@ describe("users", () => {
         {
           method: "POST",
           body: JSON.stringify({
+            // so we want to pass up the provider-id, but only persist the id?
             link_with: newUser2.id,
           }),
           headers: {
@@ -225,18 +232,21 @@ describe("users", () => {
 
       expect(userResponse.status).toBe(200);
 
+      const [, newUser1Id] = newUser1.user_id.split("|");
+      const [, newUser2Id] = newUser2.user_id.split("|");
+
       const body = await userResponse.json();
       expect(body.user_id).toBe(newUser2.user_id);
       expect(body.identities).toEqual([
         {
           connection: "email",
-          user_id: newUser2.user_id.split("|")[1],
+          user_id: newUser2Id,
           provider: "email",
           isSocial: false,
         },
         {
           connection: "email",
-          user_id: newUser1.user_id.split("|")[1],
+          user_id: newUser1Id,
           provider: "email",
           isSocial: false,
         },
