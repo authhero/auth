@@ -230,13 +230,13 @@ describe("users", () => {
       expect(body.identities).toEqual([
         {
           connection: "email",
-          user_id: newUser2.user_id,
+          user_id: newUser2.user_id.split("|")[1],
           provider: "email",
           isSocial: false,
         },
         {
           connection: "email",
-          user_id: newUser1.user_id,
+          user_id: newUser1.user_id.split("|")[1],
           provider: "email",
           isSocial: false,
         },
