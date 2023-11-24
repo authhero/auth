@@ -9,9 +9,8 @@ export interface CreateLogParams {
   user_id: string;
 }
 
-export interface ListLogsResponse {
+export interface ListLogsResponse extends Totals {
   logs: Log[];
-  totals?: Totals;
 }
 
 export interface LogsDataAdapter {
