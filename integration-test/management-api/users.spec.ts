@@ -213,7 +213,7 @@ describe("users", () => {
 
       // Fetch a single users
       const userResponse = await worker.fetch(
-        // what SHOULD happen here? check on real mgmt API... here we're fetching with the provider prefix...
+        // note we fetch with the user_id prefixed with provider as per the Auth0 standard
         `/api/v2/users/${newUser2.user_id}`,
         {
           headers: {

@@ -110,18 +110,10 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    // return 400 if id is not in the format of provider|id
     if (!user_id.includes("|")) {
-      // I think I could do better than chatGPT Here 8-)
       throw new HTTPException(400, {
         message: "Invalid user_id format",
       });
-      /* Auth0 gives body like
-        statusCode: 400,
-        error: "Bad Request",
-        message: "Object didn't pass validation for format user-id: 6560cd0f6caaac5b4692f454",
-        errorCode: "invalid_uri"
-      */
     }
 
     const [provider, idWithouPrefix] = user_id.split("|");
@@ -142,7 +134,7 @@ export class UsersMgmtController extends Controller {
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      user_id: u.id, // this will be correct
+      user_id: u.id,
       isSocial: u.is_social,
     }));
 
@@ -240,7 +232,6 @@ export class UsersMgmtController extends Controller {
       category: "update",
       message: "User profile",
       tenant_id,
-      // Ooooooo, what does this mean though here? Which user Id are we accepting? CHECK IN AUTH0 MGMT API!
       user_id,
     });
 
