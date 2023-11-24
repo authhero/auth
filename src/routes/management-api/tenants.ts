@@ -52,9 +52,9 @@ export class TenantsController extends Controller {
     /**
      * @description The page number where 1 is the first page
      * @isInt value
-     * @minimum 1
+     * @minimum 0
      */
-    @Query() page = 1,
+    @Query() page = 0,
     /**
      * @description The number of items per page
      * @isInt value

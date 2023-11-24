@@ -25,7 +25,7 @@ export function listTenants(db: Kysely<Database>) {
     }
 
     const filteredQuery = query
-      .offset((params.page - 1) * params.per_page)
+      .offset(params.page * params.per_page)
       .limit(params.per_page);
 
     const tenants = await filteredQuery.selectAll().execute();

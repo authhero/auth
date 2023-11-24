@@ -35,8 +35,8 @@ export function listTenants(tenantsStorage: Tenant[]) {
     }
 
     tenants = tenants.slice(
-      (params.page - 1) * params.per_page,
       params.page * params.per_page,
+      (params.page + 1) * params.per_page,
     );
 
     if (!params.include_totals) {
