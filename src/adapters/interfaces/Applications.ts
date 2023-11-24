@@ -1,21 +1,19 @@
 import { Application } from "../../types";
-import { Totals } from "../../types/auth0/Totals";
-import { ListParams } from "./ListParams";
 
-export interface CreateApplicaionParams {
+export interface CreateApplicationParams {
   name: string;
   allowed_web_origins: string;
   allowed_callback_urls: string;
   allowed_logout_urls: string;
   email_validation: "enabled" | "disabled" | "enforced";
   client_secret: string;
-  id?: string;
+  id: string;
 }
 
 export interface ApplicationsAdapter {
   create(
     tenant_id: string,
-    params: CreateApplicaionParams,
+    params: CreateApplicationParams,
   ): Promise<Application>;
   // get(tenant_id: string, id: string): Promise<Application | undefined>;
   // list(

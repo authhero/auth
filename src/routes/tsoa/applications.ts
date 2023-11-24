@@ -137,37 +137,21 @@ export class ApplicationsController extends Controller {
     body: {
       id?: string;
       name: string;
-      tenant_id: string;
       allowed_web_origins: string;
       allowed_callback_urls: string;
       allowed_logout_urls: string;
       email_validation: "enabled" | "disabled" | "enforced";
-      client_secret: string;
+      client_secret?: string;
     },
   ): Promise<Application> {
     const { ctx } = request;
     const { env } = ctx;
 
-    const application = await env.data.applications.create(tenantId, body);
-
-    // const db = getDb(env);
-
-    // const application: Application = {
-    //   allowed_web_origins: "",
-    //   allowed_callback_urls: "",
-    //   allowed_logout_urls: "",
-    //   email_validation: "enabled",
-    //   // twoFactorAuthentication: "enabled",
-    //   // enableSignup: true,
-    //   client_secret: nanoid(),
-    //   id: nanoid(),
-    //   ...body,
-    //   tenant_id: tenantId,
-    //   created_at: new Date().toISOString(),
-    //   updated_at: new Date().toISOString(),
-    // };
-
-    // await db.insertInto("applications").values(application).execute();
+    const application = await env.data.applications.create(tenantId, {
+      ...body,
+      id: body.id || nanoid(),
+      client_secret: body.client_secret || nanoid(),
+    });
 
     if (env.hooks?.application?.onCreated) {
       await env.hooks.application.onCreated(env, application);
