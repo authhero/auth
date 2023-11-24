@@ -113,9 +113,27 @@ export async function socialAuthCallback({
 
   const token = await oauth2Client.exchangeCodeForTokenResponse(code);
 
-  const oauth2Profile = parseJwt(token.id_token!);
+  const idToken = parseJwt(token.id_token!);
 
-  const email = oauth2Profile.email.toLocaleLowerCase();
+  const {
+    iss,
+    azp,
+    aud,
+    at_hash,
+    iat,
+    exp,
+    sub,
+    hd,
+    jti,
+    nonce,
+    email: emailRaw,
+    email_verified,
+    auth_time,
+    nonce_supported,
+    ...profileData
+  } = idToken;
+
+  const email = emailRaw.toLocaleLowerCase();
 
   // TODO - this should actually be id! the social id pulled out before
   // we can fix once we've done account linking
@@ -131,8 +149,7 @@ export async function socialAuthCallback({
     user = await env.data.users.create(client.tenant_id, {
       email,
       tenant_id: client.tenant_id,
-      // this works for Google! but not sure about others  8-)
-      id: oauth2Profile.sub,
+      id: sub,
       name: email,
       provider: state.connection,
       connection: state.connection,
@@ -149,26 +166,10 @@ export async function socialAuthCallback({
   ctx.set("email", email);
   ctx.set("userId", user.id);
 
-  const idToken = parseJwt(token.id_token!);
-
-  const {
-    iss,
-    azp,
-    aud,
-    at_hash,
-    iat,
-    exp,
-    sub,
-    hd,
-    jti,
-    nonce,
-    auth_time,
-    nonce_supported,
-    ...profileData
-  } = idToken;
-
   await env.data.users.update(client.tenant_id, ctx.get("userId"), {
     profileData: JSON.stringify(profileData),
+    email,
+    email_verified,
   });
 
   await env.data.logs.create({
