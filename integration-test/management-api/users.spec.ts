@@ -100,7 +100,8 @@ describe("users", () => {
     expect(body[0].identities).toEqual([
       {
         connection: "email",
-        user_id: newUser.user_id,
+        // inside the identity the user_id isn't prefixed with the provider
+        user_id: newUser.user_id.split("|")[1],
         provider: "email",
         isSocial: false,
       },
@@ -212,6 +213,7 @@ describe("users", () => {
 
       // Fetch a single users
       const userResponse = await worker.fetch(
+        // what SHOULD happen here? check on real mgmt API... here we're fetching with the provider prefix...
         `/api/v2/users/${newUser2.user_id}`,
         {
           headers: {
