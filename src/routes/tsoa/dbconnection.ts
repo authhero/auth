@@ -10,7 +10,7 @@ import {
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { HTTPException } from "hono/http-exception";
-import { nanoid } from "nanoid";
+import userIdGenerate from "../../utils/userIdGenerate";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -62,7 +62,7 @@ export class DbConnectionController extends Controller {
     );
     if (!user) {
       user = await ctx.env.data.users.create(client.tenant_id, {
-        // id: `email|${nanoid()}`,
+        id: userIdGenerate(),
         email: body.email,
         tenant_id: client.tenant_id,
         created_at: new Date().toISOString(),
