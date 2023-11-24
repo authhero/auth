@@ -25,7 +25,7 @@ export async function validateCode(env: Env, params: LoginParams) {
   if (!user) {
     user = await env.data.users.create(client.tenant_id, {
       // TODO: replace nanoid with some hash of email
-      id: `email|${nanoid()}`,
+      // id: `email|${nanoid()}`,
       email: params.email,
       name: params.email,
       tenant_id: client.tenant_id,

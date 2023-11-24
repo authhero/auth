@@ -23,7 +23,7 @@ export async function ticketAuth(
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
-      id: `email|${nanoid()}`,
+      // id: `email|${nanoid()}`,
       email: ticket.email,
       name: ticket.email,
       tenant_id,
