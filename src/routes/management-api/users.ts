@@ -72,7 +72,7 @@ export class UsersMgmtController extends Controller {
 
       return {
         ...userWithoutId,
-        user_id: user.id,
+        user_id: `${user.provider}|${user.id}`,
         identities: [
           {
             connection: user.connection,
@@ -135,7 +135,7 @@ export class UsersMgmtController extends Controller {
     return {
       ...userWithoutId,
       identities,
-      user_id: user.id,
+      user_id: `${user.provider}|${user.id}`,
     };
   }
 
@@ -194,7 +194,7 @@ export class UsersMgmtController extends Controller {
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
-      user_id: data.id,
+      user_id: `${data.provider}|${data.id}`,
       identities: [
         {
           connection: data.connection,
@@ -224,6 +224,7 @@ export class UsersMgmtController extends Controller {
       category: "update",
       message: "User profile",
       tenant_id,
+      // Ooooooo, what does this mean though here? Which user Id are we accepting? CHECK IN AUTH0 MGMT API!
       user_id,
     });
 
