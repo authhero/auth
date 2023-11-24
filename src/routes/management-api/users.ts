@@ -110,7 +110,23 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const user = await env.data.users.get(tenant_id, user_id);
+    // return 400 if id is not in the format of provider|id
+    if (!user_id.includes("|")) {
+      // I think I could do better than chatGPT Here 8-)
+      throw new HTTPException(400, {
+        message: "Invalid user_id format",
+      });
+      /* Auth0 gives body like
+        statusCode: 400,
+        error: "Bad Request",
+        message: "Object didn't pass validation for format user-id: 6560cd0f6caaac5b4692f454",
+        errorCode: "invalid_uri"
+      */
+    }
+
+    const [provider, idWithouPrefix] = user_id.split("|");
+
+    const user = await env.data.users.get(tenant_id, idWithouPrefix);
 
     if (!user) {
       throw new HTTPException(404);
@@ -120,13 +136,13 @@ export class UsersMgmtController extends Controller {
       page: 0,
       per_page: 10,
       include_totals: false,
-      q: `linked_to:${user_id}`,
+      q: `linked_to:${idWithouPrefix}`, // assuming linkedin won't have the full id - TBD
     });
 
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      user_id: u.id,
+      user_id: u.id, // this will be correct
       isSocial: u.is_social,
     }));
 
