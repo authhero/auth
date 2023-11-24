@@ -80,6 +80,7 @@ export class UsersMgmtController extends Controller {
             user_id: userIdParse(user.id),
             isSocial: user.is_social,
           },
+          // TODO - need to do the join here with linked accounts
         ],
         // TODO: store this field in sql
         username: user.email,
@@ -130,12 +131,23 @@ export class UsersMgmtController extends Controller {
       q: `linked_to:${user_id}`,
     });
 
-    const identities = [user, ...linkedusers.users].map((u) => ({
-      connection: u.connection,
-      provider: u.provider,
-      user_id: userIdParse(u.id),
-      isSocial: u.is_social,
-    }));
+    const identities = [user, ...linkedusers.users].map((u) => {
+      const profileData = JSON.parse(user.profileData || "{}");
+
+      return {
+        connection: u.connection,
+        provider: u.provider,
+        user_id: userIdParse(u.id),
+        isSocial: u.is_social,
+        profileData: {
+          // both these two appear on every profile type
+          email: u.email,
+          email_verified: u.email_verified,
+          // Is this safe? This is all I'd want to do  8-)
+          ...profileData,
+        },
+      };
+    });
 
     const { id, ...userWithoutId } = user;
 
