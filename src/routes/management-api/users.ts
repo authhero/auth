@@ -72,12 +72,13 @@ export class UsersMgmtController extends Controller {
 
       return {
         ...userWithoutId,
-        user_id: `${user.provider}|${user.id}`,
+        user_id: user.id,
         identities: [
           {
             connection: user.connection,
             provider: user.provider,
-            user_id: user.id,
+            // we need to either be sure there are no bad IDs or we need to defensively guard against this.
+            user_id: user.id.split("|")[1],
             isSocial: user.is_social,
           },
         ],
@@ -116,9 +117,7 @@ export class UsersMgmtController extends Controller {
       });
     }
 
-    const [provider, idWithouPrefix] = user_id.split("|");
-
-    const user = await env.data.users.get(tenant_id, idWithouPrefix);
+    const user = await env.data.users.get(tenant_id, user_id);
 
     if (!user) {
       throw new HTTPException(404);
@@ -128,13 +127,14 @@ export class UsersMgmtController extends Controller {
       page: 0,
       per_page: 10,
       include_totals: false,
-      q: `linked_to:${idWithouPrefix}`, // assuming linkedin won't have the full id - TBD
+      q: `linked_to:${user_id}`,
     });
 
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      user_id: u.id,
+      // TODO - helper function to guard against this... although we want to make sure the database is all updated!
+      user_id: u.id.split("|")[1],
       isSocial: u.is_social,
     }));
 
@@ -143,7 +143,7 @@ export class UsersMgmtController extends Controller {
     return {
       ...userWithoutId,
       identities,
-      user_id: `${user.provider}|${user.id}`,
+      user_id: user.id,
     };
   }
 
@@ -207,7 +207,7 @@ export class UsersMgmtController extends Controller {
         {
           connection: data.connection,
           provider: data.provider,
-          user_id: data.id,
+          user_id: data.id.split("|")[1],
           isSocial: data.is_social,
         },
       ],
