@@ -162,6 +162,8 @@ export async function socialAuthCallback({
     hd,
     jti,
     nonce,
+    auth_time,
+    nonce_supported,
     ...profileData
   } = idToken;
 
