@@ -9,6 +9,7 @@ import {
   Query,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
+import userIdGenerate from "../../utils/userIdGenerate";
 import { HTTPException } from "hono/http-exception";
 import generateOTP from "../../utils/otp";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -364,7 +365,7 @@ export class LoginController extends Controller {
       if (!user) {
         // Create the user if it doesn't exist
         user = await env.data.users.create(client.tenant_id, {
-          id: `email|${nanoid()}`,
+          id: userIdGenerate(),
           tenant_id: client.tenant_id,
           email: loginParams.username,
           name: loginParams.username,

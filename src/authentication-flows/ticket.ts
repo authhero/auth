@@ -1,7 +1,7 @@
 import { Controller } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
-
+import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
@@ -23,7 +23,7 @@ export async function ticketAuth(
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
-      id: `email|${nanoid()}`,
+      id: userIdGenerate(),
       email: ticket.email,
       name: ticket.email,
       tenant_id,

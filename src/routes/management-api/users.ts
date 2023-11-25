@@ -21,8 +21,8 @@ import {
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 import { HTTPException } from "hono/http-exception";
-import { nanoid } from "nanoid";
 import { Identity } from "../../types/auth0/Identity";
+import userIdGenerate from "../../utils/userIdGenerate";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -177,7 +177,7 @@ export class UsersMgmtController extends Controller {
 
     const data = await env.data.users.create(tenantId, {
       email,
-      id: `email|${nanoid()}`,
+      id: userIdGenerate(),
       tenant_id: tenantId,
       name: email,
       provider: "email",
