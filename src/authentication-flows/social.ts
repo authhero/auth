@@ -148,9 +148,9 @@ export async function socialAuthCallback({
   // TODO - intelligent account linking!
   if (!user) {
     user = await env.data.users.create(client.tenant_id, {
+      id: `${state.connection}|${sub}`,
       email,
       tenant_id: client.tenant_id,
-      id: sub,
       name: email,
       provider: state.connection,
       connection: state.connection,

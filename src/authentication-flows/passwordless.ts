@@ -23,7 +23,7 @@ export async function validateCode(env: Env, params: LoginParams) {
   let user = await env.data.users.getByEmail(client.tenant_id, params.email);
   if (!user) {
     user = await env.data.users.create(client.tenant_id, {
-      id: userIdGenerate(),
+      id: `email|${userIdGenerate()}`,
       email: params.email,
       name: params.email,
       tenant_id: client.tenant_id,
