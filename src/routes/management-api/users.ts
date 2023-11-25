@@ -202,7 +202,7 @@ export class UsersMgmtController extends Controller {
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
-      user_id: `${data.provider}|${data.id}`,
+      user_id: data.id,
       identities: [
         {
           connection: data.connection,
@@ -265,10 +265,12 @@ export class UsersMgmtController extends Controller {
       q: `linked_to:${body.link_with}`,
     });
 
+    // we're doing this mapping very frequently... once we include profileData
+    // would make sense to have a util function. TBD
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      user_id: u.id,
+      user_id: u.id.split("|")[1],
       isSocial: u.is_social,
     }));
 
