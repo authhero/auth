@@ -5,7 +5,6 @@ import { Application } from "../../../types";
 export function create(applications: Application[]) {
   return async (tenant_id: string, params: CreateApplicationParams) => {
     const application = {
-      id: nanoid(),
       ...params,
       tenant_id,
       created_at: new Date().toISOString(),
