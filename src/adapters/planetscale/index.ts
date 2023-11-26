@@ -9,9 +9,11 @@ import { createOTPAdapter } from "./otps";
 import { createPasswordAdapter } from "./passwords";
 import { createCodesAdapter } from "./codes";
 import { createUniversalLoginSessionAdapter } from "./universalLoginSessions";
+import { createApplicationsAdapter } from "./applications";
 
 export default function createAdapters(env: Env) {
   return {
+    applications: createApplicationsAdapter(env),
     members: createMembersAdapter(env),
     users: createUsersAdapter(env),
     sessions: createSessionsAdapter(env),

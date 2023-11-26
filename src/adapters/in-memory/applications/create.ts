@@ -1,11 +1,10 @@
 import { nanoid } from "nanoid";
-import { CreateApplicaionParams } from "../../interfaces/Applications";
+import { CreateApplicationParams } from "../../interfaces/Applications";
 import { Application } from "../../../types";
 
 export function create(applications: Application[]) {
-  return async (tenant_id: string, params: CreateApplicaionParams) => {
+  return async (tenant_id: string, params: CreateApplicationParams) => {
     const application = {
-      id: nanoid(),
       ...params,
       tenant_id,
       created_at: new Date().toISOString(),
