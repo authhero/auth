@@ -38,7 +38,6 @@ export async function setup(worker: any) {
         allowed_logout_urls: "",
         email_validation: "disabled",
         client_secret: "appSecret",
-        tenant_id: tenant.id,
       }),
       headers: {
         authorization: `Bearer ${token}`,
@@ -49,7 +48,7 @@ export async function setup(worker: any) {
 
   if (createAppResponse.status !== 201) {
     throw new Error(
-      `Setup: Failed to create tenant: ${await createTenantResponse.text()}`,
+      `Setup: Failed to create tenant: ${await createAppResponse.text()}`,
     );
   }
 

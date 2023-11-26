@@ -1,6 +1,5 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
-import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("silent-auth", () => {
   let worker;
