@@ -9,6 +9,10 @@ export function listLogs(logs: Log[]) {
   ): Promise<ListLogsResponse> => {
     return {
       logs,
+      // no pagination just return all
+      start: 0,
+      length: logs.length,
+      limit: logs.length,
     };
   };
 }
