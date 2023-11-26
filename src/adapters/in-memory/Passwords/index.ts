@@ -1,6 +1,7 @@
 import { PasswordParams } from "../../../types";
 import { PasswordsAdapter } from "../../interfaces/Passwords";
 import { create } from "./create";
+import { update } from "./update";
 import { validate } from "./validate";
 
 export interface PasswordStorage extends PasswordParams {
@@ -13,5 +14,6 @@ export function createPasswordsAdapter(): PasswordsAdapter {
   return {
     create: create(passwordsStorage),
     validate: validate(passwordsStorage),
+    update: update(passwordsStorage),
   };
 }

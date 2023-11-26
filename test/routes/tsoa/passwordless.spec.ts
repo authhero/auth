@@ -1,5 +1,5 @@
 import fetchMock from "jest-fetch-mock";
-import { contextFixture, client } from "../../fixtures";
+import { contextFixture } from "../../fixtures";
 import {
   PasswordlessController,
   PasswordlessOptions,
@@ -11,23 +11,7 @@ import {
   Env,
 } from "../../../src/types";
 import { requestWithContext } from "../../fixtures/requestWithContext";
-import { kvStorageFixture } from "../../fixtures/kv-storage";
 import { parseJwt } from "../../../src/utils/parse-jwt";
-
-const SESAMY_LOGO =
-  "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png";
-
-// looks the same to me! hmmmm. why fetch same asset twice
-const SESAMY_FOOTER_LOGO =
-  "https://assets.sesamy.dev/static/images/email/sesamy-logo-translucent.png";
-
-const SESAMY_FOOTER_LOGO_URL = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/size:225/${btoa(
-  SESAMY_FOOTER_LOGO,
-).replace(/=/g, "&#x3D;")}`; // footer logo is html encoded....
-
-const SESAMY_HEADER_LOGO_URL = `https://imgproxy.dev.sesamy.cloud/unsafe/format:png/rs:fill:166/${btoa(
-  SESAMY_LOGO,
-)}`;
 
 describe("Passwordless", () => {
   const date = new Date();
@@ -105,6 +89,15 @@ describe("Passwordless", () => {
             id: "userId",
             email: "test@example.com",
             tenant_id: "tenantId",
+            last_ip: "1.1.1.1",
+            login_count: 0,
+            last_login: new Date().toISOString(),
+            is_social: false,
+            provider: "email",
+            connection: "email",
+            email_verified: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
         ],
       });

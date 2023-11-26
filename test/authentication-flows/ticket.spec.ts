@@ -8,6 +8,14 @@ import {
 } from "../../src/types";
 import { parseJwt } from "../../src/utils/parse-jwt";
 
+// nanoid blows up in Jest when try to import customAlphabet...
+jest.mock("nanoid", () => {
+  return {
+    customAlphabet: () => () => "testid",
+    nanoid: () => "testid",
+  };
+});
+
 describe("passwordlessAuth", () => {
   const date = new Date();
 

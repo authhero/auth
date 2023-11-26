@@ -6,8 +6,8 @@ import {
   AuthParams,
   CodeResponse,
   Env,
-  Profile,
   TokenResponse,
+  User,
 } from "../types";
 import { InvalidClientError } from "../errors";
 import { getClient } from "../services/clients";
@@ -32,7 +32,7 @@ export async function authorizeCodeGrant(
   const state: {
     userId: string;
     authParams: AuthParams;
-    user: Profile;
+    user: User;
     sid: string;
   } = JSON.parse(stateString);
 

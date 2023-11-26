@@ -1,8 +1,7 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
-import { StateClient, UserClient } from "../models";
-import { QueueMessage } from "../services/events";
+import { StateClient } from "../models";
 import { DataAdapters } from "../adapters/interfaces";
-import { Tenant } from "./sql";
+import { Application, Tenant } from "./sql";
 
 export interface StateRouterFactory {
   (name: string): StateClient;
@@ -35,9 +34,11 @@ export type Env = {
   DEFAULT_SETTINGS?: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   stateFactory: ClientFactory<StateClient>;
-  userFactory: ClientFactory<UserClient>;
   data: DataAdapters;
   hooks: {
+    application?: {
+      onCreated?: (env: Env, application: Application) => Promise<void>;
+    };
     tenant?: {
       onCreated?: (env: Env, tenant: Tenant) => Promise<void>;
     };

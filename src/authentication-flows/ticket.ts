@@ -1,10 +1,11 @@
 import { Controller } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-import { Env, AuthParams, Profile, AuthorizationResponseType } from "../types";
-
+import { Env, AuthParams, AuthorizationResponseType } from "../types";
+import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
+import { HTTPException } from "hono/http-exception";
 
 export async function ticketAuth(
   env: Env,
@@ -15,40 +16,35 @@ export async function ticketAuth(
 ) {
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
-    throw new Error("Ticket not found");
+    throw new HTTPException(403, { message: "Ticket not found" });
   }
 
   let user = await env.data.users.getByEmail(tenant_id, ticket.email);
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
-      // this isn't what we're doing in the database! we store the ID, and we store the tenant_id
-      // id: `${tenant_id}|${nanoid()}`,
+      id: userIdGenerate(),
       email: ticket.email,
       name: ticket.email,
       tenant_id,
+      provider: "email",
+      connection: "email",
+      email_verified: true,
+      login_count: 1,
+      is_social: false,
+      last_ip: "",
+      last_login: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
   }
-
-  // TODO: Fallback to old profile
-  const profile: Profile = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    nickname: user.nickname,
-    picture: user.picture,
-    created_at: user.created_at,
-    updated_at: user.updated_at,
-    tenant_id: user.tenant_id,
-    connections: [],
-  };
 
   const sessionId = await setSilentAuthCookies(
     env,
     controller,
     ticket.tenant_id,
     ticket.client_id,
-    profile,
+    user,
   );
 
   const tokenResponse = await generateAuthResponse({
@@ -62,7 +58,7 @@ export async function ticketAuth(
       scope: ticket.authParams?.scope,
     },
     sid: sessionId,
-    user: profile,
+    user,
     responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 

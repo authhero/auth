@@ -46,7 +46,13 @@ export class LogsController extends Controller {
     });
 
     if (include_totals) {
-      return result as ListLogsResponse;
+      const res: ListLogsResponse = {
+        logs: result.logs,
+        start: result.start,
+        length: result.length,
+        limit: result.limit,
+      };
+      return res;
     }
 
     return result.logs;

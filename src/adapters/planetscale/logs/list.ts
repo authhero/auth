@@ -1,6 +1,7 @@
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../../adapters/interfaces/ListParams";
+import getCountAsInt from "../../../utils/getCountAsInt";
 
 export function listLogs(db: Kysely<Database>) {
   return async (tenantId, params: ListParams) => {
@@ -31,21 +32,17 @@ export function listLogs(db: Kysely<Database>) {
 
     const logs = await filteredQuery.selectAll().execute();
 
-    if (!params.include_totals) {
-      return {
-        logs,
-      };
-    }
-
     const [{ count }] = await query
       .select((eb) => eb.fn.countAll().as("count"))
       .execute();
+
+    const countInt = getCountAsInt(count);
 
     return {
       logs,
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
-      length: count,
+      length: countInt,
     };
   };
 }

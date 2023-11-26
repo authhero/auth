@@ -14,18 +14,15 @@ import {
   Path,
   Body,
 } from "@tsoa/runtime";
-import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { NotFoundError } from "../../errors";
-import { getId } from "../../models";
-import { Profile } from "../../types";
 import {
   UserResponse,
   PostUsersBody,
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
-import { SqlCreateUser } from "../../types";
 import { HTTPException } from "hono/http-exception";
+import { Identity } from "../../types/auth0/Identity";
+import userIdGenerate from "../../utils/userIdGenerate";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -41,8 +38,9 @@ export class UsersMgmtController extends Controller {
   public async listUsers(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    // Auth0
+    // @minimum 0
     @Query() page = 0,
+    // @minimum 1
     @Query() per_page = 20,
     @Query() include_totals = false,
     @Query() sort?: string,
@@ -54,44 +52,39 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { env } = request.ctx;
 
+    // Filter out linked userss
+    const query: string[] = ["-_exists_:linked_to"];
+    if (q) {
+      query.push(q);
+    }
+
     const result = await env.data.users.list(tenantId, {
       page,
       per_page,
       include_totals,
       // TODO - sorting!
       // sort: parseSort(sort),
-      q,
+      q: query.join(" "),
     });
 
     const users: UserResponse[] = result.users.map((user) => {
-      const { tags, ...userTrimmed } = user;
-
-      const tagsObj = JSON.parse(tags || "[]");
-
-      const identities = tagsObj.map((tag) => ({
-        profileData: {
-          email: user.email,
-          user_id: user.id,
-          is_social: true,
-          connection: tag,
-        },
-      }));
+      const { id, ...userWithoutId } = user;
 
       return {
-        ...userTrimmed,
+        ...userWithoutId,
         user_id: user.id,
-        logins_count: 0,
-        last_ip: "",
-        last_login: "",
-        identities,
-        // some fields copied from previous adapter/planetscale/list mapping
+        identities: [
+          {
+            connection: user.connection,
+            provider: user.provider,
+            user_id: user.id,
+            isSocial: user.is_social,
+          },
+        ],
         // TODO: store this field in sql
-        email_verified: true,
         username: user.email,
         phone_number: "",
         phone_verified: false,
-        // Deprecated
-        tags,
       };
     });
 
@@ -109,65 +102,59 @@ export class UsersMgmtController extends Controller {
     return users;
   }
 
-  @Get("{userId}")
+  @Get("{user_id}")
   public async getUser(
     @Request() request: RequestWithContext,
-    @Path("userId") userId: string,
-    @Header("tenant-id") tenantId: string,
+    @Path() user_id: string,
+    @Header("tenant-id") tenant_id: string,
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
-    const user = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.id", "=", userId)
-      .selectAll()
-      .executeTakeFirst();
+    const user = await env.data.users.get(tenant_id, user_id);
 
     if (!user) {
-      throw new NotFoundError();
+      throw new HTTPException(404);
     }
 
-    const { tags, ...userTrimmed } = user;
+    const linkedusers = await env.data.users.list(tenant_id, {
+      page: 0,
+      per_page: 10,
+      include_totals: false,
+      q: `linked_to:${user_id}`,
+    });
+
+    const identities = [user, ...linkedusers.users].map((u) => ({
+      connection: u.connection,
+      provider: u.provider,
+      user_id: u.id,
+      isSocial: u.is_social,
+    }));
+
+    const { id, ...userWithoutId } = user;
 
     return {
-      ...userTrimmed,
-      // TODO: add missing properties to conform to auth0
-      logins_count: 0,
-      last_ip: "",
-      last_login: "",
-      identities: [],
+      ...userWithoutId,
+      identities,
       user_id: user.id,
     };
   }
 
-  @Delete("{userId}")
+  @Delete("{user_id}")
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Header("tenant-id") tenantId: string,
-  ): Promise<Profile> {
+  ): Promise<string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
-    const dbUser = await db
-      .selectFrom("users")
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.id", "=", userId)
-      .select("users.email")
-      .executeTakeFirst();
+    const result = await env.data.users.remove(tenantId, userId);
 
-    if (!dbUser) {
-      throw new NotFoundError();
+    if (!result) {
+      throw new HTTPException(404);
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(tenantId, dbUser.email),
-    );
-
-    return user.delete.mutate();
+    return "OK";
   }
 
   @Post("")
@@ -178,8 +165,7 @@ export class UsersMgmtController extends Controller {
   public async postUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Body()
-    user: PostUsersBody,
+    @Body() user: PostUsersBody,
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
@@ -189,133 +175,96 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(400, { message: "Email is required" });
     }
 
-    const sqlCreateUser: SqlCreateUser = {
-      ...user,
-      tenant_id: tenantId,
+    const data = await env.data.users.create(tenantId, {
       email,
-    };
-
-    const data = await env.data.users.create(tenantId, sqlCreateUser);
+      id: userIdGenerate(),
+      tenant_id: tenantId,
+      name: email,
+      provider: "email",
+      connection: "email",
+      email_verified: false,
+      last_ip: "",
+      login_count: 0,
+      is_social: false,
+      last_login: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
 
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
       user_id: data.id,
-      logins_count: 0,
-      last_ip: "",
-      last_login: "",
-      identities: [],
+      identities: [
+        {
+          connection: data.connection,
+          provider: data.provider,
+          user_id: data.id,
+          isSocial: data.is_social,
+        },
+      ],
     };
 
     return userResponse;
   }
 
-  @Patch("{userId}")
+  @Patch("{user_id}")
   public async patchUser(
     @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-    @Path("userId") userId: string,
+    @Header("tenant-id") tenant_id: string,
+    @Path("user_id") user_id: string,
     @Body()
     user: PostUsersBody,
-  ): Promise<Profile> {
-    const { ctx } = request;
+  ): Promise<boolean> {
+    const { env } = request.ctx;
 
-    const { email } = user;
+    const results = await env.data.users.update(tenant_id, user_id, user);
 
-    // This does not match Auth0 but we really require an email address
-    if (!email) {
-      throw new Error("Email is required");
-    }
-
-    const userInstance = ctx.env.userFactory.getInstanceByName(
-      getId(tenantId, email),
-    );
-
-    const result: Profile = await userInstance.patchProfile.mutate({
-      ...user,
-      tenant_id: tenantId,
-      email,
-    });
-    const { tenant_id, id } = result;
-    await ctx.env.data.logs.create({
+    await env.data.logs.create({
       category: "update",
       message: "User profile",
       tenant_id,
-      user_id: id,
+      user_id,
     });
-    return result;
+
+    return results;
   }
 
-  @Post("{userId}/identities")
+  @Post("{user_id}/identities")
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Path("userId") userId: string,
+    @Path("user_id") userId: string,
     @Body() body: LinkBodyParams,
-  ): Promise<Profile> {
-    throw new Error("Not implemented");
+  ): Promise<Identity[]> {
+    const { env } = request.ctx;
 
-    // const { env } = request.ctx;
+    const user = await env.data.users.get(tenantId, body.link_with);
+    if (!user) {
+      throw new HTTPException(400, {
+        message: "Linking to an inexistent identity is not allowed.",
+      });
+    }
 
-    // const db = getDb(env);
-    // const currentDbUser = await db
-    //   .selectFrom("users")
-    //   .where("users.tenant_id", "=", tenantId)
-    //   .where("users.id", "=", userId)
-    //   .select(["users.email"])
-    //   .executeTakeFirst();
+    await env.data.users.update(tenantId, userId, {
+      linked_to: body.link_with,
+    });
 
-    // if (!currentDbUser) {
-    //   throw new NotFoundError("Current user not found");
-    // }
+    const linkedusers = await env.data.users.list(tenantId, {
+      page: 0,
+      per_page: 10,
+      include_totals: false,
+      q: `linked_to:${body.link_with}`,
+    });
 
-    // const linkedDbUser = await db
-    //   .selectFrom("users")
-    //   .where("users.tenant_id", "=", tenantId)
-    //   .where("users.id", "=", body.link_with)
-    //   .select(["users.email"])
-    //   .executeTakeFirst();
+    const identities = [user, ...linkedusers.users].map((u) => ({
+      connection: u.connection,
+      provider: u.provider,
+      user_id: u.id,
+      isSocial: u.is_social,
+    }));
 
-    // if (!linkedDbUser) {
-    //   throw new NotFoundError("Linked user not found");
-    // }
-
-    // const currentUser = env.userFactory.getInstanceByName(
-    //   getId(tenantId, currentDbUser.email),
-    // );
-
-    // const linkedUser = env.userFactory.getInstanceByName(
-    //   getId(tenantId, linkedDbUser.email),
-    // );
-
-    // // Link the child account
-    // await linkedUser.linkToUser.mutate({
-    //   tenantId,
-    //   email: linkedDbUser.email,
-    //   linkWithEmail: currentDbUser.email,
-    // });
-    // const linkedUserProfile = await linkedUser.getProfile.query();
-    // const currentUserProfile = await currentUser.getProfile.query();
-
-    // await env.data.logs.create({
-    //   category: "link",
-    //   message: `Linked to ${currentUserProfile.email}`,
-    //   tenant_id: linkedUserProfile.tenant_id,
-    //   user_id: linkedUserProfile.id,
-    // });
-
-    // // Link the parent account
-    // const returnUser = currentUser.linkWithUser.mutate({
-    //   tenantId,
-    //   email: currentDbUser.email,
-    //   linkWithEmail: linkedDbUser.email,
-    // });
-    // await env.data.logs.create({
-    //   category: "link",
-    //   message: `Added ${linkedUserProfile.email} as linked user`,
-    //   tenant_id: currentUserProfile.tenant_id,
-    //   user_id: currentUserProfile.id,
-    // });
-    // return returnUser;
+    this.setStatus(201);
+    return identities;
   }
 }

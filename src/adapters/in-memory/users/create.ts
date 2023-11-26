@@ -1,8 +1,8 @@
-import { SqlUser, SqlCreateUser } from "../../../types";
+import { SqlUser, User } from "../../../types";
 import { nanoid } from "nanoid";
 
 export function createUser(users: SqlUser[]) {
-  return async (tenantId: string, user: SqlCreateUser): Promise<SqlUser> => {
+  return async (tenantId: string, user: User): Promise<SqlUser> => {
     const sqlUser: SqlUser = {
       ...user,
       email: user.email || "",

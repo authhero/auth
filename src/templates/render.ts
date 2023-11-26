@@ -1,59 +1,58 @@
 import { Controller } from "tsoa";
 import { Liquid } from "liquidjs";
-import { base64UrlEncode } from "../utils/base64";
-import { LoginState } from "../types";
+import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
+import { Env } from "../types";
 
 const engine = new Liquid();
 
-async function getTemplate(bucket: R2Bucket, templateName: string) {
-  let response = await bucket.get(`templates/${templateName}.liquid`);
-
-  if (!response) {
-    throw new Error("Template not found");
+async function getTemplate(env: Env, templateName: string) {
+  let templateString = await env.data.templates.get(templateName);
+  if (!templateString) {
+    throw new Error(`Template ${templateName} not found`);
   }
-
-  const templateString = await response.text();
 
   return engine.parse(templateString);
 }
 
 export async function renderForgotPassword(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState,
+  context: UniversalLoginSession,
+  state: string,
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "forgot-password");
+  const template = await getTemplate(env, "forgot-password");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const state = base64UrlEncode(JSON.stringify(context));
-  const content = await engine.render(template, context);
+  const content = await engine.render(template, { ...context, state });
   return engine.render(layoutTemplate, {
     ...context,
-    state,
+    state, // seems inconsistent doing this here... does it need doing in both places?
     content,
   });
 }
 
 export async function renderLogin(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState,
+  context: UniversalLoginSession,
+  state: string,
+  errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "login");
+  const template = await getTemplate(env, "login");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
   const socialLoginQuery = new URLSearchParams();
-  Object.keys(context.authParams).forEach((key) =>
-    socialLoginQuery.set(key, context.authParams[key]),
-  );
+  Object.keys(context.authParams)
+    .filter((key) => context.authParams[key])
+    .forEach((key) => socialLoginQuery.set(key, context.authParams[key]));
 
   // TODO: pull from client instead
   const connections = [
@@ -80,6 +79,9 @@ export async function renderLogin(
   const content = await engine.render(template, {
     ...context,
     connections,
+    // in some places this is in the template render, in others it's in the layout renderer... which is it?
+    errorMessage,
+    state,
   });
 
   return engine.render(layoutTemplate, {
@@ -89,13 +91,13 @@ export async function renderLogin(
 }
 
 export async function renderLoginWithCode(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState,
+  context: UniversalLoginSession,
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "code");
+  const template = await getTemplate(env, "code");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -109,18 +111,22 @@ export async function renderLoginWithCode(
 }
 
 export async function renderEnterCode(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState,
+  context: UniversalLoginSession,
+  errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "enter-code");
+  const template = await getTemplate(env, "enter-code");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const content = await engine.render(template, context);
+  const content = await engine.render(template, {
+    ...context,
+    errorMessage,
+  });
 
   return engine.render(layoutTemplate, {
     context,
@@ -129,18 +135,19 @@ export async function renderEnterCode(
 }
 
 export async function renderEmailValidation(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState,
+  context: UniversalLoginSession,
+  errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "email-validation");
+  const template = await getTemplate(env, "email-validation");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const content = await engine.render(template, context);
+  const content = await engine.render(template, { ...context, errorMessage });
 
   return engine.render(layoutTemplate, {
     context,
@@ -149,32 +156,35 @@ export async function renderEmailValidation(
 }
 
 export async function renderSignup(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState,
+  context: UniversalLoginSession,
+  state: string,
+  errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "signup");
+  const template = await getTemplate(env, "signup");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const content = await engine.render(template, context);
+  const content = await engine.render(template, { ...context, state });
   return engine.render(layoutTemplate, {
     ...context,
     content,
+    errorMessage,
   });
 }
 
 export async function renderMessage(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState | { page_title: string; message: string },
+  context: UniversalLoginSession | { page_title: string; message: string },
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "message");
+  const template = await getTemplate(env, "message");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -187,13 +197,13 @@ export async function renderMessage(
 }
 
 export async function renderResetPassword(
-  bucket: R2Bucket,
+  env: Env,
   controller: Controller,
-  context: LoginState,
+  context: UniversalLoginSession,
 ) {
-  const layoutTemplate = await getTemplate(bucket, "layout");
+  const layoutTemplate = await getTemplate(env, "layout");
 
-  const template = await getTemplate(bucket, "reset-password");
+  const template = await getTemplate(env, "reset-password");
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);

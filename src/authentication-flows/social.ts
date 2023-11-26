@@ -6,11 +6,11 @@ import {
   Client,
   Env,
   LoginState,
+  BaseUser,
 } from "../types";
 import { headers } from "../constants";
 import { hexToBase64 } from "../utils/base64";
 import { getClient } from "../services/clients";
-import { getId } from "../models";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
@@ -84,17 +84,16 @@ export async function socialAuthCallback({
 }: socialAuthCallbackParams) {
   const { env } = ctx;
   const client = await getClient(env, state.authParams.client_id);
-
   const connection = client.connections.find(
     (p) => p.name === state.connection,
   );
 
   if (!connection) {
-    throw new Error("Connection not found");
+    throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
-    throw new Error("Redirect URI not defined");
+    throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
 
   if (
@@ -115,27 +114,80 @@ export async function socialAuthCallback({
 
   const token = await oauth2Client.exchangeCodeForTokenResponse(code);
 
-  const oauth2Profile = parseJwt(token.id_token!);
+  const idToken = parseJwt(token.id_token!);
 
-  const email = oauth2Profile.email.toLocaleLowerCase();
-  const userId = getId(client.tenant_id, email);
+  const {
+    iss,
+    azp,
+    aud,
+    at_hash,
+    iat,
+    exp,
+    sub,
+    hd,
+    jti,
+    nonce,
+    email: emailRaw,
+    email_verified,
+    auth_time,
+    nonce_supported,
+    ...profileData
+  } = idToken;
+
+  const email = emailRaw.toLocaleLowerCase();
+
+  // TODO - this should actually be id! the social id pulled out before
+  // we can fix once we've done account linking
+  let user = await env.data.users.getByEmail(client.tenant_id, email);
+
+  if (!state.connection) {
+    throw new HTTPException(403, { message: "Connection not found" });
+  }
+
+  // for now just create a new user with the correct structure IF does not already existing
+  // TODO - intelligent account linking!
+  if (!user) {
+    user = await env.data.users.create(client.tenant_id, {
+      email,
+      tenant_id: client.tenant_id,
+      id: sub,
+      name: email,
+      provider: state.connection,
+      connection: state.connection,
+      email_verified: false,
+      last_ip: "",
+      login_count: 0,
+      is_social: false,
+      last_login: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
+
   ctx.set("email", email);
-  ctx.set("userId", userId);
+  ctx.set("userId", user.id);
 
-  const user = env.userFactory.getInstanceByName(userId);
-
-  const profile = await user.loginWithConnection.mutate({
+  const newUserFields: Partial<BaseUser> = {
+    profileData: JSON.stringify(profileData),
     email,
-    tenantId: client.tenant_id,
-    connection: { name: connection.name, profile: oauth2Profile },
-  });
-  const userProfile = await user.getProfile.query();
-  const { tenant_id, id } = userProfile;
+  };
+
+  if (email_verified) {
+    const strictEmailVerified = !!email_verified;
+    newUserFields.email_verified = strictEmailVerified;
+  }
+
+  await env.data.users.update(
+    client.tenant_id,
+    ctx.get("userId"),
+    newUserFields,
+  );
+
   await env.data.logs.create({
     category: "login",
     message: `Login with ${connection.name}`,
-    tenant_id,
-    user_id: id,
+    tenant_id: client.tenant_id,
+    user_id: user.id,
   });
 
   const sessionId = await setSilentAuthCookies(
@@ -143,17 +195,17 @@ export async function socialAuthCallback({
     controller,
     client.tenant_id,
     client.id,
-    profile,
+    user,
   );
 
   const tokenResponse = await generateAuthResponse({
     env,
-    userId,
+    userId: user.id,
     sid: sessionId,
     state: state.authParams.state,
     nonce: state.authParams.nonce,
     authParams: state.authParams,
-    user: profile,
+    user,
     responseType:
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });

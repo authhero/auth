@@ -1,5 +1,4 @@
-import { getCertificate } from "../models";
-import { Env, AuthParams, AuthorizationResponseType, Profile } from "../types";
+import { Env, AuthParams, AuthorizationResponseType, User } from "../types";
 import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { hexToBase64 } from "../utils/base64";
@@ -17,7 +16,7 @@ export interface GenerateAuthResponseParamsBase {
 export interface GenerateAuthResponseParamsForCode
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.CODE;
-  user: Profile;
+  user: User;
 }
 
 export interface GenerateAuthResponseParamsForToken
@@ -28,7 +27,7 @@ export interface GenerateAuthResponseParamsForToken
 export interface GenerateAuthResponseParamsForIdToken
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.TOKEN_ID_TOKEN;
-  user: Profile;
+  user: User;
 }
 
 export async function generateCode({
@@ -40,6 +39,7 @@ export async function generateCode({
   sid,
   user,
 }: GenerateAuthResponseParamsForCode) {
+  // TODO: replace with the adapter
   const stateId = env.STATE.newUniqueId().toString();
   const stateInstance = env.stateFactory.getInstanceById(stateId);
   await stateInstance.createState.mutate({

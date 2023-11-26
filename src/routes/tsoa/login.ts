@@ -9,11 +9,10 @@ import {
   Query,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-
+import userIdGenerate from "../../utils/userIdGenerate";
+import { HTTPException } from "hono/http-exception";
+import generateOTP from "../../utils/otp";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getId } from "../../models/User";
-import { LoginState } from "../../types/LoginState";
-import { base64ToHex } from "../../utils/base64";
 import { getClient } from "../../services/clients";
 import {
   renderMessage,
@@ -25,21 +24,16 @@ import {
   renderEnterCode,
   renderEmailValidation,
 } from "../../templates/render";
-import {
-  AuthParams,
-  AuthorizationResponseType,
-  Env,
-  Profile,
-} from "../../types";
-import { InvalidRequestError } from "../../errors";
+import { AuthorizationResponseType, Env, User } from "../../types";
 import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
-import {
-  sendLink,
-  sendEmailValidation,
-  sendResetPassword,
-} from "../../controllers/email";
+import { sendLink, sendResetPassword } from "../../controllers/email";
+import { validateCode } from "../../authentication-flows/passwordless";
+import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+
+// duplicated from /passwordless route
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 export interface LoginParams {
   username: string;
@@ -56,43 +50,32 @@ export interface ResetPasswordState {
   client_id: string;
 }
 
-async function getLoginState(env: Env, state: string): Promise<LoginState> {
-  const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
-  const loginString = await stateInstance.getState.query();
-  const loginState: LoginState = JSON.parse(loginString);
-
-  return loginState;
-}
-
-async function setLoginState(env: Env, state: string, data: LoginState) {
-  const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
-  await stateInstance.setState.mutate({ state: JSON.stringify(data) });
-}
-
 async function handleLogin(
   env: Env,
   controller: Controller,
-  profile: Profile,
-  loginState: LoginState,
+  user: User,
+  session: UniversalLoginSession,
 ) {
-  if (loginState.authParams.redirect_uri) {
+  if (session.authParams.redirect_uri) {
     const responseType =
-      loginState.authParams.response_type ||
+      session.authParams.response_type ||
       AuthorizationResponseType.TOKEN_ID_TOKEN;
+
     const authResponse = await generateAuthResponse({
       env,
-      userId: profile.id,
+      userId: user.id,
       sid: nanoid(),
       responseType,
-      authParams: loginState.authParams,
-      user: profile,
+      authParams: session.authParams,
+      user,
     });
-    return applyTokenResponse(controller, authResponse, loginState.authParams);
+
+    return applyTokenResponse(controller, authResponse, session.authParams);
   }
 
   // This is just a fallback in case no redirect was present
-  return renderMessage(env.AUTH_TEMPLATES, controller, {
-    ...loginState,
+  return renderMessage(env, controller, {
+    ...session,
     page_title: "Logged in",
     message: "You are logged in",
   });
@@ -111,9 +94,13 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
 
-    return renderLogin(env.AUTH_TEMPLATES, this, loginState);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
+
+    return renderLogin(env, this, session, state);
   }
 
   /**
@@ -126,13 +113,16 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
 
-    return renderLoginWithCode(env.AUTH_TEMPLATES, this, loginState);
+    return renderLoginWithCode(env, this, session);
   }
 
   /**
-   * Validates a code entered in the code form
+   * Sends a code to the email (username) entered
    * @param request
    */
   @Post("code")
@@ -142,72 +132,82 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
 
-    const client = await getClient(env, loginState.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, params.username),
+    const code = generateOTP();
+
+    await env.data.OTP.create({
+      id: nanoid(),
+      code,
+      // is this a reasonable assumption?
+      email: params.username,
+      client_id: session.authParams.client_id,
+      send: "code",
+      authParams: session.authParams,
+      tenant_id: client.tenant_id,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+    });
+
+    request.ctx.set("log", `Code: ${code}`);
+
+    await env.data.logs.create({
+      category: "login",
+      message: "Create authentication code",
+      tenant_id: client.tenant_id,
+      user_id: params.username,
+    });
+
+    // Add the username to the state
+    session.authParams.username = params.username;
+    await env.data.universalLoginSessions.update(session.id, session);
+
+    const magicLink = new URL(env.ISSUER);
+    magicLink.pathname = "passwordless/verify_redirect";
+    if (session.authParams.scope) {
+      magicLink.searchParams.set("scope", session.authParams.scope);
+    }
+    if (session.authParams.response_type) {
+      magicLink.searchParams.set(
+        "response_type",
+        session.authParams.response_type,
+      );
+    }
+    if (session.authParams.redirect_uri) {
+      magicLink.searchParams.set(
+        "redirect_uri",
+        session.authParams.redirect_uri,
+      );
+    }
+    if (session.authParams.audience) {
+      magicLink.searchParams.set("audience", session.authParams.audience);
+    }
+    if (session.authParams.state) {
+      magicLink.searchParams.set("state", session.authParams.state);
+    }
+    if (session.authParams.nonce) {
+      magicLink.searchParams.set("nonce", session.authParams.nonce);
+    }
+
+    magicLink.searchParams.set("connection", "email");
+    magicLink.searchParams.set("client_id", session.authParams.client_id);
+    magicLink.searchParams.set("email", session.authParams.username);
+    magicLink.searchParams.set("verification_code", code);
+
+    await sendLink(env, client, params.username, code, magicLink.href);
+
+    this.setHeader(
+      headers.location,
+      `/u/enter-code?state=${state}&username=${params.username}`,
     );
+    this.setStatus(302);
 
-    throw new Error("Not implemented");
-
-    // const { code } = await user.createAuthenticationCode.mutate(loginState);
-
-    // const userProfile = await user.getProfile.query();
-    // const { tenant_id, id } = userProfile;
-    // await env.data.logs.create({
-    //   category: "login",
-    //   message: "Create authentication code",
-    //   tenant_id,
-    //   user_id: id,
-    // });
-
-    // // Add the username to the state
-    // loginState.authParams.username = params.username;
-    // await setLoginState(env, state, loginState);
-
-    // const magicLink = new URL(env.ISSUER);
-    // magicLink.pathname = "passwordless/verify_redirect";
-    // if (loginState.authParams.scope) {
-    //   magicLink.searchParams.set("scope", loginState.authParams.scope);
-    // }
-    // if (loginState.authParams.response_type) {
-    //   magicLink.searchParams.set(
-    //     "response_type",
-    //     loginState.authParams.response_type,
-    //   );
-    // }
-    // if (loginState.authParams.redirect_uri) {
-    //   magicLink.searchParams.set(
-    //     "redirect_uri",
-    //     loginState.authParams.redirect_uri,
-    //   );
-    // }
-    // if (loginState.authParams.audience) {
-    //   magicLink.searchParams.set("audience", loginState.authParams.audience);
-    // }
-    // if (loginState.authParams.state) {
-    //   magicLink.searchParams.set("state", loginState.authParams.state);
-    // }
-    // if (loginState.authParams.nonce) {
-    //   magicLink.searchParams.set("nonce", loginState.authParams.nonce);
-    // }
-
-    // magicLink.searchParams.set("connection", "email");
-    // magicLink.searchParams.set("client_id", loginState.authParams.client_id);
-    // magicLink.searchParams.set("email", loginState.authParams.username);
-    // magicLink.searchParams.set("verification_code", code);
-
-    // await sendLink(env, client, params.username, code, magicLink.href);
-
-    // this.setHeader(
-    //   headers.location,
-    //   `/u/enter-code?state=${state}&username=${params.username}`,
-    // );
-    // this.setStatus(302);
-
-    // return "Redirect";
+    return "Redirect";
   }
 
   /**
@@ -221,9 +221,12 @@ export class LoginController extends Controller {
     @Query("username") username: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
 
-    return renderEnterCode(env.AUTH_TEMPLATES, this, loginState);
+    return renderEnterCode(env, this, session);
   }
 
   /**
@@ -237,45 +240,37 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
-
-    if (!loginState.authParams.username) {
-      throw new Error("username required in state");
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await getClient(env, loginState.authParams.client_id);
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, loginState.authParams.username),
-    );
+    if (!session.authParams.username) {
+      throw new HTTPException(400, { message: "Username not found in state" });
+    }
 
-    throw new Error("Not implemented");
+    try {
+      const user = await validateCode(env, {
+        client_id: session.authParams.client_id,
+        email: session.authParams.username,
+        verification_code: params.code,
+      });
 
-    // try {
-    //   const profile = await user.validateAuthenticationCode.mutate({
-    //     code: params.code,
-    //     email: loginState.authParams.username,
-    //     tenantId: client.tenant_id,
-    //   });
+      const tokenResponse = await generateAuthResponse({
+        env,
+        userId: user.id,
+        sid: nanoid(),
+        responseType:
+          session.authParams.response_type ||
+          AuthorizationResponseType.TOKEN_ID_TOKEN,
+        authParams: session.authParams,
+        user,
+      });
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "Login with code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
-    // } catch (err) {
-    //   return renderEnterCode(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: "Invalid code",
-    //   });
-    // }
-
-    // return renderMessage(env.AUTH_TEMPLATES, this, {
-    //   ...loginState,
-    //   page_title: "Logged in",
-    //   message: "You are logged in",
-    // });
+      return applyTokenResponse(this, tokenResponse, session.authParams);
+    } catch (err) {
+      return renderEnterCode(env, this, session, "Invlalid code");
+    }
   }
 
   /**
@@ -289,42 +284,36 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
-
-    const email = loginState.authParams.username;
-    if (!email) {
-      throw new InvalidRequestError("Username not found in state");
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await getClient(env, loginState.authParams.client_id);
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, email),
-    );
+    const email = session.authParams.username;
+    if (!email) {
+      throw new HTTPException(400, { message: "Username not found in state" });
+    }
 
-    throw new Error("Not implemented");
+    const client = await getClient(env, session.authParams.client_id);
 
-    // try {
-    //   const profile = await user.validateEmailValidationCode.mutate({
-    //     code: params.code,
-    //     email,
-    //     tenantId: client.tenant_id,
-    //   });
+    try {
+      // another duplicate here - DRY rule of three!
+      const otps = await env.data.OTP.list(client.tenant_id, email);
+      const otp = otps.find((otp) => otp.code === params.code);
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "validation",
-    //     message: "Validate with code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
+      if (!otp) {
+        return renderEnterCode(env, this, session, "Code not found or expired");
+      }
 
-    //   return handleLogin(env, this, profile, loginState);
-    // } catch (err: any) {
-    //   return renderEmailValidation(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: err.message,
-    //   });
-    // }
+      let user = await env.data.users.getByEmail(client.tenant_id, email);
+      if (!user) {
+        throw new HTTPException(500, { message: "No user found" });
+      }
+
+      return handleLogin(env, this, user, session);
+    } catch (err: any) {
+      return renderEmailValidation(env, this, session, err.message);
+    }
   }
 
   /**
@@ -337,9 +326,12 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
 
-    return renderSignup(env.AUTH_TEMPLATES, this, loginState);
+    return renderSignup(env, this, session, state);
   }
 
   @Post("signup")
@@ -349,64 +341,75 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
-
-    const client = await getClient(env, loginState.authParams.client_id);
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, loginParams.username),
-    );
-
-    if (loginState.authParams.username !== loginParams.username) {
-      loginState.authParams.username = loginParams.username;
-      await setLoginState(env, state, loginState);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
     }
 
-    throw new Error("Not implemented");
+    const client = await env.data.clients.get(session.authParams.client_id);
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
 
-    // try {
-    //   const profile = await user.registerPassword.mutate({
-    //     email: loginParams.username,
-    //     tenantId: client.tenant_id,
-    //     password: loginParams.password,
-    //   });
+    if (session.authParams.username !== loginParams.username) {
+      session.authParams.username = loginParams.username;
+      await env.data.universalLoginSessions.update(session.id, session);
+    }
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "User created with password",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
+    try {
+      let user = await env.data.users.getByEmail(
+        client.tenant_id,
+        loginParams.username,
+      );
 
-    //   const { code } = await user.createEmailValidationCode.mutate();
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "Create email validation code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
-    //   await sendEmailValidation(env, client, loginParams.username, code);
+      if (!user) {
+        // Create the user if it doesn't exist
+        user = await env.data.users.create(client.tenant_id, {
+          id: userIdGenerate(),
+          tenant_id: client.tenant_id,
+          email: loginParams.username,
+          name: loginParams.username,
+          provider: "auth2",
+          connection: "Username-Password-Authentication",
+          email_verified: false,
+          last_ip: "",
+          login_count: 0,
+          is_social: false,
+          last_login: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
 
-    //   if (client.email_validation === "enforced") {
-    //     // Update the username in the state
-    //     await setLoginState(env, state, {
-    //       ...loginState,
-    //       authParams: {
-    //         ...loginState.authParams,
-    //         username: loginParams.username,
-    //       },
-    //     });
+      await env.data.passwords.create(client.tenant_id, {
+        user_id: loginParams.username,
+        password: loginParams.password,
+      });
 
-    //     return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-    //   }
+      await env.data.logs.create({
+        category: "login",
+        message: "User created with password",
+        tenant_id: client.tenant_id,
+        user_id: user.id,
+      });
 
-    //   return handleLogin(env, this, profile, loginState);
-    // } catch (err: any) {
-    //   return renderSignup(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: err.message,
-    //   });
-    // }
+      // if (client.email_validation === "enforced") {
+      //   // Update the username in the state
+      //   await setLoginState(env, state, {
+      //     ...loginState,
+      //     authParams: {
+      //       ...loginState.authParams,
+      //       username: loginParams.username,
+      //     },
+      //   });
+
+      //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+      // }
+
+      return handleLogin(env, this, user, session);
+    } catch (err: any) {
+      return renderSignup(env, this, session, err.message);
+    }
   }
 
   /**
@@ -419,12 +422,12 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
 
-    return renderForgotPassword(env.AUTH_TEMPLATES, this, {
-      ...loginState,
-      state,
-    });
+    return renderForgotPassword(env, this, session, state);
   }
 
   /**
@@ -439,42 +442,58 @@ export class LoginController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const loginState = await getLoginState(env, state);
-    const { client_id } = loginState.authParams;
-
-    const client = await getClient(env, client_id);
-    if (!client) {
-      throw new Error("Client not found");
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session?.username) {
+      throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, params.username),
+    const client = await env.data.clients.get(session.client_id);
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+
+    if (session.authParams.username !== params.username) {
+      session.authParams.username = params.username;
+      await env.data.universalLoginSessions.update(session.id, session);
+    }
+
+    const user = await env.data.users.getByEmail(
+      client.tenant_id,
+      params.username,
     );
 
-    if (loginState.authParams.username !== params.username) {
-      loginState.authParams.username = params.username;
-      await setLoginState(env, state, loginState);
+    if (user) {
+      const code = generateOTP();
+
+      await env.data.codes.create(client.tenant_id, {
+        id: nanoid(),
+        code,
+        type: "password_reset",
+        email: params.username,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+      });
+
+      request.ctx.set("log", `Code: ${code}`);
+
+      await env.data.logs.create({
+        category: "login",
+        message: "Send password reset",
+        tenant_id: client.tenant_id,
+        user_id: user.id,
+      });
+
+      await sendResetPassword(env, client, params.username, code, state);
+    } else {
+      console.log("User not found");
     }
 
-    throw new Error("Not implemented");
-
-    // const { code } = await user.createPasswordResetCode.mutate();
-    // const userProfile = await user.getProfile.query();
-    // const { tenant_id, id } = userProfile;
-    // await env.data.logs.create({
-    //   category: "login",
-    //   message: "Send password reset",
-    //   tenant_id,
-    //   user_id: id,
-    // });
-
-    // await sendResetPassword(env, client, params.username, code, state);
-
-    // return renderMessage(env.AUTH_TEMPLATES, this, {
-    //   ...loginState,
-    //   page_title: "Password reset",
-    //   message: "A code has been sent to your email address",
-    // });
+    return renderMessage(env, this, {
+      ...session,
+      page_title: "Password reset",
+      message: "A code has been sent to your email address",
+    });
   }
 
   /**
@@ -487,9 +506,14 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
 
-    return renderResetPassword(env.AUTH_TEMPLATES, this, loginState);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
+
+    // TODO: Should we validate the code here?
+    return renderResetPassword(env, this, session);
   }
 
   /**
@@ -504,46 +528,60 @@ export class LoginController extends Controller {
     @Query("code") code: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
-
-    if (!loginState.authParams.username) {
-      throw new InvalidRequestError("Username required");
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session?.username) {
+      throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await getClient(env, loginState.authParams.client_id);
+    if (!session.authParams.username) {
+      throw new HTTPException(400, { message: "Username required" });
+    }
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, loginState.authParams.username),
+    const client = await env.data.clients.get(session.authParams.client_id);
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+
+    const user = await env.data.users.getByEmail(
+      client.tenant_id,
+      session.authParams.username,
     );
+    if (!user) {
+      throw new HTTPException(400, { message: "User not found" });
+    }
 
-    throw new Error("Not implemented");
+    try {
+      const codes = await env.data.codes.list(client.tenant_id, user.id);
+      const code = codes.find((otp) => otp.code === code);
 
-    // try {
-    //   const profile = await user.resetPasswordWithCode.mutate({
-    //     code,
-    //     password: params.password,
-    //   });
+      if (!code) {
+        return renderEnterCode(env, this, session, "Code not found or expired");
+      }
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "update",
-    //     message: "Reset password with code",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
-    // } catch (err) {
-    //   return renderResetPassword(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     state,
-    //     errorMessage: "Invalid code",
-    //   });
-    // }
+      await env.data.passwords.update(client.tenant_id, {
+        user_id: session.authParams.username,
+        password: params.password,
+      });
 
-    // return renderMessage(env.AUTH_TEMPLATES, this, {
-    //   ...loginState,
-    //   page_title: "Password reset",
-    //   message: "The password has been reset",
-    // });
+      await env.data.logs.create({
+        category: "update",
+        message: "Reset password with code",
+        tenant_id: client.tenant_id,
+        user_id: user.id,
+      });
+    } catch (err) {
+      return renderMessage(env, this, {
+        ...session,
+        page_title: "Password reset",
+        message: "The password could not be reset",
+      });
+    }
+
+    return renderMessage(env, this, {
+      ...session,
+      page_title: "Password reset",
+      message: "The password has been reset",
+    });
   }
 
   @Post("login")
@@ -553,68 +591,42 @@ export class LoginController extends Controller {
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const loginState = await getLoginState(env, state);
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
 
-    const client = await getClient(env, loginState.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
 
-    const user = env.userFactory.getInstanceByName(
-      getId(client.tenant_id, loginParams.username),
+    const user = await env.data.users.getByEmail(
+      client.tenant_id,
+      loginParams.username,
     );
+    if (!user) {
+      throw new HTTPException(400, { message: "User not found" });
+    }
 
-    throw new Error("Not implemented");
+    try {
+      const { valid } = await env.data.passwords.validate(client.tenant_id, {
+        user_id: loginParams.username,
+        password: loginParams.password,
+      });
 
-    // try {
-    //   await user.validatePassword.mutate({
-    //     password: loginParams.password,
-    //     tenantId: client.tenant_id,
-    //     email: loginParams.username,
-    //   });
-    //   const profile = await user.getProfile.query();
+      if (!valid) {
+        return renderLogin(env, this, session, "Invalid password");
+      }
 
-    //   const { tenant_id, id } = profile;
-    //   await env.data.logs.create({
-    //     category: "login",
-    //     message: "Login with password",
-    //     tenant_id,
-    //     user_id: id,
-    //   });
+      await env.data.logs.create({
+        category: "login",
+        message: "Login with password",
+        tenant_id: client.tenant_id,
+        user_id: user.id,
+      });
 
-    //   const authConnection = profile.connections.find((c) => c.name === "auth");
-    //   if (
-    //     !authConnection?.profile?.validated &&
-    //     client.email_validation === "enforced"
-    //   ) {
-    //     // Update the username in the state
-    //     await setLoginState(env, state, {
-    //       ...loginState,
-    //       authParams: {
-    //         ...loginState.authParams,
-    //         username: loginParams.username,
-    //       },
-    //     });
-
-    //     const { code } = await user.createEmailValidationCode.mutate();
-    //     const userProfile = await user.getProfile.query();
-    //     const { tenant_id, id } = userProfile;
-    //     await env.data.logs.create({
-    //       category: "login",
-    //       message: "Create email validation code",
-    //       tenant_id,
-    //       user_id: id,
-    //     });
-    //     await sendEmailValidation(env, client, profile.email, code);
-
-    //     return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-    //   }
-
-    //   return handleLogin(env, this, profile, loginState);
-    // } catch (err: any) {
-    //   return renderLogin(env.AUTH_TEMPLATES, this, {
-    //     ...loginState,
-    //     errorMessage: err.message,
-    //     state,
-    //   });
-    // }
+      return handleLogin(env, this, user, session);
+    } catch (err: any) {
+      return renderLogin(env, this, session, err.message);
+    }
   }
 
   /**
@@ -629,19 +641,9 @@ export class LoginController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(code));
-    const stateString = await stateInstance.getState.query();
-    if (!stateString) {
-      throw new Error("Code not found");
-    }
-
-    const stateObj: { userId: string; user: Profile; authParams: AuthParams } =
-      JSON.parse(stateString);
-    const userProfile = stateObj.user;
-
-    return renderMessage(env.AUTH_TEMPLATES, this, {
+    return renderMessage(env, this, {
       page_title: "User info",
-      message: `Welcome ${userProfile?.name || userProfile.email}`,
+      message: `Not implemented`,
     });
   }
 }

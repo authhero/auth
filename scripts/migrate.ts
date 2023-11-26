@@ -75,6 +75,7 @@ async function migrateDown() {
 }
 
 migrateToLatest()
+  // migrateDown()
   .then(() => {
     console.log("done");
   })

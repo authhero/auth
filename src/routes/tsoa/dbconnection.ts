@@ -1,4 +1,3 @@
-// src/users/usersController.ts
 import {
   Body,
   Controller,
@@ -10,11 +9,8 @@ import {
   SuccessResponse,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { InvalidRequestError } from "../../errors";
 import { HTTPException } from "hono/http-exception";
-import { getId, User } from "../../models/User";
-import { getClient } from "../../services/clients";
-import sendEmail from "../../services/email";
+import userIdGenerate from "../../utils/userIdGenerate";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -66,10 +62,16 @@ export class DbConnectionController extends Controller {
     );
     if (!user) {
       user = await ctx.env.data.users.create(client.tenant_id, {
+        id: userIdGenerate(),
         email: body.email,
         tenant_id: client.tenant_id,
-        // TBD - this field isn't in SQL
-        // email_verified: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        email_verified: false,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        login_count: 0,
       });
     }
 

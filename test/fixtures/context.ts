@@ -8,13 +8,13 @@ import {
   Env,
   PasswordParams,
   SqlUser,
+  User,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { kvStorageFixture } from "./kv-storage";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
-import { InvalidCodeError, UnauthenticatedError } from "../../src/errors";
-import { userRouter } from "../../src/models/User";
+import { UnauthenticatedError } from "../../src/errors";
 import { Var } from "../../src/types/Var";
 import createAdapters from "../../src/adapters/in-memory";
 import { getCertificate } from "../../integration-test/helpers/token";
@@ -22,7 +22,6 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-import { SqlCreateUser } from "../../src/types";
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
@@ -30,7 +29,7 @@ export interface ContextFixtureParams {
   sessions?: Session[];
   otps?: OTP[];
   passwords?: PasswordParams[];
-  users?: SqlCreateUser[];
+  users?: User[];
   clients?: KVNamespace;
   userData?: { [key: string]: string | boolean };
   email?: {

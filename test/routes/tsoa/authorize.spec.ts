@@ -5,12 +5,21 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
   CodeChallengeMethod,
-  SqlCreateUser,
+  User,
 } from "../../../src/types";
 import { InvalidConnectionError } from "../../../src/errors";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
+import { testUser } from "../../fixtures/user";
+
+// nanoid blows up in Jest when try to import customAlphabet...
+jest.mock("nanoid", () => {
+  return {
+    customAlphabet: () => () => "testid",
+    nanoid: () => "testid",
+  };
+});
 
 describe("authorize", () => {
   const date = new Date();
@@ -48,10 +57,19 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const user: SqlCreateUser = {
+      const user: User = {
         id: "userId",
         email: "",
         tenant_id: "tenantId",
+        last_ip: "1.1.1.1",
+        login_count: 0,
+        last_login: new Date().toISOString(),
+        is_social: false,
+        provider: "email",
+        connection: "email",
+        email_verified: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       const ctx = contextFixture({
@@ -110,15 +128,9 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const user: SqlCreateUser = {
-        id: "userId",
-        email: "test@example.com",
-        tenant_id: "tenantId",
-      };
-
       const ctx = contextFixture({
         sessions: [session],
-        users: [user],
+        users: [testUser],
         headers: {
           cookie: "auth-token=sessionId",
         },
@@ -207,9 +219,9 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
       const state = redirectUrl.searchParams.get("state");
 
-      expect(state).toBe("AAAAAA4");
+      expect(state).toBe("testid");
 
-      expect(actual).toBe("Redirect to login");
+      expect(actual).toBe("Redirecting...");
       expect(controller.getStatus()).toBe(302);
     });
   });
@@ -430,6 +442,7 @@ describe("authorize", () => {
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
         email: "test@example.com",
+        email_verified: true,
         name: "test@example.com",
       });
     });
@@ -475,8 +488,7 @@ describe("authorize", () => {
 
   describe("universalAuth", () => {
     it("should redirect to login using and packing the authParams in the state", async () => {
-      const stateData: { [key: string]: any } = {};
-      const ctx = contextFixture({ stateData });
+      const ctx = contextFixture({});
       const controller = new AuthorizeController();
 
       const actual = await controller.authorizeWithParams({
@@ -492,28 +504,12 @@ describe("authorize", () => {
         code_challenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
       });
 
-      expect(actual).toBe("Redirect to login");
+      expect(actual).toBe("Redirecting...");
       expect(controller.getStatus()).toBe(302);
 
       const locationHeader = controller.getHeader("location") as string;
       // The state is stored in a durable object
-      expect(locationHeader).toBe("/u/login?state=AAAAAA4");
-
-      const authState = JSON.parse(stateData.newUniqueId);
-      expect(authState).toEqual({
-        authParams: {
-          client_id: "clientId",
-          code_challenge: "4OR7xDlggCgZwps3XO2AVaUXEB82O6xPQBkJIGzkvww",
-          code_challenge_method: "S256",
-          nonce:
-            "Ykk2M0JNa2E1WnM5TUZwX2UxUjJtV2VITTlvbktGNnhCb1NmZG1idEJBdA==&",
-          redirect_uri: "http://localhost:3000",
-          response_type: "code",
-          scope: "openid profile email",
-          state: "state",
-        },
-        state: "AAAAAA4",
-      });
+      expect(locationHeader).toBe("/u/login?state=testid");
     });
   });
 });

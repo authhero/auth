@@ -1,3 +1,4 @@
+import exp from "constants";
 import { getAdminToken } from "./token";
 
 export async function setup(worker: any) {
@@ -24,4 +25,32 @@ export async function setup(worker: any) {
   }
 
   const tenant = await createTenantResponse.json();
+
+  const createAppResponse = await worker.fetch(
+    `/tenants/${tenant.id}/applications`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        id: "app",
+        name: "string",
+        allowed_web_origins: "",
+        allowed_callback_urls: "",
+        allowed_logout_urls: "",
+        email_validation: "disabled",
+        client_secret: "appSecret",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+    },
+  );
+
+  if (createAppResponse.status !== 201) {
+    throw new Error(
+      `Setup: Failed to create tenant: ${await createAppResponse.text()}`,
+    );
+  }
+
+  return token;
 }
