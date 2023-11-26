@@ -2,20 +2,7 @@ import { ListUsersResponse } from "../../interfaces/Users";
 import { Database } from "../../../types";
 import { Kysely, SelectQueryBuilder } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
-
-// duplicated from tenants
-function getCountAsInt(count: string | number | bigint) {
-  // VScode complains that parseInt only accepts a string BUT the project builds & lints
-  if (typeof count === "string") {
-    return parseInt(count, 10);
-  }
-
-  if (typeof count === "bigint") {
-    return Number(count);
-  }
-
-  return count;
-}
+import getCountAsInt from "../../../utils/getCountAsInt";
 
 const searchableColumns = ["email", "name"];
 
@@ -100,12 +87,6 @@ export function listUsers(db: Kysely<Database>) {
       .limit(params.per_page);
 
     const users = await filteredQuery.selectAll().execute();
-
-    // if (!params.include_totals) {
-    //   return {
-    //     users,
-    //   };
-    // }
 
     const [{ count }] = await query
       .select((eb) => eb.fn.countAll().as("count"))

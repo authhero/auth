@@ -1,15 +1,7 @@
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../../adapters/interfaces/ListParams";
-
-function getCountAsInt(count: string | number | bigint) {
-  // VScode complains that parseInt only accepts a string BUT the project builds & lints
-  if (typeof count === "string") {
-    return parseInt(count, 10);
-  }
-
-  return count;
-}
+import getCountAsInt from "../../../utils/getCountAsInt";
 
 export function listTenants(db: Kysely<Database>) {
   return async (params: ListParams) => {
