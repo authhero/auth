@@ -1,6 +1,6 @@
 import { BaseUser } from "../User";
 import { AppMetadata } from "./AppMetadata";
-import { Identity } from "./Identity";
+import { Identity, IdentityWithProfileData } from "./Identity";
 import { Totals } from "./Totals";
 import { UserMetadata } from "./UserMetadata";
 
@@ -15,7 +15,8 @@ export interface UserResponse extends BaseUser {
   email: string; // Overriding: email is mandatory in GetUserResponse
   created_at: string;
   updated_at: string;
-  identities: Identity[];
+  // this syntax means the first elements is one type and the rest is another type
+  identities: [Identity, ...IdentityWithProfileData[]];
   login_count: number;
   multifactor?: string[];
   last_ip?: string;

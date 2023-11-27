@@ -6,7 +6,10 @@ export interface Identity {
   access_token?: string;
   access_token_secret?: string;
   refresh_token?: string;
-  profileData?: {
+}
+
+export interface IdentityWithProfileData extends Identity {
+  profileData: {
     email?: string;
     email_verified?: boolean;
     name?: string;

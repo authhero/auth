@@ -21,9 +21,11 @@ import {
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 import { HTTPException } from "hono/http-exception";
-import { Identity } from "../../types/auth0/Identity";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
+import { nanoid } from "nanoid";
+import { Identity, IdentityWithProfileData } from "../../types/auth0/Identity";
+
 export interface LinkBodyParams {
   provider?: string;
   connection_id?: string;
@@ -131,29 +133,37 @@ export class UsersMgmtController extends Controller {
       q: `linked_to:${user_id}`,
     });
 
-    const identities = [user, ...linkedusers.users].map((u) => {
-      const profileData = JSON.parse(user.profileData || "{}");
+    const userIdentity: Identity = {
+      connection: user.connection,
+      provider: user.provider,
+      user_id: user.id,
+      isSocial: user.is_social,
+    };
 
-      return {
-        connection: u.connection,
-        provider: u.provider,
-        user_id: userIdParse(u.id),
-        isSocial: u.is_social,
-        profileData: {
-          // both these two appear on every profile type
-          email: u.email,
-          email_verified: u.email_verified,
-          // Is this safe? This is all I'd want to do  8-)
-          ...profileData,
-        },
-      };
-    });
+    const linkedProfileIdentities: IdentityWithProfileData[] =
+      linkedusers.users.map((u) => {
+        const profileData = JSON.parse(user.profileData || "{}");
+
+        return {
+          connection: u.connection,
+          provider: u.provider,
+          user_id: userIdParse(u.id),
+          isSocial: u.is_social,
+          profileData: {
+            // both these two appear on every profile type
+            email: u.email,
+            email_verified: u.email_verified,
+            // Is this safe? This is all I'd want to do  8-)
+            ...profileData,
+          },
+        };
+      });
 
     const { id, ...userWithoutId } = user;
 
     return {
       ...userWithoutId,
-      identities,
+      identities: [userIdentity, ...linkedProfileIdentities],
       user_id: user.id,
     };
   }
@@ -221,6 +231,10 @@ export class UsersMgmtController extends Controller {
           user_id: userIdParse(data.id),
           isSocial: data.is_social,
         },
+        // hmmm. what should happen here?
+        // if a brand new account then won't have any linked accounts...
+        // what if post up a new user with the same email address as existing?
+        // needs linking after right?
       ],
     };
 
