@@ -110,11 +110,12 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    if (!user_id.includes("|")) {
-      throw new HTTPException(400, {
-        message: "Invalid user_id format",
-      });
-    }
+    // accept ids without provider for now, but Auth0 has this check
+    // if (!user_id.includes("|")) {
+    //   throw new HTTPException(400, {
+    //     message: "Invalid user_id format",
+    //   });
+    // }
 
     const user = await env.data.users.get(tenant_id, user_id);
 
