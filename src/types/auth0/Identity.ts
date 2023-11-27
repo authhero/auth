@@ -21,3 +21,6 @@ export interface IdentityWithProfileData extends Identity {
     [key: string]: any; // Since additionalProperties is true
   };
 }
+
+// this syntax means the first elements is one type and the rest is another type
+export type UserIdentities = [Identity, ...IdentityWithProfileData[]];
