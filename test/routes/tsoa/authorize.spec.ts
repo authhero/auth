@@ -13,14 +13,6 @@ import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
 import { testUser } from "../../fixtures/user";
 
-// nanoid blows up in Jest when try to import customAlphabet...
-jest.mock("nanoid", () => {
-  return {
-    customAlphabet: () => () => "testid",
-    nanoid: () => "testid",
-  };
-});
-
 describe("authorize", () => {
   const date = new Date();
 
