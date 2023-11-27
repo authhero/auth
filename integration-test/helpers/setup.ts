@@ -52,5 +52,25 @@ export async function setup(worker: any) {
     );
   }
 
+  // create a new foobar user here that can use to login
+  const createUserResponse = await worker.fetch("/api/v2/users", {
+    method: "POST",
+    body: JSON.stringify({
+      email: "foo@bar.com",
+      password: "password",
+    }),
+    headers: {
+      authorization: `Bearer ${token}`,
+      "tenant-id": tenant.id,
+      "content-type": "application/json",
+    },
+  });
+
+  if (createUserResponse.status !== 201) {
+    throw new Error(
+      `Setup: Failed to create user: ${await createUserResponse.text()}`,
+    );
+  }
+
   return token;
 }
