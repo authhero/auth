@@ -114,5 +114,49 @@ describe("code-flow", () => {
     const idTokenPayload = parseJwt(idToken!);
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
+
+    // now check silent auth works
+    console.log("COOKIES ", tokenResponse.headers.get("set-cookie"));
+
+    const setCookiesHeader = tokenResponse.headers.get("set-cookie");
+    const cookies = setCookiesHeader.split(";").map((c) => c.trim());
+    const authCookie = cookies.find((c) => c.startsWith("auth-token"));
+
+    expect(authCookie).toBeDefined();
+
+    const silentAuthSearchParams = new URLSearchParams();
+    silentAuthSearchParams.set("client_id", "clientId");
+    silentAuthSearchParams.set("response_type", "token id_token");
+    silentAuthSearchParams.set("scope", "openid profile email");
+    silentAuthSearchParams.set(
+      "redirect_uri",
+      "http://localhost:3000/callback",
+    );
+    silentAuthSearchParams.set("state", "state");
+    // silent auth pararms!
+    silentAuthSearchParams.set("prompt", "none");
+    silentAuthSearchParams.set("nonce", nonce);
+    silentAuthSearchParams.set("response_mode", "web_message");
+
+    const silentAuthResponse = await worker.fetch(
+      `/authorize?${silentAuthSearchParams.toString()}`,
+      {
+        headers: {
+          cookie: authCookie,
+        },
+      },
+    );
+
+    const body = await silentAuthResponse.text();
+
+    expect(body).not.toContain("Login required");
+
+    expect(body).toContain("access_token");
+    expect(body).toContain("id_token");
+
+    // could also parse these tokens here and sanity check!
+
+    // and also test for different client_ids that have the same tenant_id
+    // and also different client_ids with DIFFERENT tenant_ids
   });
 });

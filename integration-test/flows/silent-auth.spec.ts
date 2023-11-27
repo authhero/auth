@@ -24,7 +24,7 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
-  it.only("should return a 200 for a valid silent auth request", async () => {
+  it("should return a 200 for a valid silent auth request", async () => {
     await setup(worker);
 
     // first need to log in, and persist the cookie we get back
