@@ -53,7 +53,7 @@ describe("code-flow", () => {
     const otp = sentEmail.code;
 
     // Authenticate using the code
-    const autenticateResponse = await worker.fetch("/co/authenticate", {
+    const authenticateResponse = await worker.fetch("/co/authenticate", {
       headers: {
         "content-type": "application/json",
       },
@@ -67,15 +67,15 @@ describe("code-flow", () => {
       }),
     });
 
-    if (autenticateResponse.status !== 200) {
+    if (authenticateResponse.status !== 200) {
       throw new Error(
         `Failed to authenticate with status: ${
-          autenticateResponse.status
+          authenticateResponse.status
         } and message: ${await response.text()}`,
       );
     }
 
-    const { login_ticket } = await autenticateResponse.json();
+    const { login_ticket } = await authenticateResponse.json();
 
     const query = new URLSearchParams({
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",

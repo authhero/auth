@@ -35,7 +35,7 @@ describe("jwks", () => {
     expect(body.keys.length).toBe(2);
   });
 
-  it("should return a openid-configuration with the current issues", async () => {
+  it("should return an openid-configuration with the current issues", async () => {
     const response = await worker.fetch("/.well-known/openid-configuration");
 
     expect(response.status).toBe(200);
