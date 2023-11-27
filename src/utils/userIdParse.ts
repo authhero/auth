@@ -1,4 +1,4 @@
-export default function parseUserId(userId: string) {
+export default function userIdParse(userId: string) {
   if (!userId.includes("|")) {
     console.error("Invalid user_id format");
     return userId;
@@ -6,8 +6,5 @@ export default function parseUserId(userId: string) {
 
   const [provider, id] = userId.split("|")[1];
 
-  return {
-    provider,
-    id,
-  };
+  return id;
 }

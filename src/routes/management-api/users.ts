@@ -23,7 +23,7 @@ import {
 import { HTTPException } from "hono/http-exception";
 import { Identity } from "../../types/auth0/Identity";
 import userIdGenerate from "../../utils/userIdGenerate";
-
+import userIdParse from "../../utils/userIdParse";
 export interface LinkBodyParams {
   provider?: string;
   connection_id?: string;
@@ -77,8 +77,7 @@ export class UsersMgmtController extends Controller {
           {
             connection: user.connection,
             provider: user.provider,
-            // we need to either be sure there are no bad IDs or we need to defensively guard against this.
-            user_id: user.id.split("|")[1],
+            user_id: userIdParse(user.id),
             isSocial: user.is_social,
           },
         ],
@@ -133,8 +132,7 @@ export class UsersMgmtController extends Controller {
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      // TODO - helper function to guard against this... although we want to make sure the database is all updated!
-      user_id: u.id.split("|")[1],
+      user_id: userIdParse(u.id),
       isSocial: u.is_social,
     }));
 
@@ -207,7 +205,7 @@ export class UsersMgmtController extends Controller {
         {
           connection: data.connection,
           provider: data.provider,
-          user_id: data.id.split("|")[1],
+          user_id: userIdParse(data.id),
           isSocial: data.is_social,
         },
       ],
@@ -270,7 +268,7 @@ export class UsersMgmtController extends Controller {
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      user_id: u.id.split("|")[1],
+      user_id: userIdParse(u.id),
       isSocial: u.is_social,
     }));
 
