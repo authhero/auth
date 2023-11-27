@@ -86,8 +86,6 @@ describe("users", () => {
     expect(newUser.email).toBe("test@example.com");
     expect(newUser.user_id).toContain("|");
 
-    console.log("newUser.user_id ", newUser.user_id);
-
     const [provider, id] = newUser.user_id.split("|");
 
     expect(provider).toBe("email");
