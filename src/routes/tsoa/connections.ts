@@ -147,6 +147,7 @@ export class ConnectionsController extends Controller {
 
     await env.data.connections.create(tenant_id, connection);
 
+    // and what can do here? do we still need KV storage?
     await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(201);

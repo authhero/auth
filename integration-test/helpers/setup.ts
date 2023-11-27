@@ -72,5 +72,27 @@ export async function setup(worker: any) {
     );
   }
 
+  // create a new conneciton fake-social-connection
+  const createConnectionResponse = await worker.fetch(
+    `/tenants/${tenant.id}/connections`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        name: "fake-social-connection",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": tenant.id,
+        "content-type": "application/json",
+      },
+    },
+  );
+
+  if (createConnectionResponse.status !== 201) {
+    throw new Error(
+      `Setup: Failed to create connection: ${await createConnectionResponse.text()}`,
+    );
+  }
+
   return token;
 }
