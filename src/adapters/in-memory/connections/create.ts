@@ -3,7 +3,7 @@ import { SqlConnection } from "../../../types";
 
 export function create(connections: SqlConnection[]) {
   return async (tenant_id: string, params: CreateConnectionParams) => {
-    const connection = {
+    const connection: SqlConnection = {
       ...params,
       tenant_id,
       created_at: new Date().toISOString(),
