@@ -3,6 +3,10 @@ import app from "../src/app";
 import { getCertificate } from "./helpers/token";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";
 import createAdapter from "../src/adapters/in-memory";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "../src/types";
 
 const data = createAdapter();
 // Add a known certificate
@@ -15,7 +19,23 @@ if (!data.clients.create) {
 data.clients.create({
   id: "clientId",
   name: "Test Client",
-  connections: [],
+  connections: [
+    // ok cool this is where I have to initialise... so why are we also POSTing up stuff?
+    {
+      id: "connectionId1",
+      name: "demo-social-provider",
+      client_id: "socialClientId",
+      client_secret: "socialClientSecret",
+      authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
+      // ooooo, lol. can we mock this? Might get crazy eh....
+      token_endpoint: "https://example.com/token",
+      response_mode: AuthorizationResponseMode.QUERY,
+      response_type: AuthorizationResponseType.CODE,
+      scope: "openid profile email",
+      created_at: "created_at",
+      updated_at: "updated_at",
+    },
+  ],
   domains: [],
   tenant_id: "tenantId",
   allowed_callback_urls: ["https://login.example.com/sv/callback"],
