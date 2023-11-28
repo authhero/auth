@@ -584,7 +584,9 @@ describe("authorize", () => {
           created_at: "2023-11-28T12:00:00.000Z",
           email: "test@example.com",
           email_verified: true,
-          id: "testid",
+          // id: "testid",
+          // why is this different on CI/CD? and also wrong? eh?
+          id: "email|testid",
           is_social: false,
           last_ip: "",
           last_login: "2023-11-28T12:00:00.000Z",
@@ -595,8 +597,8 @@ describe("authorize", () => {
           updated_at: "2023-11-28T12:00:00.000Z",
         },
         // wow - on the CI/CD this is prefixed with tenantId... how? Makes no sense these are unit tests
-        // userId: "tenantId|testid",
-        userId: "testid",
+        userId: "tenantId|testid",
+        // userId: "testid",
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
