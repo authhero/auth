@@ -67,7 +67,7 @@ describe("token", () => {
     it("should return tokens as querystring for a valid code and response_type query using actual params", async () => {
       const stateParams = {
         userId: "userId",
-        stateParams: {
+        authParams: {
           client_id: "publisherClientId",
           redirect_uri: "https://example.com",
           state: "state",
