@@ -151,8 +151,6 @@ describe("token", () => {
               state: "state",
               scope: "profile",
               vendorId: "vendorId",
-              // what is this comment?
-              // So this is NOT the base64 hash of 'codeVerifier' (which is the code verifier that we are sending up)
               code_challenge: "345kZVZlcmlma123",
               code_challenge_method: CodeChallengeMethod.S265,
             },

@@ -39,24 +39,9 @@ export async function generateCode({
   sid,
   user,
 }: GenerateAuthResponseParamsForCode) {
-  // TODO: replace with the adapter
-  // const stateId = env.STATE.newUniqueId().toString();
-  // const stateInstance = env.stateFactory.getInstanceById(stateId);
-  // await stateInstance.createState.mutate({
-  //   state: JSON.stringify({
-  //     userId,
-  //     authParams,
-  //     nonce,
-  //     state,
-  //     sid,
-  //     user,
-  //   }),
-  // });
-  // confusing naming!
   const code = stateEncode({ userId, authParams, nonce, state, sid, user });
 
   const codeResponse: CodeResponse = {
-    // code: hexToBase64(stateId),
     code,
     state,
   };

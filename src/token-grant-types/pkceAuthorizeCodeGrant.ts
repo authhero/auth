@@ -21,21 +21,12 @@ export async function pkceAuthorizeCodeGrant(
   controller: Controller,
   params: PKCEAuthorizationCodeGrantTypeParams,
 ): Promise<TokenResponse | CodeResponse> {
-  // const stateInstance = env.stateFactory.getInstanceById(
-  //   base64ToHex(params.code),
-  // );
-  // const stateString = await stateInstance.getState.query();
-  // if (!stateString) {
-  //   throw new Error("State required");
-  // }
-
   const state: {
     userId: string;
     authParams: AuthParams;
     user: User;
     sid: string;
-    // } = JSON.parse(stateString);
-  } = stateDecode(params.code); // don't like this name but keep it simple
+  } = stateDecode(params.code); // this "code" is actually a stringified base64 encoded state object...
 
   if (params.client_id && state.authParams.client_id !== params.client_id) {
     throw new InvalidClientError();

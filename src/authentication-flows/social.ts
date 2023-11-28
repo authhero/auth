@@ -38,11 +38,6 @@ export async function socialAuth(
     throw new InvalidConnectionError("Connection not found");
   }
 
-  // const stateId = env.STATE.newUniqueId().toString();
-  // const stateInstance = env.stateFactory.getInstanceById(stateId);
-  // await stateInstance.createState.mutate({
-  //   state: JSON.stringify({ authParams, connection }),
-  // });
   const state = stateEncode({ authParams, connection });
 
   const oauthLoginUrl = new URL(connectionInstance.authorization_endpoint);
