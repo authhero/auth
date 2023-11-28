@@ -19,6 +19,7 @@ export interface SilentAuthParams {
   redirect_uri: string;
   state: string;
   response_type: AuthorizationResponseType;
+  client_id: string;
   nonce?: string;
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
@@ -35,6 +36,7 @@ export async function silentAuth({
   state,
   nonce,
   response_type,
+  client_id,
   code_challenge_method,
   code_challenge,
   audience,
@@ -64,7 +66,7 @@ export async function silentAuth({
           nonce,
           userId: session.user_id,
           authParams: {
-            client_id: session.client_id,
+            client_id,
             audience,
             code_challenge_method,
             code_challenge,
