@@ -88,15 +88,50 @@ describe("authorize", () => {
         prompt: "none",
       });
 
-      // Should return something containing this
-      // type: "authorization_response",
-      // response: {"code":"-o5wLPh_YNZjbEV8vGM3VWcqdoFW34p30l5xI0Zm5JUd1","state":"a2sucn51bzd5emhiZVFWWGVjRlRqWFRFNk44LkhOfjZZbzFwa2k2WXdtNg=="}
-      // expect(actual).toContain('response: {"code":"AAAAAA4","state":"state"');
       expect(actual).toContain('"state":"state"');
-      // this seems correct but it's not matching... maybe this way of matching isn't ideal... can we pull our the object, parse it, and then test in proper JS?
-      // expect(actual).toContain(
-      //   '"code":"eyJ1c2VySWQiOiJ1c2VySWQiLCJhdXRoUGFyYW1zIjp7ImNsaWVudF9pZCI6ImNsaWVudElkIiwiYXVkaWVuY2UiOiJhdWRpZW5jZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJjb2RlX2NoYWxsZW5nZSI6IkFjaTBkckZRdUtYWjVLVTR1cUVmelNPV3pOS3FJT00yaE5mTFlBOHFmSm8iLCJzY29wZSI6Im9wZW5pZCtwcm9maWxlK2VtYWlsIn0sIm5vbmNlIjoibm9uY2UiLCJzdGF0ZSI6InN0YXRlIiwic2lkIjoic2Vzc2lvbklkIiwidXNlciI6eyJpZCI6InVzZXJJZCIsImVtYWlsIjoiIiwidGVuYW50X2lkIjoidGVuYW50SWQiLCJsYXN0X2lwIjoiMS4xLjEuMSIsImxvZ2luX2NvdW50IjowLCJsYXN0X2xvZ2luIjoiMjAyMy0xMS0yOFQwOTo1Mzo0NC42NjRaIiwiaXNfc29jaWFsIjpmYWxzZSwicHJvdmlkZXIiOiJlbWFpbCIsImNvbm5lY3Rpb24iOiJlbWFpbCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJjcmVhdGVkX2F0IjoiMjAyMy0xMS0yOFQwOTo1Mzo0NC42NjRaIiwidXBkYXRlZF9hdCI6IjIwMjMtMTEtMjhUMDk6NTM6NDQuNjY0WiJ9fQ=="',
-      // );
+
+      // parse the iframe body
+      const lines = actual.split("\n");
+      const responseBody = lines.find((line) =>
+        line.trim().startsWith("response: "),
+      );
+      if (!responseBody) {
+        throw new Error("iframe auth body missing");
+      }
+
+      const response = JSON.parse(responseBody.replace("response: ", ""));
+
+      const expectedCode = btoa(
+        JSON.stringify({
+          userId: "userId",
+          authParams: {
+            client_id: "clientId",
+            audience: "audience",
+            code_challenge_method: "S256",
+            code_challenge: "Aci0drFQuKXZ5KU4uqEfzSOWzNKqIOM2hNfLYA8qfJo",
+            scope: "openid+profile+email",
+          },
+          nonce: "nonce",
+          state: "state",
+          sid: "sessionId",
+          user: {
+            id: "userId",
+            email: "",
+            tenant_id: "tenantId",
+            last_ip: "1.1.1.1",
+            login_count: 0,
+            last_login: "2023-11-28T12:00:00.000Z",
+            is_social: false,
+            provider: "email",
+            connection: "email",
+            email_verified: true,
+            created_at: "2023-11-28T12:00:00.000Z",
+            updated_at: "2023-11-28T12:00:00.000Z",
+          },
+        }),
+      );
+
+      expect(response.code).toBe(expectedCode);
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
