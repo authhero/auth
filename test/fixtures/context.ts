@@ -7,14 +7,12 @@ import {
   Client,
   Env,
   PasswordParams,
-  SqlUser,
   User,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { kvStorageFixture } from "./kv-storage";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
-import { UnauthenticatedError } from "../../src/errors";
 import { Var } from "../../src/types/Var";
 import createAdapters from "../../src/adapters/in-memory";
 import { getCertificate } from "../../integration-test/helpers/token";
@@ -193,48 +191,6 @@ export function contextFixture(
       },
       sendEmail: async (emailOptions: EmailOptions) => {
         logs.push(emailOptions);
-      },
-      stateFactory: {
-        getInstanceById: (id: string) => ({
-          getState: {
-            query: async () => {
-              return stateData[id];
-            },
-          },
-          createState: {
-            mutate: async (value: stateInput) => {
-              stateData[id] = value.state;
-            },
-          },
-        }),
-      },
-      userFactory: {
-        getInstanceByName: () => ({
-          getProfile: {
-            query: async () => {
-              const userProfile = {
-                email: "foo@bar.com",
-              };
-
-              return userProfile;
-            },
-          },
-          createAuthenticationCode: {
-            mutate: async () => ({ code: "123456" }),
-          },
-          validatePassword: {
-            mutate: async () => {
-              if (userData.validatePassword === "UnauthenticatedError") {
-                throw new UnauthenticatedError();
-              }
-
-              return true;
-            },
-          },
-        }),
-      },
-      STATE: {
-        newUniqueId: () => "newUniqueId",
       },
       CLIENTS:
         clients ||
