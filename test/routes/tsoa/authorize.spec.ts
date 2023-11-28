@@ -12,7 +12,6 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
 import { testUser } from "../../fixtures/user";
-import exp from "constants";
 
 describe("authorize", () => {
   const date = new Date();
@@ -566,12 +565,38 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
 
       expect(redirectUrl.host).toBe("example.com");
-      // expect(redirectUrl.searchParams.get("code")).toBe("AAAAAA4");
-      // TODO - manually encode all these params to check this is correct?
-      // TODO - try and encode this
-      // expect(redirectUrl.searchParams.get("code")).toBe(
-      //   "eyJ1c2VySWQiOiJ0ZW5hbnRJZHx0ZXN0aWQiLCJhdXRoUGFyYW1zIjp7InJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vZXhhbXBsZS5jb20iLCJzdGF0ZSI6InN0YXRlIiwiY2xpZW50X2lkIjoiY2xpZW50SWQiLCJyZXNwb25zZV90eXBlIjoiY29kZSJ9LCJzdGF0ZSI6InN0YXRlIiwic2lkIjoidGVzdGlkIiwidXNlciI6eyJpZCI6InRlc3RpZCIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsIm5hbWUiOiJ0ZXN0QGV4YW1wbGUuY29tIiwidGVuYW50X2lkIjoidGVuYW50SWQiLCJwcm92aWRlciI6ImVtYWlsIiwiY29ubmVjdGlvbiI6ImVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImxvZ2luX2NvdW50IjoxLCJpc19zb2NpYWwiOmZhbHNlLCJsYXN0X2lwIjoiIiwibGFzdF9sb2dpbiI6IjIwMjMtMTEtMjhUMDk6NDg6MDQuNjE4WiIsImNyZWF0ZWRfYXQiOiIyMDIzLTExLTI4VDA5OjQ4OjA0LjYxOFoiLCJ1cGRhdGVkX2F0IjoiMjAyMy0xMS0yOFQwOTo0ODowNC42MThaIn19",
-      // );
+
+      const stateObj = JSON.parse(
+        atob(redirectUrl.searchParams.get("code") as string),
+      );
+
+      expect(stateObj).toEqual({
+        authParams: {
+          redirect_uri: "https://example.com",
+          state: "state",
+          response_type: AuthorizationResponseType.CODE,
+          client_id: "clientId",
+        },
+        sid: "testid",
+        state: "state",
+        user: {
+          connection: "email",
+          created_at: "2023-11-28T12:00:00.000Z",
+          email: "test@example.com",
+          email_verified: true,
+          id: "testid",
+          is_social: false,
+          last_ip: "",
+          last_login: "2023-11-28T12:00:00.000Z",
+          login_count: 1,
+          name: "test@example.com",
+          provider: "email",
+          tenant_id: "tenantId",
+          updated_at: "2023-11-28T12:00:00.000Z",
+        },
+        userId: "tenantId|testid",
+      });
+
       expect(redirectUrl.searchParams.get("state")).toBe("state");
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
