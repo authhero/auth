@@ -7,9 +7,9 @@
 type stateObject = { [key: string]: any };
 
 export function stateEncode(state: stateObject) {
-  return atob(JSON.stringify(state));
+  return btoa(JSON.stringify(state));
 }
 
 export function stateDecode(state: string) {
-  return JSON.parse(btoa(state));
+  return JSON.parse(atob(state));
 }
