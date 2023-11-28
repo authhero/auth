@@ -9,7 +9,6 @@ import {
   BaseUser,
 } from "../types";
 import { headers } from "../constants";
-import { hexToBase64 } from "../utils/base64";
 import { getClient } from "../services/clients";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
@@ -19,7 +18,7 @@ import { InvalidConnectionError } from "../errors";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
 import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
-
+import { stateEncode } from "../utils/stateEncode";
 export interface SocialAuthState {
   authParams: AuthParams;
   connection: string;
@@ -39,17 +38,18 @@ export async function socialAuth(
     throw new InvalidConnectionError("Connection not found");
   }
 
-  const stateId = env.STATE.newUniqueId().toString();
-  const stateInstance = env.stateFactory.getInstanceById(stateId);
-  await stateInstance.createState.mutate({
-    state: JSON.stringify({ authParams, connection }),
-  });
+  // const stateId = env.STATE.newUniqueId().toString();
+  // const stateInstance = env.stateFactory.getInstanceById(stateId);
+  // await stateInstance.createState.mutate({
+  //   state: JSON.stringify({ authParams, connection }),
+  // });
+  const state = stateEncode({ authParams, connection });
 
   const oauthLoginUrl = new URL(connectionInstance.authorization_endpoint);
   if (connectionInstance.scope) {
     oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
-  oauthLoginUrl.searchParams.set("state", hexToBase64(stateId));
+  oauthLoginUrl.searchParams.set("state", state);
   oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
   oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id);
   if (connectionInstance.response_type) {

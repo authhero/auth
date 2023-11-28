@@ -10,9 +10,8 @@ import {
   Post,
 } from "@tsoa/runtime";
 import { socialAuthCallback } from "../../authentication-flows";
-import { base64ToHex } from "../../utils/base64";
 import { LoginState, RequestWithContext } from "../../types";
-
+import { stateDecode } from "../../utils/stateEncode";
 @Route("callback")
 @Tags("callback")
 export class CallbackController extends Controller {
@@ -31,13 +30,16 @@ export class CallbackController extends Controller {
     @Query("hd") hd?: string,
   ): Promise<string> {
     const { env } = request.ctx;
-    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
-    const loginString = await stateInstance.getState.query();
-    if (!loginString) {
+    // const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
+    // const loginString = await stateInstance.getState.query();
+
+    // can we use Zod here?
+    const loginState: LoginState = stateDecode(state);
+    if (!loginState) {
       throw new Error("State not found");
     }
 
-    const loginState: LoginState = JSON.parse(loginString);
+    // const loginState: LoginState = JSON.parse(loginString);
 
     return socialAuthCallback({
       ctx: request.ctx,
@@ -59,13 +61,15 @@ export class CallbackController extends Controller {
     const { env } = request.ctx;
 
     const { code, state } = body;
-    const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
-    const loginString = await stateInstance.getState.query();
-    if (!loginString) {
+    // const stateInstance = env.stateFactory.getInstanceById(base64ToHex(state));
+    const loginState: LoginState = stateDecode(state);
+
+    // const loginString = await stateInstance.getState.query();
+    if (!loginState) {
       throw new Error("State not found");
     }
 
-    const loginState: LoginState = JSON.parse(loginString);
+    // const loginState: LoginState = JSON.parse(loginString);
 
     return socialAuthCallback({
       ctx: request.ctx,

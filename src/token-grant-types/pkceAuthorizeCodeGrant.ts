@@ -14,26 +14,28 @@ import { getClient } from "../services/clients";
 import { computeCodeChallenge } from "../helpers/pkce";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
+import { stateDecode } from "../utils/stateEncode";
 
 export async function pkceAuthorizeCodeGrant(
   env: Env,
   controller: Controller,
   params: PKCEAuthorizationCodeGrantTypeParams,
 ): Promise<TokenResponse | CodeResponse> {
-  const stateInstance = env.stateFactory.getInstanceById(
-    base64ToHex(params.code),
-  );
-  const stateString = await stateInstance.getState.query();
-  if (!stateString) {
-    throw new Error("State required");
-  }
+  // const stateInstance = env.stateFactory.getInstanceById(
+  //   base64ToHex(params.code),
+  // );
+  // const stateString = await stateInstance.getState.query();
+  // if (!stateString) {
+  //   throw new Error("State required");
+  // }
 
   const state: {
     userId: string;
     authParams: AuthParams;
     user: User;
     sid: string;
-  } = JSON.parse(stateString);
+    // } = JSON.parse(stateString);
+  } = stateDecode(params.code); // don't like this name but keep it simple
 
   if (params.client_id && state.authParams.client_id !== params.client_id) {
     throw new InvalidClientError();

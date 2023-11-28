@@ -1,8 +1,8 @@
 import { Env, AuthParams, AuthorizationResponseType, User } from "../types";
 import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
-import { hexToBase64 } from "../utils/base64";
 import { TokenFactory } from "../services/token-factory";
+import { stateEncode } from "../utils/stateEncode";
 
 export interface GenerateAuthResponseParamsBase {
   env: Env;
@@ -40,21 +40,24 @@ export async function generateCode({
   user,
 }: GenerateAuthResponseParamsForCode) {
   // TODO: replace with the adapter
-  const stateId = env.STATE.newUniqueId().toString();
-  const stateInstance = env.stateFactory.getInstanceById(stateId);
-  await stateInstance.createState.mutate({
-    state: JSON.stringify({
-      userId,
-      authParams,
-      nonce,
-      state,
-      sid,
-      user,
-    }),
-  });
+  // const stateId = env.STATE.newUniqueId().toString();
+  // const stateInstance = env.stateFactory.getInstanceById(stateId);
+  // await stateInstance.createState.mutate({
+  //   state: JSON.stringify({
+  //     userId,
+  //     authParams,
+  //     nonce,
+  //     state,
+  //     sid,
+  //     user,
+  //   }),
+  // });
+  // confusing naming!
+  const code = stateEncode({ userId, authParams, nonce, state, sid, user });
 
   const codeResponse: CodeResponse = {
-    code: hexToBase64(stateId),
+    // code: hexToBase64(stateId),
+    code,
     state,
   };
 
