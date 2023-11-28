@@ -365,7 +365,7 @@ export class LoginController extends Controller {
       if (!user) {
         // Create the user if it doesn't exist
         user = await env.data.users.create(client.tenant_id, {
-          id: userIdGenerate(),
+          id: `auth2|${userIdGenerate()}`,
           tenant_id: client.tenant_id,
           email: loginParams.username,
           name: loginParams.username,
