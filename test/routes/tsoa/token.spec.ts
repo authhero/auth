@@ -65,41 +65,37 @@ describe("token", () => {
 
   describe("code grant with PKCE", () => {
     it("should return tokens as querystring for a valid code and response_type query using actual params", async () => {
-      const code = "m78fmbZ-WAiH9ZjzM_-9xTUBFTLtGOSmhikcK7mGmv8";
-      const stateId = base64ToHex(code);
+      const stateParams = {
+        userId: "userId",
+        stateParams: {
+          client_id: "publisherClientId",
+          redirect_uri: "https://example.com",
+          state: "state",
+          scope: "profile",
+          vendorId: "vendorId",
+          // This is an actual challenge passed'
+          code_challenge: "y6r7l7bgQFjQpSI76Frc6US0GPNMJuuUm7iaotOZqxc",
+          code_challenge_method: CodeChallengeMethod.S265,
+          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        },
+        user: {
+          sub: "userId",
+          email: "email",
+        },
+        sid: "sid",
+      };
 
       const ctx = contextFixture({
         clients: kvStorageFixture({
           publisherClientId: JSON.stringify(client),
         }),
-        stateData: {
-          [stateId]: JSON.stringify({
-            userId: "userId",
-            authParams: {
-              client_id: "publisherClientId",
-              redirect_uri: "https://example.com",
-              state: "state",
-              scope: "profile",
-              vendorId: "vendorId",
-              // This is an actual challenge passed'
-              code_challenge: "y6r7l7bgQFjQpSI76Frc6US0GPNMJuuUm7iaotOZqxc",
-              code_challenge_method: CodeChallengeMethod.S265,
-              response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-            },
-            user: {
-              sub: "userId",
-              email: "email",
-            },
-            sid: "sid",
-          }),
-        },
       });
 
       const controller = new TokenRoutes();
 
       const tokenParams: PKCEAuthorizationCodeGrantTypeParams = {
         grant_type: GrantType.AuthorizationCode,
-        code: "m78fmbZ-WAiH9ZjzM_-9xTUBFTLtGOSmhikcK7mGmv8",
+        code: btoa(JSON.stringify(stateParams)),
         client_id: "publisherClientId",
         redirect_uri: "https://example.com",
         // This is the actual verifier passed'
@@ -136,15 +132,18 @@ describe("token", () => {
     });
 
     it("should throw if the code_verfier does not match the hash of the challenge", async () => {
-      const code = "m78fmbZ-WAiH9ZjzM_-9xTUBFTLtGOSmhikcK7mGmv8";
-      const stateId = base64ToHex(code);
-
       const ctx = contextFixture({
         clients: kvStorageFixture({
           publisherClientId: JSON.stringify(client),
         }),
-        stateData: {
-          [stateId]: JSON.stringify({
+      });
+
+      const controller = new TokenRoutes();
+
+      const tokenParams: PKCEAuthorizationCodeGrantTypeParams = {
+        grant_type: GrantType.AuthorizationCode,
+        code: btoa(
+          JSON.stringify({
             userId: "userId",
             authParams: {
               client_id: "publisherClientId",
@@ -152,6 +151,7 @@ describe("token", () => {
               state: "state",
               scope: "profile",
               vendorId: "vendorId",
+              // what is this comment?
               // So this is NOT the base64 hash of 'codeVerifier' (which is the code verifier that we are sending up)
               code_challenge: "345kZVZlcmlma123",
               code_challenge_method: CodeChallengeMethod.S265,
@@ -162,15 +162,7 @@ describe("token", () => {
             },
             sid: "sid",
           }),
-        },
-      });
-
-      const controller = new TokenRoutes();
-
-      const tokenParams: PKCEAuthorizationCodeGrantTypeParams = {
-        grant_type: GrantType.AuthorizationCode,
-        // This is a valid base64 encoded hex id for a durable object
-        code: "m78fmbZ-WAiH9ZjzM_-9xTUBFTLtGOSmhikcK7mGmv8",
+        ),
         client_id: "publisherClientId",
         redirect_uri: "https://example.com",
         code_verifier: "codeVerifier",
@@ -181,16 +173,19 @@ describe("token", () => {
       ).rejects.toThrowError(InvalidCodeVerifierError);
     });
 
-    it("should user the userId from the state to set the silent auth cookie", async () => {
-      const code = "Rs61geRREBPhb2U0MlsEpIqvxv8ajjRGuwyp4wkkzCE";
-      const stateId = base64ToHex(code);
-
+    it("should use the userId from the state to set the silent auth cookie", async () => {
       const ctx = contextFixture({
         clients: kvStorageFixture({
           publisherClientId: JSON.stringify(client),
         }),
-        stateData: {
-          [stateId]: JSON.stringify({
+      });
+
+      const controller = new TokenRoutes();
+
+      const tokenParams: PKCEAuthorizationCodeGrantTypeParams = {
+        grant_type: GrantType.AuthorizationCode,
+        code: btoa(
+          JSON.stringify({
             userId: "google-oauth2|108791004671072817794",
             authParams: {
               client_id: "publisherClientId",
@@ -216,15 +211,7 @@ describe("token", () => {
               "OVpqMUQwbFhtaDFneWVHMlhyNU9DNEhJN1B4cGNHS1owY1V3RXNSQmVMWQ==",
             sid: "Gdo0zGQ6GbqrjihxReKe_pdfkSbbS6Y_CRyi_U4ukME",
           }),
-        },
-      });
-
-      const controller = new TokenRoutes();
-
-      const tokenParams: PKCEAuthorizationCodeGrantTypeParams = {
-        grant_type: GrantType.AuthorizationCode,
-        // This is a valid base64 encoded hex id for a durable object
-        code,
+        ),
         client_id: "publisherClientId",
         redirect_uri: "https://commerce-dadr3pmvk.vercel.sesamy.dev/sv/",
         code_verifier: "CEjRJEa30AnfFut3TpAeHmxyIjTvYq.rQRURQHfiALe",
@@ -238,9 +225,6 @@ describe("token", () => {
     });
 
     it("should throw an error if the vendorId in the state does not match the vendorId of the client", async () => {
-      const code = "m78fmbZ-WAiH9ZjzM_-9xTUBFTLtGOSmhikcK7mGmv8";
-      const stateId = base64ToHex(code);
-
       const ctx = contextFixture({
         clients: kvStorageFixture({
           publisherClientId: JSON.stringify({
@@ -255,8 +239,14 @@ describe("token", () => {
             ],
           }),
         }),
-        stateData: {
-          [stateId]: JSON.stringify({
+      });
+
+      const controller = new TokenRoutes();
+
+      const tokenParams: PKCEAuthorizationCodeGrantTypeParams = {
+        grant_type: GrantType.AuthorizationCode,
+        code: btoa(
+          JSON.stringify({
             userId: "userId",
             authParams: {
               client_id: "clientId2",
@@ -271,15 +261,7 @@ describe("token", () => {
             },
             sid: "sid",
           }),
-        },
-      });
-
-      const controller = new TokenRoutes();
-
-      const tokenParams: PKCEAuthorizationCodeGrantTypeParams = {
-        grant_type: GrantType.AuthorizationCode,
-        // This is a valid base64 encoded hex id for a durable object
-        code: "m78fmbZ-WAiH9ZjzM_-9xTUBFTLtGOSmhikcK7mGmv8",
+        ),
         client_id: "publisherClientId",
         redirect_uri: "https://example.com",
         code_verifier: "codeVerifier",
