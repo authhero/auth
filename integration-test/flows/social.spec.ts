@@ -47,10 +47,18 @@ describe("social sign on", () => {
     //   "https://accounts.google.com/o/oauth2/v2/auth",
     // );
 
-    console.log(await socialSignOnResponse.text());
+    // console.log(await socialSignOnResponse.text());
+
+    console.log(socialSignOnResponse.headers.get("location"));
+
+    // https://example.com/o/oauth2/v2/auth?scope=openid+profile+email&state=eyJhdXRoUGFyYW1zIjp7InJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vbG9naW4yLnNlc2FteS5kZXYvY2FsbGJhY2siLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwic3RhdGUiOiJfN2x2dnoyaVZKN2JRQnFheU45WnNFUjVtdDFWZEdjeCIsImNsaWVudF9pZCI6ImNsaWVudElkIiwibm9uY2UiOiJNbmpjVGcwYXkzeHFmM0pWcUlMMDVpYi5ufn5lWmNMXyIsInJlc3BvbnNlX3R5cGUiOiJ0b2tlbiBpZF90b2tlbiJ9LCJjb25uZWN0aW9uIjoiZGVtby1zb2NpYWwtcHJvdmlkZXIifQ%3D%3D&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&client_id=socialClientId&response_type=code&response_mode=query
 
     // Nice! SO NEXT we should call the callback endpoint with the correct params...
 
     // and see if we can trick it into creating a new user...
+
+    // the issue will be on the /callback that the oauth2ClientFactory wants to do the token exchange...
+    // hmmmmm, can we mock this? but then we're going to start punching holes in reality...
+    // INSTEAD can we have something running locally that returns some kind of token? just needs to return an id_token right?
   });
 });
