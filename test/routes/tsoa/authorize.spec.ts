@@ -12,6 +12,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
 import { testUser } from "../../fixtures/user";
+import exp from "constants";
 
 describe("authorize", () => {
   const date = new Date();
@@ -290,6 +291,36 @@ describe("authorize", () => {
         "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=eyJhdXRoUGFyYW1zIjp7InJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vZXhhbXBsZS5jb20iLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwic3RhdGUiOiJzdGF0ZSIsImNsaWVudF9pZCI6ImNsaWVudElkIiwicmVzcG9uc2VfdHlwZSI6InRva2VuIn0sImNvbm5lY3Rpb24iOiJnb29nbGUtb2F1dGgyIn0%3D&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=googleClientId&response_type=code&response_mode=query",
       );
 
+      const locationHeaderUrl = new URL(locationHeader);
+
+      expect(locationHeaderUrl.searchParams.get("client_id")).toBe(
+        "googleClientId",
+      );
+      expect(locationHeaderUrl.searchParams.get("response_type")).toBe("code");
+      expect(locationHeaderUrl.searchParams.get("response_mode")).toBe("query");
+      expect(locationHeaderUrl.searchParams.get("redirect_uri")).toBe(
+        "https://auth.example.com/callback",
+      );
+      expect(locationHeaderUrl.searchParams.get("scope")).toBe(
+        "openid profile email",
+      );
+
+      const stateDecoded = JSON.parse(
+        atob(locationHeaderUrl.searchParams.get("state") as string),
+      );
+      expect(stateDecoded).toEqual({
+        authParams: {
+          redirect_uri: "https://example.com",
+          scope: "openid profile email",
+          state: "state",
+          response_type: AuthorizationResponseType.TOKEN,
+          client_id: "clientId",
+        },
+        connection: "google-oauth2",
+      });
+      expect(locationHeaderUrl.searchParams.get("client_id")).toBe(
+        "googleClientId",
+      );
       expect(actual).toBe("Redirecting to google-oauth2");
       expect(controller.getStatus()).toBe(302);
     });
