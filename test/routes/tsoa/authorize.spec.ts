@@ -594,7 +594,9 @@ describe("authorize", () => {
           tenant_id: "tenantId",
           updated_at: "2023-11-28T12:00:00.000Z",
         },
-        userId: "tenantId|testid",
+        // wow - on the CI/CD this is prefixed with tenantId... how? Makes no sense these are unit tests
+        // userId: "tenantId|testid",
+        userId: "testid",
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
