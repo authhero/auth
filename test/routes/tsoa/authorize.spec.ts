@@ -88,10 +88,50 @@ describe("authorize", () => {
         prompt: "none",
       });
 
-      // Should return something containing this
-      // type: "authorization_response",
-      // response: {"code":"-o5wLPh_YNZjbEV8vGM3VWcqdoFW34p30l5xI0Zm5JUd1","state":"a2sucn51bzd5emhiZVFWWGVjRlRqWFRFNk44LkhOfjZZbzFwa2k2WXdtNg=="}
-      expect(actual).toContain('response: {"code":"AAAAAA4","state":"state"');
+      expect(actual).toContain('"state":"state"');
+
+      // parse the iframe body
+      const lines = actual.split("\n");
+      const responseBody = lines.find((line) =>
+        line.trim().startsWith("response: "),
+      );
+      if (!responseBody) {
+        throw new Error("iframe auth body missing");
+      }
+
+      const response = JSON.parse(responseBody.replace("response: ", ""));
+
+      const expectedCode = btoa(
+        JSON.stringify({
+          userId: "userId",
+          authParams: {
+            client_id: "clientId",
+            audience: "audience",
+            code_challenge_method: "S256",
+            code_challenge: "Aci0drFQuKXZ5KU4uqEfzSOWzNKqIOM2hNfLYA8qfJo",
+            scope: "openid+profile+email",
+          },
+          nonce: "nonce",
+          state: "state",
+          sid: "sessionId",
+          user: {
+            id: "userId",
+            email: "",
+            tenant_id: "tenantId",
+            last_ip: "1.1.1.1",
+            login_count: 0,
+            last_login: "2023-11-28T12:00:00.000Z",
+            is_social: false,
+            provider: "email",
+            connection: "email",
+            email_verified: true,
+            created_at: "2023-11-28T12:00:00.000Z",
+            updated_at: "2023-11-28T12:00:00.000Z",
+          },
+        }),
+      ).replace("==", ""); // our helper removes this to be safe in URLs...
+
+      expect(response.code).toBe(expectedCode);
 
       expect(actual).toContain('var targetOrigin = "https://example.com";');
     });
@@ -246,10 +286,36 @@ describe("authorize", () => {
 
       const locationHeader = controller.getHeader("location") as string;
 
-      expect(locationHeader).toBe(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=googleClientId&response_type=code&response_mode=query",
+      const locationHeaderUrl = new URL(locationHeader);
+
+      expect(locationHeaderUrl.searchParams.get("client_id")).toBe(
+        "googleClientId",
+      );
+      expect(locationHeaderUrl.searchParams.get("response_type")).toBe("code");
+      expect(locationHeaderUrl.searchParams.get("response_mode")).toBe("query");
+      expect(locationHeaderUrl.searchParams.get("redirect_uri")).toBe(
+        "https://auth.example.com/callback",
+      );
+      expect(locationHeaderUrl.searchParams.get("scope")).toBe(
+        "openid profile email",
       );
 
+      const stateDecoded = JSON.parse(
+        atob(locationHeaderUrl.searchParams.get("state") as string),
+      );
+      expect(stateDecoded).toEqual({
+        authParams: {
+          redirect_uri: "https://example.com",
+          scope: "openid profile email",
+          state: "state",
+          response_type: AuthorizationResponseType.TOKEN,
+          client_id: "clientId",
+        },
+        connection: "google-oauth2",
+      });
+      expect(locationHeaderUrl.searchParams.get("client_id")).toBe(
+        "googleClientId",
+      );
       expect(actual).toBe("Redirecting to google-oauth2");
       expect(controller.getStatus()).toBe(302);
     });
@@ -271,9 +337,37 @@ describe("authorize", () => {
 
       const locationHeader = controller.getHeader("location") as string;
 
-      expect(locationHeader).toBe(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope=openid+profile+email&state=AAAAAA4&redirect_uri=https%3A%2F%2Fauth.example.com%2Fcallback&client_id=googleClientId&response_type=code&response_mode=query",
+      const locationHeaderUrl = new URL(locationHeader);
+
+      expect(locationHeaderUrl.searchParams.get("client_id")).toBe(
+        "googleClientId",
       );
+
+      expect(locationHeaderUrl.searchParams.get("response_type")).toBe("code");
+      expect(locationHeaderUrl.searchParams.get("response_mode")).toBe("query");
+      expect(locationHeaderUrl.searchParams.get("redirect_uri")).toBe(
+        "https://auth.example.com/callback",
+      );
+      expect(locationHeaderUrl.searchParams.get("scope")).toBe(
+        "openid profile email",
+      );
+      expect(locationHeaderUrl.searchParams.get("client_id")).toBe(
+        "googleClientId",
+      );
+      const stateParam = JSON.parse(
+        atob(locationHeaderUrl.searchParams.get("state") as string),
+      );
+
+      expect(stateParam).toEqual({
+        authParams: {
+          redirect_uri: "https://example.com",
+          scope: "openid profile email",
+          state: "state",
+          response_type: AuthorizationResponseType.TOKEN,
+          client_id: "clientId",
+        },
+        connection: "google-oauth2",
+      });
 
       expect(actual).toBe("Redirecting to google-oauth2");
       expect(controller.getStatus()).toBe(302);
@@ -471,7 +565,38 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
 
       expect(redirectUrl.host).toBe("example.com");
-      expect(redirectUrl.searchParams.get("code")).toBe("AAAAAA4");
+
+      const stateObj = JSON.parse(
+        atob(redirectUrl.searchParams.get("code") as string),
+      );
+
+      expect(stateObj).toEqual({
+        authParams: {
+          redirect_uri: "https://example.com",
+          state: "state",
+          response_type: AuthorizationResponseType.CODE,
+          client_id: "clientId",
+        },
+        sid: "testid",
+        state: "state",
+        user: {
+          connection: "email",
+          created_at: "2023-11-28T12:00:00.000Z",
+          email: "test@example.com",
+          email_verified: true,
+          id: "email|testid",
+          is_social: false,
+          last_ip: "",
+          last_login: "2023-11-28T12:00:00.000Z",
+          login_count: 1,
+          name: "test@example.com",
+          provider: "email",
+          tenant_id: "tenantId",
+          updated_at: "2023-11-28T12:00:00.000Z",
+        },
+        userId: "tenantId|testid",
+      });
+
       expect(redirectUrl.searchParams.get("state")).toBe("state");
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);

@@ -1,11 +1,6 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
-import { StateClient } from "../models";
 import { DataAdapters } from "../adapters/interfaces";
 import { Application, Tenant } from "./sql";
-
-export interface StateRouterFactory {
-  (name: string): StateClient;
-}
 
 export interface ClientFactory<ClientType> {
   getInstanceById: (id: string) => ClientType;
@@ -23,7 +18,6 @@ export type Env = {
   DATABASE_USERNAME: string;
   TOKEN_SERVICE: Fetcher;
   USER: DurableObjectNamespace;
-  STATE: DurableObjectNamespace;
   AUTH_DB: D1Database;
   CERTIFICATES: KVNamespace;
   CLIENTS: KVNamespace;
@@ -33,7 +27,6 @@ export type Env = {
   WRITE_PERMISSION?: string;
   DEFAULT_SETTINGS?: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
-  stateFactory: ClientFactory<StateClient>;
   data: DataAdapters;
   hooks: {
     application?: {
