@@ -36,6 +36,17 @@ bucket_name = 'auth-templates'
 # database_name = "auth2"
 # database_id = "872f055e-d401-46a3-a0d0-fa00e66868b5"
 
+[[migrations]]
+tag = "v1"
+new_classes = ["User", "State"]
+
+[[migrations]]
+tag = "v2"
+deleted_classes = ["User"]
+
+[[migrations]]
+tag = "v3"
+deleted_classes = ["State"]
 
 [triggers]
 crons = ["0 3 * * *"]
@@ -70,6 +81,17 @@ bucket_name = 'auth-templates'
 # database_name = "auth2"
 # database_id = "921e31d7-63d0-441d-b60c-df2d6756db44"
 
+[[migrations]]
+tag = "v1"
+new_classes = ["User", "State"]
+
+[[migrations]]
+tag = "v2"
+deleted_classes = ["User"]
+
+[[migrations]]
+tag = "v3"
+deleted_classes = ["State"]
 
 [env.production.triggers]
 crons = ["0 3 * * *"]
