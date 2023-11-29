@@ -613,7 +613,7 @@ export class LoginController extends Controller {
       });
 
       if (!valid) {
-        return renderLogin(env, this, session, "Invalid password");
+        return renderLogin(env, this, session, state, "Invalid password");
       }
 
       await env.data.logs.create({
