@@ -3,7 +3,7 @@ import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 
-describe("Register password user", () => {
+describe("Login with password user", () => {
   let worker: UnstableDevWorker;
   let token: string;
 

@@ -596,7 +596,11 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await getClient(env, session.authParams.client_id);
+    const client = await env.data.clients.get(session.authParams.client_id);
+
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
 
     // TODO - this needs to return multiple results or search by provider...
     const user = await env.data.users.getByEmail(
