@@ -1,16 +1,14 @@
 import { setup } from "../helpers/setup";
-import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 
 describe("Login with password user", () => {
   let worker: UnstableDevWorker;
-  let token: string;
 
   beforeEach(async () => {
     worker = await start();
 
-    token = await setup(worker);
+    await setup(worker);
   });
 
   afterEach(() => {
