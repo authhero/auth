@@ -129,7 +129,7 @@ describe("authorize", () => {
             updated_at: "2023-11-28T12:00:00.000Z",
           },
         }),
-      );
+      ).replace("==", ""); // our helper removes this to be safe in URLs...
 
       expect(response.code).toBe(expectedCode);
 
