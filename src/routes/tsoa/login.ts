@@ -81,6 +81,10 @@ async function handleLogin(
   });
 }
 
+// I think this file should be renamed "u" otherwise it's hard to find the route....
+// OR what if we put it in a folder "u" and then split each route under this?
+// file is hard to navigate when making lots of changes...
+// just need to make sure we use git mv properly in case of future updates
 @Route("u")
 @Tags("login ui")
 export class LoginController extends Controller {
@@ -137,9 +141,19 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
+    // this needs to be env.data.clients.get for integration tests to work
     const client = await getClient(env, session.authParams.client_id);
 
     const code = generateOTP();
+
+    // fields in universalLoginSessions don't match fields in OTP
+    const {
+      audience,
+      code_challenge_method,
+      code_challenge,
+      username,
+      ...otpAuthParams
+    } = session.authParams;
 
     await env.data.OTP.create({
       id: nanoid(),
@@ -148,7 +162,7 @@ export class LoginController extends Controller {
       email: params.username,
       client_id: session.authParams.client_id,
       send: "code",
-      authParams: session.authParams,
+      authParams: otpAuthParams,
       tenant_id: client.tenant_id,
       created_at: new Date(),
       expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
@@ -208,6 +222,8 @@ export class LoginController extends Controller {
     this.setStatus(302);
 
     return "Redirect";
+
+    // return "hey ho lets go";
   }
 
   /**
