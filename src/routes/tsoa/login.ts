@@ -81,10 +81,6 @@ async function handleLogin(
   });
 }
 
-// I think this file should be renamed "u" otherwise it's hard to find the route....
-// OR what if we put it in a folder "u" and then split each route under this?
-// file is hard to navigate when making lots of changes...
-// just need to make sure we use git mv properly in case of future updates
 @Route("u")
 @Tags("login ui")
 export class LoginController extends Controller {
