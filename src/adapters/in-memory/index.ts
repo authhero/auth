@@ -31,7 +31,7 @@ export default function createAdapters(): DataAdapters {
     tickets: createTicketsAdapter(),
     logs: createLogsAdapter(),
     templates: {
-      get: async () => "<div>Temp</div>",
+      get: async (...inputs) => `<div>${JSON.stringify(inputs, null, 2)}</div>`,
     },
   };
 }
