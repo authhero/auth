@@ -598,17 +598,19 @@ export class LoginController extends Controller {
 
     const client = await getClient(env, session.authParams.client_id);
 
+    // TODO - this needs to return multiple results or search by provider...
     const user = await env.data.users.getByEmail(
       client.tenant_id,
       loginParams.username,
     );
+
     if (!user) {
       throw new HTTPException(400, { message: "User not found" });
     }
 
     try {
       const { valid } = await env.data.passwords.validate(client.tenant_id, {
-        user_id: loginParams.username,
+        user_id: user.id,
         password: loginParams.password,
       });
 
