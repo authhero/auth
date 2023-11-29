@@ -75,33 +75,30 @@ describe("Login with code on liquidjs template", () => {
 
     const code = sentEmail.code;
 
-    const formData = new FormData();
-    formData.append("code", code);
-
     // Authenticate using the code
     const authenticateResponse = await worker.fetch(
       `/u/enter-code?${enterCodeParams}`,
       {
         headers: {
-          "content-type": "multipart/form-data",
+          "content-type": "application/json",
         },
         method: "POST",
-        // this should be of type formData... how to do here?
-        // is this the issue? hmmm
-        // WTF is FormData_2??? needed here...
-        body: formData,
-        // body: JSON.stringify({
-        //   code,
-        // }),
+        body: JSON.stringify({
+          code,
+        }),
         redirect: "manual",
       },
     );
 
-    console.log(await authenticateResponse.text());
-    console.log(authenticateResponse);
-
-    console.log(authenticateResponse.headers.get("location"));
-
-    // NOW - should be on the redirect_uri... Hmmmmmm
+    const codeLoginRedirectUri = authenticateResponse.headers.get("location");
+    if (!codeLoginRedirectUri) {
+      throw new Error("No code login redirect uri found");
+    }
+    const redirectUrl = new URL(codeLoginRedirectUri);
+    expect(redirectUrl.pathname).toBe("/callback");
+    const accessToken = redirectUrl.searchParams.get("access_token");
+    expect(accessToken).toBeTruthy();
+    const idToken = redirectUrl.searchParams.get("id_token");
+    expect(idToken).toBeTruthy();
   });
 });
