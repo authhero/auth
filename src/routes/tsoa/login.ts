@@ -141,8 +141,11 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    // this needs to be env.data.clients.get for integration tests to work
-    const client = await getClient(env, session.authParams.client_id);
+    const client = await env.data.clients.get(session.authParams.client_id);
+
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
 
     const code = generateOTP();
 
@@ -213,7 +216,13 @@ export class LoginController extends Controller {
     magicLink.searchParams.set("email", session.authParams.username);
     magicLink.searchParams.set("verification_code", code);
 
-    await sendLink(env, client, params.username, code, magicLink.href);
+    await env.data.email.sendLink(
+      env,
+      client,
+      params.username,
+      code,
+      magicLink.href,
+    );
 
     this.setHeader(
       headers.location,
@@ -222,8 +231,6 @@ export class LoginController extends Controller {
     this.setStatus(302);
 
     return "Redirect";
-
-    // return "hey ho lets go";
   }
 
   /**
