@@ -35,6 +35,28 @@ data.clients.create({
   },
 });
 
+data.users.create("tenantId", {
+  id: "userId",
+  email: "foo@example.com",
+  email_verified: true,
+  name: "Foo Bar",
+  nickname: "Foo",
+  picture: "https://example.com/foo.png",
+  tenant_id: "tenantId",
+  login_count: 0,
+  // this isn't correct right?
+  provider: "email",
+  connection: "email",
+  is_social: false,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+});
+
+data.passwords.create("tenantId", {
+  user_id: "userId",
+  password: "Test!",
+});
+
 const server = {
   async fetch(
     request: Request,
