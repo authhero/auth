@@ -8,11 +8,9 @@ import { updateTenantClientsInKV } from "./hooks/update-client";
 import { createClientsAdapter } from "./adapters/kv-storage/clients";
 import createEmailAdapter from "./adapters/email";
 import createR2Adapter from "./adapters/r2";
+import { State } from "./models/State";
 
-const State = {
-  myState: "hello",
-};
-
+// TODO - remove this once durable object is deleted!
 export { State };
 
 const server = {
