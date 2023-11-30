@@ -251,6 +251,46 @@ describe("users", () => {
           isSocial: false,
         },
       ]);
+
+      // and now unlink!
+
+      const unlinkUserResponse = await worker.fetch(
+        `/api/v2/users/${newUser1.id}/identities`,
+        {
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "test",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(unlinkUserResponse.status).toBe(200);
+
+      // now fetch user 1 again to check doesn't have user2 as identity
+      const userResponse1 = await worker.fetch(
+        `/api/v2/users/${newUser1.user_id}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "test",
+          },
+        },
+      );
+
+      expect(userResponse1.status).toBe(200);
+      const user1 = await userResponse1.json();
+      expect(user1.identities).toEqual([
+        {
+          connection: "email",
+          user_id: newUser1.user_id,
+          provider: "email",
+          isSocial: false,
+        },
+      ]);
+      // this shows we have unlinked
+      expect(user1.identities.length).toBe(1);
     });
   });
 });

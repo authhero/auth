@@ -276,4 +276,20 @@ export class UsersMgmtController extends Controller {
     this.setStatus(201);
     return identities;
   }
+
+  @Delete("{user_id}/identities")
+  public async unlinkUserAccount(
+    @Request() request: RequestWithContext,
+    @Header("tenant-id") tenantId: string,
+    @Path("user_id") userId: string,
+  ): Promise<string> {
+    const { env } = request.ctx;
+
+    await env.data.users.update(tenantId, userId, {
+      linked_to: undefined,
+    });
+
+    this.setStatus(200);
+    return "ok";
+  }
 }
