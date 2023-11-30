@@ -13,6 +13,7 @@ import { createPasswordsAdapter } from "./Passwords";
 import { createLogsAdapter } from "./logs";
 import { createApplicationsAdapter } from "./applications";
 import { createUniversalLoginSessionsAdapter } from "./universal-auth-sessions";
+import { createConnectionsAdapter } from "./connections";
 
 export default function createAdapters(): DataAdapters {
   return {
@@ -30,6 +31,7 @@ export default function createAdapters(): DataAdapters {
     tenants: createTenantsAdapter(),
     tickets: createTicketsAdapter(),
     logs: createLogsAdapter(),
+    connections: createConnectionsAdapter(),
     templates: {
       get: async () => "<div>Temp</div>",
     },
