@@ -9,6 +9,7 @@ import { createClientsAdapter } from "./adapters/kv-storage/clients";
 import createEmailAdapter from "./adapters/email";
 import createR2Adapter from "./adapters/r2";
 
+// TODO - remove this once durable object is deleted!
 const State = {
   myState: "hello",
 };
