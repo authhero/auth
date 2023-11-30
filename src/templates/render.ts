@@ -79,7 +79,6 @@ export async function renderLogin(
   const content = await engine.render(template, {
     ...context,
     connections,
-    // in some places this is in the template render, in others it's in the layout renderer... which is it?
     errorMessage,
     state,
   });

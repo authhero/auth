@@ -2,7 +2,7 @@ import { setup } from "../helpers/setup";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 
-describe("login", () => {
+describe("Register password user", () => {
   let worker;
   let token;
 
@@ -17,8 +17,6 @@ describe("login", () => {
   });
 
   it("should register a new user with password", async () => {
-    const token = await getAdminToken();
-
     const searchParams = new URLSearchParams();
     searchParams.set("client_id", "clientId");
     searchParams.set("response_type", "token id_token");
@@ -46,6 +44,7 @@ describe("login", () => {
 
     // Open signup page
     const getSignupResponse = await worker.fetch(
+      // I think we should follow the link here from the login page... get the href from that URL and visit it!
       `/u/signup?${loginSearchParams.toString()}`,
     );
     expect(getSignupResponse.status).toBe(200);
