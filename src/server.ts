@@ -9,6 +9,12 @@ import { createClientsAdapter } from "./adapters/kv-storage/clients";
 import createEmailAdapter from "./adapters/email";
 import createR2Adapter from "./adapters/r2";
 
+const State = {
+  myState: "hello",
+};
+
+export { State };
+
 const server = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     return app.fetch(
