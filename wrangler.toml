@@ -36,10 +36,6 @@ bucket_name = 'auth-templates'
 # database_name = "auth2"
 # database_id = "872f055e-d401-46a3-a0d0-fa00e66868b5"
 
-# putting these back so we can delete them...
-[durable_objects]
-bindings = [{ name = "STATE", class_name = "State" }]
-
 [[migrations]]
 tag = "v1"
 new_classes = ["User", "State"]
