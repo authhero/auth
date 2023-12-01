@@ -7,6 +7,58 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
 } from "../src/types";
+import {
+  IOAuth2ClientFactory,
+  OAuthProviderParams,
+  IOAuth2Client,
+} from "../src/services/oauth2-client";
+
+class MockOAuth2Client implements IOAuth2Client {
+  private readonly params: OAuthProviderParams;
+  private readonly redirectUri: string;
+
+  constructor(params: OAuthProviderParams, redirectUri: string) {
+    this.params = params;
+    this.redirectUri = redirectUri;
+  }
+
+  getAuthorizationUrl(state: string): Promise<string> {
+    throw new Error("getAuthorizationUrl method not implemented.");
+    // return new Promise((resolve, reject) => {
+    //   resolve("https://example.com");
+    // });
+  }
+  exchangeCodeForTokenResponse(code: string): Promise<any> {
+    throw new Error("exchangeCodeForTokenResponse method not implemented.");
+    // return new Promise((resolve, reject) => {
+    //   resolve({
+    //     access_token: "accessToken",
+    //     id_token: "idToken",
+    //     token_type: "tokenType",
+    //     expires_in: 1000,
+    //     refresh_token: "refreshToken",
+    //   });
+    // });
+  }
+  getUserProfile(accessToken: string): Promise<any> {
+    throw new Error("getUserProfile method not implemented.");
+    // return new Promise((resolve, reject) => {
+    //   resolve({
+    //     sub: "sub",
+    //     email: "foo@example",
+    //     email_verified: true,
+    //     name: "Foo Bar",
+    //     picture: "https://example.com/foo.png",
+    //   });
+    // });
+  }
+}
+
+const mockOAuth2ClientFactory: IOAuth2ClientFactory = {
+  create(params: OAuthProviderParams, redirectUrl: string): IOAuth2Client {
+    return new MockOAuth2Client(params, redirectUrl);
+  },
+};
 
 const data = createAdapter();
 // Add a known certificate
@@ -93,7 +145,11 @@ const server = {
       // Add dependencies to the environment
       {
         ...env,
-        oauth2ClientFactory: { create: oAuth2ClientFactory },
+        // do we pass in some garbage generic mock here?
+        // THEN what are we testing?
+        // INSTEAD can we intercept? I don't know if it works like this....
+        // oauth2ClientFactory: { create: oAuth2ClientFactory },
+        oauth2ClientFactory: mockOAuth2ClientFactory,
         JWKS_URL: "https://example.com/.well-known/jwks.json",
         ISSUER: "https://example.com/",
         data,
