@@ -24,9 +24,6 @@ class MockOAuth2Client implements IOAuth2Client {
 
   getAuthorizationUrl(state: string): Promise<string> {
     throw new Error("getAuthorizationUrl method not implemented.");
-    // return new Promise((resolve, reject) => {
-    //   resolve("https://example.com");
-    // });
   }
   exchangeCodeForTokenResponse(code: string): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -43,15 +40,6 @@ class MockOAuth2Client implements IOAuth2Client {
   }
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");
-    // return new Promise((resolve, reject) => {
-    //   resolve({
-    //     sub: "sub",
-    //     email: "foo@example",
-    //     email_verified: true,
-    //     name: "Foo Bar",
-    //     picture: "https://example.com/foo.png",
-    //   });
-    // });
   }
 }
 
@@ -79,7 +67,6 @@ data.clients.create({
       client_id: "socialClientId",
       client_secret: "socialClientSecret",
       authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
-      // ooooo, lol. can we mock this? Might get crazy eh....
       token_endpoint: "https://example.com/token",
       response_mode: AuthorizationResponseMode.QUERY,
       response_type: AuthorizationResponseType.CODE,
@@ -146,10 +133,6 @@ const server = {
       // Add dependencies to the environment
       {
         ...env,
-        // do we pass in some garbage generic mock here?
-        // THEN what are we testing?
-        // INSTEAD can we intercept? I don't know if it works like this....
-        // oauth2ClientFactory: { create: oAuth2ClientFactory },
         oauth2ClientFactory: mockOAuth2ClientFactory,
         JWKS_URL: "https://example.com/.well-known/jwks.json",
         ISSUER: "https://example.com/",
