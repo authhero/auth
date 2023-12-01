@@ -69,5 +69,27 @@ describe("social sign on", () => {
     // the issue will be on the /callback that the oauth2ClientFactory wants to do the token exchange...
     // hmmmmm, can we mock this? but then we're going to start punching holes in reality...
     // INSTEAD can we have something running locally that returns some kind of token? just needs to return an id_token right?
+
+    const socialCallbackQuery = new URLSearchParams({
+      state: socialStateParam,
+      code: "code",
+    });
+
+    const socialCallbackResponse = await worker.fetch(
+      `/callback?${socialCallbackQuery.toString()}`,
+      {
+        redirect: "manual",
+      },
+    );
+
+    console.log("socialCallbackResponse", await socialCallbackResponse.text());
+
+    expect(socialCallbackResponse.status).toBe(302);
+
+    const location2 = new URL(socialCallbackResponse.headers.get("location"));
+
+    console.log("location2", location2);
+
+    expect(location2.host).toBe("login2.sesamy.dev");
   });
 });

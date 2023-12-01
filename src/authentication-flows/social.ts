@@ -78,7 +78,10 @@ export async function socialAuthCallback({
   code,
 }: socialAuthCallbackParams) {
   const { env } = ctx;
-  const client = await getClient(env, state.authParams.client_id);
+  const client = await ctx.env.data.clients.get(state.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(403, { message: "Client not found" });
+  }
   const connection = client.connections.find(
     (p) => p.name === state.connection,
   );
