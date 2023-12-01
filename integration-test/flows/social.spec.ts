@@ -1,6 +1,7 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
+import { getAdminToken } from "../helpers/token";
 
 describe("social sign on", () => {
   let worker;
@@ -96,7 +97,6 @@ describe("social sign on", () => {
     }
 
     const idTokenPayload = parseJwt(idToken);
-    console.log("idTokenPayload", idTokenPayload);
 
     /*
       this is the id_token payload that is hardcoded on OAuth2ClientMock - should encode this like this manually
@@ -140,9 +140,78 @@ describe("social sign on", () => {
     // To test
     // - fetch the user from env.data.users and check it exists!
 
-    // console.log("newUser", newUser);
+    const token = await getAdminToken();
 
-    // NEXT
-    // do tests for social account linking
+    const newSocialUserRes = await worker.fetch(
+      // note we fetch with the user_id prefixed with provider as per the Auth0 standard
+      `/api/v2/users/${idTokenPayload.sub}`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+
+    const newSocialUser = await newSocialUserRes.json();
+
+    /*
+        email: 'john.doe@example.com',
+      tenant_id: 'tenantId',
+      name: 'john.doe@example.com',
+      provider: 'demo-social-provider',
+      connection: 'demo-social-provider',
+      email_verified: false,
+      last_ip: '',
+      login_count: 0,
+      is_social: false,
+      last_login: '2023-12-01T14:19:10.518Z',
+      created_at: '2023-12-01T14:19:10.518Z',
+      updated_at: '2023-12-01T14:19:10.518Z',
+      profileData: '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
+      identities: [
+        {
+          connection: 'demo-social-provider',
+          provider: 'demo-social-provider',
+          user_id: '1234567890',
+          isSocial: false
+        }
+      ],
+      user_id: 'demo-social-provider|1234567890'
+    */
+
+    expect(newSocialUser.email).toBe("john.doe@example.com");
+    expect(newSocialUser.tenant_id).toBe("tenantId");
+    expect(newSocialUser.name).toBe("john.doe@example.com");
+    expect(newSocialUser.provider).toBe("demo-social-provider");
+    expect(newSocialUser.connection).toBe("demo-social-provider");
+    // I think we want to be testing that this is true... I thought all SSO accounts had this
+    expect(newSocialUser.email_verified).toBe(false);
+    expect(newSocialUser.last_ip).toBe("");
+    expect(newSocialUser.login_count).toBe(0);
+    // ooooo, what? surely this is wrong!
+    expect(newSocialUser.is_social).toBe(false);
+    expect(newSocialUser.last_login).toBeDefined();
+    expect(newSocialUser.created_at).toBeDefined();
+    expect(newSocialUser.updated_at).toBeDefined();
+    // wait, we don't want to return this? do we?
+    expect(newSocialUser.profileData).toBe(
+      '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
+    );
+    expect(newSocialUser.identities).toEqual([
+      {
+        connection: "demo-social-provider",
+        provider: "demo-social-provider",
+        user_id: "1234567890",
+        isSocial: false,
+      },
+    ]);
+    expect(newSocialUser.user_id).toBe("demo-social-provider|1234567890");
+
+    // NEXT TESTS
+    // - account linking
+    // - logging in SSO with existing user
+    // - POST to /callback endpoint e.g. Apple SSO
+    // - malicious call to /callback! Are we verifying anything here?
   });
 });
