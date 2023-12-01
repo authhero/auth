@@ -34,28 +34,28 @@ describe("social sign on", () => {
       },
     );
 
-    console.log(await socialSignOnResponse.text());
-
     expect(socialSignOnResponse.status).toBe(302);
 
-    // expect(socialSignOnResponse.headers.get("location")).toContain(
-    //   "https://accounts.google.com/o/oauth2/v2/auth",
-    // );
-
-    console.log(socialSignOnResponse.headers.get("location"));
-
-    // this is this
-    // https://example.com/o/oauth2/v2/auth?scope=openid+profile+email&state=eyJhdXRoUGFyYW1zIjp7InJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vbG9naW4yLnNlc2FteS5kZXYvY2FsbGJhY2siLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwic3RhdGUiOiJfN2x2dnoyaVZKN2JRQnFheU45WnNFUjVtdDFWZEdjeCIsImNsaWVudF9pZCI6ImNsaWVudElkIiwibm9uY2UiOiJNbmpjVGcwYXkzeHFmM0pWcUlMMDVpYi5ufn5lWmNMXyIsInJlc3BvbnNlX3R5cGUiOiJ0b2tlbiBpZF90b2tlbiJ9LCJjb25uZWN0aW9uIjoiZGVtby1zb2NpYWwtcHJvdmlkZXIifQ%3D%3D&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&client_id=socialClientId&response_type=code&response_mode=query
+    const socialStateParam = btoa(
+      JSON.stringify({
+        authParams: {
+          redirect_uri: "https://login2.sesamy.dev/callback",
+          scope: "openid profile email",
+          state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+          client_id: "clientId",
+          nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+          response_type: "token id_token",
+        },
+        connection: "demo-social-provider",
+      }),
+    ).replace("==", "");
 
     const location = new URL(socialSignOnResponse.headers.get("location"));
     expect(location.host).toBe("example.com");
     expect(location.pathname).toBe("/o/oauth2/v2/auth");
     const socialSignOnQuery2 = location.searchParams;
     expect(socialSignOnQuery2.get("scope")).toBe("openid profile email");
-    expect(socialSignOnQuery2.get("state")).toBe(
-      // can we encode this to test it properly deterministically?
-      "eyJhdXRoUGFyYW1zIjp7InJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vbG9naW4yLnNlc2FteS5kZXYvY2FsbGJhY2siLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwic3RhdGUiOiJfN2x2dnoyaVZKN2JRQnFheU45WnNFUjVtdDFWZEdjeCIsImNsaWVudF9pZCI6ImNsaWVudElkIiwibm9uY2UiOiJNbmpjVGcwYXkzeHFmM0pWcUlMMDVpYi5ufn5lWmNMXyIsInJlc3BvbnNlX3R5cGUiOiJ0b2tlbiBpZF90b2tlbiJ9LCJjb25uZWN0aW9uIjoiZGVtby1zb2NpYWwtcHJvdmlkZXIifQ",
-    );
+    expect(socialSignOnQuery2.get("state")).toBe(socialStateParam);
     expect(socialSignOnQuery2.get("redirect_uri")).toBe(
       "https://example.com/callback",
     );
