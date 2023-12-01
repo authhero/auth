@@ -82,8 +82,6 @@ describe("social sign on", () => {
       },
     );
 
-    console.log("socialCallbackResponse", await socialCallbackResponse.text());
-
     expect(socialCallbackResponse.status).toBe(302);
 
     const location2 = new URL(socialCallbackResponse.headers.get("location"));
