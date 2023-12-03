@@ -24,16 +24,32 @@ export async function up(db: Kysely<Database>): Promise<void> {
       col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("email", "varchar(255)", (col) => col.notNull())
-    .addColumn("linked_to", "varchar(255)")
+    // Removed in later migration
+    // .addColumn("linked_to", "varchar(255)")
     .addColumn("given_name", "varchar(255)")
     .addColumn("family_name", "varchar(255)")
     .addColumn("nickname", "varchar(255)")
     .addColumn("name", "varchar(255)")
-    .addColumn("picture", "varchar(255)")
+    // Changed to 2083 in later migration
+    // .addColumn("picture", "varchar(255)")
+    .addColumn("picture", "varchar(2083)")
     .addColumn("tags", "varchar(255)")
     .addColumn("created_at", "varchar(255)")
     .addColumn("modified_at", "varchar(255)")
     .addPrimaryKeyConstraint("users_tenants", ["id", "tenant_id"])
+    // Added in later migration
+    .addColumn("linked_to", "varchar(255)", (col) =>
+      col.references("users.id").onDelete("cascade"),
+    )
+    .addColumn("last_ip", "varchar(255)")
+    .addColumn("login_count", "integer")
+    .addColumn("last_login", "varchar(255)")
+    .addColumn("provider", "varchar(255)")
+    .addColumn("connection", "varchar(255)")
+    .addColumn("email_verified", "boolean")
+    .addColumn("is_social", "boolean")
+    .addColumn("app_metadata", "varchar(8092)")
+    // End added columns
     .execute();
 
   await db.schema
@@ -47,7 +63,9 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("name", "varchar(255)")
     .addColumn("status", "varchar(255)")
     .addColumn("role", "varchar(255)")
-    .addColumn("picture", "varchar(255)")
+    // Changed to 2083 in later migration
+    // .addColumn("picture", "varchar(255)")
+    .addColumn("picture", "varchar(2083)")
     .addColumn("created_at", "varchar(255)")
     .addColumn("modified_at", "varchar(255)")
     .execute();
@@ -66,8 +84,6 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("authentication_settings", "varchar(255)")
     .addColumn("styling_settings", "varchar(255)")
     .addColumn("email_validation", "varchar(255)")
-    // .addColumn("two_factor_authentication", "varchar(255)")
-    // .addColumn("enable_signup", "boolean")
     .addColumn("created_at", "varchar(255)")
     .addColumn("modified_at", "varchar(255)")
     .execute();

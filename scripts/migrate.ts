@@ -1,19 +1,24 @@
-import { Dialect, Kysely, Migrator } from "kysely";
+import { Dialect, Kysely, Migrator, SqliteDialect } from "kysely";
 import "dotenv/config";
 
 import { Database } from "../src/types";
 import ReferenceMigrationProvider from "../src/migrate/ReferenceMigrationProvider";
 import migrations from "../src/migrate/migrations";
 import { PlanetScaleDialect } from "kysely-planetscale";
+import SQLite from "better-sqlite3";
 
 console.log("migrating...");
 
-const dialect = new PlanetScaleDialect({
-  host: process.env.DATABASE_HOST,
-  username: process.env.DATABASE_USERNAME,
-  password: process.env.DATABASE_PASSWORD,
-  fetch: (opts, init) =>
-    fetch(new Request(opts, { ...init, cache: undefined })),
+// const dialect = new PlanetScaleDialect({
+//   host: process.env.DATABASE_HOST,
+//   username: process.env.DATABASE_USERNAME,
+//   password: process.env.DATABASE_PASSWORD,
+//   fetch: (opts, init) =>
+//     fetch(new Request(opts, { ...init, cache: undefined })),
+// });
+
+const dialect = new SqliteDialect({
+  database: new SQLite(":memory:"),
 });
 
 let _db: Kysely<Database>;
