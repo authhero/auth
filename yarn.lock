@@ -2469,6 +2469,11 @@ builtins@^5.0.0:
   dependencies:
     semver "^7.0.0"
 
+bun-types@^1.0.13:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-1.0.15.tgz#6905c697627a1690f23512986c47260330f48c3d"
+  integrity sha512-XkEvWLV1JIhcVIpf2Lu6FXnZUxRUkQVJmgY+VT7os6Tk5X1nkXx11q4Rtu6txsqpDJZfUeZXblnnD59K+6wsVA==
+
 bytes@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.2.tgz#8b0beeb98605adf1b128fa4386403c009e0221a5"
@@ -6074,6 +6079,14 @@ kleur@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
+
+kysely-bun-sqlite@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/kysely-bun-sqlite/-/kysely-bun-sqlite-0.2.2.tgz#a5d414ce8e09445641d2d0fa2ed1057fc52e256f"
+  integrity sha512-ifUQH/wyjHK1M8dfx4znZNKhgIcAHbNuNVHQAIsGG2OVX+0C2FarMF4qo65x3gRsOKvAdd295HcaM0nDjOWWKQ==
+  dependencies:
+    bun-types "^1.0.13"
+    kysely "^0.26.3"
 
 kysely-d1@^0.3.0:
   version "0.3.0"
