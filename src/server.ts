@@ -1,7 +1,6 @@
 import { Env } from "./types/Env";
 import app from "./app";
 import { rotateKeys } from "./routes/rotate-keys";
-import { State } from "./models";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
 import createAdapters from "./adapters/planetscale";
@@ -9,9 +8,9 @@ import { updateTenantClientsInKV } from "./hooks/update-client";
 import { createClientsAdapter } from "./adapters/kv-storage/clients";
 import createEmailAdapter from "./adapters/email";
 import createR2Adapter from "./adapters/r2";
+import { State } from "./models/State";
 
-// In order for the workers runtime to find the class that implements
-// our Durable Object namespace, we must export it from the root module.
+// TODO - remove this once durable object is deleted!
 export { State };
 
 const server = {
@@ -22,7 +21,6 @@ const server = {
       {
         ...env,
         oauth2ClientFactory: { create: oAuth2ClientFactory },
-        stateFactory: State.getFactory(env.STATE, env),
         data: {
           certificates: createCertificatesAdapter(env),
           clients: createClientsAdapter(env),

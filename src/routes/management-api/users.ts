@@ -23,7 +23,7 @@ import {
 import { HTTPException } from "hono/http-exception";
 import { Identity } from "../../types/auth0/Identity";
 import userIdGenerate from "../../utils/userIdGenerate";
-
+import userIdParse from "../../utils/userIdParse";
 export interface LinkBodyParams {
   provider?: string;
   connection_id?: string;
@@ -77,7 +77,7 @@ export class UsersMgmtController extends Controller {
           {
             connection: user.connection,
             provider: user.provider,
-            user_id: user.id,
+            user_id: userIdParse(user.id),
             isSocial: user.is_social,
           },
         ],
@@ -110,6 +110,13 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
+    // accept ids without provider for now, but Auth0 has this check
+    // if (!user_id.includes("|")) {
+    //   throw new HTTPException(400, {
+    //     message: "Invalid user_id format",
+    //   });
+    // }
+
     const user = await env.data.users.get(tenant_id, user_id);
 
     if (!user) {
@@ -126,7 +133,7 @@ export class UsersMgmtController extends Controller {
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      user_id: u.id,
+      user_id: userIdParse(u.id),
       isSocial: u.is_social,
     }));
 
@@ -177,7 +184,7 @@ export class UsersMgmtController extends Controller {
 
     const data = await env.data.users.create(tenantId, {
       email,
-      id: userIdGenerate(),
+      id: `email|${userIdGenerate()}`,
       tenant_id: tenantId,
       name: email,
       provider: "email",
@@ -199,7 +206,7 @@ export class UsersMgmtController extends Controller {
         {
           connection: data.connection,
           provider: data.provider,
-          user_id: data.id,
+          user_id: userIdParse(data.id),
           isSocial: data.is_social,
         },
       ],
@@ -257,14 +264,32 @@ export class UsersMgmtController extends Controller {
       q: `linked_to:${body.link_with}`,
     });
 
+    // we're doing this mapping very frequently... once we include profileData
+    // would make sense to have a util function. TBD
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
-      user_id: u.id,
+      user_id: userIdParse(u.id),
       isSocial: u.is_social,
     }));
 
     this.setStatus(201);
     return identities;
+  }
+
+  @Delete("{user_id}/identities")
+  public async unlinkUserAccount(
+    @Request() request: RequestWithContext,
+    @Header("tenant-id") tenantId: string,
+    @Path("user_id") userId: string,
+  ): Promise<string> {
+    const { env } = request.ctx;
+
+    await env.data.users.update(tenantId, userId, {
+      linked_to: undefined,
+    });
+
+    this.setStatus(200);
+    return "ok";
   }
 }

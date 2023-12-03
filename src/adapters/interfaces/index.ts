@@ -13,6 +13,7 @@ import { LogsDataAdapter } from "./Logs";
 import { ApplicationsAdapter } from "./Applications";
 import { UniversalLoginSessionsAdapter } from "./UniversalLoginSession";
 import { TemplatesAdapter } from "./Templates";
+import { ConnectionsAdapter } from "./Connections";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;
@@ -30,4 +31,5 @@ export interface DataAdapters {
   users: UserDataAdapter;
   logs: LogsDataAdapter;
   templates: TemplatesAdapter;
+  connections: ConnectionsAdapter;
 }

@@ -143,6 +143,7 @@ export class AuthorizeController extends Controller {
         redirect_uri,
         state,
         response_type,
+        client_id,
         nonce,
         code_challenge_method,
         code_challenge,

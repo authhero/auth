@@ -10,6 +10,7 @@ import { createPasswordAdapter } from "./passwords";
 import { createCodesAdapter } from "./codes";
 import { createUniversalLoginSessionAdapter } from "./universalLoginSessions";
 import { createApplicationsAdapter } from "./applications";
+import { createConnectionsAdapter } from "./connections";
 
 export default function createAdapters(env: Env) {
   return {
@@ -24,5 +25,6 @@ export default function createAdapters(env: Env) {
     logs: createLogsAdapter(env),
     passwords: createPasswordAdapter(env),
     codes: createCodesAdapter(env),
+    connections: createConnectionsAdapter(env),
   };
 }

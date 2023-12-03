@@ -1,13 +1,8 @@
 import { Env } from "../src/types/Env";
 import app from "../src/app";
-import { State } from "../src/models";
 import { getCertificate } from "./helpers/token";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";
 import createAdapter from "../src/adapters/in-memory";
-
-// In order for the workers runtime to find the class that implements
-// our Durable Object namespace, we must export it from the root module.
-export { State };
 
 const data = createAdapter();
 // Add a known certificate
@@ -33,6 +28,28 @@ data.clients.create({
     sender_email: "login@example.com",
     sender_name: "SenderName",
   },
+});
+
+data.users.create("tenantId", {
+  id: "userId",
+  email: "foo@example.com",
+  email_verified: true,
+  name: "Foo Bar",
+  nickname: "Foo",
+  picture: "https://example.com/foo.png",
+  tenant_id: "tenantId",
+  login_count: 0,
+  // this isn't correct right?
+  provider: "email",
+  connection: "email",
+  is_social: false,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+});
+
+data.passwords.create("tenantId", {
+  user_id: "userId",
+  password: "Test!",
 });
 
 const server = {

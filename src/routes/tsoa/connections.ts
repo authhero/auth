@@ -15,7 +15,6 @@ import {
   Header,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-
 import { getDb } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { SqlConnection } from "../../types/sql";
@@ -138,7 +137,6 @@ export class ConnectionsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
     const connection: SqlConnection = {
       ...body,
       tenant_id,
@@ -147,7 +145,7 @@ export class ConnectionsController extends Controller {
       updated_at: new Date().toISOString(),
     };
 
-    await db.insertInto("connections").values(connection).execute();
+    await env.data.connections.create(tenant_id, connection);
 
     await updateTenantClientsInKV(env, tenant_id);
 

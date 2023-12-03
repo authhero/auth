@@ -14,27 +14,18 @@ import { getClient } from "../services/clients";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import hash from "../utils/hash";
 import { nanoid } from "nanoid";
+import { stateDecode } from "../utils/stateEncode";
 
 export async function authorizeCodeGrant(
   env: Env,
   params: AuthorizationCodeGrantTypeParams,
 ): Promise<TokenResponse | CodeResponse> {
-  // Either get the instance based on the id or the code
-  const stateInstance = env.stateFactory.getInstanceById(
-    base64ToHex(params.code),
-  );
-
-  const stateString = await stateInstance.getState.query();
-  if (!stateString) {
-    throw new Error("State required");
-  }
-
   const state: {
     userId: string;
     authParams: AuthParams;
     user: User;
     sid: string;
-  } = JSON.parse(stateString);
+  } = stateDecode(params.code); // this "code" is actually a stringified base64 encoded state object...
 
   if (params.client_id && state.authParams.client_id !== params.client_id) {
     throw new InvalidClientError();
