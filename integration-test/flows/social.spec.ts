@@ -250,4 +250,49 @@ describe("social sign on", () => {
       expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
     });
   });
+
+  // this should probably be in linking flows that hit multiple providers... or be added in many different flows
+  // maybe we should check that each provider type can be linked to and linked from
+  it("should create linked users when creating multiple social users with same email address", async () => {
+    const token = await getAdminToken();
+    await setup(worker);
+
+    // create first social user on demo-social-provider
+    const socialCallbackQuery = new URLSearchParams({
+      state: SOCIAL_STATE_PARAM,
+      code: "code",
+    });
+
+    const socialCallbackResponse = await worker.fetch(
+      `/callback?${socialCallbackQuery.toString()}`,
+      {
+        redirect: "manual",
+      },
+    );
+
+    expect(socialCallbackResponse.status).toBe(302);
+
+    // now check that the user only has one identity
+    const newSocialUserRes = await worker.fetch(
+      `/api/v2/users/demo-social-provider|1234567890`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+
+    const newSocialUser = await newSocialUserRes.json();
+
+    // this should only have its own identity now
+    expect(newSocialUser.identities).toEqual([
+      {
+        connection: "demo-social-provider",
+        provider: "demo-social-provider",
+        user_id: "1234567890",
+        isSocial: true,
+      },
+    ]);
+  });
 });
