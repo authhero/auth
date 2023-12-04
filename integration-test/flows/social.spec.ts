@@ -127,12 +127,10 @@ describe("social sign on", () => {
     expect(newSocialUser.name).toBe("john.doe@example.com");
     expect(newSocialUser.provider).toBe("demo-social-provider");
     expect(newSocialUser.connection).toBe("demo-social-provider");
-    // TODO - use id_token that has this set
-    expect(newSocialUser.email_verified).toBe(false);
+    expect(newSocialUser.email_verified).toBe(true);
     expect(newSocialUser.last_ip).toBe("");
     expect(newSocialUser.login_count).toBe(0);
-    // TODO - investigate
-    expect(newSocialUser.is_social).toBe(false);
+    expect(newSocialUser.is_social).toBe(true);
     expect(newSocialUser.last_login).toBeDefined();
     expect(newSocialUser.created_at).toBeDefined();
     expect(newSocialUser.updated_at).toBeDefined();
@@ -145,7 +143,7 @@ describe("social sign on", () => {
         connection: "demo-social-provider",
         provider: "demo-social-provider",
         user_id: "1234567890",
-        isSocial: false,
+        isSocial: true,
       },
     ]);
     expect(newSocialUser.user_id).toBe("demo-social-provider|1234567890");
