@@ -5,17 +5,19 @@ import { getAdminToken } from "../helpers/token";
 import type { UnstableDevWorker } from "wrangler";
 import { UserResponse } from "../../src/types/auth0";
 
+const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
+  redirect_uri: "https://login2.sesamy.dev/callback",
+  scope: "openid profile email",
+  state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+  client_id: "clientId",
+  nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+  response_type: "token id_token",
+};
+
 // same on each test
 const SOCIAL_STATE_PARAM = btoa(
   JSON.stringify({
-    authParams: {
-      redirect_uri: "https://login2.sesamy.dev/callback",
-      scope: "openid profile email",
-      state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-      client_id: "clientId",
-      nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-      response_type: "token id_token",
-    },
+    authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
     connection: "demo-social-provider",
   }),
 ).replace("==", "");
@@ -285,7 +287,9 @@ describe("social sign on", () => {
 
     const newSocialUser = await newSocialUserRes.json();
 
-    // this should only have its own identity now
+    console.log(newSocialUser);
+
+    // this should only have its own identity
     expect(newSocialUser.identities).toEqual([
       {
         connection: "demo-social-provider",
@@ -294,5 +298,35 @@ describe("social sign on", () => {
         isSocial: true,
       },
     ]);
+
+    // ---------------------------
+    // Now create user with same email for other-social-provider
+    // ---------------------------
+
+    const socialCallbackQuery2 = new URLSearchParams({
+      state: btoa(
+        JSON.stringify({
+          authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+          connection: "other-social-provider",
+        }),
+      ).replace("==", ""),
+      code: "code",
+    });
+
+    const socialCallbackResponse2 = await worker.fetch(
+      `/callback?${socialCallbackQuery2.toString()}`,
+      {
+        redirect: "manual",
+      },
+    );
+
+    expect(socialCallbackResponse2.status).toBe(302);
+
+    // now check that the original user has two identities
+
+    // THIS WILL FAIL!
+    // because not returning different id_tokens from OAuthMockClient
+    // Simply do switch statement and return different id_token
+    // ask chatGpt
   });
 });
