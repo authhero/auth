@@ -155,7 +155,7 @@ export async function socialAuthCallback({
       email_verified: false,
       last_ip: "",
       login_count: 0,
-      is_social: false,
+      is_social: true,
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
