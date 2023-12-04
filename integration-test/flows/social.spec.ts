@@ -98,52 +98,19 @@ describe("social sign on", () => {
 
     const idTokenPayload = parseJwt(idToken);
 
-    /*
-      this is the id_token payload that is hardcoded on OAuth2ClientMock - should encode this like this manually
-      "iss": "https://auth.example.com",         
-      "sub": "1234567890",                       
-      "aud": "client123",                        
-      "exp": 1616470948,                         
-      "iat": 1616467348,                         
-      "name": "John Doe",                        
-      "email": "john.doe@example.com",           
-      "picture": "https://example.com/john.jpg", 
-      "nonce": "abc123"   
-    */
-
-    /*
-      this is the id_token payload we're getting back from auth2 here
-
-      aud: 'clientId',
-      sub: 'demo-social-provider|1234567890',
-      name: 'john.doe@example.com',
-      email: 'john.doe@example.com',
-      email_verified: false,
-      nonce: 'MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_',
-      iss: 'https://example.com/',
-      sid: 'qSkfbtK9waitfKLEdo7fo',
-      iat: 1701439942,
-      exp: 1701526342
-    */
-
     expect(idTokenPayload.aud).toBe("clientId");
     expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
     expect(idTokenPayload.name).toBe("john.doe@example.com");
     expect(idTokenPayload.email).toBe("john.doe@example.com");
-    // oh wow, shouldn't this be true? we must need to include this in our mock id_token!
+    // TODO - use id_token that has this set
     expect(idTokenPayload.email_verified).toBe(false);
-    // is this the same that we passed in?
+    // the same that we passed in
     expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
     expect(idTokenPayload.iss).toBe("https://example.com/");
-    // don't think other fields are as important...
-
-    // To test
-    // - fetch the user from env.data.users and check it exists!
 
     const token = await getAdminToken();
 
     const newSocialUserRes = await worker.fetch(
-      // note we fetch with the user_id prefixed with provider as per the Auth0 standard
       `/api/v2/users/${idTokenPayload.sub}`,
       {
         headers: {
@@ -155,41 +122,16 @@ describe("social sign on", () => {
 
     const newSocialUser = await newSocialUserRes.json();
 
-    /*
-        email: 'john.doe@example.com',
-      tenant_id: 'tenantId',
-      name: 'john.doe@example.com',
-      provider: 'demo-social-provider',
-      connection: 'demo-social-provider',
-      email_verified: false,
-      last_ip: '',
-      login_count: 0,
-      is_social: false,
-      last_login: '2023-12-01T14:19:10.518Z',
-      created_at: '2023-12-01T14:19:10.518Z',
-      updated_at: '2023-12-01T14:19:10.518Z',
-      profileData: '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
-      identities: [
-        {
-          connection: 'demo-social-provider',
-          provider: 'demo-social-provider',
-          user_id: '1234567890',
-          isSocial: false
-        }
-      ],
-      user_id: 'demo-social-provider|1234567890'
-    */
-
     expect(newSocialUser.email).toBe("john.doe@example.com");
     expect(newSocialUser.tenant_id).toBe("tenantId");
     expect(newSocialUser.name).toBe("john.doe@example.com");
     expect(newSocialUser.provider).toBe("demo-social-provider");
     expect(newSocialUser.connection).toBe("demo-social-provider");
-    // I think we want to be testing that this is true... I thought all SSO accounts had this
+    // TODO - use id_token that has this set
     expect(newSocialUser.email_verified).toBe(false);
     expect(newSocialUser.last_ip).toBe("");
     expect(newSocialUser.login_count).toBe(0);
-    // ooooo, what? surely this is wrong!
+    // TODO - investigate
     expect(newSocialUser.is_social).toBe(false);
     expect(newSocialUser.last_login).toBeDefined();
     expect(newSocialUser.created_at).toBeDefined();
