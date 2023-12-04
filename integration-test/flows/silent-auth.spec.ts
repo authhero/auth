@@ -25,9 +25,7 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
-  // this is tested in code-flow.spec.ts. which makes sense for integration tests
-  // and to do this skipped test would require that entire test as setup
-  it.only("should return a 200 for a valid silent auth request", async () => {
+  it("should return a 200 for a valid silent auth request", async () => {
     const loginResponse = await worker.fetch("/co/authenticate", {
       headers: {
         "content-type": "application/json",
@@ -154,16 +152,40 @@ describe("silent-auth", () => {
     expect(bodyDifferentClient).toContain("access_token");
 
     // silent auth different tenant -------------------
+    const silentAuthSearchParamsDifferentTenant = new URLSearchParams();
+    silentAuthSearchParamsDifferentTenant.set(
+      "client_id",
+      "otherClientIdOnOtherTenant",
+    );
+    silentAuthSearchParamsDifferentTenant.set(
+      "response_type",
+      "token id_token",
+    );
+    silentAuthSearchParamsDifferentTenant.set("scope", "openid profile email");
+    silentAuthSearchParamsDifferentTenant.set(
+      "redirect_uri",
+      "http://localhost:3000/callback",
+    );
+    silentAuthSearchParamsDifferentTenant.set("state", "state");
+    // silent auth pararms!
+    silentAuthSearchParamsDifferentTenant.set("prompt", "none");
+    silentAuthSearchParamsDifferentTenant.set("nonce", "unique-nonce");
+    silentAuthSearchParamsDifferentTenant.set("response_mode", "web_message");
+
+    const silentAuthResponseDifferentTenant = await worker.fetch(
+      `/authorize?${silentAuthSearchParamsDifferentTenant.toString()}`,
+      {
+        headers: {
+          // here we set the auth cookie given to us from the previous successful auth request
+          cookie: authCookie,
+        },
+      },
+    );
+
+    const bodyDifferentTenant = await silentAuthResponseDifferentTenant.text();
+
+    // This is the difference here
+    expect(bodyDifferentTenant).toContain("Login required");
+    expect(bodyDifferentTenant).not.toContain("access_token");
   });
 });
-
-// what's the quickest way to log in to one client, and then check silent auth with another client?
-// same and different tenants
-
-// SO NEED
-// a. another user in the same tenant, different client
-// b. another user in a different tenant, different client
-
-// THEN
-// what is the quickest way to log in here? Just check tests and pick fam... probably username/password
-// BUT run the risk... that only testing one flow? really should duplicate to each flow? meh... I don't know. leave comments
