@@ -102,8 +102,7 @@ describe("social sign on", () => {
     expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
     expect(idTokenPayload.name).toBe("john.doe@example.com");
     expect(idTokenPayload.email).toBe("john.doe@example.com");
-    // TODO - use id_token that has this set
-    expect(idTokenPayload.email_verified).toBe(false);
+    expect(idTokenPayload.email_verified).toBe(true);
     // the same that we passed in
     expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
     expect(idTokenPayload.iss).toBe("https://example.com/");
