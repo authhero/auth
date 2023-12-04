@@ -116,7 +116,6 @@ describe("code-flow", () => {
     expect(idTokenPayload.aud).toBe("clientId");
 
     // now check silent auth works when logged in with code----------------------------------------
-    // TODO - duplicate this test to the end of other flows
     const setCookiesHeader = tokenResponse.headers.get("set-cookie");
     const cookies = setCookiesHeader.split(";").map((c) => c.trim());
     const authCookie = cookies.find((c) => c.startsWith("auth-token"));
@@ -190,9 +189,4 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
-
-  // FUTURE TESTS
-  // and also test for different client_ids that have the same tenant_id
-  // ---- this is what I wrote a test for on login2 - may as well have quicker integration test here...
-  // can also test for clients with different tenants - will stop the regressions we keep getting
 });
