@@ -25,7 +25,7 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
-  it("should return a 200 for a valid silent auth request", async () => {
+  it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
     const loginResponse = await worker.fetch("/co/authenticate", {
       headers: {
         "content-type": "application/json",
@@ -81,7 +81,9 @@ describe("silent-auth", () => {
     expect(idTokenPayload.email).toBe("foo@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
-    // now check silent auth works
+    // -------------------------------------------------------------
+    // now check silent auth works on the same client
+    // -------------------------------------------------------------
     const cookies = tokenResponse.headers
       .get("set-cookie")
       .split(";")
@@ -118,7 +120,9 @@ describe("silent-auth", () => {
     expect(body).toContain("access_token");
     // this is tested more extensively on other flows
 
-    // Silent auth same tenant different client ------------------
+    // -------------------------------------------------------------
+    // now check silent auth works on the same tenant
+    // -------------------------------------------------------------
     const silentAuthSearchParamsDifferentClient = new URLSearchParams();
     silentAuthSearchParamsDifferentClient.set("client_id", "otherClientId");
     silentAuthSearchParamsDifferentClient.set(
@@ -151,7 +155,9 @@ describe("silent-auth", () => {
     expect(bodyDifferentClient).not.toContain("Login required");
     expect(bodyDifferentClient).toContain("access_token");
 
-    // silent auth different tenant -------------------
+    // -------------------------------------------------------------
+    // now check silent auth does not on a different tenant
+    // -------------------------------------------------------------
     const silentAuthSearchParamsDifferentTenant = new URLSearchParams();
     silentAuthSearchParamsDifferentTenant.set(
       "client_id",
