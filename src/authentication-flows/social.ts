@@ -140,18 +140,20 @@ export async function socialAuthCallback({
     email,
   };
 
-  // should be {provider}|{sub} - expect this to fail
-  // let user = await env.data.users.get(client.tenant_id, sub);
-  // strangely above doesn't cause any tests to fail but probably lacking tests where reuse same social sign on twice!
   let user = await env.data.users.get(client.tenant_id, `${connection}|${sub}`);
 
   if (!state.connection) {
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
-  // for now just create a new user with the correct structure IF does not already existing
-  // TODO - intelligent account linking!
   if (!user) {
+    const sameEmailUser = await env.data.users.getByEmail(
+      client.tenant_id,
+      email,
+    );
+
+    const linked_to = sameEmailUser ? sameEmailUser.id : undefined;
+
     user = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
       email,
@@ -166,17 +168,8 @@ export async function socialAuthCallback({
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      linked_to,
     });
-
-    const sameEmailUser = await env.data.users.getByEmail(
-      client.tenant_id,
-      email,
-    );
-
-    if (sameEmailUser) {
-      // link user account here
-      console.log("same Email user found");
-    }
   }
 
   ctx.set("email", email);
