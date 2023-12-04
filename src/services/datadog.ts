@@ -20,7 +20,6 @@ async function log(
   const ddApiKey = ctx.env.DD_API_KEY;
 
   if (!ddApiKey?.length) {
-    // console.log("No datadog api key available");
     return;
   }
 
