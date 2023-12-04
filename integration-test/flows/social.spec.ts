@@ -3,6 +3,21 @@ import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
 
+// same on each test
+const SOCIAL_STATE_PARAM = btoa(
+  JSON.stringify({
+    authParams: {
+      redirect_uri: "https://login2.sesamy.dev/callback",
+      scope: "openid profile email",
+      state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+      client_id: "clientId",
+      nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+      response_type: "token id_token",
+    },
+    connection: "demo-social-provider",
+  }),
+).replace("==", "");
+
 describe("social sign on", () => {
   let worker;
 
@@ -14,7 +29,7 @@ describe("social sign on", () => {
     worker.stop();
   });
 
-  it("should create a new user from a new social signup", async () => {
+  it("should create correct args for social sign on from hitting /authorize with connection", async () => {
     await setup(worker);
 
     const socialSignOnQuery = new URLSearchParams({
@@ -37,35 +52,25 @@ describe("social sign on", () => {
 
     expect(socialSignOnResponse.status).toBe(302);
 
-    const socialStateParam = btoa(
-      JSON.stringify({
-        authParams: {
-          redirect_uri: "https://login2.sesamy.dev/callback",
-          scope: "openid profile email",
-          state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-          client_id: "clientId",
-          nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-          response_type: "token id_token",
-        },
-        connection: "demo-social-provider",
-      }),
-    ).replace("==", "");
-
     const location = new URL(socialSignOnResponse.headers.get("location"));
     expect(location.host).toBe("example.com");
     expect(location.pathname).toBe("/o/oauth2/v2/auth");
     const socialSignOnQuery2 = location.searchParams;
     expect(socialSignOnQuery2.get("scope")).toBe("openid profile email");
-    expect(socialSignOnQuery2.get("state")).toBe(socialStateParam);
+    // previous args should create this state
+    expect(socialSignOnQuery2.get("state")).toBe(SOCIAL_STATE_PARAM);
     expect(socialSignOnQuery2.get("redirect_uri")).toBe(
       "https://example.com/callback",
     );
     expect(socialSignOnQuery2.get("client_id")).toBe("socialClientId");
     expect(socialSignOnQuery2.get("response_type")).toBe("code");
     expect(socialSignOnQuery2.get("response_mode")).toBe("query");
+  });
 
+  it("should create a new user from a new social signup", async () => {
     const socialCallbackQuery = new URLSearchParams({
-      state: socialStateParam,
+      // start with same state as on previous step
+      state: SOCIAL_STATE_PARAM,
       code: "code",
     });
 
@@ -109,6 +114,7 @@ describe("social sign on", () => {
 
     const token = await getAdminToken();
 
+    // now check that the user was created was properly in the data providers
     const newSocialUserRes = await worker.fetch(
       `/api/v2/users/${idTokenPayload.sub}`,
       {
@@ -133,7 +139,6 @@ describe("social sign on", () => {
     expect(newSocialUser.last_login).toBeDefined();
     expect(newSocialUser.created_at).toBeDefined();
     expect(newSocialUser.updated_at).toBeDefined();
-    // wait, we don't want to return this? do we?
     expect(newSocialUser.profileData).toBe(
       '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
     );
@@ -146,11 +151,51 @@ describe("social sign on", () => {
       },
     ]);
     expect(newSocialUser.user_id).toBe("demo-social-provider|1234567890");
-
-    // NEXT TESTS
-    // - account linking
-    // - logging in SSO with existing user
-    // - POST to /callback endpoint e.g. Apple SSO
-    // - malicious call to /callback! Are we verifying anything here?
   });
+
+  // how to seed a social user here? DO something similar in the worker-fetch creation
+  // BUT then need a way to return different id_tokens from mock OAuthtoken provider
+  // which involves changing the factory somehow...
+
+  // should the management API support creating new social users?
+  // Suppose it comes down to this. TBD
+  it.skip("should login with existing user", async () => {
+    const token = await getAdminToken();
+    const createNewSocialUserRes = await worker.fetch("/api/v2/users", {
+      method: "POST",
+      headers: {
+        "tenant-id": "tenantId",
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email: "foo@bar.com",
+        name: "John Doe",
+        connection: "demo-social-provider",
+        email_verified: true,
+        profileData:
+          '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
+        // is this correct? check auth0 mgmt API...
+        // otherwise how are these filled in?
+        // is_social: true,
+        // identities: [
+        //   {
+        //     connection: "demo-social-provider",
+        //     provider: "demo-social-provider",
+        //     user_id: "1234567890",
+        //     isSocial: true,
+        //   },
+        // ],
+      }),
+    });
+
+    console.log(await createNewSocialUserRes.text());
+
+    expect(createNewSocialUserRes.status).toBe(200);
+  });
+
+  // NEXT TESTS
+  // - POST to /callback endpoint e.g. Apple SSO flow. see if can do this
+  // - malicious call to /callback! Are we verifying anything here? - start off with call to this and see what happens...
+  // - email_verified - if we actually want to support my overengineered functionally, let's start off with a user with email_verified as false, and then sign in with an SSO provider and id_token with email_verified as true...
 });
