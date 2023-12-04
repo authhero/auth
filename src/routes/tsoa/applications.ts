@@ -16,7 +16,7 @@ import {
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { getDb } from "../../services/db";
+import { getDbFromEnv } from "../../services/db";
 import { Application } from "../../types/sql";
 import { updateClientInKV } from "../../hooks/update-client";
 import { headers } from "../../constants";
@@ -34,7 +34,7 @@ export class ApplicationsController extends Controller {
   ): Promise<Application[]> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const query = db
       .selectFrom("applications")
       .where("applications.tenant_id", "=", tenantId);
@@ -57,7 +57,7 @@ export class ApplicationsController extends Controller {
   ): Promise<Application | string> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const application = await db
       .selectFrom("applications")
       .where("applications.tenant_id", "=", tenantId)
@@ -82,7 +82,7 @@ export class ApplicationsController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     await db
       .deleteFrom("applications")
@@ -108,7 +108,7 @@ export class ApplicationsController extends Controller {
   ) {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const application = {
       ...body,
@@ -173,7 +173,7 @@ export class ApplicationsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const application: Application = {
       ...body,

@@ -1,5 +1,4 @@
-import { getDb } from "../services/db";
-import { Env, Migration } from "../types";
+import { Migration } from "../types";
 
 const userAgent =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
@@ -104,45 +103,4 @@ export async function connectIdLogin(
   );
 
   return loginResponse.ok;
-}
-
-export async function migratePasswordHook(
-  env: Env,
-  tenantId: string,
-  username: string,
-  password: string,
-) {
-  const db = getDb(env);
-
-  console.log("Start migration");
-
-  try {
-    const migrations = await db
-      .selectFrom("migrations")
-      .where("migrations.tenant_id", "=", tenantId)
-      .selectAll()
-      .execute();
-
-    for (const migration of migrations) {
-      let profile;
-
-      switch (migration.provider) {
-        case "auth0":
-          profile = await auth0login(migration, username, password);
-          break;
-        case "connectId":
-          profile = await connectIdLogin(migration, username, password);
-          break;
-      }
-
-      if (profile) {
-        return profile;
-      }
-    }
-
-    return false;
-  } catch (err) {
-    console.log("Failed to fetch migrations");
-    return false;
-  }
 }

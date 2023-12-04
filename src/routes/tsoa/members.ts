@@ -16,10 +16,9 @@ import {
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
-import { getDb } from "../../services/db";
+import { getDbFromEnv } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Member } from "../../types/sql";
-import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
@@ -35,7 +34,7 @@ export class MembersController extends Controller {
   ): Promise<Member[]> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const query = db
       .selectFrom("members")
       .where("members.tenant_id", "=", tenantId);
@@ -58,7 +57,7 @@ export class MembersController extends Controller {
   ): Promise<Member | string> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const member = await db
       .selectFrom("members")
       .where("members.id", "=", id)
@@ -83,7 +82,7 @@ export class MembersController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     await db
       .deleteFrom("members")
       .where("members.tenant_id", "=", tenantId)
@@ -106,7 +105,7 @@ export class MembersController extends Controller {
   ) {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     const member = {
       ...body,
       tenantId,
@@ -134,7 +133,7 @@ export class MembersController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const member: Member = {
       ...body,
@@ -163,7 +162,7 @@ export class MembersController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const member: Member = {
       ...body,
