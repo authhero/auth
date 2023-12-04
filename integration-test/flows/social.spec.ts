@@ -253,11 +253,6 @@ describe("social sign on", () => {
     });
   });
 
-  // this should probably be in linking flows that hit multiple providers... or be added in many different flows
-  // maybe we should check that each provider type can be linked to and linked from
-  // -------------------
-  // this will fail as we're only looking up by email
-  // -------------------
   it("should create linked users when creating multiple social users with same email address", async () => {
     const token = await getAdminToken();
     await setup(worker);
@@ -321,12 +316,8 @@ describe("social sign on", () => {
       },
     );
 
+    // this means we know login successful
     expect(socialCallbackResponse2.status).toBe(302);
-
-    // THIS WILL FAIL!
-    // because not returning different id_tokens from OAuthMockClient
-    // Simply do switch statement and return different id_token
-    // ask chatGpt
 
     // ----------
     // now check that the original user has two identities
@@ -353,7 +344,8 @@ describe("social sign on", () => {
       {
         connection: "other-social-provider",
         provider: "other-social-provider",
-        user_id: "1234567890",
+        // this is correct as per the encoded id_token for this SSO provider
+        user_id: "test-new-sub",
         isSocial: true,
       },
     ]);
