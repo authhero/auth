@@ -255,6 +255,9 @@ describe("social sign on", () => {
 
   // this should probably be in linking flows that hit multiple providers... or be added in many different flows
   // maybe we should check that each provider type can be linked to and linked from
+  // -------------------
+  // this will fail as we're only looking up by email
+  // -------------------
   it("should create linked users when creating multiple social users with same email address", async () => {
     const token = await getAdminToken();
     await setup(worker);
