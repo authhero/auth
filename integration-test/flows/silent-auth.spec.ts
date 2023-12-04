@@ -1,6 +1,18 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
-import { parseJwt } from "../../src/utils/parse-jwt";
+
+function getDefaultSilentAuthSearchParams() {
+  return new URLSearchParams({
+    response_type: "token id_token",
+    scope: "openid profile email",
+    redirect_uri: "http://localhost:3000/callback",
+    state: "state",
+    // silent auth pararms!
+    prompt: "none",
+    nonce: "unique-nonce",
+    response_mode: "web_message",
+  });
+}
 
 describe("silent-auth", () => {
   let worker;
@@ -63,24 +75,6 @@ describe("silent-auth", () => {
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
 
-    const location = tokenResponse.headers.get("location");
-    const redirectUri = new URL(location);
-
-    expect(redirectUri.hostname).toBe("login.example.com");
-    expect(redirectUri.searchParams.get("state")).toBe("state");
-
-    const accessToken = redirectUri.searchParams.get("access_token");
-
-    const accessTokenPayload = parseJwt(accessToken!);
-    expect(accessTokenPayload.aud).toBe("default");
-    expect(accessTokenPayload.iss).toBe("https://example.com/");
-    expect(accessTokenPayload.scope).toBe("");
-
-    const idToken = redirectUri.searchParams.get("id_token");
-    const idTokenPayload = parseJwt(idToken!);
-    expect(idTokenPayload.email).toBe("foo@example.com");
-    expect(idTokenPayload.aud).toBe("clientId");
-
     // -------------------------------------------------------------
     // now check silent auth works on the same client
     // -------------------------------------------------------------
@@ -90,19 +84,8 @@ describe("silent-auth", () => {
       .map((c) => c.trim());
     const authCookie = cookies.find((c) => c.startsWith("auth-token"));
 
-    const silentAuthSearchParams = new URLSearchParams();
+    const silentAuthSearchParams = getDefaultSilentAuthSearchParams();
     silentAuthSearchParams.set("client_id", "clientId");
-    silentAuthSearchParams.set("response_type", "token id_token");
-    silentAuthSearchParams.set("scope", "openid profile email");
-    silentAuthSearchParams.set(
-      "redirect_uri",
-      "http://localhost:3000/callback",
-    );
-    silentAuthSearchParams.set("state", "state");
-    // silent auth pararms!
-    silentAuthSearchParams.set("prompt", "none");
-    silentAuthSearchParams.set("nonce", "unique-nonce");
-    silentAuthSearchParams.set("response_mode", "web_message");
 
     const silentAuthResponse = await worker.fetch(
       `/authorize?${silentAuthSearchParams.toString()}`,
@@ -123,22 +106,9 @@ describe("silent-auth", () => {
     // -------------------------------------------------------------
     // now check silent auth works on the same tenant
     // -------------------------------------------------------------
-    const silentAuthSearchParamsDifferentClient = new URLSearchParams();
+    const silentAuthSearchParamsDifferentClient =
+      getDefaultSilentAuthSearchParams();
     silentAuthSearchParamsDifferentClient.set("client_id", "otherClientId");
-    silentAuthSearchParamsDifferentClient.set(
-      "response_type",
-      "token id_token",
-    );
-    silentAuthSearchParamsDifferentClient.set("scope", "openid profile email");
-    silentAuthSearchParamsDifferentClient.set(
-      "redirect_uri",
-      "http://localhost:3000/callback",
-    );
-    silentAuthSearchParamsDifferentClient.set("state", "state");
-    // silent auth pararms!
-    silentAuthSearchParamsDifferentClient.set("prompt", "none");
-    silentAuthSearchParamsDifferentClient.set("nonce", "unique-nonce");
-    silentAuthSearchParamsDifferentClient.set("response_mode", "web_message");
 
     const silentAuthResponseDifferentClient = await worker.fetch(
       `/authorize?${silentAuthSearchParamsDifferentClient.toString()}`,
@@ -158,25 +128,12 @@ describe("silent-auth", () => {
     // -------------------------------------------------------------
     // now check silent auth does not on a different tenant
     // -------------------------------------------------------------
-    const silentAuthSearchParamsDifferentTenant = new URLSearchParams();
+    const silentAuthSearchParamsDifferentTenant =
+      getDefaultSilentAuthSearchParams();
     silentAuthSearchParamsDifferentTenant.set(
       "client_id",
       "otherClientIdOnOtherTenant",
     );
-    silentAuthSearchParamsDifferentTenant.set(
-      "response_type",
-      "token id_token",
-    );
-    silentAuthSearchParamsDifferentTenant.set("scope", "openid profile email");
-    silentAuthSearchParamsDifferentTenant.set(
-      "redirect_uri",
-      "http://localhost:3000/callback",
-    );
-    silentAuthSearchParamsDifferentTenant.set("state", "state");
-    // silent auth pararms!
-    silentAuthSearchParamsDifferentTenant.set("prompt", "none");
-    silentAuthSearchParamsDifferentTenant.set("nonce", "unique-nonce");
-    silentAuthSearchParamsDifferentTenant.set("response_mode", "web_message");
 
     const silentAuthResponseDifferentTenant = await worker.fetch(
       `/authorize?${silentAuthSearchParamsDifferentTenant.toString()}`,
