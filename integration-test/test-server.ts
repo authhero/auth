@@ -17,8 +17,7 @@ data.clients.create({
   name: "Test Client",
   connections: [],
   domains: [],
-  // this isn't actually seeded to the tenants table right? not needed
-  // as this DO is actually a cache joining clients, tenants and connections
+  // this ID is not seeded to the tenants data adapter
   tenant_id: "tenantId",
   allowed_callback_urls: ["https://login.example.com/sv/callback"],
   allowed_logout_urls: [],
