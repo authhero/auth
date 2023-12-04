@@ -287,8 +287,6 @@ describe("social sign on", () => {
 
     const newSocialUser = await newSocialUserRes.json();
 
-    console.log(newSocialUser);
-
     // this should only have its own identity
     expect(newSocialUser.identities).toEqual([
       {
@@ -322,11 +320,39 @@ describe("social sign on", () => {
 
     expect(socialCallbackResponse2.status).toBe(302);
 
-    // now check that the original user has two identities
-
     // THIS WILL FAIL!
     // because not returning different id_tokens from OAuthMockClient
     // Simply do switch statement and return different id_token
     // ask chatGpt
+
+    // ----------
+    // now check that the original user has two identities
+    // ----------
+    const newSocialUserResAgain = await worker.fetch(
+      `/api/v2/users/demo-social-provider|1234567890`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    const newSocialUserAgain = await newSocialUserResAgain.json();
+
+    // this should have both identities
+    expect(newSocialUserAgain.identities).toEqual([
+      {
+        connection: "demo-social-provider",
+        provider: "demo-social-provider",
+        user_id: "1234567890",
+        isSocial: true,
+      },
+      {
+        connection: "other-social-provider",
+        provider: "other-social-provider",
+        user_id: "1234567890",
+        isSocial: true,
+      },
+    ]);
   });
 });
