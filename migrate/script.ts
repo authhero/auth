@@ -7,6 +7,7 @@ import { getDb } from "../src/services/db";
 
 // import { PlanetScaleDialect } from "kysely-planetscale";
 import { BunSqliteDialect } from "kysely-bun-sqlite";
+// @ts-ignore
 import * as bunSqlite from "bun:sqlite";
 
 console.log("migrating...");
