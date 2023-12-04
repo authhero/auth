@@ -1,4 +1,3 @@
-import exp from "constants";
 import { getAdminToken } from "./token";
 
 export async function setup(worker: any) {
@@ -21,6 +20,28 @@ export async function setup(worker: any) {
   if (createTenantResponse.status !== 201) {
     throw new Error(
       `Setup: Failed to create tenant: ${await createTenantResponse.text()}`,
+    );
+  }
+
+  // TODO - why not move all this into test-server.ts?
+  const createOtherTenantResponse = await worker.fetch("/api/v2/tenants", {
+    method: "POST",
+    body: JSON.stringify({
+      name: "otherTenant",
+      // change these!
+      audience: "test",
+      sender_name: "test",
+      sender_email: "test@example.com",
+    }),
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+  });
+
+  if (createOtherTenantResponse.status !== 201) {
+    throw new Error(
+      `Setup: Failed to create other tenant: ${await createTenantResponse.text()}`,
     );
   }
 

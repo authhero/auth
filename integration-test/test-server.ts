@@ -17,7 +17,45 @@ data.clients.create({
   name: "Test Client",
   connections: [],
   domains: [],
+  // this isn't actually seeded to the tenants table right? not needed
+  // as this DO is actually a cache joining clients, tenants and connections
   tenant_id: "tenantId",
+  allowed_callback_urls: ["https://login.example.com/sv/callback"],
+  allowed_logout_urls: [],
+  allowed_web_origins: [],
+  email_validation: "enforced",
+  client_secret: "XjI8-WPndjtNHDu4ybXrD",
+  tenant: {
+    audience: "https://example.com",
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+  },
+});
+
+data.clients.create({
+  id: "otherClientId",
+  name: "Test Client",
+  connections: [],
+  domains: [],
+  tenant_id: "tenantId",
+  allowed_callback_urls: ["https://login.example.com/sv/callback"],
+  allowed_logout_urls: [],
+  allowed_web_origins: [],
+  email_validation: "enforced",
+  client_secret: "XjI8-WPndjtNHDu4ybXrD",
+  tenant: {
+    audience: "https://example.com",
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+  },
+});
+
+data.clients.create({
+  id: "otherClientIdOnOtherTenant",
+  name: "Test Client",
+  connections: [],
+  domains: [],
+  tenant_id: "otherTenant",
   allowed_callback_urls: ["https://login.example.com/sv/callback"],
   allowed_logout_urls: [],
   allowed_web_origins: [],
