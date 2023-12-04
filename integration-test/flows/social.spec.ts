@@ -18,6 +18,28 @@ const SOCIAL_STATE_PARAM = btoa(
   }),
 ).replace("==", "");
 
+const EXPECTED_NEW_USER = {
+  tenant_id: "tenantId",
+  name: "john.doe@example.com",
+  provider: "demo-social-provider",
+  connection: "demo-social-provider",
+  email: "john.doe@example.com",
+  email_verified: true,
+  last_ip: "",
+  identities: [
+    {
+      connection: "demo-social-provider",
+      provider: "demo-social-provider",
+      user_id: "1234567890",
+      isSocial: true,
+    },
+  ],
+  login_count: 0,
+  is_social: true,
+  profileData: '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
+  user_id: "demo-social-provider|1234567890",
+};
+
 describe("social sign on", () => {
   let worker;
 
@@ -67,90 +89,79 @@ describe("social sign on", () => {
     expect(socialSignOnQuery2.get("response_mode")).toBe("query");
   });
 
-  it("should create a new user from a new social signup", async () => {
-    const socialCallbackQuery = new URLSearchParams({
-      // start with same state as on previous step
-      state: SOCIAL_STATE_PARAM,
-      code: "code",
-    });
+  describe("should create a new user from a new user social callback", () => {
+    // like most of the providers
+    it.only("GET to /callback", async () => {
+      const socialCallbackQuery = new URLSearchParams({
+        // start with same state as on previous step
+        state: SOCIAL_STATE_PARAM,
+        code: "code",
+      });
 
-    const socialCallbackResponse = await worker.fetch(
-      `/callback?${socialCallbackQuery.toString()}`,
-      {
-        redirect: "manual",
-      },
-    );
-
-    expect(socialCallbackResponse.status).toBe(302);
-
-    const location2 = new URL(socialCallbackResponse.headers.get("location"));
-
-    expect(location2.host).toBe("login2.sesamy.dev");
-
-    const socialCallbackQuery2 = location2.searchParams;
-    expect(socialCallbackQuery2.get("access_token")).toBeDefined();
-    expect(socialCallbackQuery2.get("id_token")).toBeDefined();
-    expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
-    expect(socialCallbackQuery2.get("state")).toBe(
-      "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-    );
-
-    const idToken = socialCallbackQuery2.get("id_token");
-
-    if (!idToken) {
-      throw new Error("idToken not found");
-    }
-
-    const idTokenPayload = parseJwt(idToken);
-
-    expect(idTokenPayload.aud).toBe("clientId");
-    expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
-    expect(idTokenPayload.name).toBe("john.doe@example.com");
-    expect(idTokenPayload.email).toBe("john.doe@example.com");
-    expect(idTokenPayload.email_verified).toBe(true);
-    // the same that we passed in
-    expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
-    expect(idTokenPayload.iss).toBe("https://example.com/");
-
-    const token = await getAdminToken();
-
-    // now check that the user was created was properly in the data providers
-    const newSocialUserRes = await worker.fetch(
-      `/api/v2/users/${idTokenPayload.sub}`,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+      const socialCallbackResponse = await worker.fetch(
+        `/callback?${socialCallbackQuery.toString()}`,
+        {
+          redirect: "manual",
         },
-      },
-    );
+      );
 
-    const newSocialUser = await newSocialUserRes.json();
+      expect(socialCallbackResponse.status).toBe(302);
 
-    expect(newSocialUser.email).toBe("john.doe@example.com");
-    expect(newSocialUser.tenant_id).toBe("tenantId");
-    expect(newSocialUser.name).toBe("john.doe@example.com");
-    expect(newSocialUser.provider).toBe("demo-social-provider");
-    expect(newSocialUser.connection).toBe("demo-social-provider");
-    expect(newSocialUser.email_verified).toBe(true);
-    expect(newSocialUser.last_ip).toBe("");
-    expect(newSocialUser.login_count).toBe(0);
-    expect(newSocialUser.is_social).toBe(true);
-    expect(newSocialUser.last_login).toBeDefined();
-    expect(newSocialUser.created_at).toBeDefined();
-    expect(newSocialUser.updated_at).toBeDefined();
-    expect(newSocialUser.profileData).toBe(
-      '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
-    );
-    expect(newSocialUser.identities).toEqual([
-      {
-        connection: "demo-social-provider",
-        provider: "demo-social-provider",
-        user_id: "1234567890",
-        isSocial: true,
-      },
-    ]);
-    expect(newSocialUser.user_id).toBe("demo-social-provider|1234567890");
+      const location2 = new URL(socialCallbackResponse.headers.get("location"));
+
+      expect(location2.host).toBe("login2.sesamy.dev");
+
+      const socialCallbackQuery2 = location2.searchParams;
+      expect(socialCallbackQuery2.get("access_token")).toBeDefined();
+      expect(socialCallbackQuery2.get("id_token")).toBeDefined();
+      expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
+      expect(socialCallbackQuery2.get("state")).toBe(
+        "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+      );
+
+      const idToken = socialCallbackQuery2.get("id_token");
+
+      if (!idToken) {
+        throw new Error("idToken not found");
+      }
+
+      const idTokenPayload = parseJwt(idToken);
+
+      expect(idTokenPayload.aud).toBe("clientId");
+      expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
+      expect(idTokenPayload.name).toBe("john.doe@example.com");
+      expect(idTokenPayload.email).toBe("john.doe@example.com");
+      expect(idTokenPayload.email_verified).toBe(true);
+      // the same that we passed in
+      expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
+      expect(idTokenPayload.iss).toBe("https://example.com/");
+
+      const token = await getAdminToken();
+
+      // now check that the user was created was properly in the data providers
+      const newSocialUserRes = await worker.fetch(
+        `/api/v2/users/${idTokenPayload.sub}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const newSocialUser = await newSocialUserRes.json();
+
+      const {
+        created_at,
+        updated_at,
+        last_login,
+        ...newSocialUserWithoutDates
+      } = newSocialUser;
+
+      expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
+    });
+    // like apple
+    it("POST to /callback", async () => {});
   });
 
   // how to seed a social user here? DO something similar in the worker-fetch creation
