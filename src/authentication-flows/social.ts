@@ -140,9 +140,10 @@ export async function socialAuthCallback({
     email,
   };
 
-  // TODO - this should actually be id! the social id pulled out before
-  // we can fix once we've done account linking
-  let user = await env.data.users.getByEmail(client.tenant_id, email);
+  // should be {provider}|{sub} - expect this to fail
+  // let user = await env.data.users.get(client.tenant_id, sub);
+  // strangely above doesn't cause any tests to fail but probably lacking tests where reuse same social sign on twice!
+  let user = await env.data.users.get(client.tenant_id, `${connection}|${sub}`);
 
   if (!state.connection) {
     throw new HTTPException(403, { message: "Connection not found" });
@@ -166,6 +167,16 @@ export async function socialAuthCallback({
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
+
+    const sameEmailUser = await env.data.users.getByEmail(
+      client.tenant_id,
+      email,
+    );
+
+    if (sameEmailUser) {
+      // link user account here
+      console.log("same Email user found");
+    }
   }
 
   ctx.set("email", email);
