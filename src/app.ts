@@ -8,7 +8,6 @@ import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import { rotateKeysRoute } from "./routes/rotate-keys";
 import { serve } from "./routes/login";
-import { getDb } from "./services/db";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
@@ -82,11 +81,17 @@ app.get("/static/:file{.*}", serve);
 app.post("/create-key", rotateKeysRoute);
 
 app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
-  const db = getDb(ctx.env);
-  const application = await db
-    .selectFrom("applications")
-    .selectAll()
-    .executeTakeFirst();
+  const response = await ctx.env.data.applications.list(
+    // This is the tenant id in dev
+    "qo0kCHUE8qAvpNPznuoRW",
+    {
+      per_page: 1,
+      page: 1,
+      include_totals: true,
+    },
+  );
+
+  const [application] = response.applications;
 
   const url = new URL(ctx.req.url);
 
@@ -101,3 +106,4 @@ app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
 RegisterRoutes(app as unknown as Hono);
 
 export default app;
+export type AppType = typeof app;

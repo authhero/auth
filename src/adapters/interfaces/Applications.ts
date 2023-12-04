@@ -1,4 +1,6 @@
+import { Totals } from "../../types/auth0";
 import { Application } from "../../types";
+import { ListParams } from "./ListParams";
 
 export interface CreateApplicationParams {
   name: string;
@@ -16,10 +18,10 @@ export interface ApplicationsAdapter {
     params: CreateApplicationParams,
   ): Promise<Application>;
   // get(tenant_id: string, id: string): Promise<Application | undefined>;
-  // list(
-  //   tenant_id: string,
-  //   params: ListParams,
-  // ): Promise<{ applications: Application[]; totals?: Totals }>;
+  list(
+    tenant_id: string,
+    params: ListParams,
+  ): Promise<{ applications: Application[]; totals?: Totals }>;
   // update(
   //   tenant_id: string,
   //   id: string,
