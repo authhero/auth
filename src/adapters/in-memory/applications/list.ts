@@ -1,5 +1,5 @@
 import { ListParams } from "../../interfaces/ListParams";
-import { Tenant } from "../../../types";
+import { Application } from "../../../types";
 
 function sortByString<T>(
   arr: T[],
@@ -24,32 +24,32 @@ function sortByString<T>(
   });
 }
 
-export function listTenants(tenantsStorage: Tenant[]) {
-  return async (params: ListParams) => {
-    let tenants = sortByString(tenantsStorage as any[], params.sort);
+export function list(applicationStorage: Application[]) {
+  return async (tenant_id: string, params: ListParams) => {
+    let applications = sortByString(applicationStorage as any[], params.sort);
 
     if (params.q) {
-      tenants = tenants.filter((tenant) =>
+      applications = applications.filter((tenant) =>
         tenant.name.toLowerCase().includes(params.q?.toLowerCase()),
       );
     }
 
-    tenants = tenants.slice(
+    applications = applications.slice(
       (params.page - 1) * params.per_page,
       params.page * params.per_page,
     );
 
     if (!params.include_totals) {
       return {
-        tenants,
+        applications,
       };
     }
 
     return {
-      tenants,
+      applications,
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
-      length: tenants.length,
+      length: applications.length,
     };
   };
 }

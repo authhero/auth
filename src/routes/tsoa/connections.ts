@@ -15,7 +15,7 @@ import {
   Header,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-import { getDb } from "../../services/db";
+import { getDbFromEnv } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { SqlConnection } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
@@ -34,7 +34,7 @@ export class ConnectionsController extends Controller {
   ): Promise<SqlConnection[]> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const query = db
       .selectFrom("connections")
       .where("connections.tenant_id", "=", tenantId);
@@ -57,7 +57,7 @@ export class ConnectionsController extends Controller {
   ): Promise<SqlConnection | string> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const connection = await db
       .selectFrom("connections")
       .where("connections.tenant_id", "=", tenantId)
@@ -82,7 +82,7 @@ export class ConnectionsController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     await db
       .deleteFrom("connections")
       .where("connections.tenant_id", "=", tenantId)
@@ -107,7 +107,7 @@ export class ConnectionsController extends Controller {
   ) {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     const connection = {
       ...body,
       tenantId,
@@ -165,7 +165,7 @@ export class ConnectionsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const connection: SqlConnection = {
       ...body,

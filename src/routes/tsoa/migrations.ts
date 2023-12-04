@@ -16,11 +16,10 @@ import {
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
-import { getDb } from "../../services/db";
+import { getDbFromEnv } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Migration } from "../../types/sql";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
-import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
@@ -36,7 +35,7 @@ export class MigrationsController extends Controller {
   ): Promise<Migration[]> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const query = db
       .selectFrom("migrations")
       .where("migrations.tenant_id", "=", tenant_id);
@@ -59,7 +58,7 @@ export class MigrationsController extends Controller {
   ): Promise<Migration | string> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const migration = await db
       .selectFrom("migrations")
       .where("migrations.tenant_id", "=", tenantId)
@@ -84,7 +83,7 @@ export class MigrationsController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     await db
       .deleteFrom("migrations")
       .where("migrations.tenant_id", "=", tenantId)
@@ -109,7 +108,7 @@ export class MigrationsController extends Controller {
   ) {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     const migration = {
       ...body,
       tenantId,
@@ -139,7 +138,7 @@ export class MigrationsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const migration: Migration = {
       ...body,
@@ -170,7 +169,7 @@ export class MigrationsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const migration: Migration = {
       ...body,

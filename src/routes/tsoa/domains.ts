@@ -16,7 +16,7 @@ import {
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
 
-import { getDb } from "../../services/db";
+import { getDbFromEnv } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { parseRange } from "../../helpers/content-range";
@@ -37,7 +37,7 @@ export class DomainsController extends Controller {
 
     const parsedRange = parseRange(range);
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const query = db
       .selectFrom("domains")
       .where("domains.tenant_id", "=", tenantId);
@@ -71,7 +71,7 @@ export class DomainsController extends Controller {
   ): Promise<SqlDomain | string> {
     const { ctx } = request;
 
-    const db = getDb(ctx.env);
+    const db = getDbFromEnv(ctx.env);
     const domain = await db
       .selectFrom("domains")
       .where("domains.id", "=", id)
@@ -96,7 +96,7 @@ export class DomainsController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     await db
       .deleteFrom("domains")
       .where("domains.tenant_id", "=", tenantId)
@@ -121,7 +121,7 @@ export class DomainsController extends Controller {
   ) {
     const { env } = request.ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
     const domain = {
       ...body,
       tenantId,
@@ -151,7 +151,7 @@ export class DomainsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const domain: SqlDomain = {
       ...body,
@@ -185,7 +185,7 @@ export class DomainsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const db = getDb(env);
+    const db = getDbFromEnv(env);
 
     const domain: SqlDomain = {
       ...body,

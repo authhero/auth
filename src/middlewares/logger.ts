@@ -2,6 +2,7 @@ import datadogLogger from "../services/datadog";
 import { Env } from "../types/Env";
 import { Context, Next } from "hono";
 import { Var } from "../types/Var";
+import { waitUntil } from "../utils/wait-until";
 
 async function logResponse(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -31,9 +32,9 @@ export default async function loggerMiddleware(
   try {
     await next();
 
-    ctx.executionCtx.waitUntil(logResponse(ctx, ctx.res));
+    waitUntil(ctx, logResponse(ctx, ctx.res));
   } catch (error: any) {
-    ctx.executionCtx.waitUntil(logError(ctx, error as Error));
+    waitUntil(ctx, logError(ctx, error as Error));
 
     throw error;
   }

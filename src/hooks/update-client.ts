@@ -1,8 +1,8 @@
 import { Env, SqlConnectionSchema, PartialClient } from "../types";
-import { getDb } from "../services/db";
+import { getDbFromEnv } from "../services/db";
 
 export async function updateTenantClientsInKV(env: Env, tenantId: string) {
-  const db = getDb(env);
+  const db = getDbFromEnv(env);
 
   const applications = await db
     .selectFrom("applications")
@@ -35,7 +35,7 @@ function removeNullProperties<T = any>(obj: Record<string, any>) {
 }
 
 export async function updateClientInKV(env: Env, applicationId: string) {
-  const db = getDb(env);
+  const db = getDbFromEnv(env);
 
   const application = await db
     .selectFrom("applications")

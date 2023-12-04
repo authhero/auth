@@ -1,5 +1,5 @@
 import { Env } from "../src/types/Env";
-import { app } from "../src/app";
+import app from "../src/app";
 import { getCertificate } from "./helpers/token";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";
 import createAdapter from "../src/adapters/in-memory";

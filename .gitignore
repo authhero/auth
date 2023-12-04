@@ -18,3 +18,4 @@ data/
 .wrangler
 **/.DS_Store
 .vscode
+db.sqlite

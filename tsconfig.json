@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "lib": ["es2020", "DOM"],
-    "module": "ESNext",
-    "target": "es2020",
+    "module": "CommonJS",
+    "target": "ES6",
     "strict": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
