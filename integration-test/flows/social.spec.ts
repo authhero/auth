@@ -91,9 +91,10 @@ describe("social sign on", () => {
 
   describe("should create a new user from a new user social callback", () => {
     // like most of the providers
-    it.only("GET to /callback", async () => {
+    it("GET to /callback", async () => {
+      await setup(worker);
+
       const socialCallbackQuery = new URLSearchParams({
-        // start with same state as on previous step
         state: SOCIAL_STATE_PARAM,
         code: "code",
       });
@@ -140,6 +141,92 @@ describe("social sign on", () => {
 
       // now check that the user was created was properly in the data providers
       const newSocialUserRes = await worker.fetch(
+        `/api/v2/users/demo-social-provider|1234567890`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const newSocialUser = await newSocialUserRes.json();
+
+      const {
+        created_at,
+        updated_at,
+        last_login,
+        ...newSocialUserWithoutDates
+      } = newSocialUser;
+
+      expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
+    });
+
+    // like apple
+    it("POST to /callback", async () => {
+      await setup(worker);
+
+      const token = await getAdminToken();
+
+      // check this user isn't already created from the previous test
+      const checkNoExistingUser = await worker.fetch(
+        `/api/v2/users/demo-social-provider|1234567890`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      // this checks that the integration test persistence is correctly reset every test
+      expect(checkNoExistingUser.status).toBe(404);
+
+      const socialCallbackResponse = await worker.fetch(`/callback`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          state: SOCIAL_STATE_PARAM,
+          code: "code",
+        }),
+        redirect: "manual",
+      });
+
+      expect(socialCallbackResponse.status).toBe(302);
+
+      const location2 = new URL(socialCallbackResponse.headers.get("location"));
+
+      expect(location2.host).toBe("login2.sesamy.dev");
+
+      const socialCallbackQuery2 = location2.searchParams;
+      expect(socialCallbackQuery2.get("access_token")).toBeDefined();
+      expect(socialCallbackQuery2.get("id_token")).toBeDefined();
+      expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
+      expect(socialCallbackQuery2.get("state")).toBe(
+        "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+      );
+
+      const idToken = socialCallbackQuery2.get("id_token");
+
+      if (!idToken) {
+        throw new Error("idToken not found");
+      }
+
+      const idTokenPayload = parseJwt(idToken);
+
+      expect(idTokenPayload.aud).toBe("clientId");
+      expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
+      expect(idTokenPayload.name).toBe("john.doe@example.com");
+      expect(idTokenPayload.email).toBe("john.doe@example.com");
+      expect(idTokenPayload.email_verified).toBe(true);
+      // the same that we passed in
+      expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
+      expect(idTokenPayload.iss).toBe("https://example.com/");
+
+      // now check that the user was created was properly in the data providers
+      const newSocialUserRes = await worker.fetch(
         `/api/v2/users/${idTokenPayload.sub}`,
         {
           headers: {
@@ -160,8 +247,6 @@ describe("social sign on", () => {
 
       expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
     });
-    // like apple
-    it("POST to /callback", async () => {});
   });
 
   // how to seed a social user here? DO something similar in the worker-fetch creation
@@ -203,10 +288,12 @@ describe("social sign on", () => {
     console.log(await createNewSocialUserRes.text());
 
     expect(createNewSocialUserRes.status).toBe(200);
+
+    // Other implementation!
+    // log in like on other tests, log in again!
   });
 
   // NEXT TESTS
-  // - POST to /callback endpoint e.g. Apple SSO flow. see if can do this
   // - malicious call to /callback! Are we verifying anything here? - start off with call to this and see what happens...
   // - email_verified - if we actually want to support my overengineered functionally, let's start off with a user with email_verified as false, and then sign in with an SSO provider and id_token with email_verified as true...
 });
