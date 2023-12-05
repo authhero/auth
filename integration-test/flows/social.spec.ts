@@ -3,6 +3,7 @@ import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
 import type { UnstableDevWorker } from "wrangler";
+import { UserResponse } from "../../src/types/auth0";
 
 // same on each test
 const SOCIAL_STATE_PARAM = btoa(
@@ -159,7 +160,7 @@ describe("social sign on", () => {
         },
       );
 
-      const newSocialUser = await newSocialUserRes.json();
+      const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
 
       const {
         created_at,
@@ -247,7 +248,7 @@ describe("social sign on", () => {
         },
       );
 
-      const newSocialUser = await newSocialUserRes.json();
+      const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
 
       const {
         created_at,
