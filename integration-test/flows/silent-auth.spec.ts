@@ -1,6 +1,19 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
 
+function getDefaultSilentAuthSearchParams() {
+  return new URLSearchParams({
+    response_type: "token id_token",
+    scope: "openid profile email",
+    redirect_uri: "http://localhost:3000/callback",
+    state: "state",
+    // silent auth pararms!
+    prompt: "none",
+    nonce: "unique-nonce",
+    response_mode: "web_message",
+  });
+}
+
 describe("silent-auth", () => {
   let worker;
 
@@ -24,7 +37,118 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
-  // this is tested in code-flow.spec.ts. which makes sense for integration tests
-  // and to do this skipped test would require that entire test as setup
-  it.todo("should return a 200 for a valid silent auth request");
+  it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
+    const loginResponse = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      // this user already created when seeding db
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+        realm: "Username-Password-Authentication",
+        password: "Test!",
+        username: "foo@example.com",
+      }),
+    });
+
+    expect(loginResponse.status).toBe(200);
+
+    const { login_ticket } = await loginResponse.json();
+
+    const query = new URLSearchParams({
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket,
+      referrer: "https://login.example.com",
+      response_type: "token id_token",
+      redirect_uri: "http://login.example.com",
+      state: "state",
+    });
+
+    // Trade the ticket for token
+    const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
+      redirect: "manual",
+    });
+
+    expect(tokenResponse.status).toBe(302);
+    expect(await tokenResponse.text()).toBe("Redirecting");
+
+    // -------------------------------------------------------------
+    // now check silent auth works on the same client
+    // -------------------------------------------------------------
+    const cookies = tokenResponse.headers
+      .get("set-cookie")
+      .split(";")
+      .map((c) => c.trim());
+    const authCookie = cookies.find((c) => c.startsWith("auth-token"));
+
+    const silentAuthSearchParams = getDefaultSilentAuthSearchParams();
+    silentAuthSearchParams.set("client_id", "clientId");
+
+    const silentAuthResponse = await worker.fetch(
+      `/authorize?${silentAuthSearchParams.toString()}`,
+      {
+        headers: {
+          // here we set the auth cookie given to us from the previous successful auth request
+          cookie: authCookie,
+        },
+      },
+    );
+
+    const body = await silentAuthResponse.text();
+
+    expect(body).not.toContain("Login required");
+    expect(body).toContain("access_token");
+    // this is tested more extensively on other flows
+
+    // -------------------------------------------------------------
+    // now check silent auth works on the same tenant
+    // -------------------------------------------------------------
+    const silentAuthSearchParamsDifferentClient =
+      getDefaultSilentAuthSearchParams();
+    silentAuthSearchParamsDifferentClient.set("client_id", "otherClientId");
+
+    const silentAuthResponseDifferentClient = await worker.fetch(
+      `/authorize?${silentAuthSearchParamsDifferentClient.toString()}`,
+      {
+        headers: {
+          // here we set the auth cookie given to us from the previous successful auth request
+          cookie: authCookie,
+        },
+      },
+    );
+
+    const bodyDifferentClient = await silentAuthResponseDifferentClient.text();
+
+    expect(bodyDifferentClient).not.toContain("Login required");
+    expect(bodyDifferentClient).toContain("access_token");
+
+    // -------------------------------------------------------------
+    // now check silent auth does not on a different tenant
+    // -------------------------------------------------------------
+    const silentAuthSearchParamsDifferentTenant =
+      getDefaultSilentAuthSearchParams();
+    silentAuthSearchParamsDifferentTenant.set(
+      "client_id",
+      "otherClientIdOnOtherTenant",
+    );
+
+    const silentAuthResponseDifferentTenant = await worker.fetch(
+      `/authorize?${silentAuthSearchParamsDifferentTenant.toString()}`,
+      {
+        headers: {
+          // here we set the auth cookie given to us from the previous successful auth request
+          cookie: authCookie,
+        },
+      },
+    );
+
+    const bodyDifferentTenant = await silentAuthResponseDifferentTenant.text();
+
+    // This is the difference here
+    expect(bodyDifferentTenant).toContain("Login required");
+    expect(bodyDifferentTenant).not.toContain("access_token");
+  });
 });
