@@ -25,7 +25,7 @@ describe("tenants", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as Tenant[];
     expect(body.length).toBe(0);
   });
 
@@ -53,17 +53,17 @@ describe("tenants", () => {
     });
 
     expect(createTenantResponse.status).toBe(201);
-    const createdTenant = await createTenantResponse.json();
+    const createdTenant = (await createTenantResponse.json()) as Tenant;
 
     expect(createdTenant.name).toBe("test");
 
-    const newTenantResponse = await worker.fetch("/api/v2/tenants", {
+    const tenantsResponse = await worker.fetch("/api/v2/tenants", {
       headers: {
         authorization: `Bearer ${token}`,
       },
     });
-    expect(newTenantResponse.status).toBe(200);
-    const body = await newTenantResponse.json();
+    expect(tenantsResponse.status).toBe(200);
+    const body = (await tenantsResponse.json()) as Tenant[];
     expect(body.length).toEqual(1);
     expect(body[0].id).toEqual(createdTenant.id);
   });
