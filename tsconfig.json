@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es2020",
-      "DOM"
-    ],
+    "lib": ["es2020", "DOM"],
     "module": "CommonJS",
     "target": "ES6",
     "strict": true,
@@ -27,15 +24,8 @@
       "@types/service-worker-mock"
     ],
     "paths": {
-      "*": [
-        "node_modules/*"
-      ]
+      "*": ["node_modules/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "integration-test/**/*",
-    "scripts/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"]
 }
