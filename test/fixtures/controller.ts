@@ -1,8 +1,6 @@
 import { Controller } from "@tsoa/runtime";
 
 export function controllerFixture(): Controller {
-  // typescript object keyvalue type
-
   const headers: { [key: string]: any } = {};
   let _status: number | undefined;
 
