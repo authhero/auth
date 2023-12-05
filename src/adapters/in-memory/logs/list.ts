@@ -4,7 +4,7 @@ import { Log } from "../../../types";
 
 export function listLogs(logs: Log[]) {
   return async (
-    tenantId,
+    tenantId: string,
     { page, per_page, include_totals, q }: ListParams,
   ): Promise<ListLogsResponse> => {
     return {
