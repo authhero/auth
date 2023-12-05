@@ -96,6 +96,9 @@ describe("password-flow", () => {
       expect(await tokenResponse.text()).toBe("Redirecting");
 
       const location = tokenResponse.headers.get("location");
+      if (!location) {
+        throw new Error("location missing");
+      }
       const redirectUri = new URL(location);
 
       expect(redirectUri.hostname).toBe("login.example.com");
@@ -113,8 +116,10 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
 
+      const tokenResponseHeaders = tokenResponse.headers;
+
       // now check silent auth works after password login
-      const cookies = tokenResponse.headers
+      const cookies = tokenResponseHeaders
         .get("set-cookie")
         .split(";")
         .map((c) => c.trim());
