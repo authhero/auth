@@ -6,10 +6,7 @@ export interface Identity {
   access_token?: string;
   access_token_secret?: string;
   refresh_token?: string;
-}
-
-export interface IdentityWithProfileData extends Identity {
-  profileData: {
+  profileData?: {
     email?: string;
     email_verified?: boolean;
     name?: string;
@@ -21,6 +18,3 @@ export interface IdentityWithProfileData extends Identity {
     [key: string]: any; // Since additionalProperties is true
   };
 }
-
-// this syntax means the first elements is one type and the rest is another type
-export type UserIdentities = [Identity, ...IdentityWithProfileData[]];

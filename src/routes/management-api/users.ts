@@ -23,12 +23,7 @@ import {
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
-import { nanoid } from "nanoid";
-import {
-  Identity,
-  IdentityWithProfileData,
-  UserIdentities,
-} from "../../types/auth0/Identity";
+import { Identity } from "../../types/auth0/Identity";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -144,29 +139,28 @@ export class UsersMgmtController extends Controller {
       isSocial: user.is_social,
     };
 
-    const linkedProfileIdentities: IdentityWithProfileData[] =
-      linkedusers.users.map((u) => {
-        let profileData: { [key: string]: any } = {};
+    const linkedProfileIdentities: Identity[] = linkedusers.users.map((u) => {
+      let profileData: { [key: string]: any } = {};
 
-        try {
-          profileData = JSON.parse(user.profileData || "{}");
-        } catch (e) {
-          console.error("Error parsing profileData", e);
-        }
+      try {
+        profileData = JSON.parse(user.profileData || "{}");
+      } catch (e) {
+        console.error("Error parsing profileData", e);
+      }
 
-        return {
-          connection: u.connection,
-          provider: u.provider,
-          user_id: userIdParse(u.id),
-          isSocial: u.is_social,
-          profileData: {
-            // both these two appear on every profile type
-            email: u.email,
-            email_verified: u.email_verified,
-            ...profileData,
-          },
-        };
-      });
+      return {
+        connection: u.connection,
+        provider: u.provider,
+        user_id: userIdParse(u.id),
+        isSocial: u.is_social,
+        profileData: {
+          // both these two appear on every profile type
+          email: u.email,
+          email_verified: u.email_verified,
+          ...profileData,
+        },
+      };
+    });
 
     const { id, ...userWithoutId } = user;
 
