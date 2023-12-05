@@ -15,5 +15,5 @@ export interface TenantsDataAdapter {
   get(id: string): Promise<Tenant | undefined>;
   list(params: ListParams): Promise<{ tenants: Tenant[]; totals?: Totals }>;
   update(id: string, tenant: Partial<Tenant>): Promise<void>;
-  remove(tenantId: string, id: string): Promise<boolean>;
+  remove(tenantId: string): Promise<boolean>;
 }

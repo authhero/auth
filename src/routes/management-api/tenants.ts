@@ -157,6 +157,6 @@ export class TenantsController extends Controller {
   ): Promise<void> {
     const { env } = request.ctx;
 
-    await env.data.tenants.delete(id);
+    await env.data.tenants.remove(id);
   }
 }
