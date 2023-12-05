@@ -36,7 +36,7 @@ export type JwtAlgorithm =
 
 export interface CreateTokenParams {
   pemKey: string;
-  payload: { [key: string]: string | string[] | number };
+  payload: { [key: string]: string | string[] | number | boolean };
   alg: JwtAlgorithm;
   headerAdditions: { [key: string]: string | string[] | number };
 }

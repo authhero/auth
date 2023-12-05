@@ -7,7 +7,7 @@ import { createToken } from "../src/utils/jwt";
 import { getCertificate } from "./helpers/token";
 
 function createTokenExample(payload: {
-  [key: string]: string | string[] | number;
+  [key: string]: string | string[] | number | boolean;
 }) {
   return createToken({
     alg: "RS256",
@@ -44,9 +44,7 @@ class MockOAuth2Client implements IOAuth2Client {
         email: "john.doe@example.com",
         picture: "https://example.com/john.jpg",
         nonce: "abc123",
-        // can't actually use boolean... what should happen here then?
-        // email_verified: true,
-        // is this a problem with the library?
+        email_verified: true,
       });
       return {
         access_token: "otherClientAccessToken",
@@ -66,8 +64,7 @@ class MockOAuth2Client implements IOAuth2Client {
       email: "john.doe@example.com",
       picture: "https://example.com/john.jpg",
       nonce: "abc123",
-      // why does this restriction exist on the helper?
-      // email_verified: true,
+      email_verified: true,
     });
     return {
       access_token: "accessToken",
