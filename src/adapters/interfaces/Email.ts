@@ -1,4 +1,5 @@
 import { Client, Env } from "../../types";
+import { Email } from "../../types/Email";
 
 export interface EmailAdapter {
   sendLink: (
@@ -15,7 +16,5 @@ export interface EmailAdapter {
     code: string,
   ) => Promise<void>;
   // Only for testing
-  list?: () => Promise<
-    { client: Client; to: string; code: string; magicLink?: string }[]
-  >;
+  list?: () => Promise<Email[]>;
 }

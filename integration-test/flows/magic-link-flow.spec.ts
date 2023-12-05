@@ -2,6 +2,7 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
+import type { Email } from "../../src/types/Email";
 
 describe("code-flow", () => {
   let worker: UnstableDevWorker;
@@ -48,7 +49,7 @@ describe("code-flow", () => {
     }
 
     const emailResponse = await worker.fetch("/test/email");
-    const [sentEmail] = await emailResponse.json();
+    const [sentEmail] = (await emailResponse.json()) as Email[];
     expect(sentEmail.to).toBe("test@example.com");
 
     const otp = sentEmail.code;
