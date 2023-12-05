@@ -3,7 +3,7 @@ import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 
 describe("Register password user", () => {
-  let worker;
+  let worker: UnstableDevWorker;
   let token;
 
   beforeEach(async () => {

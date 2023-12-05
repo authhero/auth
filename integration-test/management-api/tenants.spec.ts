@@ -2,7 +2,7 @@ import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 
 describe("tenants", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();

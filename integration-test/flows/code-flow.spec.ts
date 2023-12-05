@@ -3,7 +3,7 @@ import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("code-flow", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();

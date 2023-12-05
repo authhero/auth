@@ -3,7 +3,7 @@ import { setup } from "../helpers/setup";
 import { start } from "../start";
 
 describe("password-flow", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();

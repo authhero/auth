@@ -15,7 +15,7 @@ function getDefaultSilentAuthSearchParams() {
 }
 
 describe("silent-auth", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();

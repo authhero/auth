@@ -1,7 +1,7 @@
 import { start } from "./start";
 
 describe("ping", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();

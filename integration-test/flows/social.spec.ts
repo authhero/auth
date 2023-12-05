@@ -41,7 +41,7 @@ const EXPECTED_NEW_USER = {
 };
 
 describe("social sign on", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();
