@@ -66,7 +66,8 @@ class MockOAuth2Client implements IOAuth2Client {
       email: "john.doe@example.com",
       picture: "https://example.com/john.jpg",
       nonce: "abc123",
-      email_verified: true,
+      // why does this restriction exist on the helper?
+      // email_verified: true,
     });
     return {
       access_token: "accessToken",
