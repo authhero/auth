@@ -47,7 +47,7 @@ describe("password-flow", () => {
           },
           method: "POST",
           body: JSON.stringify({
-            email: "test@example.com",
+            email: "password-login-test@example.com",
             password,
           }),
         },
@@ -65,7 +65,7 @@ describe("password-flow", () => {
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
           password,
-          username: "test@example.com",
+          username: "password-login-test@example.com",
         }),
       });
 
@@ -109,8 +109,82 @@ describe("password-flow", () => {
 
       const idToken = redirectUri.searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
-      expect(idTokenPayload.email).toBe("test@example.com");
+      expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
+
+      // now check silent auth works after password login
+      const cookies = tokenResponse.headers
+        .get("set-cookie")
+        .split(";")
+        .map((c) => c.trim());
+      const authCookie = cookies.find((c) => c.startsWith("auth-token"));
+
+      const silentAuthSearchParams = new URLSearchParams();
+      silentAuthSearchParams.set("client_id", "clientId");
+      silentAuthSearchParams.set("response_type", "token id_token");
+      silentAuthSearchParams.set("scope", "openid profile email");
+      silentAuthSearchParams.set(
+        "redirect_uri",
+        "http://localhost:3000/callback",
+      );
+      silentAuthSearchParams.set("state", "state");
+      // silent auth pararms!
+      silentAuthSearchParams.set("prompt", "none");
+      silentAuthSearchParams.set("nonce", "unique-nonce");
+      silentAuthSearchParams.set("response_mode", "web_message");
+
+      const silentAuthResponse = await worker.fetch(
+        `/authorize?${silentAuthSearchParams.toString()}`,
+        {
+          headers: {
+            // here we set the auth cookie given to us from the previous successful auth request
+            cookie: authCookie,
+          },
+        },
+      );
+
+      const body = await silentAuthResponse.text();
+
+      expect(body).not.toContain("Login required");
+
+      expect(body).toContain("access_token");
+
+      // get id token from iframe response body
+      const lines = body.split("\n");
+      const responseBody = lines.find((line) =>
+        line.trim().startsWith("response: "),
+      );
+      if (!responseBody) {
+        throw new Error("iframe auth body missing");
+      }
+
+      const iframeResponseJSON = JSON.parse(
+        responseBody.replace("response: ", ""),
+      );
+
+      const silentAuthIdToken = iframeResponseJSON.id_token;
+
+      const silentAuthIdTokenPayload = parseJwt(silentAuthIdToken);
+
+      const {
+        // these are the fields that change on every test run
+        exp,
+        iat,
+        sid,
+        sub,
+        ...restOfIdTokenPayload
+      } = silentAuthIdTokenPayload;
+
+      expect(sub).toContain("email|");
+      expect(sid).toHaveLength(21);
+      expect(restOfIdTokenPayload).toEqual({
+        aud: "clientId",
+        email: "password-login-test@example.com",
+        // this is correct for password login
+        email_verified: false,
+        nonce: "unique-nonce",
+        iss: "https://example.com/",
+      });
     });
   });
 });

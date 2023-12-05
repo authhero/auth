@@ -12,7 +12,7 @@ describe("silent-auth", () => {
     worker.stop();
   });
 
-  it("should return a 403 for an invalid silent auth request", async () => {
+  it("should return a 200 when not logged in, with a login_required error", async () => {
     await setup(worker);
 
     const response = await worker.fetch(
@@ -23,4 +23,8 @@ describe("silent-auth", () => {
     const body = await response.text();
     expect(body).toContain("Login required");
   });
+
+  // this is tested in code-flow.spec.ts. which makes sense for integration tests
+  // and to do this skipped test would require that entire test as setup
+  it.todo("should return a 200 for a valid silent auth request");
 });
