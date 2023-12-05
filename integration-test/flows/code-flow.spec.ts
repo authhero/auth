@@ -3,6 +3,7 @@ import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 import type { UnstableDevWorker } from "wrangler";
 import type { Email } from "../../src/types/Email";
+import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
 
 describe("code-flow", () => {
   let worker: UnstableDevWorker;
@@ -77,7 +78,7 @@ describe("code-flow", () => {
       );
     }
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
     const query = new URLSearchParams({
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",

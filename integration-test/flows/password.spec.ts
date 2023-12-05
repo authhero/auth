@@ -2,6 +2,7 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
+import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
 
 describe("password-flow", () => {
   let worker: UnstableDevWorker;
@@ -72,7 +73,7 @@ describe("password-flow", () => {
 
       expect(loginResponse.status).toBe(200);
 
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
 
       const query = new URLSearchParams({
         auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
