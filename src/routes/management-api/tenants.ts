@@ -16,6 +16,7 @@ import {
 import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Totals } from "../../types/auth0";
+import { HTTPException } from "hono/http-exception";
 
 export interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
@@ -151,12 +152,19 @@ export class TenantsController extends Controller {
 
   @Delete("{id}")
   @Security("oauth2managementApi", [""])
+  @SuccessResponse(200, "Delete")
   public async deleteTenant(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-  ): Promise<void> {
+  ): Promise<string> {
     const { env } = request.ctx;
 
-    await env.data.tenants.remove(id);
+    const result = await env.data.tenants.remove(id);
+
+    if (!result) {
+      throw new HTTPException(404);
+    }
+
+    return "OK";
   }
 }

@@ -63,31 +63,40 @@ describe("tenants", () => {
     await setup(worker);
 
     const token = await getAdminToken();
-    const tenantResponse = await worker.fetch("/api/v2/tenants", {
+    const tenantsResponse1 = await worker.fetch("/api/v2/tenants", {
       headers: {
         authorization: `Bearer ${token}`,
       },
     });
 
-    const tenantList = (await tenantResponse.json()) as Tenant[];
+    // two tenants in initial setup
+    expect(tenantsResponse1.status).toBe(200);
+    const body1 = (await tenantsResponse1.json()) as Tenant[];
+    expect(body1.length).toEqual(2);
 
-    // one tenant in setup()
-    expect(tenantList.length).toBe(2);
+    // remove 'otherTenant'
+    const otherTenant = body1.find((t) => t.name === "otherTenant");
 
-    // now remove this tenant
+    const deleteTenantResponse = await worker.fetch(
+      `/api/v2/tenants/${otherTenant!.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
-    // const deleteTenantResponse = await worker.fetch(
-    //   `/api/v2/tenants/${tenantList[0].id}`,
-    //   {
-    //     method: "DELETE",
-    //     headers: {
-    //       authorization: `Bearer ${token}`,
-    //     },
-    //   },
-    // );
-
-    // expect(deleteTenantResponse.status).toBe(204);
+    expect(deleteTenantResponse.status).toBe(200);
 
     // fetch list of tenants again - should be empty
+    const tenantsResponse2 = await worker.fetch("/api/v2/tenants", {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+    expect(tenantsResponse2.status).toBe(200);
+    const body2 = (await tenantsResponse2.json()) as Tenant[];
+    expect(body2.length).toEqual(1);
   });
 });
