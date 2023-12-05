@@ -180,7 +180,7 @@ export function contextFixture(
   return {
     set: () => {},
     req: {
-      header: (key) => headers[key],
+      header: (key: string) => headers[key],
     },
     env: {
       AUTH_TEMPLATES: mockedR2Bucket(),

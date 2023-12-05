@@ -15,5 +15,5 @@ export interface ListLogsResponse extends Totals {
 
 export interface LogsDataAdapter {
   create(params: CreateLogParams): Promise<Log>;
-  list(tenantId, params: ListParams): Promise<ListLogsResponse>;
+  list(tenantId: string, params: ListParams): Promise<ListLogsResponse>;
 }
