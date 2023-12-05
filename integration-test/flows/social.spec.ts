@@ -75,7 +75,13 @@ describe("social sign on", () => {
 
     expect(socialSignOnResponse.status).toBe(302);
 
-    const location = new URL(socialSignOnResponse.headers.get("location"));
+    const locationHeader = socialSignOnResponse.headers.get("location");
+
+    if (!locationHeader) {
+      throw new Error("location header not found");
+    }
+
+    const location = new URL(locationHeader);
     expect(location.host).toBe("example.com");
     expect(location.pathname).toBe("/o/oauth2/v2/auth");
     const socialSignOnQuery2 = location.searchParams;
@@ -109,7 +115,9 @@ describe("social sign on", () => {
 
       expect(socialCallbackResponse.status).toBe(302);
 
-      const location2 = new URL(socialCallbackResponse.headers.get("location"));
+      const location2 = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      );
 
       expect(location2.host).toBe("login2.sesamy.dev");
 
@@ -197,7 +205,9 @@ describe("social sign on", () => {
 
       expect(socialCallbackResponse.status).toBe(302);
 
-      const location2 = new URL(socialCallbackResponse.headers.get("location"));
+      const location2 = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      );
 
       expect(location2.host).toBe("login2.sesamy.dev");
 
