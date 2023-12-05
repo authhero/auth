@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["es2020", "DOM"],
+    "lib": [
+      "es2020",
+      "DOM"
+    ],
     "module": "CommonJS",
     "target": "ES6",
     "strict": true,
@@ -9,7 +12,7 @@
     // The following three options are set for
     "allowJs": true,
     "checkJs": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -24,8 +27,15 @@
       "@types/service-worker-mock"
     ],
     "paths": {
-      "*": ["node_modules/*"]
+      "*": [
+        "node_modules/*"
+      ]
     }
   },
-  "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"]
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "integration-test/**/*",
+    "scripts/**/*"
+  ]
 }
