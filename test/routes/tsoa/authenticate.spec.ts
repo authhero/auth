@@ -5,7 +5,7 @@ import {
   CodeAuthenticateParams,
   PasswordAuthenticateParams,
 } from "../../../src/routes/tsoa/authenticate";
-import { PasswordParams, User } from "../../../src/types";
+import { Log, PasswordParams, User } from "../../../src/types";
 
 describe("Authenticated", () => {
   describe("password", () => {
@@ -20,7 +20,7 @@ describe("Authenticated", () => {
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
       };
 
-      const logs = [];
+      const logs: Log[] = [];
 
       const user: User = {
         id: "userId",
@@ -76,7 +76,7 @@ describe("Authenticated", () => {
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
       };
 
-      const logs = [];
+      const logs: Log[] = [];
 
       const ctx = contextFixture({
         stateData: {},
@@ -105,7 +105,7 @@ describe("Authenticated", () => {
           username: "test@example.com",
         };
 
-        const logs = [];
+        const logs: Log[] = [];
 
         const ctx = contextFixture({
           otps: [
@@ -153,7 +153,7 @@ describe("Authenticated", () => {
           username: "test@example.com",
         };
 
-        const logs = [];
+        const logs: Log[] = [];
 
         const ctx = contextFixture({
           logs,
