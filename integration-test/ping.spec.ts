@@ -21,7 +21,7 @@ describe("ping", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body: any = await response.json();
     expect(body.name).toBe("auth2");
   });
 });

@@ -1,3 +1,4 @@
+import { Tenant } from "../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
@@ -101,7 +102,7 @@ describe("tenants", () => {
       },
     );
     expect(newTenantResponse.status).toBe(200);
-    const body = await newTenantResponse.json();
+    const body = (await newTenantResponse.json()) as Tenant[];
     expect(body.length).toEqual(1);
   });
 });

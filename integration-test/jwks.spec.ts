@@ -1,3 +1,5 @@
+import { OpenIDConfiguration } from "../src/routes/tsoa/jwks";
+import { Jwks } from "../src/types/jwks";
 import { start } from "./start";
 import type { UnstableDevWorker } from "wrangler";
 
@@ -17,7 +19,7 @@ describe("jwks", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as Jwks[];
     expect(body.keys.length).toBe(1);
   });
 
@@ -32,7 +34,7 @@ describe("jwks", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as Jwks[];
     expect(body.keys.length).toBe(2);
   });
 
@@ -41,7 +43,7 @@ describe("jwks", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as OpenIDConfiguration;
     expect(body.issuer).toBe("https://example.com/");
   });
 });
