@@ -78,7 +78,10 @@ export async function socialAuthCallback({
   code,
 }: socialAuthCallbackParams) {
   const { env } = ctx;
-  const client = await getClient(env, state.authParams.client_id);
+  const client = await ctx.env.data.clients.get(state.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(403, { message: "Client not found" });
+  }
   const connection = client.connections.find(
     (p) => p.name === state.connection,
   );
@@ -130,6 +133,12 @@ export async function socialAuthCallback({
   } = idToken;
 
   const email = emailRaw.toLocaleLowerCase();
+  const strictEmailVerified = !!email_verified;
+
+  const newUserFields: Partial<BaseUser> = {
+    profileData: JSON.stringify(profileData),
+    email,
+  };
 
   // TODO - this should actually be id! the social id pulled out before
   // we can fix once we've done account linking
@@ -149,10 +158,10 @@ export async function socialAuthCallback({
       name: email,
       provider: state.connection,
       connection: state.connection,
-      email_verified: false,
+      email_verified: strictEmailVerified,
       last_ip: "",
       login_count: 0,
-      is_social: false,
+      is_social: true,
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -162,13 +171,9 @@ export async function socialAuthCallback({
   ctx.set("email", email);
   ctx.set("userId", user.id);
 
-  const newUserFields: Partial<BaseUser> = {
-    profileData: JSON.stringify(profileData),
-    email,
-  };
-
+  // this checks everytime we get the id_token that the email is verified, and updates the user in the db
+  // possibly excessive and we could just set email_verified:true when creating the new social user (above)
   if (email_verified) {
-    const strictEmailVerified = !!email_verified;
     newUserFields.email_verified = strictEmailVerified;
   }
 

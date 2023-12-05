@@ -1,8 +1,12 @@
 import { Env } from "../src/types/Env";
 import app from "../src/app";
 import { getCertificate } from "./helpers/token";
-import { oAuth2ClientFactory } from "../src/services/oauth2-client";
 import createAdapter from "../src/adapters/in-memory";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "../src/types";
+import { mockOAuth2ClientFactory } from "./mockOauth2Client";
 
 const data = createAdapter();
 // Add a known certificate
@@ -15,7 +19,21 @@ if (!data.clients.create) {
 data.clients.create({
   id: "clientId",
   name: "Test Client",
-  connections: [],
+  connections: [
+    {
+      id: "connectionId1",
+      name: "demo-social-provider",
+      client_id: "socialClientId",
+      client_secret: "socialClientSecret",
+      authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
+      token_endpoint: "https://example.com/token",
+      response_mode: AuthorizationResponseMode.QUERY,
+      response_type: AuthorizationResponseType.CODE,
+      scope: "openid profile email",
+      created_at: "created_at",
+      updated_at: "updated_at",
+    },
+  ],
   domains: [],
   // this ID is not seeded to the tenants data adapter
   tenant_id: "tenantId",
@@ -111,7 +129,7 @@ const server = {
       // Add dependencies to the environment
       {
         ...env,
-        oauth2ClientFactory: { create: oAuth2ClientFactory },
+        oauth2ClientFactory: mockOAuth2ClientFactory,
         JWKS_URL: "https://example.com/.well-known/jwks.json",
         ISSUER: "https://example.com/",
         data,
