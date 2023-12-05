@@ -113,11 +113,7 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
 
-      const authCookieHeader = tokenResponse.headers.get("set-cookie");
-
-      if (!authCookieHeader) {
-        throw new Error("No auth cookie found");
-      }
+      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
 
       // now check silent auth works after password login
       const cookies = authCookieHeader.split(";").map((c) => c.trim());

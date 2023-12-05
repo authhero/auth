@@ -96,11 +96,7 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
-    const authCookieHeader = autenticateResponse.headers.get("set-cookie");
-
-    if (!authCookieHeader) {
-      throw new Error("No auth cookie found");
-    }
+    const authCookieHeader = autenticateResponse.headers.get("set-cookie")!;
 
     // now check silent auth works when logged in with code----------------------------------------
     const cookies = authCookieHeader.split(";").map((c) => c.trim());
