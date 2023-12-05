@@ -283,7 +283,7 @@ describe("social sign on", () => {
       },
     );
 
-    const newSocialUser = await newSocialUserRes.json();
+    const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
 
     // this should only have its own identity
     expect(newSocialUser.identities).toEqual([
@@ -331,7 +331,8 @@ describe("social sign on", () => {
         },
       },
     );
-    const newSocialUserAgain = await newSocialUserResAgain.json();
+    const newSocialUserAgain =
+      (await newSocialUserResAgain.json()) as UserResponse;
 
     // this should have both identities
     expect(newSocialUserAgain.identities).toEqual([
