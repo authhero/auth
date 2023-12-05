@@ -14,7 +14,8 @@ function sortByString<T>(
 
   const order = sort.sort_order === "asc" ? 1 : -1;
 
-  return arr.sort((a, b) => {
+  // TODO - type these properly. Advanced typescript!
+  return arr.sort((a: any, b: any) => {
     if (a[sort.sort_by] < b[sort.sort_by]) {
       return -1 * order;
     } else if (a[sort.sort_by] > b[sort.sort_by]) {
