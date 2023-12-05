@@ -11,6 +11,7 @@ import {
   Query,
   Path,
   Patch,
+  Delete,
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
@@ -146,5 +147,16 @@ export class TenantsController extends Controller {
 
     this.setStatus(201);
     return tenant;
+  }
+
+  @Delete("{id}")
+  @Security("oauth2managementApi", [""])
+  public async deleteTenant(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+  ): Promise<void> {
+    const { env } = request.ctx;
+
+    await env.data.tenants.delete(id);
   }
 }
