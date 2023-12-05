@@ -1,9 +1,11 @@
 import { parseJwt } from "../../src/utils/parse-jwt";
 import { setup } from "../helpers/setup";
 import { start } from "../start";
+import type { UnstableDevWorker } from "wrangler";
+import type { Email } from "../../src/types/Email";
 
 describe("code-flow", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();
@@ -47,7 +49,7 @@ describe("code-flow", () => {
     }
 
     const emailResponse = await worker.fetch("/test/email");
-    const [sentEmail] = await emailResponse.json();
+    const [sentEmail] = (await emailResponse.json()) as Email[];
     expect(sentEmail.to).toBe("test@example.com");
 
     const otp = sentEmail.code;
@@ -79,9 +81,7 @@ describe("code-flow", () => {
       throw new Error(errorMessage);
     }
 
-    const location = autenticateResponse.headers.get("location");
-
-    const redirectUri = new URL(location);
+    const redirectUri = new URL(autenticateResponse.headers.get("location")!);
     expect(redirectUri.hostname).toBe("login.example.com");
 
     const accessToken = redirectUri.searchParams.get("access_token");
@@ -96,14 +96,11 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
-    // now check silent auth works when logged in with code----------------------------------------
-    const cookies = autenticateResponse.headers
-      .get("set-cookie")
-      .split(";")
-      .map((c) => c.trim());
-    const authCookie = cookies.find((c) => c.startsWith("auth-token"));
+    const authCookieHeader = autenticateResponse.headers.get("set-cookie")!;
 
-    expect(authCookie).toBeDefined();
+    // now check silent auth works when logged in with code----------------------------------------
+    const cookies = authCookieHeader.split(";").map((c) => c.trim());
+    const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
     const silentAuthSearchParams = new URLSearchParams();
     silentAuthSearchParams.set("client_id", "clientId");

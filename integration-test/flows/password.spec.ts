@@ -1,9 +1,11 @@
 import { parseJwt } from "../../src/utils/parse-jwt";
 import { setup } from "../helpers/setup";
 import { start } from "../start";
+import type { UnstableDevWorker } from "wrangler";
+import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
 
 describe("password-flow", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();
@@ -71,7 +73,7 @@ describe("password-flow", () => {
 
       expect(loginResponse.status).toBe(200);
 
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
 
       const query = new URLSearchParams({
         auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -94,8 +96,7 @@ describe("password-flow", () => {
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
 
-      const location = tokenResponse.headers.get("location");
-      const redirectUri = new URL(location);
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
       expect(redirectUri.hostname).toBe("login.example.com");
       expect(redirectUri.searchParams.get("state")).toBe("state");
@@ -112,12 +113,11 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
 
+      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+
       // now check silent auth works after password login
-      const cookies = tokenResponse.headers
-        .get("set-cookie")
-        .split(";")
-        .map((c) => c.trim());
-      const authCookie = cookies.find((c) => c.startsWith("auth-token"));
+      const cookies = authCookieHeader.split(";").map((c) => c.trim());
+      const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
       const silentAuthSearchParams = new URLSearchParams();
       silentAuthSearchParams.set("client_id", "clientId");

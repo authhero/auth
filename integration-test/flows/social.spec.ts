@@ -2,6 +2,8 @@ import { setup } from "../helpers/setup";
 import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
+import type { UnstableDevWorker } from "wrangler";
+import { UserResponse } from "../../src/types/auth0";
 
 // same on each test
 const SOCIAL_STATE_PARAM = btoa(
@@ -41,7 +43,7 @@ const EXPECTED_NEW_USER = {
 };
 
 describe("social sign on", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();
@@ -74,7 +76,7 @@ describe("social sign on", () => {
 
     expect(socialSignOnResponse.status).toBe(302);
 
-    const location = new URL(socialSignOnResponse.headers.get("location"));
+    const location = new URL(socialSignOnResponse.headers.get("location")!);
     expect(location.host).toBe("example.com");
     expect(location.pathname).toBe("/o/oauth2/v2/auth");
     const socialSignOnQuery2 = location.searchParams;
@@ -108,7 +110,9 @@ describe("social sign on", () => {
 
       expect(socialCallbackResponse.status).toBe(302);
 
-      const location2 = new URL(socialCallbackResponse.headers.get("location"));
+      const location2 = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      );
 
       expect(location2.host).toBe("login2.sesamy.dev");
 
@@ -150,7 +154,7 @@ describe("social sign on", () => {
         },
       );
 
-      const newSocialUser = await newSocialUserRes.json();
+      const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
 
       const {
         created_at,
@@ -196,7 +200,9 @@ describe("social sign on", () => {
 
       expect(socialCallbackResponse.status).toBe(302);
 
-      const location2 = new URL(socialCallbackResponse.headers.get("location"));
+      const location2 = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      );
 
       expect(location2.host).toBe("login2.sesamy.dev");
 
@@ -210,11 +216,7 @@ describe("social sign on", () => {
 
       const idToken = socialCallbackQuery2.get("id_token");
 
-      if (!idToken) {
-        throw new Error("idToken not found");
-      }
-
-      const idTokenPayload = parseJwt(idToken);
+      const idTokenPayload = parseJwt(idToken!);
 
       expect(idTokenPayload.aud).toBe("clientId");
       expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
@@ -236,7 +238,7 @@ describe("social sign on", () => {
         },
       );
 
-      const newSocialUser = await newSocialUserRes.json();
+      const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
 
       const {
         created_at,

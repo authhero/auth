@@ -1,9 +1,12 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
+import type { UnstableDevWorker } from "wrangler";
+import type { Email } from "../../src/types/Email";
+import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
 
 describe("code-flow", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();
@@ -47,7 +50,7 @@ describe("code-flow", () => {
     }
 
     const emailResponse = await worker.fetch("/test/email");
-    const [sentEmail] = await emailResponse.json();
+    const [sentEmail] = (await emailResponse.json()) as Email[];
     expect(sentEmail.to).toBe("test@example.com");
 
     const otp = sentEmail.code;
@@ -75,7 +78,7 @@ describe("code-flow", () => {
       );
     }
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
     const query = new URLSearchParams({
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -97,8 +100,7 @@ describe("code-flow", () => {
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
 
-    const location = tokenResponse.headers.get("location");
-    const redirectUri = new URL(location);
+    const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
     expect(redirectUri.hostname).toBe("login.example.com");
     expect(redirectUri.searchParams.get("state")).toBe("state");
@@ -116,11 +118,10 @@ describe("code-flow", () => {
     expect(idTokenPayload.aud).toBe("clientId");
 
     // now check silent auth works when logged in with code----------------------------------------
-    const setCookiesHeader = tokenResponse.headers.get("set-cookie");
-    const cookies = setCookiesHeader.split(";").map((c) => c.trim());
-    const authCookie = cookies.find((c) => c.startsWith("auth-token"));
+    const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
 
-    expect(authCookie).toBeDefined();
+    const cookies = setCookiesHeader.split(";").map((c) => c.trim());
+    const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
     const silentAuthSearchParams = new URLSearchParams();
     silentAuthSearchParams.set("client_id", "clientId");

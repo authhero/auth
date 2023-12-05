@@ -1,8 +1,10 @@
+import { UserResponse } from "../../src/types/auth0";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
+import type { UnstableDevWorker } from "wrangler";
 
 describe("users", () => {
-  let worker;
+  let worker: UnstableDevWorker;
   let token;
 
   beforeEach(async () => {
@@ -40,7 +42,7 @@ describe("users", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as UserResponse[];
     expect(body.length).toBe(0);
   });
 
@@ -82,7 +84,7 @@ describe("users", () => {
 
     expect(createUserResponse.status).toBe(201);
 
-    const newUser = await createUserResponse.json();
+    const newUser = (await createUserResponse.json()) as UserResponse;
     expect(newUser.email).toBe("test@example.com");
     expect(newUser.user_id).toContain("|");
 
@@ -100,7 +102,7 @@ describe("users", () => {
 
     expect(usersResponse.status).toBe(200);
 
-    const body = await usersResponse.json();
+    const body = (await usersResponse.json()) as UserResponse[];
     expect(body.length).toBe(1);
     expect(body[0].user_id).toBe(newUser.user_id);
     expect(body[0].identities).toEqual([
@@ -145,7 +147,7 @@ describe("users", () => {
 
       expect(usersResponse.status).toBe(200);
 
-      const body = await usersResponse.json();
+      const body = (await usersResponse.json()) as UserResponse[];
       expect(body.length).toBe(1);
     });
   });
@@ -168,7 +170,7 @@ describe("users", () => {
       });
 
       expect(createUserResponse1.status).toBe(201);
-      const newUser1 = await createUserResponse1.json();
+      const newUser1 = (await createUserResponse1.json()) as UserResponse;
 
       const createUserResponse2 = await worker.fetch("/api/v2/users", {
         method: "POST",
@@ -184,7 +186,7 @@ describe("users", () => {
       });
 
       expect(createUserResponse2.status).toBe(201);
-      const newUser2 = await createUserResponse2.json();
+      const newUser2 = (await createUserResponse2.json()) as UserResponse;
 
       const linkUserResponse = await worker.fetch(
         `/api/v2/users/${newUser1.id}/identities`,
@@ -214,7 +216,7 @@ describe("users", () => {
 
       expect(listUsersResponse.status).toBe(200);
 
-      const usersList = await listUsersResponse.json();
+      const usersList = (await listUsersResponse.json()) as UserResponse[];
       expect(usersList.length).toBe(1);
       expect(usersList[0].user_id).toBe(newUser2.user_id);
 
@@ -235,7 +237,7 @@ describe("users", () => {
       const [, newUser1Id] = newUser1.user_id.split("|");
       const [, newUser2Id] = newUser2.user_id.split("|");
 
-      const body = await userResponse.json();
+      const body = (await userResponse.json()) as UserResponse;
       expect(body.user_id).toBe(newUser2.user_id);
       expect(body.identities).toEqual([
         {
@@ -280,7 +282,7 @@ describe("users", () => {
       );
 
       expect(userResponse1.status).toBe(200);
-      const user1 = await userResponse1.json();
+      const user1 = (await userResponse1.json()) as UserResponse;
       expect(user1.identities).toEqual([
         {
           connection: "email",

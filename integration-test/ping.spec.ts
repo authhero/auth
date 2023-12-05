@@ -1,7 +1,8 @@
 import { start } from "./start";
+import type { UnstableDevWorker } from "wrangler";
 
 describe("ping", () => {
-  let worker;
+  let worker: UnstableDevWorker;
 
   beforeEach(async () => {
     worker = await start();
@@ -20,7 +21,7 @@ describe("ping", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body: any = await response.json();
     expect(body.name).toBe("auth2");
   });
 });
