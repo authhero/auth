@@ -1,5 +1,6 @@
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
+import type { UnstableDevWorker } from "wrangler";
 
 describe("users", () => {
   let worker: UnstableDevWorker;

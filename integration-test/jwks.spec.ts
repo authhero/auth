@@ -1,4 +1,5 @@
 import { start } from "./start";
+import type { UnstableDevWorker } from "wrangler";
 
 describe("jwks", () => {
   let worker: UnstableDevWorker;

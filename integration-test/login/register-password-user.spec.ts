@@ -1,6 +1,6 @@
 import { setup } from "../helpers/setup";
-import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
+import type { UnstableDevWorker } from "wrangler";
 
 describe("Register password user", () => {
   let worker: UnstableDevWorker;

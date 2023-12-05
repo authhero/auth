@@ -1,6 +1,7 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
+import type { UnstableDevWorker } from "wrangler";
 
 describe("code-flow", () => {
   let worker: UnstableDevWorker;

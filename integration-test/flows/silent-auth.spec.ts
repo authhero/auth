@@ -1,5 +1,6 @@
 import { setup } from "../helpers/setup";
 import { start } from "../start";
+import type { UnstableDevWorker } from "wrangler";
 
 function getDefaultSilentAuthSearchParams() {
   return new URLSearchParams({

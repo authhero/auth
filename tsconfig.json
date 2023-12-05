@@ -36,7 +36,6 @@
     "src/**/*",
     "test/**/*",
     "integration-test/**/*",
-    "integration-test/test-server.ts",
     "scripts/**/*"
   ]
 }

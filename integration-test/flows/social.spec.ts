@@ -2,6 +2,7 @@ import { setup } from "../helpers/setup";
 import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
+import type { UnstableDevWorker } from "wrangler";
 
 // same on each test
 const SOCIAL_STATE_PARAM = btoa(
