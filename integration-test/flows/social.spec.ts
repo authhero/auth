@@ -89,9 +89,9 @@ describe("social sign on", () => {
     expect(socialSignOnQuery2.get("response_mode")).toBe("query");
   });
 
-  describe("should create a new user from a new user social callback", () => {
+  describe("Create a new user from a social callback", () => {
     // like most of the providers
-    it("GET to /callback", async () => {
+    it("should receive params in the querystring when a GET", async () => {
       await setup(worker);
 
       const socialCallbackQuery = new URLSearchParams({
@@ -163,7 +163,7 @@ describe("social sign on", () => {
     });
 
     // like apple
-    it("POST to /callback", async () => {
+    it("should receive params in the body when a POST", async () => {
       await setup(worker);
 
       const token = await getAdminToken();
