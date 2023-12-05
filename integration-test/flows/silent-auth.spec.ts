@@ -77,18 +77,13 @@ describe("silent-auth", () => {
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
 
-    const authCookieHeader = tokenResponse.headers.get("set-cookie");
-
-    if (!authCookieHeader) {
-      throw new Error("No auth cookie found");
-    }
+    const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
 
     // -------------------------------------------------------------
     // now check silent auth works on the same client
     // -------------------------------------------------------------
     const cookies = authCookieHeader.split(";").map((c) => c.trim());
-    const authCookie = cookies.find((c) => c.startsWith("auth-token"));
-    if (!authCookie) throw new Error("No auth cookie found");
+    const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
     const silentAuthSearchParams = getDefaultSilentAuthSearchParams();
     silentAuthSearchParams.set("client_id", "clientId");

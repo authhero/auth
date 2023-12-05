@@ -81,13 +81,7 @@ describe("code-flow", () => {
       throw new Error(errorMessage);
     }
 
-    const location = autenticateResponse.headers.get("location");
-
-    if (!location) {
-      throw new Error("No location header found");
-    }
-
-    const redirectUri = new URL(location);
+    const redirectUri = new URL(autenticateResponse.headers.get("location")!);
     expect(redirectUri.hostname).toBe("login.example.com");
 
     const accessToken = redirectUri.searchParams.get("access_token");
@@ -110,11 +104,7 @@ describe("code-flow", () => {
 
     // now check silent auth works when logged in with code----------------------------------------
     const cookies = authCookieHeader.split(";").map((c) => c.trim());
-    const authCookie = cookies.find((c) => c.startsWith("auth-token"));
-
-    if (!authCookie) {
-      throw new Error("No auth cookie found");
-    }
+    const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
     const silentAuthSearchParams = new URLSearchParams();
     silentAuthSearchParams.set("client_id", "clientId");

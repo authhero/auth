@@ -96,11 +96,7 @@ describe("password-flow", () => {
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
 
-      const location = tokenResponse.headers.get("location");
-      if (!location) {
-        throw new Error("location missing");
-      }
-      const redirectUri = new URL(location);
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
       expect(redirectUri.hostname).toBe("login.example.com");
       expect(redirectUri.searchParams.get("state")).toBe("state");
@@ -125,11 +121,7 @@ describe("password-flow", () => {
 
       // now check silent auth works after password login
       const cookies = authCookieHeader.split(";").map((c) => c.trim());
-      const authCookie = cookies.find((c) => c.startsWith("auth-token"));
-
-      if (!authCookie) {
-        throw new Error("No auth cookie found");
-      }
+      const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
       const silentAuthSearchParams = new URLSearchParams();
       silentAuthSearchParams.set("client_id", "clientId");
