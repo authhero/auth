@@ -71,7 +71,10 @@ function luceneFilter(
 }
 
 export function listUsers(db: Kysely<Database>) {
-  return async (tenantId, params: ListParams): Promise<ListUsersResponse> => {
+  return async (
+    tenantId: string,
+    params: ListParams,
+  ): Promise<ListUsersResponse> => {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
     if (params.q) {
       query = luceneFilter(db, query, params.q);

@@ -5,7 +5,7 @@ import { filterItems } from "../utils/filter";
 
 export function list(users: SqlUser[]) {
   return async (
-    tenantId,
+    tenantId: string,
     { page, per_page, include_totals, q }: ListParams,
   ): Promise<ListUsersResponse> => {
     const tenantUsers = users.filter((user) => user.tenant_id === tenantId);
