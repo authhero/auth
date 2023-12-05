@@ -4,7 +4,6 @@ import { Kysely } from "kysely";
 export function updateTenant(db: Kysely<Database>) {
   return async (id: string, tenant: Partial<Tenant>): Promise<void> => {
     const tenantWithModified = {
-      created_at: new Date().toISOString(),
       ...tenant,
       id,
       updated_at: new Date().toISOString(),
