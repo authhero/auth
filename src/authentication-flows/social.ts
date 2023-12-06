@@ -143,12 +143,12 @@ export async function socialAuthCallback({
   const ssoId = `${state.connection}|${sub}`;
   let user = await env.data.users.get(client.tenant_id, ssoId);
 
-  // TODO
-  // here need to check linked_to property, and fetch that primary user instead!
-  // TODO - in later test and functionality
-
   if (!state.connection) {
     throw new HTTPException(403, { message: "Connection not found" });
+  }
+
+  if (user?.linked_to) {
+    user = await env.data.users.get(client.tenant_id, user.linked_to);
   }
 
   if (!user) {

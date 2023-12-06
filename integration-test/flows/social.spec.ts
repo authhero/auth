@@ -553,18 +553,6 @@ describe("social sign on", () => {
       const primaryUserAgain =
         (await primaryUserResAgain.json()) as UserResponse;
 
-      console.log(primaryUserAgain);
-
-      // Nice! legit bug. we are getting this identity back twice!
-      /*
-          {
-          connection: 'demo-social-provider',
-          provider: 'demo-social-provider',
-          user_id: '1234567890',
-          isSocial: true
-        },
-      */
-
       expect(primaryUserAgain.identities).toEqual([
         {
           connection: "email",
