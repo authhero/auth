@@ -15,9 +15,7 @@ import {
   ClientCredentialGrantTypeParams,
 } from "../../../src/types";
 import { GrantType } from "../../../src/types";
-import { base64ToHex } from "../../../src/utils/base64";
 import { contextFixture } from "../../fixtures/context";
-import { kvStorageFixture } from "../../fixtures/kv-storage";
 
 describe("token", () => {
   const date = new Date();
@@ -86,9 +84,7 @@ describe("token", () => {
       };
 
       const ctx = contextFixture({
-        clients: kvStorageFixture({
-          publisherClientId: JSON.stringify(client),
-        }),
+        clients: [client],
       });
 
       const controller = new TokenRoutes();
@@ -133,9 +129,7 @@ describe("token", () => {
 
     it("should throw if the code_verfier does not match the hash of the challenge", async () => {
       const ctx = contextFixture({
-        clients: kvStorageFixture({
-          publisherClientId: JSON.stringify(client),
-        }),
+        clients: [client],
       });
 
       const controller = new TokenRoutes();
@@ -173,9 +167,7 @@ describe("token", () => {
 
     it("should use the userId from the state to set the silent auth cookie", async () => {
       const ctx = contextFixture({
-        clients: kvStorageFixture({
-          publisherClientId: JSON.stringify(client),
-        }),
+        clients: [client],
       });
 
       const controller = new TokenRoutes();
@@ -224,19 +216,12 @@ describe("token", () => {
 
     it("should throw an error if the vendorId in the state does not match the vendorId of the client", async () => {
       const ctx = contextFixture({
-        clients: kvStorageFixture({
-          publisherClientId: JSON.stringify({
-            vendorId: "vendorId1",
-            callbackUrls: ["https://example.com"],
-            scopes: ["profile", "email", "openid"],
-            secrets: [
-              {
-                id: "secretId",
-                hash: "clientSecret",
-              },
-            ],
-          }),
-        }),
+        clients: [
+          {
+            ...client,
+            tenant_id: "vendorId1",
+          },
+        ],
       });
 
       const controller = new TokenRoutes();
@@ -298,7 +283,7 @@ describe("token", () => {
       expect(tokenData.iss).toBe("https://auth.example.com/");
       expect(tokenData.scope).toEqual("profile");
       expect(tokenData.azp).toBe(undefined);
-      expect(tokenData.sub).toBe("id");
+      expect(tokenData.sub).toBe("clientId");
     });
   });
 });

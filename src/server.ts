@@ -5,7 +5,6 @@ import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
 import createAdapters from "./adapters/kysely";
 import { updateTenantClientsInKV } from "./hooks/update-client";
-import { createClientsAdapter } from "./adapters/kv-storage/clients";
 import createEmailAdapter from "./adapters/email";
 import createR2Adapter from "./adapters/r2";
 import { PlanetScaleDialect } from "kysely-planetscale";
@@ -30,7 +29,6 @@ const server = {
         oauth2ClientFactory: { create: oAuth2ClientFactory },
         data: {
           certificates: createCertificatesAdapter(env),
-          clients: createClientsAdapter(env),
           ...createEmailAdapter(env),
           ...createAdapters(db),
           ...createR2Adapter(env),

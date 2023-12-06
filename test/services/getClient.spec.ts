@@ -7,11 +7,10 @@ import {
   PartialClient,
   Client,
 } from "../../src/types";
-import { kvStorageFixture } from "../fixtures/kv-storage";
 
 describe("getClient", () => {
   it("should fallback the connections to the envDefaultSettings", async () => {
-    const clientInKV: PartialClient = {
+    const partialClient: PartialClient = {
       id: "testClient",
       name: "clientName",
       client_secret: "clientSecret",
@@ -37,9 +36,7 @@ describe("getClient", () => {
     };
 
     const ctx = contextFixture({
-      clients: kvStorageFixture({
-        clientId: JSON.stringify(clientInKV),
-      }),
+      clients: [partialClient],
     });
 
     const envDefaultSettings: DefaultSettings = {
@@ -59,7 +56,7 @@ describe("getClient", () => {
 
     ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
-    const client = await getClient(ctx.env, "clientId");
+    const client = await getClient(ctx.env, "testClient");
     const facebookConnection = client.connections.find(
       (c) => c.name === "facebook",
     );
@@ -87,11 +84,7 @@ describe("getClient", () => {
       domains: [],
     };
 
-    const clients = kvStorageFixture({
-      testClient: JSON.stringify(testClient),
-    });
-
-    const ctx = contextFixture({ clients });
+    const ctx = contextFixture({ clients: [testClient] });
 
     const defaultSettings: DefaultSettings = {
       connections: [],
@@ -118,7 +111,7 @@ describe("getClient", () => {
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const testClient: Client = {
+    const partialClient: PartialClient = {
       id: "testClient",
       name: "clientName",
       client_secret: "clientSecret",
@@ -143,11 +136,7 @@ describe("getClient", () => {
       ],
     };
 
-    const clients = kvStorageFixture({
-      testClient: JSON.stringify(testClient),
-    });
-
-    const ctx = contextFixture({ clients });
+    const ctx = contextFixture({ clients: [partialClient] });
 
     const defaultSettings: DefaultSettings = {
       connections: [],
@@ -179,7 +168,7 @@ describe("getClient", () => {
   });
 
   it("should use the connection settings form the defaultSettings and the clientId from envDefaultSettings", async () => {
-    const clientInKV: PartialClient = {
+    const testClient: PartialClient = {
       id: "testClient",
       name: "clientName",
       client_secret: "clientSecret",
@@ -205,9 +194,7 @@ describe("getClient", () => {
     };
 
     const ctx = contextFixture({
-      clients: kvStorageFixture({
-        clientId: JSON.stringify(clientInKV),
-      }),
+      clients: [testClient],
     });
 
     const envDefaultSettings: DefaultSettings = {
@@ -222,7 +209,7 @@ describe("getClient", () => {
 
     ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
-    const client = await getClient(ctx.env, "clientId");
+    const client = await getClient(ctx.env, "testClient");
     const facebookConnection = client.connections.find(
       (c) => c.name === "facebook",
     );
@@ -234,7 +221,7 @@ describe("getClient", () => {
   });
 
   it("should store the support url from the tenant in the client", async () => {
-    const clientInKV: PartialClient = {
+    const testClient: PartialClient = {
       id: "testClient",
       name: "clientName",
       client_secret: "clientSecret",
@@ -253,9 +240,7 @@ describe("getClient", () => {
     };
 
     const ctx = contextFixture({
-      clients: kvStorageFixture({
-        clientId: JSON.stringify(clientInKV),
-      }),
+      clients: [testClient],
     });
 
     const envDefaultSettings: DefaultSettings = {
@@ -264,7 +249,7 @@ describe("getClient", () => {
 
     ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
-    const client = await getClient(ctx.env, "clientId");
+    const client = await getClient(ctx.env, "testClient");
 
     expect(client.tenant.support_url).toBe("https://example.com/support");
   });

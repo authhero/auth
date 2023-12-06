@@ -12,10 +12,12 @@ import { createUniversalLoginSessionAdapter } from "./universalLoginSessions";
 import { createApplicationsAdapter } from "./applications";
 import { createConnectionsAdapter } from "./connections";
 import { Kysely } from "kysely";
+import { createClientsAdapter } from "./clients";
 
 export default function createAdapters(db: Kysely<Database>) {
   return {
     applications: createApplicationsAdapter(db),
+    clients: createClientsAdapter(db),
     members: createMembersAdapter(db),
     users: createUsersAdapter(db),
     sessions: createSessionsAdapter(db),
