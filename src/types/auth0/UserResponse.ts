@@ -40,6 +40,7 @@ import { UserMetadata } from "./UserMetadata";
 
 export interface PostUsersBody extends BaseUser {
   password?: string;
+  // what is this?
   verify_email?: boolean;
   username?: string;
   connection?: string;

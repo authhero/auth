@@ -142,6 +142,10 @@ export async function socialAuthCallback({
 
   let user = await env.data.users.get(client.tenant_id, `${connection}|${sub}`);
 
+  // TODO
+  // here need to check linked_to property, and fetch that primary user instead!
+  // TODO - in later test and functionality
+
   if (!state.connection) {
     throw new HTTPException(403, { message: "Connection not found" });
   }
@@ -149,27 +153,50 @@ export async function socialAuthCallback({
   if (!user) {
     const sameEmailUser = await env.data.users.getByEmail(
       client.tenant_id,
+      // TODO - this needs to ONLY fetch primary users e.g. where linked_to is null
       email,
     );
 
-    const linked_to = sameEmailUser ? sameEmailUser.id : undefined;
+    // this means we have a primary account
+    if (sameEmailUser) {
+      user = sameEmailUser;
 
-    user = await env.data.users.create(client.tenant_id, {
-      id: `${state.connection}|${sub}`,
-      email,
-      tenant_id: client.tenant_id,
-      name: email,
-      provider: state.connection,
-      connection: state.connection,
-      email_verified: strictEmailVerified,
-      last_ip: "",
-      login_count: 0,
-      is_social: true,
-      last_login: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      linked_to,
-    });
+      // so here we create the new social user, but we do nothing with it
+      const newSocialUser = await env.data.users.create(client.tenant_id, {
+        id: `${state.connection}|${sub}`,
+        email,
+        tenant_id: client.tenant_id,
+        name: email,
+        provider: state.connection,
+        connection: state.connection,
+        email_verified: strictEmailVerified,
+        last_ip: "",
+        login_count: 0,
+        is_social: true,
+        last_login: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        linked_to: sameEmailUser.id,
+      });
+    } else {
+      // here we are using the new user as the primary ccount
+      user = await env.data.users.create(client.tenant_id, {
+        // de-dupe these args!
+        id: `${state.connection}|${sub}`,
+        email,
+        tenant_id: client.tenant_id,
+        name: email,
+        provider: state.connection,
+        connection: state.connection,
+        email_verified: strictEmailVerified,
+        last_ip: "",
+        login_count: 0,
+        is_social: true,
+        last_login: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
   }
 
   ctx.set("email", email);
