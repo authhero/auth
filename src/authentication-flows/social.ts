@@ -158,45 +158,33 @@ export async function socialAuthCallback({
       email,
     );
 
+    const newSocialUser = await env.data.users.create(client.tenant_id, {
+      id: `${state.connection}|${sub}`,
+      email,
+      tenant_id: client.tenant_id,
+      name: email,
+      provider: state.connection,
+      connection: state.connection,
+      email_verified: strictEmailVerified,
+      last_ip: "",
+      login_count: 0,
+      is_social: true,
+      last_login: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
     // this means we have a primary account
     if (sameEmailUser) {
       user = sameEmailUser;
 
-      // so here we create the new social user, but we do nothing with it
-      const newSocialUser = await env.data.users.create(client.tenant_id, {
-        id: `${state.connection}|${sub}`,
-        email,
-        tenant_id: client.tenant_id,
-        name: email,
-        provider: state.connection,
-        connection: state.connection,
-        email_verified: strictEmailVerified,
-        last_ip: "",
-        login_count: 0,
-        is_social: true,
-        last_login: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+      // link user with existing user
+      await env.data.users.update(client.tenant_id, newSocialUser.id, {
         linked_to: sameEmailUser.id,
       });
     } else {
       // here we are using the new user as the primary ccount
-      user = await env.data.users.create(client.tenant_id, {
-        // de-dupe these args!
-        id: `${state.connection}|${sub}`,
-        email,
-        tenant_id: client.tenant_id,
-        name: email,
-        provider: state.connection,
-        connection: state.connection,
-        email_verified: strictEmailVerified,
-        last_ip: "",
-        login_count: 0,
-        is_social: true,
-        last_login: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+      user = newSocialUser;
     }
   }
 
