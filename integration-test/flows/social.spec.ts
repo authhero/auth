@@ -265,11 +265,7 @@ describe("social sign on", () => {
   });
 
   describe("Secondary user", () => {
-    // BUT FIRST
-    // social sign on for existing email/password user
-    // check that we return same info we get from email/password user... e.g.? just the id?
-    // then how to return an id_token with the same?
-    it.only("should return existing primary account when login with new social sign on with same email address", async () => {
+    it("should return existing primary account when login with new social sign on with same email address", async () => {
       // ---------------------------------------------
       // create new user with same email as we have hardcoded on the mock id_token responses
       // ---------------------------------------------
@@ -305,7 +301,7 @@ describe("social sign on", () => {
       // expect(createEmailUser.email_verified).toBe(true);
 
       // ---------------------------------------------
-      // now do social sign on with same email
+      // now do social sign on with same email - new user registered
       // ---------------------------------------------
 
       const socialCallbackQuery = new URLSearchParams({
@@ -422,8 +418,6 @@ describe("social sign on", () => {
       const silentAuthAccessToken = iframeResponseJSON.access_token;
       const silentAuthAccessTokenPayload = parseJwt(silentAuthAccessToken);
 
-      console.log(silentAuthAccessTokenPayload);
-
       expect(silentAuthAccessTokenPayload).toMatchObject({
         sub: createEmailUser.user_id,
       });
@@ -444,8 +438,25 @@ describe("social sign on", () => {
       });
 
       // ---------------------------------------------
-      // now sign in with same social user again and check we get the same primary user back
+      // now sign in same social user again and check we get the same primary user back
       // ---------------------------------------------
+
+      const socialCallbackResponse2 = await worker.fetch(
+        `/callback?${socialCallbackQuery.toString()}`,
+        {
+          redirect: "manual",
+        },
+      );
+
+      const socialCallbackResponse2Query = new URL(
+        socialCallbackResponse2.headers.get("location")!,
+      ).searchParams;
+
+      const accessTokenPayload2 = parseJwt(
+        socialCallbackResponse2Query.get("access_token")!,
+      );
+
+      expect(accessTokenPayload2.sub).toBe(createEmailUser.user_id);
     });
 
     // social sign in again with existing account... maybe do above?
