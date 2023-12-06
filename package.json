@@ -62,13 +62,14 @@
     "mime": "^3.0.0",
     "nanoid": "^3.3.3",
     "tsoa": "^5.1.1",
-    "tsoa-hono": "^1.0.10",
+    "tsoa-hono": "^1.0.11",
     "zod": "^3.22.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20231016.0",
     "@semantic-release/git": "^10.0.1",
     "@types/bcryptjs": "^2.4.4",
+    "@types/cookie": "^0.6.0",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.8.3",
     "@types/service-worker-mock": "^2.0.2",

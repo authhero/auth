@@ -249,7 +249,8 @@ export interface ManagementApiSecurity {
 export function authenticationHandler(
   security: (Security | ManagementApiSecurity)[],
 ) {
-  const authProvider = security[0];
+  // TODO - fix this type dance
+  const authProvider = security[0] as any;
   const securitySchemeName: SecuritySchemeName =
     "oauth2" in authProvider
       ? SecuritySchemeName.oauth2
@@ -269,7 +270,8 @@ export function authenticationHandler(
     const bearer = authHeader.slice(7);
 
     const permissions =
-      permissionString?.split(" ").filter((permission) => permission) || [];
+      permissionString?.split(" ").filter((permission: string) => permission) ||
+      [];
 
     ctx.set(
       "user",

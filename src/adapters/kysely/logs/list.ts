@@ -4,7 +4,7 @@ import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 
 export function listLogs(db: Kysely<Database>) {
-  return async (tenantId, params: ListParams) => {
+  return async (tenantId: string, params: ListParams) => {
     if (!params.q) {
       throw new Error("No user_id provided");
     }

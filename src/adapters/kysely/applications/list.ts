@@ -2,7 +2,7 @@ import { Application, Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function list(db: Kysely<Database>) {
-  return async (tenantId) => {
+  return async (tenantId: string) => {
     let query = db
       .selectFrom("applications")
       .where("applications.tenant_id", "=", tenantId);

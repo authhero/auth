@@ -26,7 +26,7 @@ export function filterItems<T extends object>(items: T[], query?: string): T[] {
     return { key, value, isNegation, isExistsQuery };
   });
 
-  return items.filter((item) => {
+  return items.filter((item: { [key: string]: any }) => {
     return filters.every((filter) => {
       if (filter.isExistsQuery) {
         const propertyExists = item.hasOwnProperty(filter.key);

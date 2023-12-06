@@ -45,15 +45,16 @@ function luceneFilter(
     if (key) {
       if (isExistsQuery) {
         if (isNegation) {
-          qb = qb.where(key, "is", null);
+          // I'm not following how this ever worked...
+          qb = qb.where(key as any, "is", null);
         } else {
-          qb = qb.where(key, "is not", null);
+          qb = qb.where(key as any, "is not", null);
         }
       } else {
         if (isNegation) {
-          qb = qb.where(key, "!=", value);
+          qb = qb.where(key as any, "!=", value);
         } else {
-          qb = qb.where(key, "=", value);
+          qb = qb.where(key as any, "=", value);
         }
       }
     } else {
@@ -71,7 +72,10 @@ function luceneFilter(
 }
 
 export function listUsers(db: Kysely<Database>) {
-  return async (tenantId, params: ListParams): Promise<ListUsersResponse> => {
+  return async (
+    tenantId: string,
+    params: ListParams,
+  ): Promise<ListUsersResponse> => {
     let query = db.selectFrom("users").where("users.tenant_id", "=", tenantId);
     if (params.q) {
       query = luceneFilter(db, query, params.q);

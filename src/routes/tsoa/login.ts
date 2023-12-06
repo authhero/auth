@@ -571,9 +571,9 @@ export class LoginController extends Controller {
 
     try {
       const codes = await env.data.codes.list(client.tenant_id, user.id);
-      const code = codes.find((otp) => otp.code === code);
+      const foundCode = codes.find((otp) => otp.code === code);
 
-      if (!code) {
+      if (!foundCode) {
         return renderEnterCode(env, this, session, "Code not found or expired");
       }
 
