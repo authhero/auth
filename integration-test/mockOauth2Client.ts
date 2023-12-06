@@ -3,6 +3,22 @@ import {
   OAuthProviderParams,
   IOAuth2Client,
 } from "../src/services/oauth2-client";
+import { createToken } from "../src/utils/jwt";
+import { getCertificate } from "./helpers/token";
+
+function createTokenExample(payload: {
+  [key: string]: string | string[] | number | boolean;
+}) {
+  return createToken({
+    alg: "RS256",
+    headerAdditions: {
+      kid: "test",
+    },
+    payload,
+    // Would be good to use different certificates for each social provider and then test we are verifying the signature
+    pemKey: getCertificate().privateKey,
+  });
+}
 
 class MockOAuth2Client implements IOAuth2Client {
   private readonly params: OAuthProviderParams;
@@ -16,17 +32,47 @@ class MockOAuth2Client implements IOAuth2Client {
   getAuthorizationUrl(state: string): Promise<string> {
     throw new Error("getAuthorizationUrl method not implemented.");
   }
-  exchangeCodeForTokenResponse(code: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      resolve({
-        access_token: "accessToken",
-        id_token:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2F1dGguZXhhbXBsZS5jb20iLCJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoiY2xpZW50MTIzIiwiZXhwIjoxNjE2NDcwOTQ4LCJpYXQiOjE2MTY0NjczNDgsIm5hbWUiOiJKb2huIERvZSIsImVtYWlsIjoiam9obi5kb2VAZXhhbXBsZS5jb20iLCJwaWN0dXJlIjoiaHR0cHM6Ly9leGFtcGxlLmNvbS9qb2huLmpwZyIsIm5vbmNlIjoiYWJjMTIzIiwiZW1haWxfdmVyaWZpZWQiOnRydWV9.RvMi_pqbLRorEfLfkhMVZg8Ff0y2Cj0dyqIRnYkRBWU",
+  async exchangeCodeForTokenResponse(code: string) {
+    if (this.params.client_id === "otherSocialClientId") {
+      const otherClientIdToken = await createTokenExample({
+        iss: "https://opther-auth.example.com",
+        sub: "test-new-sub",
+        aud: "client123",
+        exp: 1616470948,
+        iat: 1616467348,
+        name: "John Doe",
+        email: "john.doe@example.com",
+        picture: "https://example.com/john.jpg",
+        nonce: "abc123",
+        email_verified: true,
+      });
+      return {
+        access_token: "otherClientAccessToken",
+        id_token: otherClientIdToken,
         token_type: "tokenType",
         expires_in: 1000,
         refresh_token: "refreshToken",
-      });
+      };
+    }
+    const clientIdToken = await createTokenExample({
+      iss: "https://auth.example.com",
+      sub: "1234567890",
+      aud: "client123",
+      exp: 1616470948,
+      iat: 1616467348,
+      name: "John Doe",
+      email: "john.doe@example.com",
+      picture: "https://example.com/john.jpg",
+      nonce: "abc123",
+      email_verified: true,
     });
+    return {
+      access_token: "accessToken",
+      id_token: clientIdToken,
+      token_type: "tokenType",
+      expires_in: 1000,
+      refresh_token: "refreshToken",
+    };
   }
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");

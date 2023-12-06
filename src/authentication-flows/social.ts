@@ -140,18 +140,25 @@ export async function socialAuthCallback({
     email,
   };
 
-  // TODO - this should actually be id! the social id pulled out before
-  // we can fix once we've done account linking
-  let user = await env.data.users.getByEmail(client.tenant_id, email);
+  const ssoId = `${state.connection}|${sub}`;
+  let user = await env.data.users.get(client.tenant_id, ssoId);
 
   if (!state.connection) {
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
-  // for now just create a new user with the correct structure IF does not already existing
-  // TODO - intelligent account linking!
+  if (user?.linked_to) {
+    user = await env.data.users.get(client.tenant_id, user.linked_to);
+  }
+
   if (!user) {
-    user = await env.data.users.create(client.tenant_id, {
+    const sameEmailUser = await env.data.users.getByEmail(
+      client.tenant_id,
+      // TODO - this needs to ONLY fetch primary users e.g. where linked_to is null
+      email,
+    );
+
+    const newSocialUser = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
       email,
       tenant_id: client.tenant_id,
@@ -166,6 +173,19 @@ export async function socialAuthCallback({
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
+
+    // this means we have a primary account
+    if (sameEmailUser) {
+      user = sameEmailUser;
+
+      // link user with existing user
+      await env.data.users.update(client.tenant_id, newSocialUser.id, {
+        linked_to: sameEmailUser.id,
+      });
+    } else {
+      // here we are using the new user as the primary ccount
+      user = newSocialUser;
+    }
   }
 
   ctx.set("email", email);
