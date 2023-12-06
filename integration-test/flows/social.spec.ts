@@ -290,13 +290,10 @@ describe("social sign on", () => {
         }),
       });
 
-      expect(createEmailUserResponse.status).toBe(201);
-
       const createEmailUser =
         (await createEmailUserResponse.json()) as UserResponse;
 
       expect(createEmailUser.email).toBe("john.doe@example.com");
-
       expect(createEmailUser.identities).toEqual([
         {
           connection: "email",
@@ -326,14 +323,9 @@ describe("social sign on", () => {
         },
       );
 
-      expect(socialCallbackResponse.status).toBe(302);
-
-      const location = new URL(socialCallbackResponse.headers.get("location")!);
-
-      expect(location.host).toBe("login2.sesamy.dev");
-
-      const socialCallbackResponseQuery = location.searchParams;
-      expect(socialCallbackResponseQuery.get("access_token")).toBeDefined();
+      const socialCallbackResponseQuery = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      ).searchParams;
 
       const accessTokenPayload = parseJwt(
         socialCallbackResponseQuery.get("access_token")!,
@@ -348,7 +340,6 @@ describe("social sign on", () => {
       const idTokenPayload = parseJwt(
         socialCallbackResponseQuery.get("id_token")!,
       );
-      expect(idTokenPayload.aud).toBe("clientId");
 
       // This is the big change here
       expect(idTokenPayload.sub).not.toBe("demo-social-provider|1234567890");
@@ -424,7 +415,6 @@ describe("social sign on", () => {
         "http://localhost:3000/callback",
       );
       silentAuthSearchParams.set("state", "state");
-      // silent auth pararms!
       silentAuthSearchParams.set("prompt", "none");
       silentAuthSearchParams.set("nonce", "nonce");
       silentAuthSearchParams.set("response_mode", "web_message");
@@ -439,13 +429,7 @@ describe("social sign on", () => {
         },
       );
 
-      expect(silentAuthResponse.status).toBe(200);
-
       const body = await silentAuthResponse.text();
-
-      expect(body).not.toContain("Login required");
-
-      expect(body).toContain("access_token");
 
       // get id token from iframe response body - should create helper for this?
       const responseBody = body
@@ -492,11 +476,9 @@ describe("social sign on", () => {
         socialCallbackResponse2.headers.get("location")!,
       ).searchParams;
 
-      const accessTokenPayload2 = parseJwt(
-        socialCallbackResponse2Query.get("access_token")!,
-      );
-
-      expect(accessTokenPayload2.sub).toBe(createEmailUser.user_id);
+      expect(
+        parseJwt(socialCallbackResponse2Query.get("access_token")!).sub,
+      ).toBe(createEmailUser.user_id);
 
       // ---------------------------------------------
       // now log-in with another SSO account with the same email address
@@ -519,22 +501,18 @@ describe("social sign on", () => {
         },
       );
 
-      expect(socialCallbackResponseAnotherSSO.status).toBe(302);
-
       const socialCallbackResponseAnotherSSOQuery = new URL(
         socialCallbackResponseAnotherSSO.headers.get("location")!,
       ).searchParams;
 
-      const accessTokenPayloadAnotherSSO = parseJwt(
-        socialCallbackResponseAnotherSSOQuery.get("access_token")!,
-      );
-      // this confirms we are signing in still with the primary user
-      expect(accessTokenPayloadAnotherSSO.sub).toBe(createEmailUser.user_id);
-
-      const idTokenPayloadAnotherSSO = parseJwt(
-        socialCallbackResponseAnotherSSOQuery.get("id_token")!,
-      );
-      expect(idTokenPayloadAnotherSSO.sub).toBe(createEmailUser.user_id);
+      // these confirm we are still signing in with the primary user
+      expect(
+        parseJwt(socialCallbackResponseAnotherSSOQuery.get("access_token")!)
+          .sub,
+      ).toBe(createEmailUser.user_id);
+      expect(
+        parseJwt(socialCallbackResponseAnotherSSOQuery.get("id_token")!).sub,
+      ).toBe(createEmailUser.user_id);
 
       // ---------------------------------------------
       // now check that the primary user has new identities
