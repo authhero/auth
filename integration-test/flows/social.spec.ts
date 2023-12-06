@@ -265,7 +265,7 @@ describe("social sign on", () => {
   });
 
   describe("Secondary user", () => {
-    it("should return existing primary account when login with new social sign on with same email address", async () => {
+    it("should return existing primary account when logging in with new social sign ons with same email address", async () => {
       // ---------------------------------------------
       // create new user with same email as we have hardcoded on the mock id_token responses
       // ---------------------------------------------
@@ -296,6 +296,16 @@ describe("social sign on", () => {
         (await createEmailUserResponse.json()) as UserResponse;
 
       expect(createEmailUser.email).toBe("john.doe@example.com");
+
+      expect(createEmailUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: createEmailUser.user_id.split("|")[1],
+          isSocial: false,
+        },
+      ]);
+
       // TODO - do we need to be able to set this true from mgmt API? OR should I actually verify it...
       // maybe use code user?
       // expect(createEmailUser.email_verified).toBe(true);
@@ -349,9 +359,10 @@ describe("social sign on", () => {
       // expect(idTokenPayload.email_verified).toBe(true);
 
       // ---------------------------------------------
-      // now check that the user was created was properly in the data providers
+      // now check that the new social user was created was properly in the data providers
       // ---------------------------------------------
       const newSocialUserRes = await worker.fetch(
+        // wait - is this even correct? can we even do this and see linked users in auth0 management API?
         `/api/v2/users/${idTokenPayload.sub}`,
         {
           headers: {
@@ -363,6 +374,37 @@ describe("social sign on", () => {
 
       const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
       expect(newSocialUser.email).toBe("john.doe@example.com");
+
+      // ---------------------------------------------
+      // check that the primary user has new identities
+      // ---------------------------------------------
+
+      const primaryUserRes = await worker.fetch(
+        `/api/v2/users/${createEmailUser.user_id}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const primaryUser = (await primaryUserRes.json()) as UserResponse;
+
+      expect(primaryUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: createEmailUser.user_id.split("|")[1],
+          isSocial: false,
+        },
+        {
+          connection: "demo-social-provider",
+          provider: "demo-social-provider",
+          user_id: "1234567890",
+          isSocial: true,
+        },
+      ]);
 
       // ---------------------------------------------
       // silent auth to check we're getting the primary user back
@@ -413,8 +455,6 @@ describe("social sign on", () => {
         responseBody!.replace("response: ", ""),
       );
 
-      // ALSO PARSE ACCESS_TOKEN FOR SUB!
-
       const silentAuthAccessToken = iframeResponseJSON.access_token;
       const silentAuthAccessTokenPayload = parseJwt(silentAuthAccessToken);
 
@@ -457,6 +497,95 @@ describe("social sign on", () => {
       );
 
       expect(accessTokenPayload2.sub).toBe(createEmailUser.user_id);
+
+      // ---------------------------------------------
+      // now log-in with another SSO account with the same email address
+      // ---------------------------------------------
+
+      const socialCallbackQueryAnotherSSO = new URLSearchParams({
+        state: btoa(
+          JSON.stringify({
+            authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+            connection: "other-social-provider",
+          }),
+        ).replace("==", ""),
+        code: "code",
+      });
+
+      const socialCallbackResponseAnotherSSO = await worker.fetch(
+        `/callback?${socialCallbackQueryAnotherSSO.toString()}`,
+        {
+          redirect: "manual",
+        },
+      );
+
+      expect(socialCallbackResponseAnotherSSO.status).toBe(302);
+
+      const socialCallbackResponseAnotherSSOQuery = new URL(
+        socialCallbackResponseAnotherSSO.headers.get("location")!,
+      ).searchParams;
+
+      const accessTokenPayloadAnotherSSO = parseJwt(
+        socialCallbackResponseAnotherSSOQuery.get("access_token")!,
+      );
+      // this confirms we are signing in still with the primary user
+      expect(accessTokenPayloadAnotherSSO.sub).toBe(createEmailUser.user_id);
+
+      const idTokenPayloadAnotherSSO = parseJwt(
+        socialCallbackResponseAnotherSSOQuery.get("id_token")!,
+      );
+      expect(idTokenPayloadAnotherSSO.sub).toBe(createEmailUser.user_id);
+
+      // ---------------------------------------------
+      // now check that the primary user has new identities
+      // ---------------------------------------------
+
+      const primaryUserResAgain = await worker.fetch(
+        `/api/v2/users/${createEmailUser.user_id}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const primaryUserAgain =
+        (await primaryUserResAgain.json()) as UserResponse;
+
+      console.log(primaryUserAgain);
+
+      // Nice! legit bug. we are getting this identity back twice!
+      /*
+          {
+          connection: 'demo-social-provider',
+          provider: 'demo-social-provider',
+          user_id: '1234567890',
+          isSocial: true
+        },
+      */
+
+      expect(primaryUserAgain.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: createEmailUser.user_id.split("|")[1],
+          isSocial: false,
+        },
+        {
+          connection: "demo-social-provider",
+          provider: "demo-social-provider",
+          user_id: "1234567890",
+          isSocial: true,
+        },
+        {
+          connection: "other-social-provider",
+          provider: "other-social-provider",
+          // this is correct as per the encoded id_token for this SSO provider
+          user_id: "test-new-sub",
+          isSocial: true,
+        },
+      ]);
     });
 
     // social sign in again with existing account... maybe do above?
