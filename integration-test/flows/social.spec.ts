@@ -56,9 +56,18 @@ describe("social sign on", () => {
   });
 
   describe("Primary user", () => {
+    /* TO TEST
+    * silent auth! have since merged PRs testing silent auth
+    * for POST and GET SSO calls to /callback
+      assert that we
+      - get the auth cookie back
+      - can silent auth with it
+    */
+
     it("should create correct args for social sign on from hitting /authorize with connection", async () => {
       await setup(worker);
 
+      // TODO - can reuse here the same helper args above... dedupe these tests a bit as they're long
       const socialSignOnQuery = new URLSearchParams({
         client_id: "clientId",
         response_type: "token id_token",
@@ -260,7 +269,7 @@ describe("social sign on", () => {
     // social sign on for existing email/password user
     // check that we return same info we get from email/password user... e.g.? just the id?
     // then how to return an id_token with the same?
-    it("should return existing primary account when login with new social sign on with same email address", async () => {
+    it.only("should return existing primary account when login with new social sign on with same email address", async () => {
       // ---------------------------------------------
       // create new user with same email as we have hardcoded on the mock id_token responses
       // ---------------------------------------------
@@ -313,17 +322,15 @@ describe("social sign on", () => {
 
       expect(socialCallbackResponse.status).toBe(302);
 
-      const location2 = new URL(
-        socialCallbackResponse.headers.get("location")!,
-      );
+      const location = new URL(socialCallbackResponse.headers.get("location")!);
 
-      expect(location2.host).toBe("login2.sesamy.dev");
+      expect(location.host).toBe("login2.sesamy.dev");
 
-      const socialCallbackQuery2 = location2.searchParams;
-      expect(socialCallbackQuery2.get("access_token")).toBeDefined();
+      const socialCallbackResponseQuery = location.searchParams;
+      expect(socialCallbackResponseQuery.get("access_token")).toBeDefined();
 
       const accessTokenPayload = parseJwt(
-        socialCallbackQuery2.get("access_token")!,
+        socialCallbackResponseQuery.get("access_token")!,
       );
 
       // This is the big change here
@@ -332,7 +339,9 @@ describe("social sign on", () => {
       );
       expect(accessTokenPayload.sub).toBe(createEmailUser.user_id);
 
-      const idTokenPayload = parseJwt(socialCallbackQuery2.get("id_token")!);
+      const idTokenPayload = parseJwt(
+        socialCallbackResponseQuery.get("id_token")!,
+      );
       expect(idTokenPayload.aud).toBe("clientId");
 
       // This is the big change here
@@ -346,10 +355,93 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now check that the user was created was properly in the data providers
       // ---------------------------------------------
+      const newSocialUserRes = await worker.fetch(
+        `/api/v2/users/${idTokenPayload.sub}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
+      expect(newSocialUser.email).toBe("john.doe@example.com");
 
       // ---------------------------------------------
-      // finally do silent auth to check we're getting the primary user back
+      // silent auth to check we're getting the primary user back
       // ---------------------------------------------
+
+      const setCookiesHeader =
+        socialCallbackResponse.headers.get("set-cookie")!;
+      const cookies = setCookiesHeader.split(";").map((c) => c.trim());
+      const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
+
+      const silentAuthSearchParams = new URLSearchParams();
+      silentAuthSearchParams.set("client_id", "clientId");
+      silentAuthSearchParams.set("response_type", "token id_token");
+      silentAuthSearchParams.set("scope", "openid profile email");
+      silentAuthSearchParams.set(
+        "redirect_uri",
+        "http://localhost:3000/callback",
+      );
+      silentAuthSearchParams.set("state", "state");
+      // silent auth pararms!
+      silentAuthSearchParams.set("prompt", "none");
+      silentAuthSearchParams.set("nonce", "nonce");
+      silentAuthSearchParams.set("response_mode", "web_message");
+
+      const silentAuthResponse = await worker.fetch(
+        `/authorize?${silentAuthSearchParams.toString()}`,
+        {
+          headers: {
+            cookie: authCookie,
+          },
+          redirect: "manual",
+        },
+      );
+
+      expect(silentAuthResponse.status).toBe(200);
+
+      const body = await silentAuthResponse.text();
+
+      expect(body).not.toContain("Login required");
+
+      expect(body).toContain("access_token");
+
+      // get id token from iframe response body - should create helper for this?
+      const responseBody = body
+        .split("\n")
+        .find((line) => line.trim().startsWith("response: "));
+      const iframeResponseJSON = JSON.parse(
+        responseBody!.replace("response: ", ""),
+      );
+
+      // ALSO PARSE ACCESS_TOKEN FOR SUB!
+
+      const silentAuthAccessToken = iframeResponseJSON.access_token;
+      const silentAuthAccessTokenPayload = parseJwt(silentAuthAccessToken);
+
+      console.log(silentAuthAccessTokenPayload);
+
+      expect(silentAuthAccessTokenPayload).toMatchObject({
+        sub: createEmailUser.user_id,
+      });
+
+      const silentAuthIdToken = iframeResponseJSON.id_token;
+      const silentAuthIdTokenPayload = parseJwt(silentAuthIdToken);
+
+      expect(silentAuthIdTokenPayload).toMatchObject({
+        // testing this means it must be working
+        sub: createEmailUser.user_id,
+        aud: "clientId",
+        name: "john.doe@example.com",
+        email: "john.doe@example.com",
+        // is this actually correct? I wonder...
+        email_verified: true,
+        nonce: "nonce",
+        iss: "https://example.com/",
+      });
 
       // ---------------------------------------------
       // now sign in with same social user again and check we get the same primary user back
