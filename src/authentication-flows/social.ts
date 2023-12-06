@@ -140,7 +140,8 @@ export async function socialAuthCallback({
     email,
   };
 
-  let user = await env.data.users.get(client.tenant_id, `${connection}|${sub}`);
+  const ssoId = `${state.connection}|${sub}`;
+  let user = await env.data.users.get(client.tenant_id, ssoId);
 
   // TODO
   // here need to check linked_to property, and fetch that primary user instead!
