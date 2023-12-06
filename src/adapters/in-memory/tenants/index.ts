@@ -4,6 +4,7 @@ import { createTenant } from "./create";
 import { listTenants } from "./list";
 import { getTenant } from "./get";
 import { updateTenant } from "./update";
+import { removeTenant } from "./remove";
 
 export function createTenantsAdapter(): TenantsDataAdapter {
   const tenants: Tenant[] = [];
@@ -13,5 +14,6 @@ export function createTenantsAdapter(): TenantsDataAdapter {
     get: getTenant(tenants),
     list: listTenants(tenants),
     update: updateTenant(tenants),
+    remove: removeTenant(tenants),
   };
 }

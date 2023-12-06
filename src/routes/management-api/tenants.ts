@@ -11,10 +11,12 @@ import {
   Query,
   Path,
   Patch,
+  Delete,
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Totals } from "../../types/auth0";
+import { HTTPException } from "hono/http-exception";
 
 export interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
@@ -146,5 +148,23 @@ export class TenantsController extends Controller {
 
     this.setStatus(201);
     return tenant;
+  }
+
+  @Delete("{id}")
+  @Security("oauth2managementApi", [""])
+  @SuccessResponse(200, "Delete")
+  public async deleteTenant(
+    @Request() request: RequestWithContext,
+    @Path("id") id: string,
+  ): Promise<string> {
+    const { env } = request.ctx;
+
+    const result = await env.data.tenants.remove(id);
+
+    if (!result) {
+      throw new HTTPException(404);
+    }
+
+    return "OK";
   }
 }
