@@ -5,7 +5,6 @@ import app from "../src/app";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";
 import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
 import createAdapters from "./adapters/kysely";
-import { createClientsAdapter } from "./adapters/kv-storage/clients";
 import createEmailAdapter from "./adapters/email";
 import { Env } from "./types";
 import { getDb } from "./services/db";
@@ -24,7 +23,6 @@ const server = {
       oauth2ClientFactory: { create: oAuth2ClientFactory },
       data: {
         certificates: createCertificatesAdapter(env),
-        clients: createClientsAdapter(env),
         ...createEmailAdapter(env),
         ...createAdapters(db),
       },

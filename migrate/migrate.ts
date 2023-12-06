@@ -1,30 +1,13 @@
-import { Migrator } from "kysely";
+import { Dialect, Migrator } from "kysely";
 import "dotenv/config";
 
 import ReferenceMigrationProvider from "./ReferenceMigrationProvider";
 import migrations from "./migrations";
 import { getDb } from "../src/services/db";
 
-// import { PlanetScaleDialect } from "kysely-planetscale";
-import { BunSqliteDialect } from "kysely-bun-sqlite";
-// @ts-ignore
-import * as bunSqlite from "bun:sqlite";
+export async function migrateToLatest(dialect: Dialect) {
+  console.log("migrating...");
 
-console.log("migrating...");
-
-// const dialect = new PlanetScaleDialect({
-//   host: process.env.DATABASE_HOST,
-//   username: process.env.DATABASE_USERNAME,
-//   password: process.env.DATABASE_PASSWORD,
-//   fetch: (opts, init) =>
-//     fetch(new Request(opts, { ...init, cache: undefined })),
-// });
-
-const dialect = new BunSqliteDialect({
-  database: new bunSqlite.Database("db.sqlite"),
-});
-
-async function migrateToLatest() {
   const provider = new ReferenceMigrationProvider(migrations);
   const db = getDb(dialect);
   const migrator = new Migrator({
@@ -47,7 +30,9 @@ async function migrateToLatest() {
   await db.destroy();
 }
 
-async function migrateDown() {
+export async function migrateDown(dialect: Dialect) {
+  console.log("migrating...");
+
   const provider = new ReferenceMigrationProvider(migrations);
   const db = getDb(dialect);
   const migrator = new Migrator({
@@ -69,12 +54,3 @@ async function migrateDown() {
   }
   await db.destroy();
 }
-
-migrateToLatest()
-  // migrateDown()
-  .then(() => {
-    console.log("done");
-  })
-  .catch((err) => {
-    console.error(err);
-  });

@@ -9,7 +9,6 @@ import {
   BaseUser,
 } from "../types";
 import { headers } from "../constants";
-import { getClient } from "../services/clients";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
