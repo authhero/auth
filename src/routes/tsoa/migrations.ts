@@ -89,8 +89,6 @@ export class MigrationsController extends Controller {
       .where("migrations.id", "=", id)
       .execute();
 
-    await updateTenantClientsInKV(env, tenantId);
-
     return "OK";
   }
 
@@ -120,8 +118,6 @@ export class MigrationsController extends Controller {
       .where("id", "=", id)
       .execute();
 
-    await updateTenantClientsInKV(env, tenantId);
-
     return Number(results[0].numUpdatedRows);
   }
 
@@ -148,8 +144,6 @@ export class MigrationsController extends Controller {
     };
 
     await db.insertInto("migrations").values(migration).execute();
-
-    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(201);
     return migration;
@@ -194,8 +188,6 @@ export class MigrationsController extends Controller {
     }
 
     await db.insertInto("migrations").values(migration).execute();
-
-    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(201);
     return migration;

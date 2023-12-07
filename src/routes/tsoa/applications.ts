@@ -89,8 +89,6 @@ export class ApplicationsController extends Controller {
       .where("applications.id", "=", id)
       .execute();
 
-    await updateClientInKV(env, id);
-
     return "OK";
   }
 
@@ -120,8 +118,6 @@ export class ApplicationsController extends Controller {
       .set(application)
       .where("id", "=", id)
       .execute();
-
-    await updateClientInKV(env, id);
 
     return Number(results[0].numUpdatedRows);
   }
@@ -201,8 +197,6 @@ export class ApplicationsController extends Controller {
         .where("id", "=", application.id)
         .execute();
     }
-
-    await updateClientInKV(env, application.id);
 
     this.setStatus(200);
     return application;
