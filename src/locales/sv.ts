@@ -1,6 +1,6 @@
 export const sv = {
   // common
-  welcomeToYourAccount: "Välkommen till ditt {{vendorName}} konto!",
+  welcomeToYourAccount: "Välkommen till ditt {{vendorName}}-konto!",
   contactUs: "Kontakta oss",
   copyright: "Copyright © 2023 SESAMY. Alla rättigheter förbehållna.",
   codeValid30Mins: "Koden är giltig i 30 minuter",
