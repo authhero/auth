@@ -18,7 +18,6 @@ import { nanoid } from "nanoid";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getDbFromEnv } from "../../services/db";
 import { Application } from "../../types/sql";
-import { updateClientInKV } from "../../hooks/update-client";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
@@ -152,10 +151,6 @@ export class ApplicationsController extends Controller {
       id: body.id || nanoid(),
       client_secret: body.client_secret || nanoid(),
     });
-
-    if (env.hooks?.application?.onCreated) {
-      await env.hooks.application.onCreated(env, application);
-    }
 
     this.setStatus(201);
     return application;

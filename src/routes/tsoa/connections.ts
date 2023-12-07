@@ -18,7 +18,6 @@ import { nanoid } from "nanoid";
 import { getDbFromEnv } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { SqlConnection } from "../../types/sql";
-import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
