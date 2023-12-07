@@ -3,7 +3,7 @@ export const en = {
   welcometoYourAccount: "Welcome to your {{vendorName}} account!",
   contactUs: "Contact us",
   copyright: "Copyright © 2023 SESAMY. All rights reserved.",
-  codeValid30Mins: "The code is valid for 30 minutes.",
+  codeValid30Mins: "The code is valid for 30 minutes",
   supportInfo:
     "If you have questions or need assistance, you can contact our support team",
   // code email
