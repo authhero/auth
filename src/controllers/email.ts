@@ -3,6 +3,7 @@ import { translate } from "../utils/i18n";
 import { Client, Env } from "../types";
 import sendEmail from "../services/email";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
+import { en, sv } from "../locales";
 
 const engine = new Liquid();
 
@@ -33,6 +34,7 @@ export async function sendEmailValidation(
     env.IMAGE_PROXY_URL,
   );
 
+  // TODO - implement i18n
   const sendCodeTemplate = engine.parse(templateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
@@ -72,6 +74,7 @@ export async function sendCode(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = language === "sv" ? sv : en;
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -79,7 +82,16 @@ export async function sendCode(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeTemplate = engine.parse(templateString);
+  const sendCodeUniversalTemplate = engine.parse(templateString);
+  // will this work?
+  const sendCodeTemplateString = await engine.render(
+    sendCodeUniversalTemplate,
+    {
+      ...locale,
+    },
+  );
+  // totally guessing at this 8-)
+  const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
     vendorName: client.name,
@@ -121,6 +133,7 @@ export async function sendLink(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = language === "sv" ? sv : en;
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -128,7 +141,16 @@ export async function sendLink(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeTemplate = engine.parse(templateString);
+  const sendCodeUniversalTemplate = engine.parse(templateString);
+  // will this work?
+  const sendCodeTemplateString = await engine.render(
+    sendCodeUniversalTemplate,
+    {
+      ...locale,
+    },
+  );
+  // totally guessing at this 8-)
+  const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
     vendorName: client.name,
@@ -181,6 +203,7 @@ export async function sendResetPassword(
     env.IMAGE_PROXY_URL,
   );
 
+  // TODO - implement i18n
   const sendCodeTemplate = engine.parse(templateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     passwordResetUrl: `${env.ISSUER}u/reset-password?code=${code}&state=${state}`,
