@@ -63,7 +63,7 @@
     <mj-section padding="4px">
       <mj-column padding="16px 0px" border-radius="16px" width="504px" background-color="#fff">
         <mj-text font-size="18px" line-height="21.6px" font-weight="500" color="#14141A">
-          {{codeEmailWelcomeToYourAccount}}
+          {{welcomeToYourAccount}}
         </mj-text>
         <mj-text font-size="16px" line-height="19.2px">
           {{codeEmailEnterCode}}
@@ -79,7 +79,7 @@
           <tr>
             <td align="center" style="padding-top: 6px;">
               <div class="text-style" style="font-size: 16px; line-height: 19.2px;">
-                {{codeEmailCodeValid30Mins}}
+                {{codeValid30Mins}}
               </div>
             </td>
           </tr>
@@ -94,7 +94,7 @@
               <img alt="" width="14" height="14" style="width: 14px;border:0;display:block;outline:none;text-decoration:none;height:14px;" src="https://imgproxy.dev.sesamy.cloud/unsafe/format:png/size:28:28/aHR0cHM6Ly9hc3NldHMuc2VzYW15LmRldi9zdGF0aWMvaW1hZ2VzL2VtYWlsL3F1ZXN0aW9uLnBuZw&#x3D;&#x3D;" />
             </td>
             <td>
-              <div class="text-style">{{codeEmailSupportInfo}}</div>
+              <div class="text-style">{{supportInfo}}</div>
             </td>
           </tr>
         </mj-table>
