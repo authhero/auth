@@ -83,7 +83,6 @@ export async function sendCode(
   );
 
   const sendCodeUniversalTemplate = engine.parse(templateString);
-  // will this work?
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
@@ -95,7 +94,6 @@ export async function sendCode(
       buttonColor: client.tenant.primary_color || "#7d68f4",
     },
   );
-  // totally guessing at this 8-)
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
@@ -160,7 +158,6 @@ export async function sendLink(
       buttonColor: client.tenant.primary_color || "#7d68f4",
     },
   );
-  // totally guessing at this 8-)
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
