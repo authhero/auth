@@ -88,6 +88,11 @@ export async function sendCode(
     sendCodeUniversalTemplate,
     {
       ...locale,
+      code,
+      vendorName: client.name,
+      logo,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      buttonColor: client.tenant.primary_color || "#7d68f4",
     },
   );
   // totally guessing at this 8-)
@@ -142,11 +147,17 @@ export async function sendLink(
   );
 
   const sendCodeUniversalTemplate = engine.parse(templateString);
-  // will this work?
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
       ...locale,
+      // pass in variables twice! no harm to overdo it
+      code,
+      vendorName: client.name,
+      logo,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      magicLink,
+      buttonColor: client.tenant.primary_color || "#7d68f4",
     },
   );
   // totally guessing at this 8-)
