@@ -141,11 +141,6 @@ export class TenantsController extends Controller {
 
     const tenant = await env.data.tenants.create(body);
 
-    // TODO: this should be a middleware
-    if (env.hooks?.tenant?.onCreated) {
-      await env.hooks.tenant.onCreated(env, tenant);
-    }
-
     this.setStatus(201);
     return tenant;
   }

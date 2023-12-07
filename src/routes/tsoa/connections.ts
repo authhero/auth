@@ -18,7 +18,6 @@ import { nanoid } from "nanoid";
 import { getDbFromEnv } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { SqlConnection } from "../../types/sql";
-import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
@@ -89,8 +88,6 @@ export class ConnectionsController extends Controller {
       .where("connections.id", "=", id)
       .execute();
 
-    await updateTenantClientsInKV(env, tenantId);
-
     return "OK";
   }
 
@@ -120,8 +117,6 @@ export class ConnectionsController extends Controller {
       .where("id", "=", id)
       .execute();
 
-    await updateTenantClientsInKV(env, tenantId);
-
     return Number(results[0].numUpdatedRows);
   }
 
@@ -146,8 +141,6 @@ export class ConnectionsController extends Controller {
     };
 
     await env.data.connections.create(tenant_id, connection);
-
-    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(201);
     return connection;
@@ -193,8 +186,6 @@ export class ConnectionsController extends Controller {
         .where("id", "=", connection.id)
         .execute();
     }
-
-    await updateTenantClientsInKV(env, tenant_id);
 
     this.setStatus(200);
     return connection;

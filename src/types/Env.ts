@@ -28,12 +28,4 @@ export type Env = {
   DEFAULT_SETTINGS?: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   data: DataAdapters;
-  hooks: {
-    application?: {
-      onCreated?: (env: Env, application: Application) => Promise<void>;
-    };
-    tenant?: {
-      onCreated?: (env: Env, tenant: Tenant) => Promise<void>;
-    };
-  };
 };

@@ -18,7 +18,6 @@ import { nanoid } from "nanoid";
 
 import { getDbFromEnv } from "../../services/db";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { updateTenantClientsInKV } from "../../hooks/update-client";
 import { parseRange } from "../../helpers/content-range";
 import { headers } from "../../constants";
 import { SqlDomain } from "../../types/sql/Domain";
@@ -103,8 +102,6 @@ export class DomainsController extends Controller {
       .where("domains.id", "=", id)
       .execute();
 
-    await updateTenantClientsInKV(env, tenantId);
-
     return "OK";
   }
 
@@ -133,8 +130,6 @@ export class DomainsController extends Controller {
       .set(domain)
       .where("id", "=", id)
       .execute();
-
-    await updateTenantClientsInKV(env, tenantId);
 
     return Number(results[0].numUpdatedRows);
   }
@@ -165,8 +160,6 @@ export class DomainsController extends Controller {
     };
 
     await db.insertInto("domains").values(domain).execute();
-
-    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(201);
     return domain;
@@ -209,8 +202,6 @@ export class DomainsController extends Controller {
         .where("id", "=", domain.id)
         .execute();
     }
-
-    await updateTenantClientsInKV(env, tenantId);
 
     this.setStatus(200);
     return domain;
