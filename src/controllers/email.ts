@@ -66,7 +66,9 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
+  const response = await env.AUTH_TEMPLATES.get(
+    "templates/email/code-v2.liquid",
+  );
   if (!response) {
     throw new Error("Code template not found");
   }
@@ -128,7 +130,9 @@ export async function sendLink(
   code: string,
   magicLink: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get("templates/email/link.liquid");
+  const response = await env.AUTH_TEMPLATES.get(
+    "templates/email/link-v2.liquid",
+  );
   if (!response) {
     throw new Error("Code template not found");
   }
