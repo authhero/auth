@@ -1,4 +1,6 @@
-export const sv = {
+import type { locale } from "./type";
+
+export const sv: locale = {
   // common
   welcomeToYourAccount: "Välkommen till ditt {{vendorName}}-konto!",
   contactUs: "Kontakta oss",
@@ -10,7 +12,7 @@ export const sv = {
   codeEmailTitle:
     "Välkommen till {{vendorName}}! {{code}} är koden för att logga in",
   codeEmailEnterCode:
-    "Skriv in koden på {{vendorName}} för att slutföra inloggningen",
+    "Skriv in koden på {{vendorName}} för att slutföra inloggningen.",
   // link email
   linkEmailClickToLogin: "Klicka på knappen för att logga in",
   linkEmailLogin: "Logga in",

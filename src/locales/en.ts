@@ -1,6 +1,8 @@
-export const en = {
+import type { locale } from "./type";
+
+export const en: locale = {
   // common
-  welcometoYourAccount: "Welcome to your {{vendorName}} account!",
+  welcomeToYourAccount: "Welcome to your {{vendorName}} account!",
   contactUs: "Contact us",
   copyright: "Copyright © 2023 SESAMY. All rights reserved.",
   codeValid30Mins: "The code is valid for 30 minutes",
