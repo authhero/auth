@@ -160,13 +160,9 @@ describe("users by email", () => {
     });
   });
 
-  // ahhhh!!! but what happens if we search by a sub email address? e.g. of a secondary account. this is the crux
-  // HMMMMM. but WTF happens with email? It's not on nested accounts...
-  it.only("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
-    // unexpected! cannot search for secondary email addresses
-
+  it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
     const token = await getAdminToken();
-    const anotherEmailUser = await worker.fetch("/api/v2/users", {
+    const createBarEmailUser = await worker.fetch("/api/v2/users", {
       method: "POST",
       body: JSON.stringify({
         email: "bar@example.com",
@@ -206,21 +202,14 @@ describe("users by email", () => {
     expect(barEmailUsers).toHaveLength(1);
     const barEmailId = barEmailUsers[0].user_id;
 
-    // now link foo to bar
-    // WOW! we have no integration tests for this... madness!
-    // this is the first... could all go wrong
-
-    // itneresting
+    // Note - we are not testing linking anwyhere else in the integration tests
     const linkResponse = await worker.fetch(
       `/api/v2/users/${barEmailId}/identities`,
       {
         method: "POST",
         body: JSON.stringify({
           link_with: fooEmailId,
-          // wtf provider and connection?
-          // hmmmm, this should really be tested eh!
-          // provider: "email",]
-          // connection: "email",
+          // are provider & connection required?
         }),
         headers: {
           authorization: `Bearer ${token}`,
@@ -233,13 +222,13 @@ describe("users by email", () => {
     const linkResponseData = (await linkResponse.json()) as Identity[];
     expect(linkResponseData).toHaveLength(2);
 
-    expect(linkResponseData[0]).toMatchObject({
+    expect(linkResponseData[0]).toEqual({
       connection: "email",
       provider: "email",
       user_id: fooEmailId,
       isSocial: false,
     });
-    expect(linkResponseData[1]).toMatchObject({
+    expect(linkResponseData[1]).toEqual({
       connection: "email",
       provider: "email",
       // this user_id correctly has provider prefixed
@@ -249,10 +238,47 @@ describe("users by email", () => {
     // TODO - have open PR for adding profileData in
     // we can then assert that we have a profileData key on the bar sub account
 
-    // NEXT
-    // search for each email
     // foo@example.com should exist with bar as an identity
+    const fooEmailAfterLink = await worker.fetch(
+      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    const fooEmailAfterLinkUsers =
+      (await fooEmailAfterLink.json()) as UserResponse[];
+    expect(fooEmailAfterLinkUsers).toHaveLength(1);
+
+    expect(fooEmailAfterLinkUsers[0].identities).toEqual([
+      {
+        connection: "email",
+        provider: "email",
+        user_id: fooEmailId,
+        isSocial: false,
+      },
+      // this is correct. we have bar's identity here
+      {
+        connection: "email",
+        provider: "email",
+        user_id: barEmailId.split("|")[1],
+        isSocial: false,
+      },
+    ]);
+
     // bar@example.com should not be searchable by email
+    const barEmailAfterLink = await worker.fetch(
+      `/api/v2/users-by-email?email=${encodeURIComponent("bar@example.com")}`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    expect(barEmailAfterLink.status).toBe(404);
 
     // ALSO TO TEST
     // - unlink accounts
