@@ -45,4 +45,16 @@ describe("users by email", () => {
 
     expect(response.status).toBe(404);
   });
+
+  /* 
+  TO TEST
+  * simple get by email - no linked accounts
+  * multiple simple primary not linked accounts
+  * a primary account with multiple linked accounts - some on different email addresses
+   
+  
+  TO INVESTIGATE
+  * what happens when search for an email address on a linked account?
+  Test this out on Auth0 mgmt API!
+  */
 });
