@@ -10,7 +10,7 @@ export const sv: locale = {
     "Om du har frågor eller behöver assistans kan du kontakta vårt supportteam",
   // code email
   codeEmailTitle:
-    "Välkommen till {{vendorName}}! {{code}} är koden för att logga in", // this one is missing WHY
+    "Välkommen till {{vendorName}}! {{code}} är koden för att logga in",
   codeEmailEnterCode:
     "Skriv in koden på {{vendorName}} för att slutföra inloggningen.",
   // link email
