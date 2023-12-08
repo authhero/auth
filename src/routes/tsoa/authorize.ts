@@ -23,7 +23,7 @@ import {
 } from "../../authentication-flows";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
-import { getClient } from "src/services/clients";
+import { getClient } from "../../services/clients";
 
 export interface AuthorizeParams {
   request: RequestWithContext;
