@@ -34,11 +34,11 @@ describe("users by email", () => {
     const token = await getAdminToken();
 
     const response = await worker.fetch(
-      "/api/v2/users-by-email/?email=i-do-not-exist@all.com",
+      "/api/v2/users-by-email?email=i-do-not-exist@all.com",
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "test",
+          "tenant-id": "tenantId",
         },
       },
     );
@@ -46,9 +46,24 @@ describe("users by email", () => {
     expect(response.status).toBe(404);
   });
 
+  it("should return a single user for a simple get by email - no linked accounts", async () => {
+    const token = await getAdminToken();
+
+    const response = await worker.fetch(
+      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+
+    expect(response.status).toBe(200);
+  });
+
   /* 
   TO TEST
-  * simple get by email - no linked accounts
   * multiple simple primary not linked accounts
   * a primary account with multiple linked accounts - some on different email addresses
    
