@@ -3,6 +3,7 @@ import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 import { setup } from "../helpers/setup";
+import { Identity } from "../../src/types/auth0/Identity";
 
 describe("users by email", () => {
   let worker: UnstableDevWorker;
@@ -161,7 +162,7 @@ describe("users by email", () => {
 
   // ahhhh!!! but what happens if we search by a sub email address? e.g. of a secondary account. this is the crux
   // HMMMMM. but WTF happens with email? It's not on nested accounts...
-  it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
+  it.only("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
     // unexpected! cannot search for secondary email addresses
 
     const token = await getAdminToken();
@@ -193,7 +194,7 @@ describe("users by email", () => {
     const fooEmailId = fooEmailUsers[0].user_id;
 
     const barEmail = await worker.fetch(
-      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+      `/api/v2/users-by-email?email=${encodeURIComponent("bar@example.com")}`,
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -209,22 +210,52 @@ describe("users by email", () => {
     // WOW! we have no integration tests for this... madness!
     // this is the first... could all go wrong
 
-    const linkResponse = await worker.fetch(`/api/v2/users/${barEmailId}`, {
-      method: "POST",
-      body: JSON.stringify({
-        link_with: fooEmailId,
-        // wtf provider and connection?
-        // hmmmm, this should really be tested eh!
-        // provider: "email",]
-        // connection: "email",
-      }),
-      headers: {
-        authorization: `Bearer ${token}`,
-        "tenant-id": "tenantId",
-        "content-type": "application/json",
+    // itneresting
+    const linkResponse = await worker.fetch(
+      `/api/v2/users/${barEmailId}/identities`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          link_with: fooEmailId,
+          // wtf provider and connection?
+          // hmmmm, this should really be tested eh!
+          // provider: "email",]
+          // connection: "email",
+        }),
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
       },
+    );
+    expect(linkResponse.status).toBe(201);
+    const linkResponseData = (await linkResponse.json()) as Identity[];
+    expect(linkResponseData).toHaveLength(2);
+
+    expect(linkResponseData[0]).toMatchObject({
+      connection: "email",
+      provider: "email",
+      user_id: fooEmailId,
+      isSocial: false,
     });
-    console.log("linkResponse", await linkResponse.json());
+    expect(linkResponseData[1]).toMatchObject({
+      connection: "email",
+      provider: "email",
+      // this user_id correctly has provider prefixed
+      user_id: barEmailId.split("|")[1],
+      isSocial: false,
+    });
+    // TODO - have open PR for adding profileData in
+    // we can then assert that we have a profileData key on the bar sub account
+
+    // NEXT
+    // search for each email
+    // foo@example.com should exist with bar as an identity
+    // bar@example.com should not be searchable by email
+
+    // ALSO TO TEST
+    // - unlink accounts
   });
 
   /* 
