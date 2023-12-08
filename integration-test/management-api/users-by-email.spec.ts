@@ -283,22 +283,4 @@ describe("users by email", () => {
     // ALSO TO TEST
     // - unlink accounts
   });
-
-  /* 
-  TO TEST
-  * a primary account with multiple linked accounts - some on different email addresses
-  // HOW? kiss. Do same test really as previous but create x2 new users WITH DIFFERENT EMAIL ADDRESSES!
-  // store ids of each of these new users
-  // THEN
-  // call /link endpoint on both to link them - kind of a test of linking... hmmmm
-  // -------- would be better to have these in fixtures? meh. OVERTEST FOR NOW! worry later-------
-  // getUserByEmail - call again
-  // expect to get back ONE user
-  // with other user in identities
-   
-  
-  TO INVESTIGATE
-  * what happens when search for an email address on a linked account?
-  Test this out on Auth0 mgmt API!
-  */
 });
