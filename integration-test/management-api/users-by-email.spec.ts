@@ -90,7 +90,7 @@ describe("users by email", () => {
     ]);
   });
 
-  it.skip("should return multiple users for a simple get by email - no linked accounts", async () => {
+  it("should return multiple users for a simple get by email - no linked accounts", async () => {
     const token = await getAdminToken();
 
     // duplicate existing email foo@example.com for provider: 'username - password'

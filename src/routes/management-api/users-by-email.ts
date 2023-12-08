@@ -76,11 +76,13 @@ export class UsersByEmailController extends Controller {
     }
 
     // We could do defensive coding here and alert if we have multiple primary users...
-    const primarySqlUser = users.find((user) => !user.linked_to);
+    const primarySqlUsers = users.filter((user) => !user.linked_to);
 
-    if (!primarySqlUser) {
+    if (primarySqlUsers.length === 0) {
       // seems a 500 as we've messed something up here!
-      throw new HTTPException(500, { message: "No primary user" });
+      throw new HTTPException(500, {
+        message: "No primary user found for email address",
+      });
     }
 
     // Step 1 - return this user in array
@@ -89,10 +91,10 @@ export class UsersByEmailController extends Controller {
     // Step 4 - return nested identities
     // don't overthink this last step. copy-paste but have tests so can TDD
 
-    const userResponse: UserResponse = await enrichUser(
-      env,
-      tenant_id,
-      primarySqlUser,
+    const response: UserResponse[] = await Promise.all(
+      primarySqlUsers.map(async (primarySqlUser) => {
+        return await enrichUser(env, tenant_id, primarySqlUser);
+      }),
     );
 
     // This is assuming we'll only have one user returned
@@ -100,6 +102,6 @@ export class UsersByEmailController extends Controller {
     // BUT in our use case this is most likely a bug!
     // --------
     // TODO - need to map through all users with linked_to as NULL
-    return [userResponse];
+    return response;
   }
 }
