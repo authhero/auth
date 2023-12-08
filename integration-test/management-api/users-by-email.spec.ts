@@ -60,6 +60,33 @@ describe("users by email", () => {
     );
 
     expect(response.status).toBe(200);
+
+    const users = (await response.json()) as UserResponse[];
+
+    expect(users.length).toBe(1);
+
+    expect(users[0]).toMatchObject({
+      email: "foo@example.com",
+      email_verified: true,
+      name: "Foo Bar",
+      nickname: "Foo",
+      picture: "https://example.com/foo.png",
+      tenant_id: "tenantId",
+      login_count: 0,
+      provider: "email",
+      connection: "email",
+      is_social: false,
+      user_id: "userId",
+    });
+
+    expect(users[0].identities).toMatchObject([
+      {
+        connection: "email",
+        provider: "email",
+        user_id: "userId",
+        isSocial: false,
+      },
+    ]);
   });
 
   /* 
