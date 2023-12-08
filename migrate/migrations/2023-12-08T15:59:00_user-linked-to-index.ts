@@ -10,5 +10,5 @@ export async function up(db: Kysely<Database>): Promise<void> {
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {
-  await db.schema.dropIndex("schema");
+  await db.schema.dropIndex("users_linked_to_index");
 }
