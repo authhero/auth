@@ -91,7 +91,8 @@ export class AuthenticateController extends Controller {
 
       ticket.authParams = otp.authParams;
     } else {
-      const user = await env.data.users.getByEmail(client.tenant_id, email);
+      // TODO - filter this don't just take first
+      const [user] = await env.data.users.getByEmail(client.tenant_id, email);
 
       if (!user) {
         throw new HTTPException(403);

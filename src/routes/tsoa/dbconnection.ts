@@ -56,7 +56,8 @@ export class DbConnectionController extends Controller {
     }
 
     // Ensure the user exists
-    let user = await ctx.env.data.users.getByEmail(
+    // TODO - filter this don't just take first
+    let [user] = await ctx.env.data.users.getByEmail(
       client.tenant_id,
       body.email,
     );

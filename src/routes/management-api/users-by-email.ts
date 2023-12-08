@@ -41,6 +41,6 @@ export class UsersByEmailController extends Controller {
     // Step 3- filter out linked users e.g. linked_to field is populated
     // Step 4 - return nested identities
     // don't overthink this last step. copy-paste but have tests so can TDD
-    return [user];
+    return user;
   }
 }
