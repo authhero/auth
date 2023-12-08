@@ -137,7 +137,7 @@ describe("users by email", () => {
     const users = (await response.json()) as UserResponse[];
 
     // Nice! this POST endpoint just duplicates the user anyway  8-)
-    // expect(users.length).toBe(2);
+    expect(users.length).toBe(2);
 
     // Cannot test this until we have a way to duplicate users...
     // TODO - investigate POST to Auth0 mgmt API/users
