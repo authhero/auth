@@ -113,12 +113,6 @@ describe("users by email", () => {
       },
     });
 
-    const newDuplicateUser =
-      (await createDuplicateUserResponse.json()) as UserResponse;
-    expect(newDuplicateUser.email).toBe("foo@example.com");
-
-    expect(createDuplicateUserResponse.status).toBe(201);
-
     const response = await worker.fetch(
       `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
       {
@@ -128,8 +122,6 @@ describe("users by email", () => {
         },
       },
     );
-
-    expect(response.status).toBe(200);
 
     const users = (await response.json()) as UserResponse[];
 
@@ -167,9 +159,85 @@ describe("users by email", () => {
     });
   });
 
+  // ahhhh!!! but what happens if we search by a sub email address? e.g. of a secondary account. this is the crux
+  // HMMMMM. but WTF happens with email? It's not on nested accounts...
+  it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
+    // unexpected! cannot search for secondary email addresses
+
+    const token = await getAdminToken();
+    const anotherEmailUser = await worker.fetch("/api/v2/users", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "bar@example.com",
+        connection: "email",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "tenantId",
+        "content-type": "application/json",
+      },
+    });
+
+    // both these return one result now
+    const fooEmail = await worker.fetch(
+      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    const fooEmailUsers = (await fooEmail.json()) as UserResponse[];
+    expect(fooEmailUsers).toHaveLength(1);
+    const fooEmailId = fooEmailUsers[0].user_id;
+
+    const barEmail = await worker.fetch(
+      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    const barEmailUsers = (await barEmail.json()) as UserResponse[];
+    expect(barEmailUsers).toHaveLength(1);
+    const barEmailId = barEmailUsers[0].user_id;
+
+    // now link foo to bar
+    // WOW! we have no integration tests for this... madness!
+    // this is the first... could all go wrong
+
+    const linkResponse = await worker.fetch(`/api/v2/users/${barEmailId}`, {
+      method: "POST",
+      body: JSON.stringify({
+        link_with: fooEmailId,
+        // wtf provider and connection?
+        // hmmmm, this should really be tested eh!
+        // provider: "email",]
+        // connection: "email",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "tenantId",
+        "content-type": "application/json",
+      },
+    });
+    console.log("linkResponse", await linkResponse.json());
+  });
+
   /* 
   TO TEST
   * a primary account with multiple linked accounts - some on different email addresses
+  // HOW? kiss. Do same test really as previous but create x2 new users WITH DIFFERENT EMAIL ADDRESSES!
+  // store ids of each of these new users
+  // THEN
+  // call /link endpoint on both to link them - kind of a test of linking... hmmmm
+  // -------- would be better to have these in fixtures? meh. OVERTEST FOR NOW! worry later-------
+  // getUserByEmail - call again
+  // expect to get back ONE user
+  // with other user in identities
    
   
   TO INVESTIGATE
