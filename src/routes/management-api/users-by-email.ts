@@ -20,19 +20,11 @@ export interface LinkBodyParams {
   link_with: string;
 }
 
-// Who knows what this should be called?
-// let's get this working and then extract out common code
 async function enrichUser(
   env: Env,
   tenantId: string,
   primaryUser: User,
 ): Promise<UserResponse> {
-  // lots of this code is copied from the GET route. I'll TDD this first
-  // and code whatever
-
-  // I had assumed that we would already have all the linked users
-  // by searching by email BUT Markus is correct   8-)
-  // anything can be linked to anything
   const linkedusers = await env.data.users.list(tenantId, {
     page: 0,
     per_page: 10,
@@ -74,11 +66,9 @@ export class UsersByEmailController extends Controller {
       throw new HTTPException(404, { message: "User not found" });
     }
 
-    // We could do defensive coding here and alert if we have multiple primary users...
     const primarySqlUsers = users.filter((user) => !user.linked_to);
 
     if (primarySqlUsers.length === 0) {
-      // don't return secondary accounts
       this.setStatus(404);
       return [];
     }
