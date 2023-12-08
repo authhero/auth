@@ -81,7 +81,7 @@ describe("users by email", () => {
       user_id: "userId",
     });
 
-    expect(users[0].identities).toMatchObject([
+    expect(users[0].identities).toEqual([
       {
         connection: "email",
         provider: "email",
@@ -141,7 +141,7 @@ describe("users by email", () => {
       is_social: false,
       user_id: "userId",
     });
-    expect(users[0].identities).toMatchObject([
+    expect(users[0].identities).toEqual([
       {
         connection: "email",
         provider: "email",
