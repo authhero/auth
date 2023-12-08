@@ -1,4 +1,6 @@
-export const en = {
+import type { locale } from "./type";
+
+export const en: locale = {
   // common
   welcomeToYourAccount: "Welcome to your {{vendorName}} account!",
   contactUs: "Contact us",
