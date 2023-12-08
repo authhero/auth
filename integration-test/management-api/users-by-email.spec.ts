@@ -117,9 +117,6 @@ describe("users by email", () => {
       (await createDuplicateUserResponse.json()) as UserResponse;
     expect(newDuplicateUser.email).toBe("foo@example.com");
 
-    // user id here should be different to existing user id for foo@example.com
-    console.log(newDuplicateUser.user_id);
-
     expect(createDuplicateUserResponse.status).toBe(201);
 
     const response = await worker.fetch(
@@ -136,11 +133,38 @@ describe("users by email", () => {
 
     const users = (await response.json()) as UserResponse[];
 
-    // Nice! this POST endpoint just duplicates the user anyway  8-)
     expect(users.length).toBe(2);
 
-    // Cannot test this until we have a way to duplicate users...
-    // TODO - investigate POST to Auth0 mgmt API/users
+    expect(users[0]).toMatchObject({
+      email: "foo@example.com",
+      email_verified: true,
+      name: "Foo Bar",
+      nickname: "Foo",
+      picture: "https://example.com/foo.png",
+      tenant_id: "tenantId",
+      login_count: 0,
+      provider: "email",
+      connection: "email",
+      is_social: false,
+      user_id: "userId",
+    });
+    expect(users[0].identities).toMatchObject([
+      {
+        connection: "email",
+        provider: "email",
+        user_id: "userId",
+        isSocial: false,
+      },
+    ]);
+    expect(users[1]).toMatchObject({
+      email: "foo@example.com",
+      tenant_id: "tenantId",
+      name: "foo@example.com",
+      provider: "email",
+      connection: "email",
+      email_verified: false,
+      is_social: false,
+    });
   });
 
   /* 
