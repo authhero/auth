@@ -23,6 +23,7 @@ import {
 } from "../../authentication-flows";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
+import { getClient } from "src/services/clients";
 
 export interface AuthorizeParams {
   request: RequestWithContext;
@@ -99,7 +100,7 @@ export class AuthorizeController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const client = await env.data.clients.get(client_id);
+    const client = await getClient(env, client_id);
     if (!client) {
       throw new Error("Client not found");
     }
