@@ -67,7 +67,6 @@ export class UsersByEmailController extends Controller {
     @Query("email") email: string,
     @Header("tenant-id") tenant_id: string,
   ): Promise<UserResponse[]> {
-    // This should be ResponseUser!  8-)
     const { env } = request.ctx;
 
     const users = await env.data.users.getByEmail(tenant_id, email);
@@ -79,29 +78,16 @@ export class UsersByEmailController extends Controller {
     const primarySqlUsers = users.filter((user) => !user.linked_to);
 
     if (primarySqlUsers.length === 0) {
-      // seems a 500 as we've messed something up here!
-      throw new HTTPException(500, {
-        message: "No primary user found for email address",
-      });
+      // don't return secondary accounts
+      this.setStatus(404);
+      return [];
     }
-
-    // Step 1 - return this user in array
-    // Step 2 - return all users with this email address
-    // Step 3- filter out linked users e.g. linked_to field is populated
-    // Step 4 - return nested identities
-    // don't overthink this last step. copy-paste but have tests so can TDD
 
     const response: UserResponse[] = await Promise.all(
       primarySqlUsers.map(async (primarySqlUser) => {
         return await enrichUser(env, tenant_id, primarySqlUser);
       }),
     );
-
-    // This is assuming we'll only have one user returned
-    // but if we return multiple users, we'll need to do this mapping for each
-    // BUT in our use case this is most likely a bug!
-    // --------
-    // TODO - need to map through all users with linked_to as NULL
     return response;
   }
 }
