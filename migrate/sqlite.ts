@@ -1,12 +1,10 @@
-import { PlanetScaleDialect } from "kysely-planetscale";
+import { BunSqliteDialect } from "kysely-bun-sqlite";
+// @ts-ignore
+import * as bunSqlite from "bun:sqlite";
 import { migrateToLatest } from "./migrate";
 
-const dialect = new PlanetScaleDialect({
-  host: process.env.DATABASE_HOST,
-  username: process.env.DATABASE_USERNAME,
-  password: process.env.DATABASE_PASSWORD,
-  fetch: (opts, init) =>
-    fetch(new Request(opts, { ...init, cache: undefined })),
+const dialect = new BunSqliteDialect({
+  database: new bunSqlite.Database("db.sqlite"),
 });
 
 migrateToLatest(dialect)
