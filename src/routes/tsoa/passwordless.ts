@@ -22,6 +22,7 @@ const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
+import { getClient } from "../../services/clients";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -148,7 +149,7 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const client = await env.data.clients.get(client_id);
+    const client = await getClient(env, client_id);
     if (!client) {
       throw new Error("Client not found");
     }

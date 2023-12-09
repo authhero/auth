@@ -18,6 +18,7 @@ import { validateRedirectUrl } from "../utils/validate-redirect-url";
 import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
+import { getClient } from "../services/clients";
 export interface SocialAuthState {
   authParams: AuthParams;
   connection: string;
@@ -77,7 +78,7 @@ export async function socialAuthCallback({
   code,
 }: socialAuthCallbackParams) {
   const { env } = ctx;
-  const client = await ctx.env.data.clients.get(state.authParams.client_id);
+  const client = await getClient(env, state.authParams.client_id);
   if (!client) {
     throw new HTTPException(403, { message: "Client not found" });
   }
