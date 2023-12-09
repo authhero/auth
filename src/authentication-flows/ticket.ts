@@ -19,7 +19,8 @@ export async function ticketAuth(
     throw new HTTPException(403, { message: "Ticket not found" });
   }
 
-  let user = await env.data.users.getByEmail(tenant_id, ticket.email);
+  // TODO - filter for primary user
+  let [user] = await env.data.users.getByEmail(tenant_id, ticket.email);
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {

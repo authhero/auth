@@ -20,7 +20,8 @@ export async function validateCode(env: Env, params: LoginParams) {
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
-  let user = await env.data.users.getByEmail(client.tenant_id, params.email);
+  // fix this to get the primary user! filter to !linked_to - could then throw if more than one? hmmmm
+  let [user] = await env.data.users.getByEmail(client.tenant_id, params.email);
   if (!user) {
     user = await env.data.users.create(client.tenant_id, {
       id: `email|${userIdGenerate()}`,

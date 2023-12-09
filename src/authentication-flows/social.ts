@@ -152,7 +152,8 @@ export async function socialAuthCallback({
   }
 
   if (!user) {
-    const sameEmailUser = await env.data.users.getByEmail(
+    // This should be fixed to get the primary user!
+    const [sameEmailUser] = await env.data.users.getByEmail(
       client.tenant_id,
       // TODO - this needs to ONLY fetch primary users e.g. where linked_to is null
       email,

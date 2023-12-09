@@ -324,7 +324,8 @@ export class LoginController extends Controller {
         return renderEnterCode(env, this, session, "Code not found or expired");
       }
 
-      let user = await env.data.users.getByEmail(client.tenant_id, email);
+      // TODO - filter by primary user
+      let [user] = await env.data.users.getByEmail(client.tenant_id, email);
       if (!user) {
         throw new HTTPException(500, { message: "No user found" });
       }
@@ -376,7 +377,8 @@ export class LoginController extends Controller {
     }
 
     try {
-      let user = await env.data.users.getByEmail(
+      // TODO - filter by primary user
+      let [user] = await env.data.users.getByEmail(
         client.tenant_id,
         loginParams.username,
       );
@@ -476,7 +478,8 @@ export class LoginController extends Controller {
       await env.data.universalLoginSessions.update(session.id, session);
     }
 
-    const user = await env.data.users.getByEmail(
+    // TODO - filter by primary user
+    const [user] = await env.data.users.getByEmail(
       client.tenant_id,
       params.username,
     );
@@ -561,7 +564,8 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    const user = await env.data.users.getByEmail(
+    // TODO - filter by primary user
+    const [user] = await env.data.users.getByEmail(
       client.tenant_id,
       session.authParams.username,
     );
@@ -621,8 +625,8 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    // TODO - this needs to return multiple results or search by provider...
-    const user = await env.data.users.getByEmail(
+    // TODO - wait, each of these is different! need to search by  email AND provider, and then return the primary user...
+    const [user] = await env.data.users.getByEmail(
       client.tenant_id,
       loginParams.username,
     );

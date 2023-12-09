@@ -52,7 +52,7 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { env } = request.ctx;
 
-    // Filter out linked userss
+    // Filter out linked users
     const query: string[] = ["-_exists_:linked_to"];
     if (q) {
       query.push(q);
