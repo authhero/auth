@@ -14,7 +14,14 @@ export async function enrichUser(
     q: `linked_to:${primaryUser.id}`,
   });
 
-  const identities = [primaryUser, ...linkedusers.users].map((u) => {
+  const primaryUserIdentity = {
+    connection: primaryUser.connection,
+    provider: primaryUser.provider,
+    user_id: userIdParse(primaryUser.id),
+    isSocial: primaryUser.is_social,
+  };
+
+  const linkedUserIdentities = linkedusers.users.map((u) => {
     let profileData: { [key: string]: any } = {};
 
     try {
@@ -42,7 +49,7 @@ export async function enrichUser(
 
   return {
     ...userWithoutId,
-    identities,
+    identities: [primaryUserIdentity, ...linkedUserIdentities],
     user_id: primaryUser.id,
   };
 }
