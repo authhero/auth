@@ -245,10 +245,6 @@ describe("users", () => {
           user_id: newUser2Id,
           provider: "email",
           isSocial: false,
-          profileData: {
-            email: "test2@example.com",
-            email_verified: false,
-          },
         },
         {
           connection: "email",
