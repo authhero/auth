@@ -135,7 +135,7 @@ export class UsersMgmtController extends Controller {
     const userIdentity: Identity = {
       connection: user.connection,
       provider: user.provider,
-      user_id: user.id,
+      user_id: userIdParse(user.id),
       isSocial: user.is_social,
     };
 
