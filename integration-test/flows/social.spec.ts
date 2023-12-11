@@ -34,15 +34,15 @@ const EXPECTED_NEW_USER = {
     {
       connection: "demo-social-provider",
       provider: "demo-social-provider",
-      user_id: "1234567890",
+      user_id: "123456789012345678901",
       isSocial: true,
     },
   ],
   login_count: 0,
   is_social: true,
   profileData:
-    '{"name":"John Doe Social","picture":"https://social-provider.example.com/john.jpg"}',
-  user_id: "demo-social-provider|1234567890",
+    '{"locale":"es-ES","name":"John Doe","given_name":"John","family_name":"Doe","picture":"https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c"}',
+  user_id: "demo-social-provider|123456789012345678901",
 };
 
 describe("social sign on", () => {
@@ -142,7 +142,9 @@ describe("social sign on", () => {
         const idTokenPayload = parseJwt(idToken!);
 
         expect(idTokenPayload.aud).toBe("clientId");
-        expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
+        expect(idTokenPayload.sub).toBe(
+          "demo-social-provider|123456789012345678901",
+        );
         expect(idTokenPayload.name).toBe("john.doe@example.com");
         expect(idTokenPayload.email).toBe("john.doe@example.com");
         expect(idTokenPayload.email_verified).toBe(true);
@@ -228,7 +230,9 @@ describe("social sign on", () => {
         const idTokenPayload = parseJwt(idToken!);
 
         expect(idTokenPayload.aud).toBe("clientId");
-        expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
+        expect(idTokenPayload.sub).toBe(
+          "demo-social-provider|123456789012345678901",
+        );
         expect(idTokenPayload.name).toBe("john.doe@example.com");
         expect(idTokenPayload.email).toBe("john.doe@example.com");
         expect(idTokenPayload.email_verified).toBe(true);
@@ -389,14 +393,17 @@ describe("social sign on", () => {
         {
           connection: "demo-social-provider",
           provider: "demo-social-provider",
-          user_id: "1234567890",
+          user_id: "123456789012345678901",
           isSocial: true,
           profileData: {
-            name: "John Doe Social",
-            picture: "https://social-provider.example.com/john.jpg",
+            name: "John Doe",
+            given_name: "John",
+            family_name: "Doe",
+            picture:
+              "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
             email: "john.doe@example.com",
             email_verified: true,
-            // TODO - test more SSO id_tokens with more nested keys
+            locale: "es-ES",
           },
         },
       ]);
@@ -544,19 +551,22 @@ describe("social sign on", () => {
         {
           connection: "demo-social-provider",
           provider: "demo-social-provider",
-          user_id: "1234567890",
+          user_id: "123456789012345678901",
           isSocial: true,
           profileData: {
-            name: "John Doe Social",
-            picture: "https://social-provider.example.com/john.jpg",
+            name: "John Doe",
+            given_name: "John",
+            family_name: "Doe",
+            picture:
+              "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
             email: "john.doe@example.com",
             email_verified: true,
+            locale: "es-ES",
           },
         },
         {
           connection: "other-social-provider",
           provider: "other-social-provider",
-          // this is correct as per the encoded id_token for this SSO provider
           user_id: "10451045104510451",
           isSocial: true,
           profileData: {
