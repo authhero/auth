@@ -14,13 +14,29 @@ export async function enrichUser(
     q: `linked_to:${primaryUser.id}`,
   });
 
-  const identities = [primaryUser, ...linkedusers.users].map((u) => ({
-    connection: u.connection,
-    provider: u.provider,
-    user_id: userIdParse(u.id),
-    isSocial: u.is_social,
-    // TODO - add profileData here! lift from other PRs....
-  }));
+  const identities = [primaryUser, ...linkedusers.users].map((u) => {
+    let profileData: { [key: string]: any } = {};
+
+    try {
+      profileData = JSON.parse(u.profileData || "{}");
+    } catch (e) {
+      console.error("Error parsing profileData", e);
+    }
+
+    return {
+      connection: u.connection,
+      provider: u.provider,
+      user_id: userIdParse(u.id),
+      isSocial: u.is_social,
+      // copied from users/get/[id] route
+      profileData: {
+        // both these two appear on every profile type
+        email: u.email,
+        email_verified: u.email_verified,
+        ...profileData,
+      },
+    };
+  });
 
   const { id, ...userWithoutId } = primaryUser;
 
