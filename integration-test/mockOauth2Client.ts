@@ -35,16 +35,22 @@ class MockOAuth2Client implements IOAuth2Client {
   async exchangeCodeForTokenResponse(code: string) {
     if (this.params.client_id === "otherSocialClientId") {
       const otherClientIdToken = await createTokenExample({
-        iss: "https://other-auth.example.com",
-        sub: "test-new-sub",
-        aud: "client123",
+        // copied from Facebook id_token
+        iss: "https://www.facebook.com",
+        sub: "10451045104510451",
+        aud: "250848680337272",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe Other Social",
+        name: "John Doe",
+        given_name: "John",
+        family_name: "Doe",
+        at_hash: "atHash",
         email: "john.doe@example.com",
-        picture: "https://other-social-provider.example.com/alt-john.jpg",
+        picture:
+          "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
         nonce: "abc123",
         email_verified: true,
+        jti: "jti",
       });
       return {
         access_token: "otherClientAccessToken",
@@ -56,14 +62,15 @@ class MockOAuth2Client implements IOAuth2Client {
     }
     if (this.params.client_id === "socialClientId") {
       const clientIdToken = await createTokenExample({
+        // TODO - copy from Google id_token
         iss: "https://auth.example.com",
         sub: "1234567890",
         aud: "client123",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe Social",
+        name: "John Doe",
         email: "john.doe@example.com",
-        picture: "https://social-provider.example.com/john.jpg",
+        picture: "https://example.com/john.jpg",
         nonce: "abc123",
         email_verified: true,
       });
@@ -76,6 +83,21 @@ class MockOAuth2Client implements IOAuth2Client {
       };
     }
     throw new Error("Unknown client_id");
+    // TODO - mock Apple id_token
+    /*
+    {
+      "iss": "https://appleid.apple.com",
+      "aud": "dev.sesamy.auth2",
+      "exp": 1702398561,
+      "iat": 1702312161,
+      "sub": "123456.1234abcd1234abcd1234abcd1234abcd.1234",
+      "at_hash": "X4g-4Ig31fptNYMcMQARfQ",
+      "email": "john.do@example.com",
+      "email_verified": "true",
+      "auth_time": 1702312158,
+      "nonce_supported": true
+    }
+    */
   }
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");
