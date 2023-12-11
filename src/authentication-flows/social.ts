@@ -114,8 +114,6 @@ export async function socialAuthCallback({
 
   const idToken = parseJwt(token.id_token!);
 
-  console.log("idToken", idToken);
-
   const {
     iss,
     azp,
