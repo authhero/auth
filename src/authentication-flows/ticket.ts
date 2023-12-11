@@ -8,27 +8,39 @@ import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
 import { User } from "../types/User";
 
+function getProviderFromRealm(realm: string) {
+  if (realm === "Username-Password-Authentication") {
+    return "auth2";
+  }
+
+  if (realm === "email") {
+    return "email";
+  }
+
+  throw new HTTPException(403, { message: "Invalid realm" });
+}
+
 export async function ticketAuth(
   env: Env,
   tenant_id: string,
   controller: Controller,
   ticketId: string,
   authParams: AuthParams,
+  realm: string,
 ) {
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
     throw new HTTPException(403, { message: "Ticket not found" });
   }
 
-  // TODO - filter for primary user
+  const provider = getProviderFromRealm(realm);
+
   const usersWithSameEmail = await env.data.users.getByEmail(
     tenant_id,
     ticket.email,
   );
 
-  // hmmmm, but we have no idea if we're on a code or password flow here... need to do to the other ticket first...
-
-  let user: User;
+  let user = usersWithSameEmail.find((u) => u.provider === provider);
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
