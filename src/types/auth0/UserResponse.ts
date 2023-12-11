@@ -1,8 +1,6 @@
 import { BaseUser } from "../User";
-import { AppMetadata } from "./AppMetadata";
 import { Identity } from "./Identity";
 import { Totals } from "./Totals";
-import { UserMetadata } from "./UserMetadata";
 
 export interface PostUsersBody extends BaseUser {
   password?: string;

@@ -138,11 +138,7 @@ describe("social sign on", () => {
 
         const idToken = socialCallbackQuery2.get("id_token");
 
-        if (!idToken) {
-          throw new Error("idToken not found");
-        }
-
-        const idTokenPayload = parseJwt(idToken);
+        const idTokenPayload = parseJwt(idToken!);
 
         expect(idTokenPayload.aud).toBe("clientId");
         expect(idTokenPayload.sub).toBe("demo-social-provider|1234567890");
@@ -394,6 +390,13 @@ describe("social sign on", () => {
           provider: "demo-social-provider",
           user_id: "1234567890",
           isSocial: true,
+          profileData: {
+            name: "John Doe",
+            picture: "https://example.com/john.jpg",
+            email: "john.doe@example.com",
+            email_verified: true,
+            // TODO - test more SSO id_tokens with more nested keys
+          },
         },
       ]);
 
@@ -543,6 +546,12 @@ describe("social sign on", () => {
           provider: "demo-social-provider",
           user_id: "1234567890",
           isSocial: true,
+          profileData: {
+            name: "John Doe",
+            picture: "https://example.com/john.jpg",
+            email: "john.doe@example.com",
+            email_verified: true,
+          },
         },
         {
           connection: "other-social-provider",
@@ -550,6 +559,13 @@ describe("social sign on", () => {
           // this is correct as per the encoded id_token for this SSO provider
           user_id: "test-new-sub",
           isSocial: true,
+          profileData: {
+            // Should make this info different to stop false positives
+            name: "John Doe",
+            picture: "https://example.com/john.jpg",
+            email: "john.doe@example.com",
+            email_verified: true,
+          },
         },
       ]);
     });

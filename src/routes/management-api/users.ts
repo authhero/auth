@@ -21,9 +21,10 @@ import {
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 import { HTTPException } from "hono/http-exception";
-import { Identity } from "../../types/auth0/Identity";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
+import { Identity } from "../../types/auth0/Identity";
+
 export interface LinkBodyParams {
   provider?: string;
   connection_id?: string;
@@ -80,6 +81,7 @@ export class UsersMgmtController extends Controller {
             user_id: userIdParse(user.id),
             isSocial: user.is_social,
           },
+          // TODO - need to do the join here with linked accounts
         ],
         // TODO: store this field in sql
         username: user.email,
@@ -130,18 +132,41 @@ export class UsersMgmtController extends Controller {
       q: `linked_to:${user_id}`,
     });
 
-    const identities = [user, ...linkedusers.users].map((u) => ({
-      connection: u.connection,
-      provider: u.provider,
-      user_id: userIdParse(u.id),
-      isSocial: u.is_social,
-    }));
+    const userIdentity: Identity = {
+      connection: user.connection,
+      provider: user.provider,
+      user_id: userIdParse(user.id),
+      isSocial: user.is_social,
+    };
+
+    const linkedProfileIdentities: Identity[] = linkedusers.users.map((u) => {
+      let profileData: { [key: string]: any } = {};
+
+      try {
+        profileData = JSON.parse(user.profileData || "{}");
+      } catch (e) {
+        console.error("Error parsing profileData", e);
+      }
+
+      return {
+        connection: u.connection,
+        provider: u.provider,
+        user_id: userIdParse(u.id),
+        isSocial: u.is_social,
+        profileData: {
+          // both these two appear on every profile type
+          email: u.email,
+          email_verified: u.email_verified,
+          ...profileData,
+        },
+      };
+    });
 
     const { id, ...userWithoutId } = user;
 
     return {
       ...userWithoutId,
-      identities,
+      identities: [userIdentity, ...linkedProfileIdentities],
       user_id: user.id,
     };
   }
@@ -209,6 +234,10 @@ export class UsersMgmtController extends Controller {
           user_id: userIdParse(data.id),
           isSocial: data.is_social,
         },
+        // hmmm. what should happen here?
+        // if a brand new account then won't have any linked accounts...
+        // what if post up a new user with the same email address as existing?
+        // needs linking after right?
       ],
     };
 
@@ -226,6 +255,7 @@ export class UsersMgmtController extends Controller {
     const { env } = request.ctx;
 
     const results = await env.data.users.update(tenant_id, user_id, user);
+    // do we return identities here? Check Auth0
 
     await env.data.logs.create({
       category: "update",
@@ -266,6 +296,8 @@ export class UsersMgmtController extends Controller {
 
     // we're doing this mapping very frequently... once we include profileData
     // would make sense to have a util function. TBD
+    // should this be type UserIdentities? e.g. first one does not have profileData, the rest do
+    // check Auth0 and actually link an account
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
