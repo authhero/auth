@@ -236,10 +236,6 @@ export class UsersMgmtController extends Controller {
           user_id: userIdParse(data.id),
           isSocial: data.is_social,
         },
-        // hmmm. what should happen here?
-        // if a brand new account then won't have any linked accounts...
-        // what if post up a new user with the same email address as existing?
-        // needs linking after right?
       ],
     };
 
@@ -257,7 +253,6 @@ export class UsersMgmtController extends Controller {
     const { env } = request.ctx;
 
     const results = await env.data.users.update(tenant_id, user_id, user);
-    // do we return identities here? Check Auth0
 
     await env.data.logs.create({
       category: "update",
@@ -296,10 +291,6 @@ export class UsersMgmtController extends Controller {
       q: `linked_to:${body.link_with}`,
     });
 
-    // we're doing this mapping very frequently... once we include profileData
-    // would make sense to have a util function. TBD
-    // should this be type UserIdentities? e.g. first one does not have profileData, the rest do
-    // check Auth0 and actually link an account
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
