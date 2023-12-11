@@ -69,8 +69,8 @@ export class DbConnectionController extends Controller {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         email_verified: false,
-        provider: "email",
-        connection: "email",
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
         is_social: false,
         login_count: 0,
       });
