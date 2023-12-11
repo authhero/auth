@@ -156,7 +156,7 @@ describe("social sign on", () => {
 
         // now check that the user was created was properly in the data providers
         const newSocialUserRes = await worker.fetch(
-          `/api/v2/users/demo-social-provider|1234567890`,
+          `/api/v2/users/demo-social-provider|123456789012345678901`,
           {
             headers: {
               authorization: `Bearer ${token}`,
