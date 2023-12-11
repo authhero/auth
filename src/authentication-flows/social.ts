@@ -188,13 +188,6 @@ export async function socialAuthCallback({
   ctx.set("email", email);
   ctx.set("userId", user.id);
 
-  // this checks everytime we get the id_token that the email is verified, and updates the user in the db
-  // pssibly excessive and we could just set email_verified:true when creating the new social user (above)
-  // TODO - fix this and actually do some implementation (and testing!) on the email verified field, and how we use it
-  // if (email_verified) {
-  //   newUserFields.email_verified = strictEmailVerified;
-  // }
-
   await env.data.logs.create({
     category: "login",
     message: `Login with ${connection.name}`,
