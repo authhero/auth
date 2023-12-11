@@ -13,17 +13,6 @@ import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
 
-const app = new Hono<{ Bindings: Env }>();
-
-app.onError((err, ctx) => {
-  if (err instanceof HTTPException) {
-    // Get the custom response
-    return err.getResponse();
-  }
-
-  return ctx.text(err.message, 500);
-});
-
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
@@ -36,40 +25,47 @@ const ALLOWED_ORIGINS = [
   "https://appleid.apple.com",
 ];
 
-app.use(
-  "/*",
-  cors({
-    origin: (origin) => {
-      if (!origin) return "";
-      if (validateUrl(ALLOWED_ORIGINS, origin)) {
-        return origin;
-      }
-      return "";
-    },
-    allowHeaders: [
-      "Tenant-Id",
-      "Content-Type",
-      "Content-Range",
-      "Auth0-Client",
-      "Authorization",
-      "Range",
-      "Upgrade-Insecure-Requests",
-    ],
-    allowMethods: ["POST", "PUT", "GET", "DELETE", "PATCH", "OPTIONS"],
-    exposeHeaders: ["Content-Length", "Content-Range"],
-    maxAge: 600,
-    credentials: true,
-  }),
-);
+const app = new Hono<{ Bindings: Env }>()
+  .onError((err, ctx) => {
+    if (err instanceof HTTPException) {
+      // Get the custom response
+      return err.getResponse();
+    }
 
-app.use(loggerMiddleware);
-
-app.get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
-  return ctx.json({
-    name: packageJson.name,
-    version: packageJson.version,
+    return ctx.text(err.message, 500);
+  })
+  .use(
+    "/*",
+    cors({
+      origin: (origin) => {
+        if (!origin) return "";
+        if (validateUrl(ALLOWED_ORIGINS, origin)) {
+          return origin;
+        }
+        return "";
+      },
+      allowHeaders: [
+        "Tenant-Id",
+        "Content-Type",
+        "Content-Range",
+        "Auth0-Client",
+        "Authorization",
+        "Range",
+        "Upgrade-Insecure-Requests",
+      ],
+      allowMethods: ["POST", "PUT", "GET", "DELETE", "PATCH", "OPTIONS"],
+      exposeHeaders: ["Content-Length", "Content-Range"],
+      maxAge: 600,
+      credentials: true,
+    }),
+  )
+  .use(loggerMiddleware)
+  .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
+    return ctx.json({
+      name: packageJson.name,
+      version: packageJson.version,
+    });
   });
-});
 
 app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
