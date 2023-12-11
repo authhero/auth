@@ -36,9 +36,7 @@ export async function enrichUser(
       provider: u.provider,
       user_id: userIdParse(u.id),
       isSocial: u.is_social,
-      // copied from users/get/[id] route
       profileData: {
-        // both these two appear on every profile type
         email: u.email,
         email_verified: u.email_verified,
         ...profileData,
