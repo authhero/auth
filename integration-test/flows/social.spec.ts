@@ -557,11 +557,14 @@ describe("social sign on", () => {
           connection: "other-social-provider",
           provider: "other-social-provider",
           // this is correct as per the encoded id_token for this SSO provider
-          user_id: "test-new-sub",
+          user_id: "10451045104510451",
           isSocial: true,
           profileData: {
-            name: "John Doe Other Social",
-            picture: "https://other-social-provider.example.com/alt-john.jpg",
+            given_name: "John",
+            family_name: "Doe",
+            name: "John Doe",
+            picture:
+              "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
             email: "john.doe@example.com",
             email_verified: true,
           },

@@ -68,9 +68,9 @@ class MockOAuth2Client implements IOAuth2Client {
         aud: "client123",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe",
+        name: "John Doe Social",
         email: "john.doe@example.com",
-        picture: "https://example.com/john.jpg",
+        picture: "https://social-provider.example.com/john.jpg",
         nonce: "abc123",
         email_verified: true,
       });
