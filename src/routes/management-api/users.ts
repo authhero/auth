@@ -24,6 +24,7 @@ import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
 import { Identity } from "../../types/auth0/Identity";
+import { enrichUser } from "../../utils/enrichUser";
 
 export interface LinkBodyParams {
   provider?: string;
@@ -125,52 +126,9 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(404);
     }
 
-    const linkedusers = await env.data.users.list(tenant_id, {
-      page: 0,
-      per_page: 10,
-      include_totals: false,
-      q: `linked_to:${user_id}`,
-    });
+    const userResponse: UserResponse = await enrichUser(env, tenant_id, user);
 
-    const userIdentity: Identity = {
-      connection: user.connection,
-      provider: user.provider,
-      user_id: userIdParse(user.id),
-      isSocial: user.is_social,
-    };
-
-    const linkedProfileIdentities: Identity[] = linkedusers.users.map(
-      (linkedUser) => {
-        let profileData: { [key: string]: any } = {};
-
-        try {
-          profileData = JSON.parse(linkedUser.profileData || "{}");
-        } catch (e) {
-          console.error("Error parsing profileData", e);
-        }
-
-        return {
-          connection: linkedUser.connection,
-          provider: linkedUser.provider,
-          user_id: userIdParse(linkedUser.id),
-          isSocial: linkedUser.is_social,
-          profileData: {
-            // both these two appear on every profile type
-            email: linkedUser.email,
-            email_verified: linkedUser.email_verified,
-            ...profileData,
-          },
-        };
-      },
-    );
-
-    const { id, ...userWithoutId } = user;
-
-    return {
-      ...userWithoutId,
-      identities: [userIdentity, ...linkedProfileIdentities],
-      user_id: user.id,
-    };
+    return userResponse;
   }
 
   @Delete("{user_id}")

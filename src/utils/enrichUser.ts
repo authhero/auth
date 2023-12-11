@@ -1,6 +1,7 @@
 import userIdParse from "./userIdParse";
 import { Env, User } from "../types";
 import { UserResponse } from "../types/auth0/UserResponse";
+import { Identity } from "../types/auth0/Identity";
 
 export async function enrichUser(
   env: Env,
@@ -14,7 +15,7 @@ export async function enrichUser(
     q: `linked_to:${primaryUser.id}`,
   });
 
-  const primaryUserIdentity = {
+  const primaryUserIdentity: Identity = {
     connection: primaryUser.connection,
     provider: primaryUser.provider,
     user_id: userIdParse(primaryUser.id),
