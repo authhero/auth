@@ -6,6 +6,7 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
+import { User } from "../types/User";
 
 export async function ticketAuth(
   env: Env,
@@ -20,7 +21,14 @@ export async function ticketAuth(
   }
 
   // TODO - filter for primary user
-  let [user] = await env.data.users.getByEmail(tenant_id, ticket.email);
+  const usersWithSameEmail = await env.data.users.getByEmail(
+    tenant_id,
+    ticket.email,
+  );
+
+  // hmmmm, but we have no idea if we're on a code or password flow here... need to do to the other ticket first...
+
+  let user: User;
 
   if (!user) {
     user = await env.data.users.create(tenant_id, {
