@@ -63,14 +63,21 @@ class MockOAuth2Client implements IOAuth2Client {
     if (this.params.client_id === "socialClientId") {
       const clientIdToken = await createTokenExample({
         // TODO - copy from Google id_token
-        iss: "https://auth.example.com",
-        sub: "1234567890",
-        aud: "client123",
+        iss: "https://accounts.google.com",
+        sub: "123456789012345678901",
+        azp: "195867377305-j00komjaq7etk3ua9oab69klhlli4uk7.apps.googleusercontent.com",
+        aud: "195867377305-j00komjaq7etk3ua9oab69klhlli4uk7.apps.googleusercontent.com",
+        hd: "sesamy.com",
+        at_hash: "86RwWzFmP08wVtVDo1qk1A",
+        locale: "es-ES",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe Social",
+        name: "John Doe",
+        given_name: "John",
+        family_name: "Doe",
         email: "john.doe@example.com",
-        picture: "https://social-provider.example.com/john.jpg",
+        picture:
+          "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
         nonce: "abc123",
         email_verified: true,
       });
