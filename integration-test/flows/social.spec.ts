@@ -458,8 +458,7 @@ describe("social sign on", () => {
         aud: "clientId",
         name: "john.doe@example.com",
         email: "john.doe@example.com",
-        // is this actually correct? I wonder...
-        email_verified: true,
+        email_verified: false,
         nonce: "nonce",
         iss: "https://example.com/",
       });
