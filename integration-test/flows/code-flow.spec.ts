@@ -191,7 +191,7 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
-  it.only("should return existing primary account when logging in with new code sign on with same email address", async () => {
+  it("should return existing primary account when logging in with new code sign on with same email address", async () => {
     await setup(worker);
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
@@ -258,10 +258,6 @@ describe("code-flow", () => {
     const accessToken = redirectUri.searchParams.get("access_token");
     const accessTokenPayload = parseJwt(accessToken!);
 
-    console.log(accessTokenPayload);
-    // now need to make sure the id_token & access_token are from the primary user
-    // the id is just "userid" (erronseusly)
-
     // this is the id of the primary account
     expect(accessTokenPayload.sub).toBe("tenantId|userId");
 
@@ -269,8 +265,6 @@ describe("code-flow", () => {
     const idTokenPayload = parseJwt(idToken!);
 
     expect(idTokenPayload.sub).toBe("tenantId|userId");
-
-    console.log(idTokenPayload);
 
     // and we'll have the nested identites - check the provider & connections
     // need to actually fetch the user to get this info...

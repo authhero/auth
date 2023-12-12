@@ -43,6 +43,10 @@ export async function ticketAuth(
   let user = usersWithSameEmail.find((u) => u.provider === provider);
 
   if (!user) {
+    const primaryUser = usersWithSameEmail.find((u) => !u.linked_to);
+
+    const linkedTo = primaryUser?.id;
+
     user = await env.data.users.create(tenant_id, {
       id: `email|${userIdGenerate()}`,
       email: ticket.email,
@@ -57,7 +61,12 @@ export async function ticketAuth(
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      linked_to: linkedTo,
     });
+
+    if (primaryUser) {
+      user = primaryUser;
+    }
   }
 
   const sessionId = await setSilentAuthCookies(
