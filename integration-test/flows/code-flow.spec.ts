@@ -426,9 +426,7 @@ describe("code-flow", () => {
   });
 
   // TO TEST
-  // - logging in with same primary code user
-  // - logging in with same secondary code user - logic actually different here so be careful
-  // - silent auth on all the above
+  // - logging in with same primary code user - silent auth check, and log in second time
   // - reusing codes?
   // - using expired codes?
 });
