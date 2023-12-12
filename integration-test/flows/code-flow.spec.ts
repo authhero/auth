@@ -4,6 +4,8 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 import type { UnstableDevWorker } from "wrangler";
 import type { Email } from "../../src/types/Email";
 import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
+import { getAdminToken } from "../helpers/token";
+import { UserResponse } from "../../src/types/auth0";
 
 describe("code-flow", () => {
   let worker: UnstableDevWorker;
@@ -193,6 +195,7 @@ describe("code-flow", () => {
   });
   it("should return existing primary account when logging in with new code sign on with same email address", async () => {
     await setup(worker);
+    const token = await getAdminToken();
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/sv/callback";
@@ -266,8 +269,22 @@ describe("code-flow", () => {
 
     expect(idTokenPayload.sub).toBe("tenantId|userId");
 
-    // and we'll have the nested identites - check the provider & connections
-    // need to actually fetch the user to get this info...
+    // now check the primary user has a new 'email' connection identity
+    const primaryUserRes = await worker.fetch(`/api/v2/users/userId`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "tenantId",
+      },
+    });
+
+    const primaryUser = (await primaryUserRes.json()) as UserResponse;
+
+    expect(primaryUser.identities[1]).toMatchObject({
+      connection: "email",
+      provider: "email",
+      isSocial: false,
+      profileData: { email: "foo@example.com", email_verified: true },
+    });
   });
 
   // TO TEST
