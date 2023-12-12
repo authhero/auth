@@ -262,12 +262,12 @@ describe("code-flow", () => {
     const accessTokenPayload = parseJwt(accessToken!);
 
     // this is the id of the primary account
-    expect(accessTokenPayload.sub).toBe("tenantId|userId");
+    expect(accessTokenPayload.sub).toBe("userId");
 
     const idToken = redirectUri.searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
 
-    expect(idTokenPayload.sub).toBe("tenantId|userId");
+    expect(idTokenPayload.sub).toBe("userId");
 
     // ----------------------------
     // now check the primary user has a new 'email' connection identity
