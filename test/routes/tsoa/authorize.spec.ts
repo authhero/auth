@@ -457,7 +457,7 @@ describe("authorize", () => {
       expect(accessToken).toEqual({
         aud: "default",
         scope: "openid profile email",
-        sub: "tenantId|testid",
+        sub: "tenantId|email|testid",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
@@ -521,7 +521,7 @@ describe("authorize", () => {
 
       expect(idToken).toEqual({
         aud: "clientId",
-        sub: "tenantId|testid",
+        sub: "tenantId|email|testid",
         nonce: "nonce",
         sid: "testid",
         iss: "https://auth.example.com/",
@@ -594,7 +594,7 @@ describe("authorize", () => {
           tenant_id: "tenantId",
           updated_at: "2023-11-28T12:00:00.000Z",
         },
-        userId: "tenantId|testid",
+        userId: "tenantId|email|testid",
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
