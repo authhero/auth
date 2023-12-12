@@ -157,7 +157,6 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
-      // realm will be filled in if we're here
       return ticketAuth(
         env,
         client.tenant_id,
