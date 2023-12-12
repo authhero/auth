@@ -6,6 +6,7 @@ import { UnauthenticatedError } from "../../errors";
 import randomString from "../../utils/random-string";
 import { AuthParams, Client, Env, Ticket } from "../../types";
 import { HTTPException } from "hono/http-exception";
+import { getClient } from "../../services/clients";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -53,7 +54,8 @@ export class AuthenticateController extends Controller {
   ): Promise<LoginTicket | LoginError | string> {
     const { env } = request.ctx;
 
-    const client = await env.data.clients.get(body.client_id);
+    const client = await getClient(env, body.client_id);
+
     if (!client) {
       throw new Error("Client not found");
     }
