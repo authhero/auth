@@ -137,7 +137,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
 
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
@@ -366,7 +366,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
@@ -468,7 +468,8 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.client_id);
+    const client = await getClient(env, session.client_id);
+
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
@@ -559,7 +560,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Username required" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
@@ -619,7 +620,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
 
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
