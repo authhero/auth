@@ -337,9 +337,7 @@ describe("code-flow", () => {
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
-    // interesting! this is not what we're getting after logging in initially... we have inconsistent subs then
-    // expect(sub).toBe("tenantId|userId");
-    // BUT - this is the primary account
+    // this is the id of the primary account
     expect(sub).toBe("userId");
 
     expect(sid).toHaveLength(21);
