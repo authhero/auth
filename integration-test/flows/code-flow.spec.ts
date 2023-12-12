@@ -191,4 +191,93 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
+  it.only("should return existing primary account when logging in with new code sign on with same email address", async () => {
+    await setup(worker);
+
+    const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
+    const redirect_uri = "https://login.example.com/sv/callback";
+    const response_type = "token id_token";
+    const scope = "openid profile email";
+    const state = "state";
+
+    const res1 = await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: {
+          nonce,
+          redirect_uri,
+          response_type,
+          scope,
+          state,
+        },
+        client_id: "clientId",
+        connection: "email",
+        // this email already exists as a Username-Password-Authentication user
+        email: "foo@example.com",
+        send: "link",
+      }),
+    });
+
+    const emailResponse = await worker.fetch("/test/email");
+    const [{ code: otp }] = (await emailResponse.json()) as Email[];
+
+    const authenticateResponse = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "foo@example.com",
+      }),
+    });
+    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+
+    const query = new URLSearchParams({
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket,
+      nonce,
+      redirect_uri,
+      response_type,
+      scope,
+      state,
+      referrer: "https://login.example.com",
+      realm: "email",
+    });
+    const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
+      redirect: "manual",
+    });
+    const redirectUri = new URL(tokenResponse.headers.get("location")!);
+    const accessToken = redirectUri.searchParams.get("access_token");
+    const accessTokenPayload = parseJwt(accessToken!);
+
+    console.log(accessTokenPayload);
+    // now need to make sure the id_token & access_token are from the primary user
+    // the id is just "userid" (erronseusly)
+
+    // this is the id of the primary account
+    expect(accessTokenPayload.sub).toBe("tenantId|userId");
+
+    const idToken = redirectUri.searchParams.get("id_token");
+    const idTokenPayload = parseJwt(idToken!);
+
+    expect(idTokenPayload.sub).toBe("tenantId|userId");
+
+    console.log(idTokenPayload);
+
+    // and we'll have the nested identites - check the provider & connections
+    // need to actually fetch the user to get this info...
+  });
+
+  // TO TEST
+  // - logging in with same primary code user
+  // - logging in with same secondary code user - logic actually different here so be careful
+  // - silent auth on all the above
 });
