@@ -60,7 +60,8 @@ export class PasswordlessController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const client = await env.data.clients.get(body.client_id);
+    const client = await getClient(env, body.client_id);
+
     if (!client) {
       throw new Error("Client not found");
     }
