@@ -35,14 +35,14 @@ class MockOAuth2Client implements IOAuth2Client {
   async exchangeCodeForTokenResponse(code: string) {
     if (this.params.client_id === "otherSocialClientId") {
       const otherClientIdToken = await createTokenExample({
-        iss: "https://opther-auth.example.com",
+        iss: "https://other-auth.example.com",
         sub: "test-new-sub",
         aud: "client123",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe",
+        name: "John Doe Other Social",
         email: "john.doe@example.com",
-        picture: "https://example.com/john.jpg",
+        picture: "https://other-social-provider.example.com/alt-john.jpg",
         nonce: "abc123",
         email_verified: true,
       });
@@ -54,25 +54,28 @@ class MockOAuth2Client implements IOAuth2Client {
         refresh_token: "refreshToken",
       };
     }
-    const clientIdToken = await createTokenExample({
-      iss: "https://auth.example.com",
-      sub: "1234567890",
-      aud: "client123",
-      exp: 1616470948,
-      iat: 1616467348,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      picture: "https://example.com/john.jpg",
-      nonce: "abc123",
-      email_verified: true,
-    });
-    return {
-      access_token: "accessToken",
-      id_token: clientIdToken,
-      token_type: "tokenType",
-      expires_in: 1000,
-      refresh_token: "refreshToken",
-    };
+    if (this.params.client_id === "socialClientId") {
+      const clientIdToken = await createTokenExample({
+        iss: "https://auth.example.com",
+        sub: "1234567890",
+        aud: "client123",
+        exp: 1616470948,
+        iat: 1616467348,
+        name: "John Doe Social",
+        email: "john.doe@example.com",
+        picture: "https://social-provider.example.com/john.jpg",
+        nonce: "abc123",
+        email_verified: true,
+      });
+      return {
+        access_token: "accessToken",
+        id_token: clientIdToken,
+        token_type: "tokenType",
+        expires_in: 1000,
+        refresh_token: "refreshToken",
+      };
+    }
+    throw new Error("Unknown client_id");
   }
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");

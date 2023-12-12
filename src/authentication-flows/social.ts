@@ -135,11 +135,6 @@ export async function socialAuthCallback({
   const email = emailRaw.toLocaleLowerCase();
   const strictEmailVerified = !!email_verified;
 
-  const newUserFields: Partial<BaseUser> = {
-    profileData: JSON.stringify(profileData),
-    email,
-  };
-
   const ssoId = `${state.connection}|${sub}`;
   let user = await env.data.users.get(client.tenant_id, ssoId);
 
@@ -173,6 +168,7 @@ export async function socialAuthCallback({
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      profileData: JSON.stringify(profileData),
     });
 
     // this means we have a primary account
@@ -191,18 +187,6 @@ export async function socialAuthCallback({
 
   ctx.set("email", email);
   ctx.set("userId", user.id);
-
-  // this checks everytime we get the id_token that the email is verified, and updates the user in the db
-  // possibly excessive and we could just set email_verified:true when creating the new social user (above)
-  if (email_verified) {
-    newUserFields.email_verified = strictEmailVerified;
-  }
-
-  await env.data.users.update(
-    client.tenant_id,
-    ctx.get("userId"),
-    newUserFields,
-  );
 
   await env.data.logs.create({
     category: "login",

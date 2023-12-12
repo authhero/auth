@@ -40,7 +40,8 @@ const EXPECTED_NEW_USER = {
   ],
   login_count: 0,
   is_social: true,
-  profileData: '{"name":"John Doe","picture":"https://example.com/john.jpg"}',
+  profileData:
+    '{"name":"John Doe Social","picture":"https://social-provider.example.com/john.jpg"}',
   user_id: "demo-social-provider|1234567890",
 };
 
@@ -391,8 +392,8 @@ describe("social sign on", () => {
           user_id: "1234567890",
           isSocial: true,
           profileData: {
-            name: "John Doe",
-            picture: "https://example.com/john.jpg",
+            name: "John Doe Social",
+            picture: "https://social-provider.example.com/john.jpg",
             email: "john.doe@example.com",
             email_verified: true,
             // TODO - test more SSO id_tokens with more nested keys
@@ -458,8 +459,7 @@ describe("social sign on", () => {
         aud: "clientId",
         name: "john.doe@example.com",
         email: "john.doe@example.com",
-        // is this actually correct? I wonder...
-        email_verified: true,
+        email_verified: false,
         nonce: "nonce",
         iss: "https://example.com/",
       });
@@ -547,8 +547,8 @@ describe("social sign on", () => {
           user_id: "1234567890",
           isSocial: true,
           profileData: {
-            name: "John Doe",
-            picture: "https://example.com/john.jpg",
+            name: "John Doe Social",
+            picture: "https://social-provider.example.com/john.jpg",
             email: "john.doe@example.com",
             email_verified: true,
           },
@@ -560,9 +560,8 @@ describe("social sign on", () => {
           user_id: "test-new-sub",
           isSocial: true,
           profileData: {
-            // Should make this info different to stop false positives
-            name: "John Doe",
-            picture: "https://example.com/john.jpg",
+            name: "John Doe Other Social",
+            picture: "https://other-social-provider.example.com/alt-john.jpg",
             email: "john.doe@example.com",
             email_verified: true,
           },
