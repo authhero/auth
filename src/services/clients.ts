@@ -35,10 +35,13 @@ const defaultSettings: DefaultSettings = {
   ],
 };
 
-export async function getClient(env: Env, clientId: string): Promise<Client> {
+export async function getClient(
+  env: Env,
+  clientId: string,
+): Promise<Client | undefined> {
   const clientRawObj = await env.data.clients.get(clientId);
   if (!clientRawObj) {
-    throw new Error("Client not found");
+    return;
   }
 
   const clientPatchedObj = {
