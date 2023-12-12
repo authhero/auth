@@ -75,16 +75,16 @@ describe("users by email", () => {
       picture: "https://example.com/foo.png",
       tenant_id: "tenantId",
       login_count: 0,
-      provider: "email",
-      connection: "email",
+      connection: "Username-Password-Authentication",
+      provider: "auth2",
       is_social: false,
       user_id: "userId",
     });
 
     expect(users[0].identities).toEqual([
       {
-        connection: "email",
-        provider: "email",
+        connection: "Username-Password-Authentication",
+        provider: "auth2",
         user_id: "userId",
         isSocial: false,
       },
@@ -136,15 +136,15 @@ describe("users by email", () => {
       picture: "https://example.com/foo.png",
       tenant_id: "tenantId",
       login_count: 0,
-      provider: "email",
-      connection: "email",
+      connection: "Username-Password-Authentication",
+      provider: "auth2",
       is_social: false,
       user_id: "userId",
     });
     expect(users[0].identities).toEqual([
       {
-        connection: "email",
-        provider: "email",
+        connection: "Username-Password-Authentication",
+        provider: "auth2",
         user_id: "userId",
         isSocial: false,
       },
@@ -223,8 +223,8 @@ describe("users by email", () => {
     expect(linkResponseData).toHaveLength(2);
 
     expect(linkResponseData[0]).toEqual({
-      connection: "email",
-      provider: "email",
+      connection: "Username-Password-Authentication",
+      provider: "auth2",
       user_id: fooEmailId,
       isSocial: false,
     });
@@ -254,8 +254,8 @@ describe("users by email", () => {
 
     expect(fooEmailAfterLinkUsers[0].identities).toEqual([
       {
-        connection: "email",
-        provider: "email",
+        connection: "Username-Password-Authentication",
+        provider: "auth2",
         user_id: fooEmailId,
         isSocial: false,
       },
