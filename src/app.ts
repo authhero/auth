@@ -61,8 +61,10 @@ const app = new Hono<{ Bindings: Env }>()
   )
   .use(loggerMiddleware)
   .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
+    const url = new URL(ctx.req.url);
+    const tenantId = url.hostname.split(".")[0];
     return ctx.json({
-      name: packageJson.name,
+      name: tenantId,
       version: packageJson.version,
     });
   });

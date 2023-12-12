@@ -14,7 +14,10 @@ kv_namespaces = [
 
 services = [{ binding = "TOKEN_SERVICE", service = "token-service-dev" }]
 
-route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" }
+routes = [
+    { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" },
+    { pattern = "*.auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" },
+]
 
 [vars]
 IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"
