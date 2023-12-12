@@ -50,7 +50,7 @@ export async function ticketAuth(
 
   const tokenResponse = await generateAuthResponse({
     env,
-    userId: `${tenant_id}|${user.id}`,
+    userId: user.id,
     state: authParams.state,
     authParams: {
       ...authParams,
