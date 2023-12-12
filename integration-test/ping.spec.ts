@@ -6,6 +6,6 @@ describe("ping", () => {
     const response = await testClient(app, { env: {} }).index.$get();
 
     const body: any = await response.json();
-    expect(body.name).toBe("auth2");
+    expect(body.name).toBe("localhost");
   });
 });
