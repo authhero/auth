@@ -355,6 +355,74 @@ describe("code-flow", () => {
     // ----------------------------
     // now log in again with the same email and code user
     // ----------------------------
+
+    await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: {
+          nonce: "nonce",
+          redirect_uri,
+          response_type,
+          scope,
+          state,
+        },
+        client_id: "clientId",
+        connection: "email",
+        email: "foo@example.com",
+        send: "link",
+      }),
+    });
+
+    const [{ code: otp2 }] = (await (
+      await worker.fetch("/test/email")
+    ).json()) as Email[];
+
+    const authenticateResponse2 = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp: otp2,
+        realm: "email",
+        username: "foo@example.com",
+      }),
+    });
+    const { login_ticket: loginTicket2 } =
+      (await authenticateResponse2.json()) as LoginTicket;
+
+    const query2 = new URLSearchParams({
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket: loginTicket2,
+      nonce: "nonce",
+      redirect_uri,
+      response_type,
+      scope,
+      state,
+      referrer: "https://login.example.com",
+      realm: "email",
+    });
+    const tokenResponse2 = await worker.fetch(
+      `/authorize?${query2.toString()}`,
+      {
+        redirect: "manual",
+      },
+    );
+
+    const accessToken2 = parseJwt(
+      new URL(tokenResponse.headers.get("location")!).searchParams.get(
+        "access_token",
+      )!,
+    );
+
+    // this is the id of the primary account
+    expect(accessToken2.sub).toBe("userId");
   });
 
   // TO TEST
