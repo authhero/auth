@@ -35,16 +35,22 @@ class MockOAuth2Client implements IOAuth2Client {
   async exchangeCodeForTokenResponse(code: string) {
     if (this.params.client_id === "otherSocialClientId") {
       const otherClientIdToken = await createTokenExample({
-        iss: "https://other-auth.example.com",
-        sub: "test-new-sub",
-        aud: "client123",
+        // copied from Facebook id_token
+        iss: "https://www.facebook.com",
+        sub: "10451045104510451",
+        aud: "250848680337272",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe Other Social",
+        name: "John Doe",
+        given_name: "John",
+        family_name: "Doe",
+        at_hash: "atHash",
         email: "john.doe@example.com",
-        picture: "https://other-social-provider.example.com/alt-john.jpg",
+        picture:
+          "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
         nonce: "abc123",
         email_verified: true,
+        jti: "jti",
       });
       return {
         access_token: "otherClientAccessToken",
@@ -56,14 +62,22 @@ class MockOAuth2Client implements IOAuth2Client {
     }
     if (this.params.client_id === "socialClientId") {
       const clientIdToken = await createTokenExample({
-        iss: "https://auth.example.com",
-        sub: "1234567890",
-        aud: "client123",
+        // TODO - copy from Google id_token
+        iss: "https://accounts.google.com",
+        sub: "123456789012345678901",
+        azp: "195867377305-j00komjaq7etk3ua9oab69klhlli4uk7.apps.googleusercontent.com",
+        aud: "195867377305-j00komjaq7etk3ua9oab69klhlli4uk7.apps.googleusercontent.com",
+        hd: "sesamy.com",
+        at_hash: "86RwWzFmP08wVtVDo1qk1A",
+        locale: "es-ES",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe Social",
+        name: "John Doe",
+        given_name: "John",
+        family_name: "Doe",
         email: "john.doe@example.com",
-        picture: "https://social-provider.example.com/john.jpg",
+        picture:
+          "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
         nonce: "abc123",
         email_verified: true,
       });
@@ -76,6 +90,21 @@ class MockOAuth2Client implements IOAuth2Client {
       };
     }
     throw new Error("Unknown client_id");
+    // TODO - mock Apple id_token
+    /*
+    {
+      "iss": "https://appleid.apple.com",
+      "aud": "dev.sesamy.auth2",
+      "exp": 1702398561,
+      "iat": 1702312161,
+      "sub": "123456.1234abcd1234abcd1234abcd1234abcd.1234",
+      "at_hash": "X4g-4Ig31fptNYMcMQARfQ",
+      "email": "john.do@example.com",
+      "email_verified": "true",
+      "auth_time": 1702312158,
+      "nonce_supported": true
+    }
+    */
   }
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");
