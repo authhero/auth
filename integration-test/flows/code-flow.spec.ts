@@ -90,6 +90,7 @@ describe("code-flow", () => {
       scope,
       state,
       referrer: "https://login.example.com",
+      realm: "email",
     });
 
     // Trade the ticket for token
