@@ -314,6 +314,9 @@ export class LoginController extends Controller {
     }
 
     const client = await getClient(env, session.authParams.client_id);
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
 
     try {
       // another duplicate here - DRY rule of three!

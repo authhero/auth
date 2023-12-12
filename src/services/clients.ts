@@ -44,6 +44,7 @@ export async function getClient(
     return;
   }
 
+  // backwards compatibility fix after changing the name of the field - this is due to us being unable to update KV storage
   const clientPatchedObj = {
     ...clientRawObj,
     connections: clientRawObj.connections.map((connection: any) => ({
