@@ -17,6 +17,8 @@ if (!data.clients.create) {
   throw new Error("Missing create method on clients adapter");
 }
 data.clients.create({
+  // Remove some of these keys! fall back to defaults in getClient...
+  // maybe make another client and then write a test that falls back to defaults because it has nothing...
   id: "clientId",
   name: "Test Client",
   connections: [
