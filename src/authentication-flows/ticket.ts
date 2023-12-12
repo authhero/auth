@@ -43,6 +43,12 @@ export async function ticketAuth(
   let user = usersWithSameEmail.find((u) => u.provider === provider);
 
   if (!user) {
+    if (realm === "Username-Password-Authentication") {
+      throw new Error(
+        "ticket flow should not arrive here with non existent user",
+      );
+    }
+
     const primaryUser = usersWithSameEmail.find((u) => !u.linked_to);
 
     const linkedTo = primaryUser?.id;
