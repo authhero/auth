@@ -50,9 +50,7 @@ export async function ticketAuth(
 
   const tokenResponse = await generateAuthResponse({
     env,
-    // userId: user.id,
-    // should this be called sub?
-    userId: `${tenant_id}|${nanoid()}`,
+    userId: `${tenant_id}|${user.id}`,
     state: authParams.state,
     authParams: {
       ...authParams,
