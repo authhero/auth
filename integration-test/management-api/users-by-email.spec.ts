@@ -265,6 +265,10 @@ describe("users by email", () => {
         provider: "email",
         user_id: barEmailId.split("|")[1],
         isSocial: false,
+        profileData: {
+          email: "bar@example.com",
+          email_verified: false,
+        },
       },
     ]);
 
