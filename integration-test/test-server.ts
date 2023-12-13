@@ -44,6 +44,12 @@ const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
       scope: "openid profile email",
     },
   ],
+  allowed_callback_urls: ["https://login.example.com/sv/callback"],
+  tenant: {
+    // what's the point of a tenant fallback if these keys are required in the partialClient?
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+  },
 };
 
 const testClient: PartialClient = {
@@ -65,10 +71,13 @@ const testClient: PartialClient = {
       updated_at: "updated_at",
     },
   ],
+  // TO TEST - what uses domains?
   domains: [],
   // this ID is not seeded to the tenants data adapter
   tenant_id: "tenantId",
-  allowed_callback_urls: ["https://login.example.com/sv/callback"],
+  allowed_callback_urls: [],
+  // TODO - test these fallback to DEFAULT_SETTINGS
+  // we clearly aren't testing logging out or anything checking the origin
   allowed_logout_urls: [],
   allowed_web_origins: [],
   email_validation: "enforced",
