@@ -5,9 +5,10 @@ import { Tenant } from "../../../types";
 export function createTenant(tenants: Tenant[]) {
   return async (params: CreateTenantParams) => {
     const tenant = {
-      id: nanoid(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      // these don't work on cloudflare
+      // id: nanoid(),
+      // created_at: new Date().toISOString(),
+      // updated_at: new Date().toISOString(),
       ...params,
     };
 
