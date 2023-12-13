@@ -37,11 +37,9 @@ export function getClient(
     );
     if (!tenant) return null;
 
-    const connections = removeNullProperties(
-      connectionsList.filter(
-        (connection) => connection.tenant_id === application.tenant_id,
-      ),
-    );
+    const connections = connectionsList
+      .filter((connection) => connection.tenant_id === application.tenant_id)
+      .map((connection) => removeNullProperties(connection));
 
     const client: PartialClient = {
       id: application.id,
