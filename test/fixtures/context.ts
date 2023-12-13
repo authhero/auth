@@ -1,7 +1,14 @@
 // This is to make Request and other browser stuff work
 import "isomorphic-fetch";
 import { Context } from "hono";
-import { Env, PasswordParams, User } from "../../src/types";
+import {
+  Application,
+  Env,
+  PasswordParams,
+  Tenant,
+  User,
+  SqlConnection,
+} from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
@@ -12,7 +19,12 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-import { application, tenant, connections } from "./client";
+// name all these SCREAMING_SNAKE
+import {
+  application,
+  tenant,
+  connections as connectionsFixture,
+} from "./client";
 
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
@@ -28,6 +40,9 @@ export interface ContextFixtureParams {
     sendCode?: typeof sendCode;
   };
   logs?: any[];
+  applications?: Application[];
+  tenants?: Tenant[];
+  connections?: SqlConnection[];
 }
 
 export function contextFixture(
@@ -42,6 +57,9 @@ export function contextFixture(
     otps,
     passwords,
     email,
+    connections,
+    applications,
+    tenants,
   } = params || {};
 
   const data = createAdapters();
@@ -76,10 +94,34 @@ export function contextFixture(
     });
   }
 
-  data.tenants.create(tenant);
-  data.applications.create(tenant.id, application);
-  data.connections.create(tenant.id, connections[0]);
-  data.connections.create(tenant.id, connections[1]);
+  const seedingClient = !!applications || !!tenants || !!connections;
+
+  if (!seedingClient) {
+    // TODO - we need to also accept these as fixtures...
+    // and then not populate them I think
+    data.tenants.create(tenant);
+    data.applications.create(tenant.id, application);
+    data.connections.create(tenant.id, connectionsFixture[0]);
+    data.connections.create(tenant.id, connectionsFixture[1]);
+  } else {
+    if (applications) {
+      applications.forEach((application) => {
+        data.applications.create(application.tenant_id, application);
+      });
+    }
+
+    if (tenants) {
+      tenants.forEach((tenant) => {
+        data.tenants.create(tenant);
+      });
+    }
+
+    if (connections) {
+      connections.forEach((connection) => {
+        data.connections.create(connection.tenant_id, connection);
+      });
+    }
+  }
 
   // Add a known certificate
   data.certificates.upsertCertificates([getCertificate()]);
