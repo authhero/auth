@@ -109,9 +109,8 @@ data.users.create("tenantId", {
   picture: "https://example.com/foo.png",
   tenant_id: "tenantId",
   login_count: 0,
-  // this isn't correct right?
-  provider: "email",
-  connection: "email",
+  provider: "auth2",
+  connection: "Username-Password-Authentication",
   is_social: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
