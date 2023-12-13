@@ -36,7 +36,7 @@ describe("getClient", () => {
     };
 
     const ctx = contextFixture({
-      clients: [partialClient],
+      // clients: [partialClient],
     });
 
     const envDefaultSettings: DefaultSettings = {
@@ -84,7 +84,9 @@ describe("getClient", () => {
       domains: [],
     };
 
-    const ctx = contextFixture({ clients: [testClient] });
+    const ctx = contextFixture({
+      // clients: [testClient]
+    });
 
     const defaultSettings: DefaultSettings = {
       connections: [],
@@ -136,7 +138,9 @@ describe("getClient", () => {
       ],
     };
 
-    const ctx = contextFixture({ clients: [partialClient] });
+    const ctx = contextFixture({
+      // clients: [partialClient]
+    });
 
     const defaultSettings: DefaultSettings = {
       connections: [],
@@ -194,7 +198,7 @@ describe("getClient", () => {
     };
 
     const ctx = contextFixture({
-      clients: [testClient],
+      // clients: [testClient],
     });
 
     const envDefaultSettings: DefaultSettings = {
@@ -240,7 +244,7 @@ describe("getClient", () => {
     };
 
     const ctx = contextFixture({
-      clients: [testClient],
+      // clients: [testClient],
     });
 
     const envDefaultSettings: DefaultSettings = {

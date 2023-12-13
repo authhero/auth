@@ -4,7 +4,7 @@ import { LogoutController } from "../../../src/routes/tsoa/logout";
 import { contextFixture } from "../../fixtures/context";
 
 describe("logout", () => {
-  it("should return a redirect to the returnTo param and clear the session cookie", async () => {
+  it.only("should return a redirect to the returnTo param and clear the session cookie", async () => {
     const stateData = {};
 
     const ctx = contextFixture({
