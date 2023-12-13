@@ -48,42 +48,6 @@ const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
   },
 };
 
-// have split up
-// const testClient: PartialClient = {
-//   id: "clientId",
-//   name: "Test Client",
-//   connections: [
-//     {
-//       id: "connectionId1",
-//       name: "demo-social-provider",
-//       created_at: "created_at",
-//       updated_at: "updated_at",
-//     },
-//     {
-//       id: "connectionId2",
-//       name: "other-social-provider",
-//       created_at: "created_at",
-//       updated_at: "updated_at",
-//     },
-//   ],
-//   // TO TEST - what uses domains?
-//   domains: [],
-//   // this ID is not seeded to the tenants data adapter
-//   tenant_id: "tenantId",
-//   allowed_callback_urls: [],
-//   // TODO - test these fallback to DEFAULT_SETTINGS
-//   // we clearly aren't testing logging out or anything checking the origin
-//   allowed_logout_urls: [],
-//   allowed_web_origins: [],
-//   email_validation: "enforced",
-//   client_secret: "XjI8-WPndjtNHDu4ybXrD",
-//   tenant: {
-//     audience: "https://example.com",
-//     sender_email: "login@example.com",
-//     sender_name: "SenderName",
-//   },
-// };
-
 const testTenant: Tenant = {
   id: "tenantId",
   name: "Test Tenant",
@@ -168,43 +132,6 @@ data.applications.create("tenantId", testApplication2);
 data.applications.create("otherTenant", anotherAppOnAnotherTenant);
 data.connections.create("tenantId", testConnection1);
 data.connections.create("tenantId", testConnection2);
-
-// TODO - need to recreate these!  Just applications right?
-// data.clients.create(testClient);
-// data.clients.create({
-//   id: "otherClientId",
-//   name: "Test Client",
-//   connections: [],
-//   domains: [],
-//   tenant_id: "tenantId",
-//   allowed_callback_urls: ["https://login.example.com/sv/callback"],
-//   allowed_logout_urls: [],
-//   allowed_web_origins: [],
-//   email_validation: "enforced",
-//   client_secret: "XjI8-WPndjtNHDu4ybXrD",
-//   tenant: {
-//     audience: "https://example.com",
-//     sender_email: "login@example.com",
-//     sender_name: "SenderName",
-//   },
-// });
-// data.clients.create({
-//   id: "otherClientIdOnOtherTenant",
-//   name: "Test Client",
-//   connections: [],
-//   domains: [],
-//   tenant_id: "otherTenant",
-//   allowed_callback_urls: ["https://login.example.com/sv/callback"],
-//   allowed_logout_urls: [],
-//   allowed_web_origins: [],
-//   email_validation: "enforced",
-//   client_secret: "XjI8-WPndjtNHDu4ybXrD",
-//   tenant: {
-//     audience: "https://example.com",
-//     sender_email: "login@example.com",
-//     sender_name: "SenderName",
-//   },
-// });
 
 data.users.create("tenantId", {
   // my test correctly informs this is not a valid user_id!
