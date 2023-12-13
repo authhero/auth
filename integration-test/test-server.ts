@@ -21,7 +21,7 @@ if (!data.clients.create) {
   throw new Error("Missing create method on clients adapter");
 }
 
-const MOCK_DEFAULT_SETTING: DefaultSettings = {};
+const MOCK_DEFAULT_SETTINGS: DefaultSettings = {};
 
 const testClient: PartialClient = {
   // Remove some of these keys! fall back to defaults in getClient...
