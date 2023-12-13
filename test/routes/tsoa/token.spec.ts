@@ -8,7 +8,6 @@ import { CreateAccessTokenParams } from "../../../src/services/token-factory";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
-  Client,
   CodeChallengeMethod,
   PKCEAuthorizationCodeGrantTypeParams,
   RequestWithContext,
@@ -30,41 +29,6 @@ describe("token", () => {
   afterAll(() => {
     jest.useRealTimers();
   });
-
-  // TODO - try using defaults... split this up into individual fixtures
-  // and see those!
-  const client: Client = {
-    id: "publisherClientId",
-    name: "clientName",
-    client_secret: "clientSecret",
-    tenant_id: "tenantId",
-    allowed_callback_urls: ["http://localhost:3000", "https://example.com"],
-    allowed_logout_urls: ["http://localhost:3000", "https://example.com"],
-    allowed_web_origins: ["http://localhost:3000", "https://example.com"],
-    email_validation: "enabled",
-    tenant: {
-      audience: "audience",
-      sender_email: "senderEmail",
-      sender_name: "senderName",
-      support_url: "supportUrl",
-    },
-    connections: [
-      {
-        id: "connectionId",
-        name: "google-oauth2",
-        client_id: "googleClientId",
-        client_secret: "googleClientSecret",
-        authorization_endpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-        token_endpoint: "https://oauth2.googleapis.com/token",
-        response_mode: AuthorizationResponseMode.QUERY,
-        response_type: AuthorizationResponseType.CODE,
-        scope: "openid email profile",
-        created_at: "created_at",
-        updated_at: "updated_at",
-      },
-    ],
-    domains: [],
-  };
 
   const tenant: Tenant = {
     id: "tenantId",

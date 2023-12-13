@@ -3,6 +3,9 @@ import app from "../src/app";
 import { getCertificate } from "./helpers/token";
 import createAdapter from "../src/adapters/in-memory";
 import {
+  Application,
+  Tenant,
+  SqlConnection,
   AuthorizationResponseMode,
   AuthorizationResponseType,
   PartialClient,
@@ -45,40 +48,126 @@ const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
   },
 };
 
-const testClient: PartialClient = {
+// have split up
+// const testClient: PartialClient = {
+//   id: "clientId",
+//   name: "Test Client",
+//   connections: [
+//     {
+//       id: "connectionId1",
+//       name: "demo-social-provider",
+//       created_at: "created_at",
+//       updated_at: "updated_at",
+//     },
+//     {
+//       id: "connectionId2",
+//       name: "other-social-provider",
+//       created_at: "created_at",
+//       updated_at: "updated_at",
+//     },
+//   ],
+//   // TO TEST - what uses domains?
+//   domains: [],
+//   // this ID is not seeded to the tenants data adapter
+//   tenant_id: "tenantId",
+//   allowed_callback_urls: [],
+//   // TODO - test these fallback to DEFAULT_SETTINGS
+//   // we clearly aren't testing logging out or anything checking the origin
+//   allowed_logout_urls: [],
+//   allowed_web_origins: [],
+//   email_validation: "enforced",
+//   client_secret: "XjI8-WPndjtNHDu4ybXrD",
+//   tenant: {
+//     audience: "https://example.com",
+//     sender_email: "login@example.com",
+//     sender_name: "SenderName",
+//   },
+// };
+
+const testTenant: Tenant = {
+  id: "tenantId",
+  name: "Test Tenant",
+  audience: "https://example.com",
+  sender_email: "login@example.com",
+  sender_name: "SenderName",
+  support_url: "https://example.com/support",
+  created_at: "created_at",
+  updated_at: "updated_at",
+};
+
+const testApplication: Application = {
   id: "clientId",
   name: "Test Client",
-  connections: [
-    {
-      id: "connectionId1",
-      name: "demo-social-provider",
-      created_at: "created_at",
-      updated_at: "updated_at",
-    },
-    {
-      id: "connectionId2",
-      name: "other-social-provider",
-      created_at: "created_at",
-      updated_at: "updated_at",
-    },
-  ],
-  // TO TEST - what uses domains?
-  domains: [],
-  // this ID is not seeded to the tenants data adapter
   tenant_id: "tenantId",
-  allowed_callback_urls: [],
-  // TODO - test these fallback to DEFAULT_SETTINGS
-  // we clearly aren't testing logging out or anything checking the origin
-  allowed_logout_urls: [],
-  allowed_web_origins: [],
-  email_validation: "enforced",
   client_secret: "XjI8-WPndjtNHDu4ybXrD",
-  tenant: {
-    audience: "https://example.com",
-    sender_email: "login@example.com",
-    sender_name: "SenderName",
-  },
+  // are these crashing the tests?
+  allowed_callback_urls: "",
+  allowed_logout_urls: "",
+  allowed_web_origins: "",
+  email_validation: "enforced",
+  created_at: "created_at",
+  updated_at: "updated_at",
 };
+
+const testApplication2: Application = {
+  id: "otherClientId",
+  name: "Test Client", // ooops, this already had the same name
+  tenant_id: "tenantId",
+  client_secret: "XjI8-WPndjtNHDu4ybXrD", // and this the same. more clear now
+  allowed_callback_urls: "",
+  allowed_logout_urls: "",
+  allowed_web_origins: "",
+  email_validation: "enforced",
+  created_at: "created_at",
+  updated_at: "updated_at",
+};
+
+const testConnection1: SqlConnection = {
+  id: "connectionId1",
+  name: "demo-social-provider",
+  created_at: "created_at",
+  updated_at: "updated_at",
+  tenant_id: "tenantId",
+};
+
+const testConnection2: SqlConnection = {
+  id: "connectionId2",
+  name: "other-social-provider",
+  created_at: "created_at",
+  updated_at: "updated_at",
+  tenant_id: "tenantId",
+};
+
+const anotherTenant: Tenant = {
+  id: "otherTenant",
+  name: "Other Tenant",
+  // had all these the same
+  audience: "https://example.com",
+  sender_email: "login@example.com",
+  sender_name: "SenderName",
+  created_at: "created_at",
+  updated_at: "updated_at",
+};
+const anotherAppOnAnotherTenant: Application = {
+  id: "otherClientIdOnOtherTenant",
+  name: "Test Client",
+  tenant_id: "otherTenant",
+  client_secret: "XjI8-WPndjtNHDu4ybXrD",
+  allowed_callback_urls: "",
+  allowed_logout_urls: "",
+  allowed_web_origins: "",
+  email_validation: "enforced",
+  created_at: "created_at",
+  updated_at: "updated_at",
+};
+
+data.tenants.create(testTenant);
+data.tenants.create(anotherTenant);
+data.applications.create("tenantId", testApplication);
+data.applications.create("tenantId", testApplication2);
+data.applications.create("otherTenant", anotherAppOnAnotherTenant);
+data.connections.create("tenantId", testConnection1);
+data.connections.create("tenantId", testConnection2);
 
 // TODO - need to recreate these!  Just applications right?
 // data.clients.create(testClient);
