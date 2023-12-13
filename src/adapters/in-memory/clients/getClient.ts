@@ -45,7 +45,7 @@ export function getClient(
       id: application.id,
       name: application.name,
       connections,
-      // not using domains yet?
+      // TODO - not using domains yet
       domains: [],
       tenant_id: application.tenant_id,
       allowed_callback_urls: splitUrls(application.allowed_callback_urls),
@@ -53,11 +53,7 @@ export function getClient(
       allowed_web_origins: splitUrls(application.allowed_web_origins),
       email_validation: application.email_validation,
       client_secret: application.client_secret,
-      tenant: {
-        sender_email: tenant.sender_email,
-        sender_name: tenant.sender_name,
-        audience: tenant.audience,
-      },
+      tenant,
     };
 
     return client;
