@@ -97,8 +97,6 @@ export function contextFixture(
   const seedingClient = !!applications || !!tenants || !!connections;
 
   if (!seedingClient) {
-    // TODO - we need to also accept these as fixtures...
-    // and then not populate them I think
     data.tenants.create(tenant);
     data.applications.create(tenant.id, application);
     data.connections.create(tenant.id, connectionsFixture[0]);

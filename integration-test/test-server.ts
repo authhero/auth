@@ -64,7 +64,6 @@ const testApplication: Application = {
   name: "Test Client",
   tenant_id: "tenantId",
   client_secret: "XjI8-WPndjtNHDu4ybXrD",
-  // are these crashing the tests?
   allowed_callback_urls: "",
   allowed_logout_urls: "",
   allowed_web_origins: "",
