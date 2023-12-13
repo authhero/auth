@@ -10,8 +10,6 @@ import {
 import { mockOAuth2ClientFactory } from "./mockOauth2Client";
 import { DefaultSettings } from "../src/models/DefaultSettings";
 
-// right ok. so this just spins up straight up the inMemory adapter!
-// IN WHICH CASE I am testing getClients then   8-)
 const data = createAdapter();
 // Add a known certificate
 data.certificates.upsertCertificates([getCertificate()]);
@@ -53,8 +51,6 @@ const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
 };
 
 const testClient: PartialClient = {
-  // Remove some of these keys! fall back to defaults in getClient...
-  // maybe make another client and then write a test that falls back to defaults because it has nothing...
   id: "clientId",
   name: "Test Client",
   connections: [
