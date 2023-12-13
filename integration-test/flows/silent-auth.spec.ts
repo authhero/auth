@@ -67,6 +67,7 @@ describe("silent-auth", () => {
       response_type: "token id_token",
       redirect_uri: "http://login.example.com",
       state: "state",
+      realm: "Username-Password-Authentication",
     });
 
     // Trade the ticket for token

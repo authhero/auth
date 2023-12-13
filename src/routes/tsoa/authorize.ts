@@ -157,7 +157,14 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
-      return ticketAuth(env, client.tenant_id, this, loginTicket, authParams);
+      return ticketAuth(
+        env,
+        client.tenant_id,
+        this,
+        loginTicket,
+        authParams,
+        realm!,
+      );
     }
 
     return universalAuth({ env, controller: this, authParams });

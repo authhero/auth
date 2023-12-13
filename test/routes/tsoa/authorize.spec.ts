@@ -439,7 +439,7 @@ describe("authorize", () => {
         redirect_uri: "https://example.com",
         state: "state",
         loginTicket: "ticketId",
-        realm: "Username-Password-Authentication",
+        realm: "email",
         response_type: AuthorizationResponseType.TOKEN,
       });
 
@@ -457,7 +457,7 @@ describe("authorize", () => {
       expect(accessToken).toEqual({
         aud: "default",
         scope: "openid profile email",
-        sub: "tenantId|testid",
+        sub: "email|testid",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
@@ -508,7 +508,7 @@ describe("authorize", () => {
         nonce: "nonce",
         scope: "openid profile email",
         loginTicket: "ticketId",
-        realm: "Username-Password-Authentication",
+        realm: "email",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       });
 
@@ -521,7 +521,7 @@ describe("authorize", () => {
 
       expect(idToken).toEqual({
         aud: "clientId",
-        sub: "tenantId|testid",
+        sub: "email|testid",
         nonce: "nonce",
         sid: "testid",
         iss: "https://auth.example.com/",
@@ -557,7 +557,7 @@ describe("authorize", () => {
         state: "state",
         scope: "openid profile email",
         loginTicket: "ticketId",
-        realm: "Username-Password-Authentication",
+        realm: "email",
         response_type: AuthorizationResponseType.CODE,
       });
 
@@ -594,7 +594,7 @@ describe("authorize", () => {
           tenant_id: "tenantId",
           updated_at: "2023-11-28T12:00:00.000Z",
         },
-        userId: "tenantId|testid",
+        userId: "email|testid",
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
