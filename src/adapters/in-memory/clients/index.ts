@@ -8,11 +8,7 @@ export function createClientsAdapter(
   tenants: Tenant[],
   connections: SqlConnection[],
 ): ClientsAdapter {
-  // remove this
-  const clientStorage: any = [];
   return {
     get: getClient(applications, tenants, connections),
-    // TODO - remove this! no longer want it
-    create: createClient(clientStorage),
   };
 }

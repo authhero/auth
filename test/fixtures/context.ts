@@ -78,20 +78,8 @@ export function contextFixture(
     });
   }
 
-  if (clients) {
-    clients.forEach((client) => {
-      data.clients.create!(client);
-    });
-  } else {
-    data.clients.create!(defaultTestClient);
-  }
-
   // Add a known certificate
   data.certificates.upsertCertificates([getCertificate()]);
-  // A test client
-  if (!data.clients.create) {
-    throw new Error("Missing create method on clients adapter");
-  }
 
   return {
     set: () => {},

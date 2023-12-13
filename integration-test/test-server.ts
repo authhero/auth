@@ -14,11 +14,6 @@ const data = createAdapter();
 // Add a known certificate
 data.certificates.upsertCertificates([getCertificate()]);
 
-// A test client
-if (!data.clients.create) {
-  throw new Error("Missing create method on clients adapter");
-}
-
 const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
   connections: [
     {
@@ -85,43 +80,42 @@ const testClient: PartialClient = {
   },
 };
 
-data.clients.create(testClient);
-
-data.clients.create({
-  id: "otherClientId",
-  name: "Test Client",
-  connections: [],
-  domains: [],
-  tenant_id: "tenantId",
-  allowed_callback_urls: ["https://login.example.com/sv/callback"],
-  allowed_logout_urls: [],
-  allowed_web_origins: [],
-  email_validation: "enforced",
-  client_secret: "XjI8-WPndjtNHDu4ybXrD",
-  tenant: {
-    audience: "https://example.com",
-    sender_email: "login@example.com",
-    sender_name: "SenderName",
-  },
-});
-
-data.clients.create({
-  id: "otherClientIdOnOtherTenant",
-  name: "Test Client",
-  connections: [],
-  domains: [],
-  tenant_id: "otherTenant",
-  allowed_callback_urls: ["https://login.example.com/sv/callback"],
-  allowed_logout_urls: [],
-  allowed_web_origins: [],
-  email_validation: "enforced",
-  client_secret: "XjI8-WPndjtNHDu4ybXrD",
-  tenant: {
-    audience: "https://example.com",
-    sender_email: "login@example.com",
-    sender_name: "SenderName",
-  },
-});
+// TODO - need to recreate these!  Just applications right?
+// data.clients.create(testClient);
+// data.clients.create({
+//   id: "otherClientId",
+//   name: "Test Client",
+//   connections: [],
+//   domains: [],
+//   tenant_id: "tenantId",
+//   allowed_callback_urls: ["https://login.example.com/sv/callback"],
+//   allowed_logout_urls: [],
+//   allowed_web_origins: [],
+//   email_validation: "enforced",
+//   client_secret: "XjI8-WPndjtNHDu4ybXrD",
+//   tenant: {
+//     audience: "https://example.com",
+//     sender_email: "login@example.com",
+//     sender_name: "SenderName",
+//   },
+// });
+// data.clients.create({
+//   id: "otherClientIdOnOtherTenant",
+//   name: "Test Client",
+//   connections: [],
+//   domains: [],
+//   tenant_id: "otherTenant",
+//   allowed_callback_urls: ["https://login.example.com/sv/callback"],
+//   allowed_logout_urls: [],
+//   allowed_web_origins: [],
+//   email_validation: "enforced",
+//   client_secret: "XjI8-WPndjtNHDu4ybXrD",
+//   tenant: {
+//     audience: "https://example.com",
+//     sender_email: "login@example.com",
+//     sender_name: "SenderName",
+//   },
+// });
 
 data.users.create("tenantId", {
   // my test correctly informs this is not a valid user_id!
