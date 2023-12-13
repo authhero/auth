@@ -1,7 +1,7 @@
 // This is to make Request and other browser stuff work
 import "isomorphic-fetch";
 import { Context } from "hono";
-import { Env, PartialClient, PasswordParams, User } from "../../src/types";
+import { Env, PasswordParams, User } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
@@ -12,7 +12,6 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-import { defaultTestClient } from "./client";
 
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
@@ -22,7 +21,6 @@ export interface ContextFixtureParams {
   otps?: OTP[];
   passwords?: PasswordParams[];
   users?: User[];
-  clients?: PartialClient[];
   userData?: { [key: string]: string | boolean };
   email?: {
     sendLink?: typeof sendLink;
@@ -37,7 +35,6 @@ export function contextFixture(
   const {
     headers = {},
     logs = [],
-    clients,
     tickets,
     sessions,
     users,
