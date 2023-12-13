@@ -439,7 +439,7 @@ describe("authorize", () => {
         redirect_uri: "https://example.com",
         state: "state",
         loginTicket: "ticketId",
-        realm: "Username-Password-Authentication",
+        realm: "email",
         response_type: AuthorizationResponseType.TOKEN,
       });
 
@@ -508,7 +508,7 @@ describe("authorize", () => {
         nonce: "nonce",
         scope: "openid profile email",
         loginTicket: "ticketId",
-        realm: "Username-Password-Authentication",
+        realm: "email",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       });
 
@@ -557,7 +557,7 @@ describe("authorize", () => {
         state: "state",
         scope: "openid profile email",
         loginTicket: "ticketId",
-        realm: "Username-Password-Authentication",
+        realm: "email",
         response_type: AuthorizationResponseType.CODE,
       });
 

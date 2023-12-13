@@ -55,6 +55,7 @@ describe("passwordlessAuth", () => {
         response_type: AuthorizationResponseType.TOKEN,
         response_mode: AuthorizationResponseMode.FRAGMENT,
       },
+      "email",
     );
 
     const redirectHeader = controller.getHeader("location") as string;
