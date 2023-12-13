@@ -21,7 +21,30 @@ if (!data.clients.create) {
   throw new Error("Missing create method on clients adapter");
 }
 
-const MOCK_DEFAULT_SETTINGS: DefaultSettings = {};
+const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
+  connections: [
+    {
+      name: "demo-social-provider",
+      client_id: "socialClientId",
+      client_secret: "socialClientSecret",
+      authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
+      token_endpoint: "https://example.com/token",
+      response_mode: AuthorizationResponseMode.QUERY,
+      response_type: AuthorizationResponseType.CODE,
+      scope: "openid profile email",
+    },
+    {
+      name: "other-social-provider",
+      client_id: "otherSocialClientId",
+      client_secret: "otherSocialClientSecret",
+      authorization_endpoint: "https://example.com/other/o/oauth2/v2/auth",
+      token_endpoint: "https://example.com/other/token",
+      response_mode: AuthorizationResponseMode.QUERY,
+      response_type: AuthorizationResponseType.CODE,
+      scope: "openid profile email",
+    },
+  ],
+};
 
 const testClient: PartialClient = {
   // Remove some of these keys! fall back to defaults in getClient...
@@ -32,26 +55,12 @@ const testClient: PartialClient = {
     {
       id: "connectionId1",
       name: "demo-social-provider",
-      client_id: "socialClientId",
-      client_secret: "socialClientSecret",
-      authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
-      token_endpoint: "https://example.com/token",
-      response_mode: AuthorizationResponseMode.QUERY,
-      response_type: AuthorizationResponseType.CODE,
-      scope: "openid profile email",
       created_at: "created_at",
       updated_at: "updated_at",
     },
     {
       id: "connectionId2",
       name: "other-social-provider",
-      client_id: "otherSocialClientId",
-      client_secret: "otherSocialClientSecret",
-      authorization_endpoint: "https://example.com/other/o/oauth2/v2/auth",
-      token_endpoint: "https://example.com/other/token",
-      response_mode: AuthorizationResponseMode.QUERY,
-      response_type: AuthorizationResponseType.CODE,
-      scope: "openid profile email",
       created_at: "created_at",
       updated_at: "updated_at",
     },
