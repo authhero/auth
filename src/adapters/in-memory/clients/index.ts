@@ -3,9 +3,7 @@ import { Client } from "../../../types";
 import { getClient } from "./getClient";
 import { createClient } from "./createClient";
 
-export function createClientsAdapter(): ClientsAdapter {
-  const clientStorage: Client[] = [];
-
+export function createClientsAdapter(clientStorage: Client[]): ClientsAdapter {
   return {
     get: getClient(clientStorage),
     create: createClient(clientStorage),
