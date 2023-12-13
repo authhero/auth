@@ -15,6 +15,7 @@ import { computeCodeChallenge } from "../helpers/pkce";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { stateDecode } from "../utils/stateEncode";
+import { HTTPException } from "hono/http-exception";
 
 export async function pkceAuthorizeCodeGrant(
   env: Env,
@@ -33,6 +34,9 @@ export async function pkceAuthorizeCodeGrant(
   }
 
   const client = await getClient(env, state.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
 
   if (state.authParams.client_id !== client.id) {
     throw new InvalidClientError();

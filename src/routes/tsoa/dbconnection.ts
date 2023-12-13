@@ -11,6 +11,7 @@ import {
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
+import { getClient } from "../../services/clients";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -49,7 +50,7 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const client = await ctx.env.data.clients.get(clientId);
+    const client = await getClient(ctx.env, clientId);
 
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });

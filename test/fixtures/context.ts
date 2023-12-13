@@ -12,7 +12,7 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-import { client } from "./client";
+import { defaultTestClient } from "./client";
 
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
@@ -83,7 +83,7 @@ export function contextFixture(
       data.clients.create!(client);
     });
   } else {
-    data.clients.create!(client);
+    data.clients.create!(defaultTestClient);
   }
 
   // Add a known certificate

@@ -5,8 +5,10 @@ import createAdapter from "../src/adapters/in-memory";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
+  PartialClient,
 } from "../src/types";
 import { mockOAuth2ClientFactory } from "./mockOauth2Client";
+import { DefaultSettings } from "../src/models/DefaultSettings";
 
 const data = createAdapter();
 // Add a known certificate
@@ -16,12 +18,10 @@ data.certificates.upsertCertificates([getCertificate()]);
 if (!data.clients.create) {
   throw new Error("Missing create method on clients adapter");
 }
-data.clients.create({
-  id: "clientId",
-  name: "Test Client",
+
+const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
   connections: [
     {
-      id: "connectionId1",
       name: "demo-social-provider",
       client_id: "socialClientId",
       client_secret: "socialClientSecret",
@@ -30,11 +30,8 @@ data.clients.create({
       response_mode: AuthorizationResponseMode.QUERY,
       response_type: AuthorizationResponseType.CODE,
       scope: "openid profile email",
-      created_at: "created_at",
-      updated_at: "updated_at",
     },
     {
-      id: "connectionId2",
       name: "other-social-provider",
       client_id: "otherSocialClientId",
       client_secret: "otherSocialClientSecret",
@@ -43,14 +40,40 @@ data.clients.create({
       response_mode: AuthorizationResponseMode.QUERY,
       response_type: AuthorizationResponseType.CODE,
       scope: "openid profile email",
+    },
+  ],
+  allowed_callback_urls: ["https://login.example.com/sv/callback"],
+  tenant: {
+    // what's the point of a tenant fallback if these keys are required in the partialClient?
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+  },
+};
+
+const testClient: PartialClient = {
+  id: "clientId",
+  name: "Test Client",
+  connections: [
+    {
+      id: "connectionId1",
+      name: "demo-social-provider",
+      created_at: "created_at",
+      updated_at: "updated_at",
+    },
+    {
+      id: "connectionId2",
+      name: "other-social-provider",
       created_at: "created_at",
       updated_at: "updated_at",
     },
   ],
+  // TO TEST - what uses domains?
   domains: [],
   // this ID is not seeded to the tenants data adapter
   tenant_id: "tenantId",
-  allowed_callback_urls: ["https://login.example.com/sv/callback"],
+  allowed_callback_urls: [],
+  // TODO - test these fallback to DEFAULT_SETTINGS
+  // we clearly aren't testing logging out or anything checking the origin
   allowed_logout_urls: [],
   allowed_web_origins: [],
   email_validation: "enforced",
@@ -60,7 +83,9 @@ data.clients.create({
     sender_email: "login@example.com",
     sender_name: "SenderName",
   },
-});
+};
+
+data.clients.create(testClient);
 
 data.clients.create({
   id: "otherClientId",
@@ -147,6 +172,7 @@ const server = {
         JWKS_URL: "https://example.com/.well-known/jwks.json",
         ISSUER: "https://example.com/",
         data,
+        DEFAULT_SETTINGS: JSON.stringify(MOCK_DEFAULT_SETTINGS),
       },
       ctx,
     );

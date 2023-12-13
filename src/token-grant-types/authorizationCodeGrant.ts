@@ -15,6 +15,7 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 import hash from "../utils/hash";
 import { nanoid } from "nanoid";
 import { stateDecode } from "../utils/stateEncode";
+import { HTTPException } from "hono/http-exception";
 
 export async function authorizeCodeGrant(
   env: Env,
@@ -32,6 +33,9 @@ export async function authorizeCodeGrant(
   }
 
   const client = await getClient(env, state.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
 
   // Check the secret if this is a code grant flow
   const secretHash = await hash(params.client_secret);
@@ -51,6 +55,9 @@ export async function clientCredentialsGrant(
   params: ClientCredentialGrantTypeParams,
 ): Promise<TokenResponse | CodeResponse> {
   const client = await getClient(env, params.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
 
   if (client.client_secret !== params.client_secret) {
     throw new Error("Invalid secret");

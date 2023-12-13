@@ -35,12 +35,16 @@ const defaultSettings: DefaultSettings = {
   ],
 };
 
-export async function getClient(env: Env, clientId: string): Promise<Client> {
+export async function getClient(
+  env: Env,
+  clientId: string,
+): Promise<Client | undefined> {
   const clientRawObj = await env.data.clients.get(clientId);
   if (!clientRawObj) {
-    throw new Error("Client not found");
+    return;
   }
 
+  // backwards compatibility fix after changing the name of the field - this is due to us being unable to update KV storage
   const clientPatchedObj = {
     ...clientRawObj,
     connections: clientRawObj.connections.map((connection: any) => ({

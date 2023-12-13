@@ -1,6 +1,8 @@
 import { HTTPException } from "hono/http-exception";
 import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
+import { getClient } from "../services/clients";
+
 export interface LoginParams {
   client_id: string;
   email: string;
@@ -8,7 +10,7 @@ export interface LoginParams {
 }
 
 export async function validateCode(env: Env, params: LoginParams) {
-  const client = await env.data.clients.get(params.client_id);
+  const client = await getClient(env, params.client_id);
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
   }

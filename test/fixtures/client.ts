@@ -4,7 +4,7 @@ import {
   Client,
 } from "../../src/types";
 
-export const client: Client = {
+export const defaultTestClient: Client = {
   id: "clientId",
   name: "clientName",
   client_secret: "clientSecret",

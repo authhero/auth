@@ -1,11 +1,12 @@
 import { Env } from "../types/Env";
 import { PasswordGrantTypeParams, TokenResponse } from "../types/Token";
+import { getClient } from "../services/clients";
 
 export async function passwordGrant(
   env: Env,
   params: PasswordGrantTypeParams,
 ): Promise<TokenResponse> {
-  const client = await env.data.clients.get(params.client_id);
+  const client = await getClient(env, params.client_id);
 
   const email = params.username.toLocaleLowerCase();
 

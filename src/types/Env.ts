@@ -20,7 +20,6 @@ export type Env = {
   USER: DurableObjectNamespace;
   AUTH_DB: D1Database;
   CERTIFICATES: KVNamespace;
-  CLIENTS: KVNamespace;
   AUTH_TEMPLATES: R2Bucket;
   EMAIL_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
