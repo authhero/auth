@@ -5,10 +5,10 @@ import { Tenant } from "../../../types";
 export function createTenant(tenants: Tenant[]) {
   return async (params: CreateTenantParams) => {
     const tenant = {
-      ...params,
       id: nanoid(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...params,
     };
 
     tenants.push(tenant);
