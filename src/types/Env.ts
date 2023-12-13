@@ -20,11 +20,12 @@ export type Env = {
   USER: DurableObjectNamespace;
   AUTH_DB: D1Database;
   CERTIFICATES: KVNamespace;
-  CLIENTS: KVNamespace;
   AUTH_TEMPLATES: R2Bucket;
   EMAIL_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
   WRITE_PERMISSION?: string;
+  // THIS is what I want to set! 8-)
+  // so we are still using this? What are the defaults in getClient then?
   DEFAULT_SETTINGS?: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   data: DataAdapters;
