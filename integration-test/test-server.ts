@@ -5,9 +5,13 @@ import createAdapter from "../src/adapters/in-memory";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
+  PartialClient,
 } from "../src/types";
 import { mockOAuth2ClientFactory } from "./mockOauth2Client";
+import { DefaultSettings } from "../src/models/DefaultSettings";
 
+// right ok. so this just spins up straight up the inMemory adapter!
+// IN WHICH CASE I am testing getClients then   8-)
 const data = createAdapter();
 // Add a known certificate
 data.certificates.upsertCertificates([getCertificate()]);
@@ -16,7 +20,10 @@ data.certificates.upsertCertificates([getCertificate()]);
 if (!data.clients.create) {
   throw new Error("Missing create method on clients adapter");
 }
-data.clients.create({
+
+const MOCK_DEFAULT_SETTING: DefaultSettings = {};
+
+const testClient: PartialClient = {
   // Remove some of these keys! fall back to defaults in getClient...
   // maybe make another client and then write a test that falls back to defaults because it has nothing...
   id: "clientId",
@@ -62,7 +69,9 @@ data.clients.create({
     sender_email: "login@example.com",
     sender_name: "SenderName",
   },
-});
+};
+
+data.clients.create(testClient);
 
 data.clients.create({
   id: "otherClientId",
@@ -149,6 +158,7 @@ const server = {
         JWKS_URL: "https://example.com/.well-known/jwks.json",
         ISSUER: "https://example.com/",
         data,
+        DEFAULT_SETTINGS: JSON.stringify({ MOCK_DEFAULT_SETTINGS }),
       },
       ctx,
     );
