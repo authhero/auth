@@ -12,6 +12,7 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
+import { application, tenant, connections } from "./client";
 
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
@@ -74,6 +75,11 @@ export function contextFixture(
       data.passwords.create("tenantId", password);
     });
   }
+
+  data.tenants.create(tenant);
+  data.applications.create(tenant.id, application);
+  data.connections.create(tenant.id, connections[0]);
+  data.connections.create(tenant.id, connections[1]);
 
   // Add a known certificate
   data.certificates.upsertCertificates([getCertificate()]);

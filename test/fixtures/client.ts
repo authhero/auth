@@ -6,7 +6,7 @@ import {
   SqlConnection,
 } from "../../src/types";
 
-const application: Application = {
+export const application: Application = {
   id: "clientId",
   name: "clientName",
   tenant_id: "tenantId",
@@ -19,7 +19,7 @@ const application: Application = {
   updated_at: "updated_at",
 };
 
-const tenant: Tenant = {
+export const tenant: Tenant = {
   id: "tenantId",
   name: "tenantName",
   audience: "audience",
@@ -29,7 +29,7 @@ const tenant: Tenant = {
   updated_at: "updated_at",
 };
 
-const connections: SqlConnection[] = [
+export const connections: SqlConnection[] = [
   {
     id: "connectionId1",
     name: "google-oauth2",
