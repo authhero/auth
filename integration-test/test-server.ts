@@ -167,7 +167,7 @@ const server = {
         JWKS_URL: "https://example.com/.well-known/jwks.json",
         ISSUER: "https://example.com/",
         data,
-        DEFAULT_SETTINGS: JSON.stringify({ MOCK_DEFAULT_SETTINGS }),
+        DEFAULT_SETTINGS: JSON.stringify(MOCK_DEFAULT_SETTINGS),
       },
       ctx,
     );
