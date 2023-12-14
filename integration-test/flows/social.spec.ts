@@ -4,6 +4,7 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
 import type { UnstableDevWorker } from "wrangler";
 import { UserResponse } from "../../src/types/auth0";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 
 const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
   redirect_uri: "https://login2.sesamy.dev/callback",

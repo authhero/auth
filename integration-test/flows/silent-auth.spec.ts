@@ -2,6 +2,7 @@ import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 
 function getDefaultSilentAuthSearchParams() {
   return new URLSearchParams({

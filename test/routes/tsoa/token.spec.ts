@@ -18,6 +18,7 @@ import {
 } from "../../../src/types";
 import { GrantType } from "../../../src/types";
 import { contextFixture } from "../../fixtures/context";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 
 describe("token", () => {
   const date = new Date();
