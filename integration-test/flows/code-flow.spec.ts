@@ -277,8 +277,8 @@ describe("code-flow", () => {
       email: "foo@example.com",
       email_verified: true,
       iss: "https://example.com/",
-      name: "Foo Bar",
-      nickname: "Foo",
+      name: "Åkesson Þorsteinsson",
+      nickname: "Åkesson Þorsteinsson",
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       picture: "https://example.com/foo.png",
     });

@@ -69,8 +69,8 @@ describe("users by email", () => {
     expect(users[0]).toMatchObject({
       email: "foo@example.com",
       email_verified: true,
-      name: "Foo Bar",
-      nickname: "Foo",
+      name: "Åkesson Þorsteinsson",
+      nickname: "Åkesson Þorsteinsson",
       picture: "https://example.com/foo.png",
       tenant_id: "tenantId",
       login_count: 0,
@@ -130,8 +130,8 @@ describe("users by email", () => {
     expect(users[0]).toMatchObject({
       email: "foo@example.com",
       email_verified: true,
-      name: "Foo Bar",
-      nickname: "Foo",
+      name: "Åkesson Þorsteinsson",
+      nickname: "Åkesson Þorsteinsson",
       picture: "https://example.com/foo.png",
       tenant_id: "tenantId",
       login_count: 0,
