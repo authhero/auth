@@ -8,6 +8,7 @@ import {
   Application,
   Tenant,
   SqlConnection,
+  SqlDomain,
 } from "../../src/types";
 
 const TENANT_FIXTURE: Tenant = {
@@ -49,12 +50,32 @@ const CONNECTION_FIXTURE: SqlConnection = {
   tenant_id: "tenantId",
 };
 
+const DOMAIN_FIXTURE: SqlDomain = {
+  id: "domainId",
+  domain: "example2.com",
+  api_key: "apiKey",
+  email_service: "mailgun",
+  tenant_id: "tenantId",
+  created_at: "created_at",
+  updated_at: "updated_at",
+};
+
 describe("getClient", () => {
-  it("should fallback the connections to the envDefaultSettings", async () => {
+  it("should get the connection settings from the DefaultSettings", async () => {
     const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
-      connections: [CONNECTION_FIXTURE],
+      connections: [
+        {
+          // only has minimal specified so we are getting the rest from default settings
+          id: "connectionId",
+          name: "facebook",
+          tenant_id: "tenantId",
+          created_at: "created_at",
+          updated_at: "updated_at",
+        },
+      ],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const envDefaultSettings: DefaultSettings = {
@@ -80,6 +101,9 @@ describe("getClient", () => {
     );
 
     expect(facebookConnection?.client_id).toBe("facebookClientId");
+    expect(facebookConnection?.authorization_endpoint).toBe(
+      "https://www.facebook.com/dialog/oauth",
+    );
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
@@ -87,6 +111,7 @@ describe("getClient", () => {
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const defaultSettings: DefaultSettings = {
@@ -106,6 +131,11 @@ describe("getClient", () => {
 
     expect(client!.domains).toEqual([
       {
+        api_key: "apiKey",
+        domain: "example2.com",
+        email_service: "mailgun",
+      },
+      {
         domain: "example.com",
         dkim_private_key: "dkimKey",
         email_service: "mailchannels",
@@ -113,35 +143,12 @@ describe("getClient", () => {
     ]);
   });
 
-  // implement domains! need data adapters and default fixtures
-  it.skip("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const partialClient: PartialClient = {
-      id: "testClient",
-      name: "clientName",
-      client_secret: "clientSecret",
-      tenant_id: "tenantId",
-      allowed_callback_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_logout_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_web_origins: ["http://localhost:3000", "https://example.com"],
-      email_validation: "enabled",
-      tenant: {
-        sender_email: "senderEmail",
-        sender_name: "senderName",
-        audience: "audience",
-        support_url: "supportUrl",
-      },
-      connections: [],
-      domains: [
-        {
-          domain: "example2.com",
-          api_key: "apiKey",
-          email_service: "mailgun",
-        },
-      ],
-    };
-
+  it("should add a domain from the envDefaultSettings to the client domains", async () => {
     const ctx = contextFixture({
-      // clients: [partialClient]
+      applications: [APPLICATION_FIXTURE],
+      tenants: [TENANT_FIXTURE],
+      connections: [CONNECTION_FIXTURE],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const defaultSettings: DefaultSettings = {
@@ -173,59 +180,17 @@ describe("getClient", () => {
     ]);
   });
 
-  it("should use the connection settings from the defaultSettings and the clientId from envDefaultSettings", async () => {
+  it("should store the support url from the tenant in the client", async () => {
     const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
-      tenants: [TENANT_FIXTURE],
-      connections: [CONNECTION_FIXTURE],
-    });
-
-    const envDefaultSettings: DefaultSettings = {
-      connections: [
+      tenants: [
         {
-          name: "facebook",
-          client_id: "facebookClientId",
-          client_secret: "facebookClientSecret",
+          ...TENANT_FIXTURE,
+          support_url: "https://example.foo/bar",
         },
       ],
-    };
-
-    ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
-
-    const client = await getClient(ctx.env, "testClient");
-    const facebookConnection = client!.connections.find(
-      (c) => c.name === "facebook",
-    );
-
-    expect(facebookConnection?.client_id).toBe("facebookClientId");
-    expect(facebookConnection?.authorization_endpoint).toBe(
-      "https://www.facebook.com/dialog/oauth",
-    );
-  });
-
-  it("should store the support url from the tenant in the client", async () => {
-    const testClient: PartialClient = {
-      id: "testClient",
-      name: "clientName",
-      client_secret: "clientSecret",
-      tenant_id: "tenantId",
-      allowed_callback_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_logout_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_web_origins: ["http://localhost:3000", "https://example.com"],
-      email_validation: "enabled",
-      tenant: {
-        sender_email: "senderEmail",
-        sender_name: "senderName",
-        support_url: "https://example.com/support",
-      },
-      connections: [],
-      domains: [],
-    };
-
-    const ctx = contextFixture({
-      applications: [APPLICATION_FIXTURE],
-      tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const envDefaultSettings: DefaultSettings = {
@@ -236,6 +201,6 @@ describe("getClient", () => {
 
     const client = await getClient(ctx.env, "testClient");
 
-    expect(client!.tenant.support_url).toBe("https://example.com/support");
+    expect(client!.tenant.support_url).toBe("https://example.foo/bar");
   });
 });

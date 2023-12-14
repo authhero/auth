@@ -8,6 +8,7 @@ import {
   Tenant,
   User,
   SqlConnection,
+  SqlDomain,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
@@ -24,6 +25,7 @@ import {
   application,
   tenant,
   connections as connectionsFixture,
+  domains as domainsFixture,
 } from "./client";
 
 export interface ContextFixtureParams {
@@ -43,6 +45,7 @@ export interface ContextFixtureParams {
   applications?: Application[];
   tenants?: Tenant[];
   connections?: SqlConnection[];
+  domains?: SqlDomain[];
 }
 
 export function contextFixture(
@@ -60,6 +63,7 @@ export function contextFixture(
     connections,
     applications,
     tenants,
+    domains,
   } = params || {};
 
   const data = createAdapters();
@@ -101,6 +105,7 @@ export function contextFixture(
     data.applications.create(tenant.id, application);
     data.connections.create(tenant.id, connectionsFixture[0]);
     data.connections.create(tenant.id, connectionsFixture[1]);
+    data.domains.create(tenant.id, domainsFixture[0]);
   } else {
     if (applications) {
       applications.forEach((application) => {
@@ -117,6 +122,11 @@ export function contextFixture(
     if (connections) {
       connections.forEach((connection) => {
         data.connections.create(connection.tenant_id, connection);
+      });
+    }
+    if (domains) {
+      domains.forEach((domain) => {
+        data.domains.create(domain.tenant_id, domain);
       });
     }
   }

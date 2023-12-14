@@ -14,18 +14,20 @@ import { createLogsAdapter } from "./logs";
 import { createApplicationsAdapter } from "./applications";
 import { createUniversalLoginSessionsAdapter } from "./universal-auth-sessions";
 import { createConnectionsAdapter } from "./connections";
-import { Application, SqlConnection, Tenant } from "../../types";
+import { Application, SqlConnection, Tenant, SqlDomain } from "../../types";
+import { createDomainsAdapter } from "./domains";
 
 export default function createAdapters(): DataAdapters {
   const connections: SqlConnection[] = [];
   const tenants: Tenant[] = [];
   const applications: Application[] = [];
+  const domains: SqlDomain[] = [];
 
   return {
     applications: createApplicationsAdapter(applications),
     certificates: createCertificateAdapter(),
     codes: createCodesAdapter(),
-    clients: createClientsAdapter(applications, tenants, connections),
+    clients: createClientsAdapter(applications, tenants, connections, domains),
     email: emailAdapter(),
     members: createMembersAdapter(),
     OTP: createOTPAdapter(),
@@ -37,6 +39,7 @@ export default function createAdapters(): DataAdapters {
     tickets: createTicketsAdapter(),
     logs: createLogsAdapter(),
     connections: createConnectionsAdapter(connections),
+    domains: createDomainsAdapter(domains),
     templates: {
       get: async (...inputs) => `<div>${JSON.stringify(inputs, null, 2)}</div>`,
     },
