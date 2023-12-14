@@ -98,6 +98,25 @@ export function contextFixture(
     });
   }
 
+  // seed default settings------------------
+  data.tenants.create({
+    id: "DEFAULT_SETTINGS",
+    name: "Default Settings",
+    sender_email: "foo@sesamy.com",
+    sender_name: "Sesamy",
+    audience: "https://sesamy.com",
+  });
+  data.applications.create("DEFAULT_SETTINGS", {
+    id: "DEFAULT_CLIENT",
+    name: "Default Client",
+    allowed_web_origins: "https://sesamy.com",
+    allowed_callback_urls: "https://sesamy.com",
+    allowed_logout_urls: "https://sesamy.com",
+    email_validation: "enabled",
+    client_secret: "secret",
+  });
+  //----------------------------------------
+
   const seedingClient = !!applications || !!tenants || !!connections;
 
   if (!seedingClient) {
