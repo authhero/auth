@@ -66,10 +66,9 @@ describe("tenants", () => {
       },
     });
 
-    // initial setup
     expect(tenantsResponse1.status).toBe(200);
     const body1 = (await tenantsResponse1.json()) as Tenant[];
-    // base tenant + two tenatns in test-server
+    // base tenant + two tenants in test-server
     expect(body1.length).toEqual(3);
 
     // remove 'otherTenant'
