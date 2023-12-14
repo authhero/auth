@@ -2,7 +2,7 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 
 import type { UnstableDevWorker } from "wrangler";
 
-async function doTheSilentAuthThing(
+export async function doSilentAuthRequestAndReturnTokens(
   setCookiesHeader: string,
   worker: UnstableDevWorker,
   nonce: string,
@@ -52,15 +52,6 @@ async function doTheSilentAuthThing(
 
   const silentAuthIdTokenPayload = parseJwt(silentAuthIdToken);
 
-  const {
-    // these are the fields that change on every test run
-    exp,
-    iat,
-    sid,
-    sub,
-    ...restOfIdTokenPayload
-  } = silentAuthIdTokenPayload;
-
   const silentAuthToken = iframeResponseJSON.access_token;
 
   const silentAuthTokenPayload = parseJwt(silentAuthToken);
@@ -68,6 +59,6 @@ async function doTheSilentAuthThing(
   // these aren't typed! coming out as anys...
   return {
     accessToken: silentAuthTokenPayload,
-    idToken: restOfIdTokenPayload,
+    idToken: silentAuthIdTokenPayload,
   };
 }

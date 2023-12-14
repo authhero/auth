@@ -6,6 +6,7 @@ import type { Email } from "../../src/types/Email";
 import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../src/types/auth0";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 
 describe("code-flow", () => {
   let worker: UnstableDevWorker;
@@ -293,40 +294,14 @@ describe("code-flow", () => {
     // ----------------------------
 
     const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
-    const cookies = setCookiesHeader.split(";").map((c) => c.trim());
-    const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
-
-    const silentAuthSearchParams = new URLSearchParams();
-    silentAuthSearchParams.set("client_id", "clientId");
-    silentAuthSearchParams.set("response_type", "token id_token");
-    silentAuthSearchParams.set("scope", "openid profile email");
-    silentAuthSearchParams.set(
-      "redirect_uri",
-      "http://localhost:3000/callback",
+    const {
+      accessToken: silentAuthAccessTokenPayload,
+      idToken: silentAuthIdTokenPayload,
+    } = await doSilentAuthRequestAndReturnTokens(
+      setCookiesHeader,
+      worker,
+      nonce,
     );
-    silentAuthSearchParams.set("state", "state");
-    silentAuthSearchParams.set("prompt", "none");
-    silentAuthSearchParams.set("nonce", nonce);
-    silentAuthSearchParams.set("response_mode", "web_message");
-
-    const silentAuthResponse = await worker.fetch(
-      `/authorize?${silentAuthSearchParams.toString()}`,
-      {
-        headers: {
-          cookie: authCookie,
-        },
-      },
-    );
-
-    const body = await silentAuthResponse.text();
-    const lines = body.split("\n");
-    const responseBody = lines.find((line) =>
-      line.trim().startsWith("response: "),
-    );
-    const iframeResponseJSON = JSON.parse(
-      responseBody!.replace("response: ", ""),
-    );
-    const silentAuthIdTokenPayload = parseJwt(iframeResponseJSON.id_token);
 
     const {
       // these are the fields that change on every test run
