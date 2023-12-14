@@ -14,7 +14,8 @@ import { createLogsAdapter } from "./logs";
 import { createApplicationsAdapter } from "./applications";
 import { createUniversalLoginSessionsAdapter } from "./universal-auth-sessions";
 import { createConnectionsAdapter } from "./connections";
-import { Application, SqlConnection, Tenant } from "../../types";
+import { Application, SqlConnection, Tenant, SqlDomain } from "../../types";
+import { createDomainsAdapter } from "./domains";
 
 export default function createAdapters(): DataAdapters {
   const connections: SqlConnection[] = [];
@@ -39,6 +40,13 @@ export default function createAdapters(): DataAdapters {
     connections: createConnectionsAdapter(connections),
     templates: {
       get: async (...inputs) => `<div>${JSON.stringify(inputs, null, 2)}</div>`,
+    },
+    domains: {
+      get: async (...inputs) => ({
+        domain: "example.com",
+        dkim_private_key: "dkimKey",
+        email_service: "mailchannels",
+      }),
     },
   };
 }
