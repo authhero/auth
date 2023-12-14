@@ -131,6 +131,11 @@ describe("getClient", () => {
 
     expect(client!.domains).toEqual([
       {
+        api_key: "apiKey",
+        domain: "example2.com",
+        email_service: "mailgun",
+      },
+      {
         domain: "example.com",
         dkim_private_key: "dkimKey",
         email_service: "mailchannels",
