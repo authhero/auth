@@ -41,7 +41,6 @@ class MockOAuth2Client implements IOAuth2Client {
         aud: "250848680337272",
         exp: 1616470948,
         iat: 1616467348,
-        // set another swedish name here
         name: "Örjan Lindström",
         given_name: "Örjan",
         family_name: "Lindström",

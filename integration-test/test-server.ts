@@ -154,7 +154,7 @@ data.users.create("tenantId", {
   email: "foo@example.com",
   email_verified: true,
   name: "Åkesson Þorsteinsson",
-  // no nicknames for the norse!
+  // use a norse nickname here? more realistic
   nickname: "Åkesson Þorsteinsson",
   picture: "https://example.com/foo.png",
   tenant_id: "tenantId",
