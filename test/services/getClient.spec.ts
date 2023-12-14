@@ -108,22 +108,19 @@ describe("getClient", () => {
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
-      domains: [DOMAIN_FIXTURE],
-    });
-
-    const defaultSettings: DefaultSettings = {
-      connections: [],
       domains: [
         {
+          id: "defaultDomain1",
+          tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
           dkim_private_key: "dkimKey",
           email_service: "mailchannels",
+          created_at: "created_at",
+          updated_at: "updated_at",
         },
+        DOMAIN_FIXTURE,
       ],
-    };
-
-    // TODO - put above default domain in DEFAULT_TENANT in adapter
-    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
+    });
 
     const client = await getClient(ctx.env, "testClient");
 
@@ -146,22 +143,19 @@ describe("getClient", () => {
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
-      domains: [DOMAIN_FIXTURE],
-    });
-
-    const defaultSettings: DefaultSettings = {
-      connections: [],
       domains: [
         {
+          id: "defaultDomain1",
+          tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
           dkim_private_key: "dkimKey",
           email_service: "mailchannels",
+          created_at: "created_at",
+          updated_at: "updated_at",
         },
+        DOMAIN_FIXTURE,
       ],
-    };
-
-    // TODO - put above default domain in DEFAULT_TENANT in adapter
-    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
+    });
 
     const client = await getClient(ctx.env, "testClient");
 
@@ -191,13 +185,6 @@ describe("getClient", () => {
       connections: [CONNECTION_FIXTURE],
       domains: [DOMAIN_FIXTURE],
     });
-
-    const envDefaultSettings: DefaultSettings = {
-      connections: [],
-    };
-
-    // TODO - put above connection in DEFAULT_TENANT in adapter
-    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
     const client = await getClient(ctx.env, "testClient");
 
