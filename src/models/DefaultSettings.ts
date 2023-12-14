@@ -48,15 +48,15 @@ const DefaultSettingsSchema = z.object({
 
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;
 
-export function getDefaultSettings(env: Env) {
-  const defaultSettingsString = env.DEFAULT_SETTINGS;
+export async function getDefaultSettings(env: Env) {
+  const defaultSetttingsClient = await env.data.clients.get("DEFAULT_CLIENT");
 
-  if (!defaultSettingsString) {
-    return {};
+  if (!defaultSetttingsClient) {
+    throw new Error("Failed to load default settings tenant");
   }
 
   try {
-    return DefaultSettingsSchema.parse(JSON.parse(defaultSettingsString));
+    return DefaultSettingsSchema.parse(defaultSetttingsClient);
   } catch (err: any) {
     console.log("Failed to load default settings: " + err.message);
     throw err;
