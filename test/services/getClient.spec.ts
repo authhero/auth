@@ -54,7 +54,16 @@ describe("getClient", () => {
     const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
-      connections: [CONNECTION_FIXTURE],
+      connections: [
+        {
+          // only has minimal specified
+          id: "connectionId",
+          name: "facebook",
+          tenant_id: "tenantId",
+          created_at: "created_at",
+          updated_at: "updated_at",
+        },
+      ],
     });
 
     const envDefaultSettings: DefaultSettings = {
