@@ -51,6 +51,7 @@ const CONNECTION_FIXTURE: SqlConnection = {
 };
 
 const DOMAIN_FIXTURE: SqlDomain = {
+  id: "domainId",
   domain: "example2.com",
   api_key: "apiKey",
   email_service: "mailgun",
@@ -74,6 +75,7 @@ describe("getClient", () => {
           updated_at: "updated_at",
         },
       ],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const envDefaultSettings: DefaultSettings = {
