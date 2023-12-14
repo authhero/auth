@@ -1,5 +1,5 @@
 import { PartialClient } from "../../../types";
-import { Application, Tenant, SqlConnection } from "../../../types";
+import { Application, Tenant, SqlConnection, SqlDomain } from "../../../types";
 
 function removeNullProperties<T = any>(obj: Record<string, any>) {
   const clone = { ...obj };
@@ -24,6 +24,7 @@ export function getClient(
   applications: Application[],
   tenants: Tenant[],
   connectionsList: SqlConnection[],
+  domainsList: SqlDomain[],
 ) {
   return async (id: string) => {
     const application = applications.find(
@@ -41,12 +42,16 @@ export function getClient(
       .filter((connection) => connection.tenant_id === application.tenant_id)
       .map((connection) => removeNullProperties(connection));
 
+    // TODO - need to pull domain here!
+    const domains = domainsList
+      .filter((domain) => domain.tenant_id === application.tenant_id)
+      .map((domain) => removeNullProperties(domain));
+
     const client: PartialClient = {
       id: application.id,
       name: application.name,
       connections,
-      // TODO - not using domains yet
-      domains: [],
+      domains,
       tenant_id: application.tenant_id,
       allowed_callback_urls: splitUrls(application.allowed_callback_urls),
       allowed_logout_urls: splitUrls(application.allowed_logout_urls),
