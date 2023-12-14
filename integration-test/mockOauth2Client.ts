@@ -62,7 +62,6 @@ class MockOAuth2Client implements IOAuth2Client {
     }
     if (this.params.client_id === "socialClientId") {
       const clientIdToken = await createTokenExample({
-        // TODO - copy from Google id_token
         iss: "https://accounts.google.com",
         sub: "123456789012345678901",
         azp: "195867377305-j00komjaq7etk3ua9oab69klhlli4uk7.apps.googleusercontent.com",
@@ -90,7 +89,7 @@ class MockOAuth2Client implements IOAuth2Client {
       };
     }
     throw new Error("Unknown client_id");
-    // TODO - mock Apple id_token
+    // TODO - use mock Apple id_token for another social provider test
     /*
     {
       "iss": "https://appleid.apple.com",
