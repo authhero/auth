@@ -48,17 +48,21 @@ const DefaultSettingsSchema = z.object({
 
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;
 
-export function getDefaultSettings(env: Env) {
-  // NOW! how to do this without so many SQL calls?
-  // const defaultSettingsString = env.DEFAULT_SETTINGS;
-  const defaultSettingsString = "";
+export async function getDefaultSettings(env: Env) {
+  // is this correct? what does it pull in?
+  const defaultSetttingsClient = await env.data.clients.get("DEFAULT_CLIENT");
 
-  if (!defaultSettingsString) {
-    return {};
+  console.log(
+    "defaultSetttingsClient: " + JSON.stringify(defaultSetttingsClient),
+  );
+
+  if (!defaultSetttingsClient) {
+    throw new Error("Failed to load default settings tenant");
   }
 
   try {
-    return DefaultSettingsSchema.parse(JSON.parse(defaultSettingsString));
+    // maybe we don't need to parse this! Is typescript into typescript....
+    return DefaultSettingsSchema.parse(defaultSetttingsClient);
   } catch (err: any) {
     console.log("Failed to load default settings: " + err.message);
     throw err;
