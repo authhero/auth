@@ -85,7 +85,7 @@ describe("tenants", () => {
 
     expect(deleteTenantResponse.status).toBe(200);
 
-    // fetch list of tenants again - should be empty
+    // fetch list of tenants again - assert we are one down
     const tenantsResponse2 = await worker.fetch("/api/v2/tenants", {
       headers: {
         authorization: `Bearer ${token}`,
