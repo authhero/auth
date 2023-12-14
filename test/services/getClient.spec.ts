@@ -67,6 +67,20 @@ describe("getClient", () => {
       tenants: [TENANT_FIXTURE],
       connections: [
         {
+          id: "defaultConnection1",
+          tenant_id: "DEFAULT_SETTINGS",
+          name: "facebook",
+          client_id: "facebookClientId",
+          client_secret: "facebookClientSecret",
+          scope: "email public_profile openid",
+          authorization_endpoint: "https://www.facebook.com/dialog/oauth",
+          token_endpoint: "https://graph.facebook.com/oauth/access_token",
+          response_mode: AuthorizationResponseMode.QUERY,
+          response_type: AuthorizationResponseType.CODE,
+          created_at: "created_at",
+          updated_at: "updated_at",
+        },
+        {
           // only has minimal specified so we are getting the rest from default settings
           id: "connectionId",
           name: "facebook",
@@ -77,24 +91,6 @@ describe("getClient", () => {
       ],
       domains: [DOMAIN_FIXTURE],
     });
-
-    const envDefaultSettings: DefaultSettings = {
-      connections: [
-        {
-          name: "facebook",
-          client_id: "facebookClientId",
-          client_secret: "facebookClientSecret",
-          scope: "email public_profile openid",
-          authorization_endpoint: "https://www.facebook.com/dialog/oauth",
-          token_endpoint: "https://graph.facebook.com/oauth/access_token",
-          response_mode: AuthorizationResponseMode.QUERY,
-          response_type: AuthorizationResponseType.CODE,
-        },
-      ],
-    };
-
-    // TODO - put above connection in DEFAULT_TENANT in adapter
-    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
     const client = await getClient(ctx.env, "testClient");
     const facebookConnection = client!.connections.find(
