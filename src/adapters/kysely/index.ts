@@ -13,8 +13,11 @@ import { createApplicationsAdapter } from "./applications";
 import { createConnectionsAdapter } from "./connections";
 import { Kysely } from "kysely";
 import { createClientsAdapter } from "./clients";
+import { DataAdapters } from "../interfaces";
 
-export default function createAdapters(db: Kysely<Database>) {
+export default function createAdapters(
+  db: Kysely<Database>,
+): Partial<DataAdapters> {
   return {
     applications: createApplicationsAdapter(db),
     clients: createClientsAdapter(db),

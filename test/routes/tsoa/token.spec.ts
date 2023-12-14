@@ -8,11 +8,13 @@ import { CreateAccessTokenParams } from "../../../src/services/token-factory";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
-  Client,
   CodeChallengeMethod,
   PKCEAuthorizationCodeGrantTypeParams,
   RequestWithContext,
   ClientCredentialGrantTypeParams,
+  Tenant,
+  SqlConnection,
+  Application,
 } from "../../../src/types";
 import { GrantType } from "../../../src/types";
 import { contextFixture } from "../../fixtures/context";
@@ -28,37 +30,43 @@ describe("token", () => {
     jest.useRealTimers();
   });
 
-  const client: Client = {
+  const tenant: Tenant = {
+    id: "tenantId",
+    name: "tenantName",
+    audience: "audience",
+    sender_email: "senderEmail",
+    sender_name: "senderName",
+    support_url: "supportUrl",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+
+  const connection: SqlConnection = {
+    id: "connectionId",
+    name: "google-oauth2",
+    tenant_id: "tenantId",
+    client_id: "googleClientId",
+    client_secret: "googleClientSecret",
+    authorization_endpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+    token_endpoint: "https://oauth2.googleapis.com/token",
+    response_mode: AuthorizationResponseMode.QUERY,
+    response_type: AuthorizationResponseType.CODE,
+    scope: "openid email profile",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+
+  const application: Application = {
     id: "publisherClientId",
     name: "clientName",
-    client_secret: "clientSecret",
     tenant_id: "tenantId",
-    allowed_callback_urls: ["http://localhost:3000", "https://example.com"],
-    allowed_logout_urls: ["http://localhost:3000", "https://example.com"],
-    allowed_web_origins: ["http://localhost:3000", "https://example.com"],
+    allowed_callback_urls: "http://localhost:3000, https://example.com",
+    allowed_logout_urls: "http://localhost:3000, https://example.com",
+    allowed_web_origins: "http://localhost:3000, https://example.com",
     email_validation: "enabled",
-    tenant: {
-      audience: "audience",
-      sender_email: "senderEmail",
-      sender_name: "senderName",
-      support_url: "supportUrl",
-    },
-    connections: [
-      {
-        id: "connectionId",
-        name: "google-oauth2",
-        client_id: "googleClientId",
-        client_secret: "googleClientSecret",
-        authorization_endpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-        token_endpoint: "https://oauth2.googleapis.com/token",
-        response_mode: AuthorizationResponseMode.QUERY,
-        response_type: AuthorizationResponseType.CODE,
-        scope: "openid email profile",
-        created_at: "created_at",
-        updated_at: "updated_at",
-      },
-    ],
-    domains: [],
+    client_secret: "clientSecret",
+    created_at: "created_at",
+    updated_at: "updated_at",
   };
 
   describe("code grant with PKCE", () => {
@@ -84,7 +92,9 @@ describe("token", () => {
       };
 
       const ctx = contextFixture({
-        clients: [client],
+        applications: [application],
+        tenants: [tenant],
+        connections: [connection],
       });
 
       const controller = new TokenRoutes();
@@ -129,7 +139,9 @@ describe("token", () => {
 
     it("should throw if the code_verfier does not match the hash of the challenge", async () => {
       const ctx = contextFixture({
-        clients: [client],
+        applications: [application],
+        tenants: [tenant],
+        connections: [connection],
       });
 
       const controller = new TokenRoutes();
@@ -167,7 +179,9 @@ describe("token", () => {
 
     it("should use the userId from the state to set the silent auth cookie", async () => {
       const ctx = contextFixture({
-        clients: [client],
+        applications: [application],
+        tenants: [tenant],
+        connections: [connection],
       });
 
       const controller = new TokenRoutes();
@@ -216,12 +230,14 @@ describe("token", () => {
 
     it("should throw an error if the vendorId in the state does not match the vendorId of the client", async () => {
       const ctx = contextFixture({
-        clients: [
+        applications: [
           {
-            ...client,
+            ...application,
             tenant_id: "vendorId1",
           },
         ],
+        tenants: [tenant],
+        connections: [connection],
       });
 
       const controller = new TokenRoutes();

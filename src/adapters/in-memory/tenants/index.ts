@@ -6,9 +6,7 @@ import { getTenant } from "./get";
 import { updateTenant } from "./update";
 import { removeTenant } from "./remove";
 
-export function createTenantsAdapter(): TenantsDataAdapter {
-  const tenants: Tenant[] = [];
-
+export function createTenantsAdapter(tenants: Tenant[]): TenantsDataAdapter {
   return {
     create: createTenant(tenants),
     get: getTenant(tenants),

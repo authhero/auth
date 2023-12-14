@@ -24,8 +24,8 @@ describe("tenants", () => {
     });
     expect(tenantsResponse1.status).toBe(200);
     const body1 = (await tenantsResponse1.json()) as Tenant[];
-    // check we have no tenants
-    expect(body1.length).toEqual(0);
+    // check we have only initially seeded tenants
+    expect(body1.length).toEqual(2);
 
     // now create the tenant
     const createTenantResponse = await worker.fetch("/api/v2/tenants", {
@@ -55,8 +55,8 @@ describe("tenants", () => {
     });
     expect(tenantsResponse2.status).toBe(200);
     const body2 = (await tenantsResponse2.json()) as Tenant[];
-    expect(body2.length).toEqual(1);
-    expect(body2[0].id).toEqual(createdTenant.id);
+    expect(body2.length).toEqual(3);
+    expect(body2[2].id).toEqual(createdTenant.id);
   });
 
   it("should remove a tenant", async () => {
@@ -72,7 +72,7 @@ describe("tenants", () => {
     // two tenants in initial setup
     expect(tenantsResponse1.status).toBe(200);
     const body1 = (await tenantsResponse1.json()) as Tenant[];
-    expect(body1.length).toEqual(2);
+    expect(body1.length).toEqual(4);
 
     // remove 'otherTenant'
     const otherTenant = body1.find((t) => t.name === "otherTenant");
@@ -97,6 +97,6 @@ describe("tenants", () => {
     });
     expect(tenantsResponse2.status).toBe(200);
     const body2 = (await tenantsResponse2.json()) as Tenant[];
-    expect(body2.length).toEqual(1);
+    expect(body2.length).toEqual(3);
   });
 });
