@@ -195,12 +195,7 @@ const server = {
       data,
     };
 
-    return app.fetch(
-      request,
-      // Add dependencies to the environment
-      finalEnv,
-      ctx,
-    );
+    return app.fetch(request, finalEnv, ctx);
   },
 };
 
