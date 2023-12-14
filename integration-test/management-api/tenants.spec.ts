@@ -2,7 +2,6 @@ import { Tenant } from "../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
-import { setup } from "../helpers/setup";
 
 describe("tenants", () => {
   let worker: UnstableDevWorker;
@@ -60,8 +59,6 @@ describe("tenants", () => {
   });
 
   it("should remove a tenant", async () => {
-    await setup(worker);
-
     const token = await getAdminToken();
     const tenantsResponse1 = await worker.fetch("/api/v2/tenants", {
       headers: {

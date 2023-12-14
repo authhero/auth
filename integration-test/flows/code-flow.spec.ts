@@ -1,4 +1,3 @@
-import { setup } from "../helpers/setup";
 import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 import type { UnstableDevWorker } from "wrangler";
@@ -19,8 +18,6 @@ describe("code-flow", () => {
   });
 
   it("should run a passwordless flow with code", async () => {
-    await setup(worker);
-
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/sv/callback";
     const response_type = "token id_token";
@@ -194,7 +191,6 @@ describe("code-flow", () => {
     });
   });
   it("should return existing primary account when logging in with new code sign on with same email address", async () => {
-    await setup(worker);
     const token = await getAdminToken();
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";

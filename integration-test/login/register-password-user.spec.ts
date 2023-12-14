@@ -1,4 +1,4 @@
-import { setup } from "../helpers/setup";
+import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 
@@ -9,7 +9,7 @@ describe("Register password user", () => {
   beforeEach(async () => {
     worker = await start();
 
-    token = await setup(worker);
+    token = await getAdminToken();
   });
 
   afterEach(() => {

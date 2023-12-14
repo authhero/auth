@@ -1,5 +1,4 @@
 import { parseJwt } from "../../src/utils/parse-jwt";
-import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
@@ -17,8 +16,6 @@ describe("password-flow", () => {
 
   describe("Register password", () => {
     it("should return a 400 if an invalid client is passed", async () => {
-      await setup(worker);
-
       const response = await worker.fetch(
         "/invalidClientId/dbconnection/register",
         {
@@ -37,8 +34,6 @@ describe("password-flow", () => {
     });
 
     it("should create a new user with a password and login", async () => {
-      await setup(worker);
-
       const password = "password";
 
       const createUserResponse = await worker.fetch(

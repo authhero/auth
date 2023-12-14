@@ -2,7 +2,6 @@ import { UserResponse } from "../../src/types/auth0";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
-import { setup } from "../helpers/setup";
 import { Identity } from "../../src/types/auth0/Identity";
 
 describe("users by email", () => {

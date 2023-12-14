@@ -1,4 +1,3 @@
-import { setup } from "../helpers/setup";
 import { start } from "../start";
 import { parseJwt } from "../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
@@ -66,8 +65,6 @@ describe("social sign on", () => {
     */
 
     it("should create correct args for social sign on from hitting /authorize with connection", async () => {
-      await setup(worker);
-
       // TODO - can reuse here the same helper args above... dedupe these tests a bit as they're long
       const socialSignOnQuery = new URLSearchParams({
         client_id: "clientId",
@@ -107,8 +104,6 @@ describe("social sign on", () => {
     describe("Create a new user from a social callback", () => {
       // like most of the providers
       it("should receive params in the querystring when a GET", async () => {
-        await setup(worker);
-
         const socialCallbackQuery = new URLSearchParams({
           state: SOCIAL_STATE_PARAM,
           code: "code",
@@ -179,8 +174,6 @@ describe("social sign on", () => {
 
       // like apple
       it("should receive params in the body when a POST", async () => {
-        await setup(worker);
-
         const token = await getAdminToken();
 
         // check this user isn't already created from the previous test
@@ -270,7 +263,6 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // create new user with same email as we have hardcoded on the mock id_token responses
       // ---------------------------------------------
-      await setup(worker);
 
       const token = await getAdminToken();
 

@@ -1,5 +1,4 @@
 import { parseJwt } from "../../src/utils/parse-jwt";
-import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 import type { Email } from "../../src/types/Email";
@@ -16,8 +15,6 @@ describe("code-flow", () => {
   });
 
   it("should run a passwordless flow with code", async () => {
-    await setup(worker);
-
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/sv/callback";
     const response_type = "token id_token";
