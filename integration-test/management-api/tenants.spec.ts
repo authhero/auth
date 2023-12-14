@@ -71,8 +71,6 @@ describe("tenants", () => {
     // base tenant + two tenants in test-server
     expect(body1.length).toEqual(3);
 
-    // remove 'otherTenant'
-
     const deleteTenantResponse = await worker.fetch(
       `/api/v2/tenants/otherTenant`,
       {
