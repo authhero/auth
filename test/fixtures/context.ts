@@ -45,7 +45,7 @@ export interface ContextFixtureParams {
   applications?: Application[];
   tenants?: Tenant[];
   connections?: SqlConnection[];
-  domains: SqlDomain[];
+  domains?: SqlDomain[];
 }
 
 export function contextFixture(
