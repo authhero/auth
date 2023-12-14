@@ -138,8 +138,7 @@ describe("getClient", () => {
     ]);
   });
 
-  // implement domains! need data adapters and default fixtures
-  it.only("should add a domain from the envDefaultSettings to the client domains", async () => {
+  it("should add a domain from the envDefaultSettings to the client domains", async () => {
     const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],

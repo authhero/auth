@@ -42,7 +42,6 @@ export function getClient(
       .filter((connection) => connection.tenant_id === application.tenant_id)
       .map((connection) => removeNullProperties(connection));
 
-    // TODO - need to pull domain here!
     const domains = domainsList
       .filter((domain) => domain.tenant_id === application.tenant_id)
       .map((domain) => removeNullProperties(domain));
