@@ -8,45 +8,60 @@ import {
   SqlConnection,
   AuthorizationResponseMode,
   AuthorizationResponseType,
-  PartialClient,
 } from "../src/types";
 import { mockOAuth2ClientFactory } from "./mockOauth2Client";
-import { DefaultSettings } from "../src/models/DefaultSettings";
 
 const data = createAdapter();
 // Add a known certificate
 data.certificates.upsertCertificates([getCertificate()]);
 
-const MOCK_DEFAULT_SETTINGS: DefaultSettings = {
-  connections: [
-    {
-      name: "demo-social-provider",
-      client_id: "socialClientId",
-      client_secret: "socialClientSecret",
-      authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
-      token_endpoint: "https://example.com/token",
-      response_mode: AuthorizationResponseMode.QUERY,
-      response_type: AuthorizationResponseType.CODE,
-      scope: "openid profile email",
-    },
-    {
-      name: "other-social-provider",
-      client_id: "otherSocialClientId",
-      client_secret: "otherSocialClientSecret",
-      authorization_endpoint: "https://example.com/other/o/oauth2/v2/auth",
-      token_endpoint: "https://example.com/other/token",
-      response_mode: AuthorizationResponseMode.QUERY,
-      response_type: AuthorizationResponseType.CODE,
-      scope: "openid profile email",
-    },
-  ],
-  allowed_callback_urls: ["https://login.example.com/sv/callback"],
-  tenant: {
-    // what's the point of a tenant fallback if these keys are required in the partialClient?
-    sender_email: "login@example.com",
-    sender_name: "SenderName",
-  },
-};
+// Create Default Settings----------------------------------------
+data.tenants.create({
+  id: "DEFAULT_SETTINGS",
+  name: "Default Settings",
+  sender_email: "login@example.com",
+  sender_name: "SenderName",
+  audience: "https://sesamy.com",
+});
+data.applications.create("DEFAULT_SETTINGS", {
+  id: "DEFAULT_CLIENT",
+  name: "Default Client",
+  allowed_web_origins: "https://sesamy.com",
+  allowed_callback_urls: "https://login.example.com/sv/callback",
+  allowed_logout_urls: "https://sesamy.com",
+  email_validation: "enabled",
+  client_secret: "secret",
+});
+data.connections.create("DEFAULT_SETTINGS", {
+  id: "DEFAULT_CONNECTION",
+  tenant_id: "DEFAULT_SETTINGS",
+  name: "demo-social-provider",
+  client_id: "socialClientId",
+  client_secret: "socialClientSecret",
+  authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
+  token_endpoint: "https://example.com/token",
+  response_mode: AuthorizationResponseMode.QUERY,
+  response_type: AuthorizationResponseType.CODE,
+  scope: "openid profile email",
+  created_at: "created_at",
+  updated_at: "updated_at",
+});
+data.connections.create("DEFAULT_SETTINGS", {
+  id: "DEFAULT_CONNECTION2",
+  tenant_id: "DEFAULT_SETTINGS",
+  name: "other-social-provider",
+  client_id: "otherSocialClientId",
+  client_secret: "otherSocialClientSecret",
+  authorization_endpoint: "https://example.com/other/o/oauth2/v2/auth",
+  token_endpoint: "https://example.com/other/token",
+  response_mode: AuthorizationResponseMode.QUERY,
+  response_type: AuthorizationResponseType.CODE,
+  scope: "openid profile email",
+  created_at: "created_at",
+  updated_at: "updated_at",
+});
+
+// Create fixtures----------------------------------------
 
 const testTenant: Tenant = {
   id: "tenantId",
@@ -172,17 +187,18 @@ const server = {
       });
     }
 
+    const finalEnv: Env = {
+      ...env,
+      oauth2ClientFactory: mockOAuth2ClientFactory,
+      JWKS_URL: "https://example.com/.well-known/jwks.json",
+      ISSUER: "https://example.com/",
+      data,
+    };
+
     return app.fetch(
       request,
       // Add dependencies to the environment
-      {
-        ...env,
-        oauth2ClientFactory: mockOAuth2ClientFactory,
-        JWKS_URL: "https://example.com/.well-known/jwks.json",
-        ISSUER: "https://example.com/",
-        data,
-        DEFAULT_SETTINGS: JSON.stringify(MOCK_DEFAULT_SETTINGS),
-      },
+      finalEnv,
       ctx,
     );
   },
