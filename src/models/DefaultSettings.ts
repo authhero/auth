@@ -49,12 +49,8 @@ const DefaultSettingsSchema = z.object({
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;
 
 export async function getDefaultSettings(env: Env) {
-  // is this correct? what does it pull in?
+  // is this correct? what does it pull in? all the connections?
   const defaultSetttingsClient = await env.data.clients.get("DEFAULT_CLIENT");
-
-  console.log(
-    "defaultSetttingsClient: " + JSON.stringify(defaultSetttingsClient),
-  );
 
   if (!defaultSetttingsClient) {
     throw new Error("Failed to load default settings tenant");
