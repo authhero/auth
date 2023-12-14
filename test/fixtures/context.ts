@@ -20,12 +20,11 @@ import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
 import { Session } from "../../src/types/Session";
-// name all these SCREAMING_SNAKE
 import {
-  application,
-  tenant,
-  connections as connectionsFixture,
-  domains as domainsFixture,
+  APPLICATION_FIXTURE,
+  TENANT_FIXTURE,
+  CONNECTIONS_FIXTURE,
+  DOMAINS_FIXTURE,
 } from "./client";
 
 export interface ContextFixtureParams {
@@ -120,11 +119,11 @@ export function contextFixture(
   const seedingClient = !!applications || !!tenants || !!connections;
 
   if (!seedingClient) {
-    data.tenants.create(tenant);
-    data.applications.create(tenant.id, application);
-    data.connections.create(tenant.id, connectionsFixture[0]);
-    data.connections.create(tenant.id, connectionsFixture[1]);
-    data.domains.create(tenant.id, domainsFixture[0]);
+    data.tenants.create(TENANT_FIXTURE);
+    data.applications.create(TENANT_FIXTURE.id, APPLICATION_FIXTURE);
+    data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[0]);
+    data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[1]);
+    data.domains.create(TENANT_FIXTURE.id, DOMAINS_FIXTURE[0]);
   } else {
     if (applications) {
       applications.forEach((application) => {

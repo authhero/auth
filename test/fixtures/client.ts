@@ -7,7 +7,7 @@ import {
   SqlDomain,
 } from "../../src/types";
 
-export const application: Application = {
+export const APPLICATION_FIXTURE: Application = {
   id: "clientId",
   name: "clientName",
   tenant_id: "tenantId",
@@ -20,7 +20,7 @@ export const application: Application = {
   updated_at: "updated_at",
 };
 
-export const tenant: Tenant = {
+export const TENANT_FIXTURE: Tenant = {
   id: "tenantId",
   name: "tenantName",
   audience: "audience",
@@ -30,7 +30,7 @@ export const tenant: Tenant = {
   updated_at: "updated_at",
 };
 
-export const connections: SqlConnection[] = [
+export const CONNECTIONS_FIXTURE: SqlConnection[] = [
   {
     id: "connectionId1",
     name: "google-oauth2",
@@ -61,7 +61,7 @@ export const connections: SqlConnection[] = [
   },
 ];
 
-export const domains: SqlDomain[] = [
+export const DOMAINS_FIXTURE: SqlDomain[] = [
   {
     id: "domainId",
     domain: "example2.com",
