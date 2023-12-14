@@ -50,13 +50,13 @@ const CONNECTION_FIXTURE: SqlConnection = {
 };
 
 describe("getClient", () => {
-  it("should fallback the connections to the envDefaultSettings", async () => {
+  it("should get the connection settings from the DefaultSettings", async () => {
     const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [
         {
-          // only has minimal specified
+          // only has minimal specified so we are getting the rest from default settings
           id: "connectionId",
           name: "facebook",
           tenant_id: "tenantId",
@@ -89,6 +89,9 @@ describe("getClient", () => {
     );
 
     expect(facebookConnection?.client_id).toBe("facebookClientId");
+    expect(facebookConnection?.authorization_endpoint).toBe(
+      "https://www.facebook.com/dialog/oauth",
+    );
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
@@ -182,36 +185,6 @@ describe("getClient", () => {
     ]);
   });
 
-  it("should use the connection settings from the defaultSettings and the clientId from envDefaultSettings", async () => {
-    const ctx = contextFixture({
-      applications: [APPLICATION_FIXTURE],
-      tenants: [TENANT_FIXTURE],
-      connections: [CONNECTION_FIXTURE],
-    });
-
-    const envDefaultSettings: DefaultSettings = {
-      connections: [
-        {
-          name: "facebook",
-          client_id: "facebookClientId",
-          client_secret: "facebookClientSecret",
-        },
-      ],
-    };
-
-    ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
-
-    const client = await getClient(ctx.env, "testClient");
-    const facebookConnection = client!.connections.find(
-      (c) => c.name === "facebook",
-    );
-
-    expect(facebookConnection?.client_id).toBe("facebookClientId");
-    expect(facebookConnection?.authorization_endpoint).toBe(
-      "https://www.facebook.com/dialog/oauth",
-    );
-  });
-
   it("should store the support url from the tenant in the client", async () => {
     const testClient: PartialClient = {
       id: "testClient",
@@ -233,7 +206,12 @@ describe("getClient", () => {
 
     const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
-      tenants: [TENANT_FIXTURE],
+      tenants: [
+        {
+          ...TENANT_FIXTURE,
+          support_url: "https://example.foo/bar",
+        },
+      ],
       connections: [CONNECTION_FIXTURE],
     });
 
@@ -245,6 +223,6 @@ describe("getClient", () => {
 
     const client = await getClient(ctx.env, "testClient");
 
-    expect(client!.tenant.support_url).toBe("https://example.com/support");
+    expect(client!.tenant.support_url).toBe("https://example.foo/bar");
   });
 });
