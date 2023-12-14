@@ -4,6 +4,7 @@ import {
   Application,
   Tenant,
   SqlConnection,
+  SqlDomain,
 } from "../../src/types";
 
 export const application: Application = {
@@ -57,5 +58,17 @@ export const connections: SqlConnection[] = [
     created_at: "created_at",
     updated_at: "updated_at",
     tenant_id: "tenantId",
+  },
+];
+
+export const domains: SqlDomain[] = [
+  {
+    id: "domainId",
+    domain: "example2.com",
+    api_key: "apiKey",
+    email_service: "mailgun",
+    tenant_id: "tenantId",
+    created_at: "created_at",
+    updated_at: "updated_at",
   },
 ];
