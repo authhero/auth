@@ -41,10 +41,12 @@ class MockOAuth2Client implements IOAuth2Client {
         aud: "250848680337272",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe",
-        given_name: "John",
-        family_name: "Doe",
+        // set another swedish name here
+        name: "Örjan Lindström",
+        given_name: "Örjan",
+        family_name: "Lindström",
         at_hash: "atHash",
+        // can we put non-ascii characters here? I don't think so
         email: "john.doe@example.com",
         picture:
           "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
@@ -72,9 +74,9 @@ class MockOAuth2Client implements IOAuth2Client {
         locale: "es-ES",
         exp: 1616470948,
         iat: 1616467348,
-        name: "John Doe",
-        given_name: "John",
-        family_name: "Doe",
+        name: "Örjan Lindström",
+        given_name: "Örjan",
+        family_name: "Lindström",
         email: "john.doe@example.com",
         picture:
           "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
