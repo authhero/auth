@@ -582,4 +582,41 @@ describe("social sign on", () => {
       ]);
     });
   });
+
+  describe("Security", () => {
+    it("should not create a new user if callback from non-existing social provider", async () => {
+      const socialCallbackQuery = new URLSearchParams({
+        // this is the only difference from the other tests
+        state: btoa(
+          JSON.stringify({
+            authParams: {
+              redirect_uri: "https://login2.sesamy.dev/callback",
+              scope: "openid profile email",
+              state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+              client_id: "clientId",
+              nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+              response_type: "token id_token",
+            },
+            connection: "non-existing-social-provider",
+          }),
+        ).replace("==", ""),
+        code: "code",
+      });
+
+      const socialCallbackResponse = await worker.fetch(
+        `/callback?${socialCallbackQuery.toString()}`,
+        {
+          redirect: "manual",
+        },
+      );
+
+      expect(socialCallbackResponse.status).toBe(403);
+      expect(await socialCallbackResponse.text()).toBe("Connection not found");
+    });
+
+    // TO TEST
+    // - same but for POST
+    // - bad params passed to us? e.g. bad redirect-uri, bad client_id?
+    // - should not create a new social user IF WE DID NOT FIRST CALL THEM? e.g. check the nonce?
+  });
 });
