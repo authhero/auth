@@ -66,16 +66,16 @@ describe("tenants", () => {
       },
     });
 
-    // two tenants in initial setup
+    // initial setup
     expect(tenantsResponse1.status).toBe(200);
     const body1 = (await tenantsResponse1.json()) as Tenant[];
-    expect(body1.length).toEqual(5);
+    // base tenant + two tenatns in test-server
+    expect(body1.length).toEqual(3);
 
     // remove 'otherTenant'
-    const otherTenant = body1.find((t) => t.name === "otherTenant");
 
     const deleteTenantResponse = await worker.fetch(
-      `/api/v2/tenants/${otherTenant!.id}`,
+      `/api/v2/tenants/otherTenant`,
       {
         method: "DELETE",
         headers: {
@@ -94,6 +94,6 @@ describe("tenants", () => {
     });
     expect(tenantsResponse2.status).toBe(200);
     const body2 = (await tenantsResponse2.json()) as Tenant[];
-    expect(body2.length).toEqual(4);
+    expect(body2.length).toEqual(2);
   });
 });
