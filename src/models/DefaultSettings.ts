@@ -49,7 +49,6 @@ const DefaultSettingsSchema = z.object({
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;
 
 export async function getDefaultSettings(env: Env) {
-  // is this correct? what does it pull in? all the connections?
   const defaultSetttingsClient = await env.data.clients.get("DEFAULT_CLIENT");
 
   if (!defaultSetttingsClient) {
@@ -57,7 +56,6 @@ export async function getDefaultSettings(env: Env) {
   }
 
   try {
-    // maybe we don't need to parse this! Is typescript into typescript....
     return DefaultSettingsSchema.parse(defaultSetttingsClient);
   } catch (err: any) {
     console.log("Failed to load default settings: " + err.message);

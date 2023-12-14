@@ -54,7 +54,6 @@ export async function getClient(
   };
 
   const client = PartialClientSchema.parse(clientPatchedObj);
-  // These default settings are fetched from the env variables
   const envDefaultSettings = await getDefaultSettings(env);
 
   const connections = client.connections
