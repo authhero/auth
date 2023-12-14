@@ -49,7 +49,9 @@ const DefaultSettingsSchema = z.object({
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;
 
 export function getDefaultSettings(env: Env) {
-  const defaultSettingsString = env.DEFAULT_SETTINGS;
+  // NOW! how to do this without so many SQL calls?
+  // const defaultSettingsString = env.DEFAULT_SETTINGS;
+  const defaultSettingsString = "";
 
   if (!defaultSettingsString) {
     return {};

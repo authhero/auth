@@ -93,7 +93,8 @@ describe("getClient", () => {
       ],
     };
 
-    ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
+    // TODO - put above connection in DEFAULT_TENANT in adapter
+    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
     const client = await getClient(ctx.env, "testClient");
     const facebookConnection = client!.connections.find(
@@ -125,7 +126,8 @@ describe("getClient", () => {
       ],
     };
 
-    ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
+    // TODO - put above default domain in DEFAULT_TENANT in adapter
+    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
 
     const client = await getClient(ctx.env, "testClient");
 
@@ -162,7 +164,8 @@ describe("getClient", () => {
       ],
     };
 
-    ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
+    // TODO - put above default domain in DEFAULT_TENANT in adapter
+    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(defaultSettings);
 
     const client = await getClient(ctx.env, "testClient");
 
@@ -197,7 +200,8 @@ describe("getClient", () => {
       connections: [],
     };
 
-    ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
+    // TODO - put above connection in DEFAULT_TENANT in adapter
+    // ctx.env.DEFAULT_SETTINGS = JSON.stringify(envDefaultSettings);
 
     const client = await getClient(ctx.env, "testClient");
 
