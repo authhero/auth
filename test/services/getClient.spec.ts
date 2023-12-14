@@ -8,6 +8,7 @@ import {
   Application,
   Tenant,
   SqlConnection,
+  SqlDomain,
 } from "../../src/types";
 
 const TENANT_FIXTURE: Tenant = {
@@ -47,6 +48,15 @@ const CONNECTION_FIXTURE: SqlConnection = {
   created_at: "created_at",
   updated_at: "updated_at",
   tenant_id: "tenantId",
+};
+
+const DOMAIN_FIXTURE: SqlDomain = {
+  domain: "example2.com",
+  api_key: "apiKey",
+  email_service: "mailgun",
+  tenant_id: "tenantId",
+  created_at: "created_at",
+  updated_at: "updated_at",
 };
 
 describe("getClient", () => {
@@ -99,6 +109,7 @@ describe("getClient", () => {
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const defaultSettings: DefaultSettings = {
@@ -126,34 +137,12 @@ describe("getClient", () => {
   });
 
   // implement domains! need data adapters and default fixtures
-  it.skip("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const partialClient: PartialClient = {
-      id: "testClient",
-      name: "clientName",
-      client_secret: "clientSecret",
-      tenant_id: "tenantId",
-      allowed_callback_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_logout_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_web_origins: ["http://localhost:3000", "https://example.com"],
-      email_validation: "enabled",
-      tenant: {
-        sender_email: "senderEmail",
-        sender_name: "senderName",
-        audience: "audience",
-        support_url: "supportUrl",
-      },
-      connections: [],
-      domains: [
-        {
-          domain: "example2.com",
-          api_key: "apiKey",
-          email_service: "mailgun",
-        },
-      ],
-    };
-
+  it.only("should add a domain from the envDefaultSettings to the client domains", async () => {
     const ctx = contextFixture({
-      // clients: [partialClient]
+      applications: [APPLICATION_FIXTURE],
+      tenants: [TENANT_FIXTURE],
+      connections: [CONNECTION_FIXTURE],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const defaultSettings: DefaultSettings = {
@@ -186,24 +175,6 @@ describe("getClient", () => {
   });
 
   it("should store the support url from the tenant in the client", async () => {
-    const testClient: PartialClient = {
-      id: "testClient",
-      name: "clientName",
-      client_secret: "clientSecret",
-      tenant_id: "tenantId",
-      allowed_callback_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_logout_urls: ["http://localhost:3000", "https://example.com"],
-      allowed_web_origins: ["http://localhost:3000", "https://example.com"],
-      email_validation: "enabled",
-      tenant: {
-        sender_email: "senderEmail",
-        sender_name: "senderName",
-        support_url: "https://example.com/support",
-      },
-      connections: [],
-      domains: [],
-    };
-
     const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [
@@ -213,6 +184,7 @@ describe("getClient", () => {
         },
       ],
       connections: [CONNECTION_FIXTURE],
+      domains: [DOMAIN_FIXTURE],
     });
 
     const envDefaultSettings: DefaultSettings = {
