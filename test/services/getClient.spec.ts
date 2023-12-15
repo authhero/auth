@@ -126,7 +126,7 @@ describe("getClient", () => {
 
     expect(client!.domains).toEqual([
       {
-        api_key: "apiKey",
+        email_api_key: "apiKey",
         domain: "example2.com",
         email_service: "mailgun",
       },
@@ -162,7 +162,7 @@ describe("getClient", () => {
     expect(client!.domains).toEqual([
       {
         domain: "example2.com",
-        api_key: "apiKey",
+        email_api_key: "apiKey",
         email_service: "mailgun",
       },
       {
