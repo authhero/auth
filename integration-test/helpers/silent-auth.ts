@@ -2,8 +2,6 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 
 import type { UnstableDevWorker } from "wrangler";
 
-// this util also asserts... would be good to have it as two utils. One to do the silent auth request
-// the other to parse the body
 export async function doSilentAuthRequestAndReturnTokens(
   setCookiesHeader: string,
   worker: UnstableDevWorker,
@@ -28,7 +26,6 @@ export async function doSilentAuthRequestAndReturnTokens(
     `/authorize?${silentAuthSearchParams.toString()}`,
     {
       headers: {
-        // here we set the auth cookie given to us from the previous successful auth request
         cookie: authCookie,
       },
     },
@@ -59,7 +56,6 @@ export async function doSilentAuthRequestAndReturnTokens(
 
   const silentAuthTokenPayload = parseJwt(silentAuthToken);
 
-  // these aren't typed! coming out as anys...
   return {
     accessToken: silentAuthTokenPayload,
     idToken: silentAuthIdTokenPayload,

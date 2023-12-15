@@ -40,7 +40,6 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
-  // TODO - more complex but use the same helper
   it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
     const loginResponse = await worker.fetch("/co/authenticate", {
       headers: {
