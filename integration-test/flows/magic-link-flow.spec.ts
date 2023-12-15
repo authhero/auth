@@ -114,4 +114,7 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
+  // TO TEST
+  // - that can reuse same magic link again
+  // - that a "bad" magic link doesn't work?  Not sure how much time we want to spend on validating access protection... probably a bit for security holes
 });
