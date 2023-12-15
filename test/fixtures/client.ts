@@ -65,7 +65,7 @@ export const DOMAINS_FIXTURE: SqlDomain[] = [
   {
     id: "domainId",
     domain: "example2.com",
-    api_key: "apiKey",
+    email_api_key: "apiKey",
     email_service: "mailgun",
     tenant_id: "tenantId",
     created_at: "created_at",

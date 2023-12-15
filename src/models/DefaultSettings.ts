@@ -31,7 +31,7 @@ const DefaultSettingsSchema = z.object({
         email_service: z
           .union([z.literal("mailchannels"), z.literal("mailgun")])
           .optional(),
-        api_key: z.string().optional(),
+        email_api_key: z.string().optional(),
       }),
     )
     .optional(),

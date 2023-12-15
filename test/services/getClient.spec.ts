@@ -53,7 +53,7 @@ const CONNECTION_FIXTURE: SqlConnection = {
 const DOMAIN_FIXTURE: SqlDomain = {
   id: "domainId",
   domain: "example2.com",
-  api_key: "apiKey",
+  email_api_key: "apiKey",
   email_service: "mailgun",
   tenant_id: "tenantId",
   created_at: "created_at",
@@ -126,7 +126,7 @@ describe("getClient", () => {
 
     expect(client!.domains).toEqual([
       {
-        api_key: "apiKey",
+        email_api_key: "apiKey",
         domain: "example2.com",
         email_service: "mailgun",
       },
@@ -162,7 +162,7 @@ describe("getClient", () => {
     expect(client!.domains).toEqual([
       {
         domain: "example2.com",
-        api_key: "apiKey",
+        email_api_key: "apiKey",
         email_service: "mailgun",
       },
       {

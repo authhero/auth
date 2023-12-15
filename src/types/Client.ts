@@ -8,7 +8,7 @@ export const ClientDomainSchema = z.object({
   domain: z.string(),
   dkim_private_key: z.string().optional(),
   dkim_public_key: z.string().optional(),
-  api_key: z.string().optional(),
+  email_api_key: z.string().optional(),
   email_service: z
     .union([z.literal("mailgun"), z.literal("mailchannels")])
     .optional(),
