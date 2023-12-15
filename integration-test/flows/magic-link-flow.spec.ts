@@ -50,29 +50,14 @@ describe("code-flow", () => {
     const [sentEmail] = (await emailResponse.json()) as Email[];
     expect(sentEmail.to).toBe("test@example.com");
 
-    console.log("what is the magic link here? ", sentEmail.magicLink);
+    const link = sentEmail.magicLink;
 
-    const otp = sentEmail.code;
+    const authenticatePath = link?.split("https://example.com")[1];
 
-    const verifyRedirectQuery = new URLSearchParams({
-      client_id: "clientId",
-      connection: "email",
-      nonce,
-      response_type,
-      scope,
-      state,
-      redirect_uri,
-      email: "test@example.com",
-      verification_code: otp,
+    // Authenticate using the magic link
+    const authenticateResponse = await worker.fetch(authenticatePath, {
+      redirect: "manual",
     });
-
-    // Authenticate using the code
-    const authenticateResponse = await worker.fetch(
-      `/passwordless/verify_redirect?${verifyRedirectQuery.toString()}`,
-      {
-        redirect: "manual",
-      },
-    );
 
     if (authenticateResponse.status !== 302) {
       const errorMessage = `Failed to verify redirect with status: ${
