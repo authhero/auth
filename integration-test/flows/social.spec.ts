@@ -155,7 +155,30 @@ describe("social sign on", () => {
 
         const token = await getAdminToken();
 
+        // ---------------------------------------------
+        // now do a silent auth check to make sure we are logged in properly
+        // ---------------------------------------------
+
+        const setCookiesHeader =
+          socialCallbackResponse.headers.get("set-cookie")!;
+        const {
+          accessToken: silentAuthAccessTokenPayload,
+          idToken: silentAuthIdTokenPayload,
+        } = await doSilentAuthRequestAndReturnTokens(
+          setCookiesHeader,
+          worker,
+          "nonce",
+          "clientId",
+        );
+        expect(silentAuthIdTokenPayload).toMatchObject({
+          sub: "demo-social-provider|123456789012345678901",
+          aud: "clientId",
+          name: "john.doe@example.com",
+        });
+
+        // ---------------------------------------------
         // now check that the user was created was properly in the data providers
+        // ---------------------------------------------
         const newSocialUserRes = await worker.fetch(
           `/api/v2/users/demo-social-provider|123456789012345678901`,
           {
