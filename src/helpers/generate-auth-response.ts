@@ -6,8 +6,6 @@ import { stateEncode } from "../utils/stateEncode";
 
 export interface GenerateAuthResponseParamsBase {
   env: Env;
-  // I think this function should JUST take a user object.
-  // By allowing a userId as well, there's been one bug that would have been caught
   userId: string;
   sid: string;
   state?: string;
