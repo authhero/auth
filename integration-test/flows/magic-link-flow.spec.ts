@@ -15,7 +15,7 @@ describe("code-flow", () => {
     worker.stop();
   });
 
-  it("should run a passwordless flow with code", async () => {
+  it("should log in using the sent magic link", async () => {
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/sv/callback";
     const response_type = "token id_token";
@@ -50,6 +50,8 @@ describe("code-flow", () => {
     const [sentEmail] = (await emailResponse.json()) as Email[];
     expect(sentEmail.to).toBe("test@example.com");
 
+    console.log("what is the magic link here? ", sentEmail.magicLink);
+
     const otp = sentEmail.code;
 
     const verifyRedirectQuery = new URLSearchParams({
@@ -65,21 +67,21 @@ describe("code-flow", () => {
     });
 
     // Authenticate using the code
-    const autenticateResponse = await worker.fetch(
+    const authenticateResponse = await worker.fetch(
       `/passwordless/verify_redirect?${verifyRedirectQuery.toString()}`,
       {
         redirect: "manual",
       },
     );
 
-    if (autenticateResponse.status !== 302) {
+    if (authenticateResponse.status !== 302) {
       const errorMessage = `Failed to verify redirect with status: ${
-        autenticateResponse.status
+        authenticateResponse.status
       } and message: ${await response.text()}`;
       throw new Error(errorMessage);
     }
 
-    const redirectUri = new URL(autenticateResponse.headers.get("location")!);
+    const redirectUri = new URL(authenticateResponse.headers.get("location")!);
     expect(redirectUri.hostname).toBe("login.example.com");
 
     const accessToken = redirectUri.searchParams.get("access_token");
@@ -94,9 +96,9 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
-    const authCookieHeader = autenticateResponse.headers.get("set-cookie")!;
+    const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
-    // now check silent auth works when logged in with code----------------------------------------
+    // now check silent auth works when logged in with magic link----------------------------------------
     const {
       accessToken: silentAuthAccessTokenPayload,
       idToken: silentAuthIdTokenPayload,
