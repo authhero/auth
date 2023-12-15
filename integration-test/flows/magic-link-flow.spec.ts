@@ -100,7 +100,6 @@ describe("code-flow", () => {
     const authCookieHeader = autenticateResponse.headers.get("set-cookie")!;
 
     // now check silent auth works when logged in with code----------------------------------------
-
     const {
       accessToken: silentAuthAccessTokenPayload,
       idToken: silentAuthIdTokenPayload,
@@ -108,6 +107,7 @@ describe("code-flow", () => {
       authCookieHeader,
       worker,
       nonce,
+      "clientId",
     );
 
     const {

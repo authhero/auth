@@ -423,6 +423,7 @@ describe("social sign on", () => {
         setCookiesHeader,
         worker,
         "nonce",
+        "clientId",
       );
 
       expect(silentAuthIdTokenPayload).toMatchObject({

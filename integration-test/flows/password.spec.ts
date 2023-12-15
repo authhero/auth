@@ -125,6 +125,7 @@ describe("password-flow", () => {
         authCookieHeader,
         worker,
         "unique-nonce",
+        "clientId",
       );
 
       const {

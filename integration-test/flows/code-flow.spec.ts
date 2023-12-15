@@ -131,6 +131,7 @@ describe("code-flow", () => {
       setCookiesHeader,
       worker,
       nonce,
+      "clientId",
     );
 
     const {
@@ -260,6 +261,7 @@ describe("code-flow", () => {
       setCookiesHeader,
       worker,
       nonce,
+      "clientId",
     );
 
     const {

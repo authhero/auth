@@ -2,16 +2,19 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 
 import type { UnstableDevWorker } from "wrangler";
 
+// this util also asserts... would be good to have it as two utils. One to do the silent auth request
+// the other to parse the body
 export async function doSilentAuthRequestAndReturnTokens(
   setCookiesHeader: string,
   worker: UnstableDevWorker,
   nonce: string,
+  clientId: string,
 ) {
   const cookies = setCookiesHeader.split(";").map((c) => c.trim());
   const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
   const silentAuthSearchParams = new URLSearchParams();
-  silentAuthSearchParams.set("client_id", "clientId");
+  silentAuthSearchParams.set("client_id", clientId);
   silentAuthSearchParams.set("response_type", "token id_token");
   silentAuthSearchParams.set("scope", "openid profile email");
   silentAuthSearchParams.set("redirect_uri", "http://localhost:3000/callback");
