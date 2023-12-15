@@ -6,6 +6,6 @@ export interface SqlDomain {
   domain: string;
   dkim_private_key?: string;
   dkim_public_key?: string;
-  api_key?: string;
+  email_api_key?: string;
   email_service?: "mailgun" | "mailchannels";
 }
