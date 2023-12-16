@@ -53,7 +53,7 @@ export function createClientsAdapter(db: Kysely<Database>) {
       const domains = await db
         .selectFrom("domains")
         .where("tenant_id", "=", application.tenant_id)
-        .select(["domain", "dkim_private_key"])
+        .selectAll()
         .execute();
 
       const client: PartialClient = {
