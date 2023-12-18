@@ -40,7 +40,11 @@ export async function ticketAuth(
     ticket.email,
   );
 
-  let user = usersWithSameEmail.find((u) => u.provider === provider);
+  let user = usersWithSameEmail.find((u) => u.provider === provider) || null;
+
+  if (user?.linked_to) {
+    user = await env.data.users.get(tenant_id, user.linked_to);
+  }
 
   if (!user) {
     if (realm === "Username-Password-Authentication") {

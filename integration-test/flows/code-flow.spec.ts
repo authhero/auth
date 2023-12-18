@@ -44,7 +44,8 @@ describe("code-flow", () => {
         client_id: "clientId",
         connection: "email",
         email: "test@example.com",
-        send: "link",
+        // can be code or link
+        send: "code",
       }),
     });
 
@@ -254,15 +255,13 @@ describe("code-flow", () => {
     // ----------------------------
 
     const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
-    const {
-      accessToken: silentAuthAccessTokenPayload,
-      idToken: silentAuthIdTokenPayload,
-    } = await doSilentAuthRequestAndReturnTokens(
-      setCookiesHeader,
-      worker,
-      nonce,
-      "clientId",
-    );
+    const { idToken: silentAuthIdTokenPayload } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader,
+        worker,
+        nonce,
+        "clientId",
+      );
 
     const {
       // these are the fields that change on every test run
@@ -352,13 +351,28 @@ describe("code-flow", () => {
     );
 
     const accessToken2 = parseJwt(
-      new URL(tokenResponse.headers.get("location")!).searchParams.get(
+      new URL(tokenResponse2.headers.get("location")!).searchParams.get(
         "access_token",
       )!,
     );
 
     // this is the id of the primary account
     expect(accessToken2.sub).toBe("userId");
+
+    // ----------------------------
+    // now check silent auth again!
+    // ----------------------------
+
+    const setCookiesHeader2 = tokenResponse2.headers.get("set-cookie")!;
+    const { idToken: silentAuthIdTokenPayload2 } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader2,
+        worker,
+        nonce,
+        "clientId",
+      );
+    // second time round make sure we get the primary userid again
+    expect(silentAuthIdTokenPayload2.sub).toBe("userId");
   });
 
   // TO TEST
