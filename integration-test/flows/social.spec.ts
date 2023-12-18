@@ -176,7 +176,7 @@ describe("social sign on", () => {
         expect(silentAuthIdTokenPayload).toMatchObject({
           sub: "demo-social-provider|123456789012345678901",
           aud: "clientId",
-          name: "john.doe@example.com",
+          name: "orjan.lindstrom@example.com",
         });
 
         // ---------------------------------------------
@@ -283,7 +283,7 @@ describe("social sign on", () => {
         expect(silentAuthIdTokenPayload).toMatchObject({
           sub: "demo-social-provider|123456789012345678901",
           aud: "clientId",
-          name: "john.doe@example.com",
+          name: "orjan.lindstrom@example.com",
         });
 
         // ---------------------------------------------
