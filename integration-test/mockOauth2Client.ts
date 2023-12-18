@@ -45,7 +45,7 @@ class MockOAuth2Client implements IOAuth2Client {
         given_name: "Örjan",
         family_name: "Lindström",
         at_hash: "atHash",
-        email: "orjan.lindstrom@example.com",
+        email: "örjan.lindström@example.com",
         picture:
           "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
         nonce: "abc123",
@@ -75,7 +75,7 @@ class MockOAuth2Client implements IOAuth2Client {
         name: "Örjan Lindström",
         given_name: "Örjan",
         family_name: "Lindström",
-        email: "orjan.lindstrom@example.com",
+        email: "örjan.lindström@example.com",
         picture:
           "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
         nonce: "abc123",
