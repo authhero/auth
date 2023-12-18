@@ -49,7 +49,7 @@ export async function ticketAuth(
   if (!user) {
     if (realm === "Username-Password-Authentication") {
       throw new Error(
-        "ticket flow should not arrive here with non existent user",
+        "ticket flow should not arrive here with non existent user - probably the provider is not set on the user",
       );
     }
 
