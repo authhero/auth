@@ -432,7 +432,7 @@ export class LoginController extends Controller {
 
       return handleLogin(env, this, user, session);
     } catch (err: any) {
-      return renderSignup(env, this, session, err.message);
+      return renderSignup(env, this, session, state, err.message);
     }
   }
 
