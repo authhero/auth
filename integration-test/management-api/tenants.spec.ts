@@ -2,7 +2,6 @@ import { Tenant } from "../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
-import { setup } from "../helpers/setup";
 
 describe("tenants", () => {
   let worker: UnstableDevWorker;
@@ -60,8 +59,6 @@ describe("tenants", () => {
   });
 
   it("should remove a tenant", async () => {
-    await setup(worker);
-
     const token = await getAdminToken();
     const tenantsResponse1 = await worker.fetch("/api/v2/tenants", {
       headers: {
@@ -69,16 +66,13 @@ describe("tenants", () => {
       },
     });
 
-    // two tenants in initial setup
     expect(tenantsResponse1.status).toBe(200);
     const body1 = (await tenantsResponse1.json()) as Tenant[];
-    expect(body1.length).toEqual(5);
-
-    // remove 'otherTenant'
-    const otherTenant = body1.find((t) => t.name === "otherTenant");
+    // base tenant + two tenants in test-server
+    expect(body1.length).toEqual(3);
 
     const deleteTenantResponse = await worker.fetch(
-      `/api/v2/tenants/${otherTenant!.id}`,
+      `/api/v2/tenants/otherTenant`,
       {
         method: "DELETE",
         headers: {
@@ -89,7 +83,7 @@ describe("tenants", () => {
 
     expect(deleteTenantResponse.status).toBe(200);
 
-    // fetch list of tenants again - should be empty
+    // fetch list of tenants again - assert we are one down
     const tenantsResponse2 = await worker.fetch("/api/v2/tenants", {
       headers: {
         authorization: `Bearer ${token}`,
@@ -97,6 +91,6 @@ describe("tenants", () => {
     });
     expect(tenantsResponse2.status).toBe(200);
     const body2 = (await tenantsResponse2.json()) as Tenant[];
-    expect(body2.length).toEqual(4);
+    expect(body2.length).toEqual(2);
   });
 });

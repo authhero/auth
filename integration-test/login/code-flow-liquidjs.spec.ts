@@ -1,4 +1,3 @@
-import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 
@@ -7,8 +6,6 @@ describe("Login with code on liquidjs template", () => {
 
   beforeEach(async () => {
     worker = await start();
-
-    await setup(worker);
   });
 
   afterEach(() => {
