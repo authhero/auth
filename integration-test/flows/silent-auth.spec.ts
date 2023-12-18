@@ -2,6 +2,7 @@ import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 
 function getDefaultSilentAuthSearchParams() {
   return new URLSearchParams({
@@ -78,54 +79,34 @@ describe("silent-auth", () => {
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
 
-    const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+    const setCookieHeader = tokenResponse.headers.get("set-cookie")!;
 
     // -------------------------------------------------------------
     // now check silent auth works on the same client
     // -------------------------------------------------------------
-    const cookies = authCookieHeader.split(";").map((c) => c.trim());
-    const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
-    const silentAuthSearchParams = getDefaultSilentAuthSearchParams();
-    silentAuthSearchParams.set("client_id", "clientId");
+    const { accessToken: silentAuthAccessTokenPayload } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookieHeader,
+        worker,
+        "nonce",
+        "clientId",
+      );
+    expect(silentAuthAccessTokenPayload).toBeDefined();
 
-    const silentAuthResponse = await worker.fetch(
-      `/authorize?${silentAuthSearchParams.toString()}`,
-      {
-        headers: {
-          // here we set the auth cookie given to us from the previous successful auth request
-          cookie: authCookie,
-        },
-      },
-    );
-
-    const body = await silentAuthResponse.text();
-
-    expect(body).not.toContain("Login required");
-    expect(body).toContain("access_token");
     // this is tested more extensively on other flows
 
     // -------------------------------------------------------------
     // now check silent auth works on the same tenant
     // -------------------------------------------------------------
-    const silentAuthSearchParamsDifferentClient =
-      getDefaultSilentAuthSearchParams();
-    silentAuthSearchParamsDifferentClient.set("client_id", "otherClientId");
-
-    const silentAuthResponseDifferentClient = await worker.fetch(
-      `/authorize?${silentAuthSearchParamsDifferentClient.toString()}`,
-      {
-        headers: {
-          // here we set the auth cookie given to us from the previous successful auth request
-          cookie: authCookie,
-        },
-      },
-    );
-
-    const bodyDifferentClient = await silentAuthResponseDifferentClient.text();
-
-    expect(bodyDifferentClient).not.toContain("Login required");
-    expect(bodyDifferentClient).toContain("access_token");
+    const { accessToken: silentAuthAccessTokenPayloadOtherClient } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookieHeader,
+        worker,
+        "nonce",
+        "otherClientId",
+      );
+    expect(silentAuthAccessTokenPayloadOtherClient).toBeDefined();
 
     // -------------------------------------------------------------
     // now check silent auth does not on a different tenant
@@ -142,7 +123,7 @@ describe("silent-auth", () => {
       {
         headers: {
           // here we set the auth cookie given to us from the previous successful auth request
-          cookie: authCookie,
+          cookie: setCookieHeader,
         },
       },
     );

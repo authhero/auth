@@ -4,6 +4,7 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
 import type { UnstableDevWorker } from "wrangler";
 import { UserResponse } from "../../src/types/auth0";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 
 const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
   redirect_uri: "https://login2.sesamy.dev/callback",
@@ -414,51 +415,16 @@ describe("social sign on", () => {
 
       const setCookiesHeader =
         socialCallbackResponse.headers.get("set-cookie")!;
-      const cookies = setCookiesHeader.split(";").map((c) => c.trim());
-      const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
-      const silentAuthSearchParams = new URLSearchParams();
-      silentAuthSearchParams.set("client_id", "clientId");
-      silentAuthSearchParams.set("response_type", "token id_token");
-      silentAuthSearchParams.set("scope", "openid profile email");
-      silentAuthSearchParams.set(
-        "redirect_uri",
-        "http://localhost:3000/callback",
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader,
+        worker,
+        "nonce",
+        "clientId",
       );
-      silentAuthSearchParams.set("state", "state");
-      silentAuthSearchParams.set("prompt", "none");
-      silentAuthSearchParams.set("nonce", "nonce");
-      silentAuthSearchParams.set("response_mode", "web_message");
-
-      const silentAuthResponse = await worker.fetch(
-        `/authorize?${silentAuthSearchParams.toString()}`,
-        {
-          headers: {
-            cookie: authCookie,
-          },
-          redirect: "manual",
-        },
-      );
-
-      const body = await silentAuthResponse.text();
-
-      // get id token from iframe response body - should create helper for this?
-      const responseBody = body
-        .split("\n")
-        .find((line) => line.trim().startsWith("response: "));
-      const iframeResponseJSON = JSON.parse(
-        responseBody!.replace("response: ", ""),
-      );
-
-      const silentAuthAccessToken = iframeResponseJSON.access_token;
-      const silentAuthAccessTokenPayload = parseJwt(silentAuthAccessToken);
-
-      expect(silentAuthAccessTokenPayload).toMatchObject({
-        sub: createEmailUser.user_id,
-      });
-
-      const silentAuthIdToken = iframeResponseJSON.id_token;
-      const silentAuthIdTokenPayload = parseJwt(silentAuthIdToken);
 
       expect(silentAuthIdTokenPayload).toMatchObject({
         // testing this means it must be working

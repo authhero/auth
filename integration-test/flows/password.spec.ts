@@ -3,6 +3,7 @@ import { setup } from "../helpers/setup";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 
 describe("password-flow", () => {
   let worker: UnstableDevWorker;
@@ -117,55 +118,15 @@ describe("password-flow", () => {
       const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
 
       // now check silent auth works after password login
-      const cookies = authCookieHeader.split(";").map((c) => c.trim());
-      const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
-
-      const silentAuthSearchParams = new URLSearchParams();
-      silentAuthSearchParams.set("client_id", "clientId");
-      silentAuthSearchParams.set("response_type", "token id_token");
-      silentAuthSearchParams.set("scope", "openid profile email");
-      silentAuthSearchParams.set(
-        "redirect_uri",
-        "http://localhost:3000/callback",
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        authCookieHeader,
+        worker,
+        "unique-nonce",
+        "clientId",
       );
-      silentAuthSearchParams.set("state", "state");
-      // silent auth pararms!
-      silentAuthSearchParams.set("prompt", "none");
-      silentAuthSearchParams.set("nonce", "unique-nonce");
-      silentAuthSearchParams.set("response_mode", "web_message");
-
-      const silentAuthResponse = await worker.fetch(
-        `/authorize?${silentAuthSearchParams.toString()}`,
-        {
-          headers: {
-            // here we set the auth cookie given to us from the previous successful auth request
-            cookie: authCookie,
-          },
-        },
-      );
-
-      const body = await silentAuthResponse.text();
-
-      expect(body).not.toContain("Login required");
-
-      expect(body).toContain("access_token");
-
-      // get id token from iframe response body
-      const lines = body.split("\n");
-      const responseBody = lines.find((line) =>
-        line.trim().startsWith("response: "),
-      );
-      if (!responseBody) {
-        throw new Error("iframe auth body missing");
-      }
-
-      const iframeResponseJSON = JSON.parse(
-        responseBody.replace("response: ", ""),
-      );
-
-      const silentAuthIdToken = iframeResponseJSON.id_token;
-
-      const silentAuthIdTokenPayload = parseJwt(silentAuthIdToken);
 
       const {
         // these are the fields that change on every test run
