@@ -1,5 +1,6 @@
 import { Database, SqlUser } from "../../../types";
 import { Kysely } from "kysely";
+import { fixBooleans } from "./booleans";
 
 export function get(db: Kysely<Database>) {
   return async (tenantId: string, id: string): Promise<SqlUser | null> => {
@@ -14,6 +15,6 @@ export function get(db: Kysely<Database>) {
       return null;
     }
 
-    return user;
+    return fixBooleans(user);
   };
 }
