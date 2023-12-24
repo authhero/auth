@@ -153,7 +153,7 @@ describe("users", () => {
   });
 
   describe("link user", () => {
-    it("should link two users", async () => {
+    it("should link two users using link_to parameter", async () => {
       const token = await getAdminToken();
 
       const createUserResponse1 = await worker.fetch("/api/v2/users", {
@@ -298,5 +298,98 @@ describe("users", () => {
       // this shows we have unlinked
       expect(user1.identities.length).toBe(1);
     });
+  });
+
+  it("should link two users using user_id and connection parameter", async () => {
+    const token = await getAdminToken();
+
+    const createUserResponse1 = await worker.fetch("/api/v2/users", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "test1@example.com",
+        connection: "email",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "test",
+        "content-type": "application/json",
+      },
+    });
+
+    expect(createUserResponse1.status).toBe(201);
+    const newUser1 = (await createUserResponse1.json()) as UserResponse;
+
+    const createUserResponse2 = await worker.fetch("/api/v2/users", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "test2@example.com",
+        connection: "email",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "test",
+        "content-type": "application/json",
+      },
+    });
+
+    expect(createUserResponse2.status).toBe(201);
+    const newUser2 = (await createUserResponse2.json()) as UserResponse;
+
+    const [provider, user_id] = newUser2.id.split("|");
+    const linkUserResponse = await worker.fetch(
+      `/api/v2/users/${newUser1.id}/identities`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          provider,
+          user_id,
+        }),
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "test",
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    expect(linkUserResponse.status).toBe(201);
+
+    // Fetch a single users
+    const userResponse = await worker.fetch(
+      // note we fetch with the user_id prefixed with provider as per the Auth0 standard
+      `/api/v2/users/${newUser2.user_id}`,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "test",
+        },
+      },
+    );
+
+    expect(userResponse.status).toBe(200);
+
+    const [, newUser1Id] = newUser1.user_id.split("|");
+    const [, newUser2Id] = newUser2.user_id.split("|");
+
+    const body = (await userResponse.json()) as UserResponse;
+    expect(body.user_id).toBe(newUser2.user_id);
+    expect(body.identities).toEqual([
+      {
+        connection: "email",
+        user_id: newUser2Id,
+        provider: "email",
+        isSocial: false,
+      },
+      {
+        connection: "email",
+        user_id: newUser1Id,
+        provider: "email",
+        isSocial: false,
+        profileData: {
+          email: "test1@example.com",
+          email_verified: false,
+        },
+      },
+    ]);
   });
 });

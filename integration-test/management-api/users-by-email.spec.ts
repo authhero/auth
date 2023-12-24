@@ -208,7 +208,6 @@ describe("users by email", () => {
         method: "POST",
         body: JSON.stringify({
           link_with: fooEmailId,
-          // are provider & connection required?
         }),
         headers: {
           authorization: `Bearer ${token}`,
