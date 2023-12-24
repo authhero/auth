@@ -205,8 +205,7 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenant_id: string,
     @Path("user_id") user_id: string,
-    @Body()
-    user: PostUsersBody,
+    @Body() user: Partial<PostUsersBody>,
   ): Promise<boolean> {
     const { env } = request.ctx;
 

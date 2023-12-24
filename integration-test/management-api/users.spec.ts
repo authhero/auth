@@ -116,6 +116,60 @@ describe("users", () => {
     ]);
   });
 
+  it("should update a user", async () => {
+    const token = await getAdminToken();
+
+    const createUserResponse = await worker.fetch("/api/v2/users", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "test@example.com",
+        connection: "email",
+      }),
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "test",
+        "content-type": "application/json",
+      },
+    });
+
+    expect(createUserResponse.status).toBe(201);
+
+    const newUser = (await createUserResponse.json()) as UserResponse;
+    const [provider, id] = newUser.user_id.split("|");
+
+    const updateUserResponse = await worker.fetch(
+      `/api/v2/users/${provider}|${id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          email_verified: true,
+        }),
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+          "tenant-id": "test",
+        },
+      },
+    );
+
+    if (updateUserResponse.status !== 200) {
+      console.log(await updateUserResponse.text());
+    }
+
+    expect(updateUserResponse.status).toBe(200);
+
+    const usersResponse = await worker.fetch("/api/v2/users", {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "test",
+      },
+    });
+
+    const body = (await usersResponse.json()) as UserResponse[];
+    expect(body.length).toBe(1);
+    expect(body[0].email_verified).toBe(true);
+  });
+
   describe("search for user", () => {
     it("should search for a user with wildcard search", async () => {
       const token = await getAdminToken();
