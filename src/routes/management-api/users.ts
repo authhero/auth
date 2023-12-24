@@ -26,10 +26,14 @@ import userIdParse from "../../utils/userIdParse";
 import { Identity } from "../../types/auth0/Identity";
 import { enrichUser } from "../../utils/enrichUser";
 
-export interface LinkBodyParams {
-  provider?: string;
-  connection_id?: string;
+export interface LinkWithBodyParams {
   link_with: string;
+}
+
+export interface LinkUserIdBodyParams {
+  provider: string;
+  connection_id?: string;
+  user_id: string;
 }
 
 @Route("api/v2/users")
@@ -227,11 +231,14 @@ export class UsersMgmtController extends Controller {
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     @Path("user_id") userId: string,
-    @Body() body: LinkBodyParams,
+    @Body() body: LinkWithBodyParams | LinkUserIdBodyParams,
   ): Promise<Identity[]> {
     const { env } = request.ctx;
 
-    const user = await env.data.users.get(tenantId, body.link_with);
+    const link_with =
+      "link_with" in body ? body.link_with : `${body.provider}|${body.user_id}`;
+
+    const user = await env.data.users.get(tenantId, link_with);
     if (!user) {
       throw new HTTPException(400, {
         message: "Linking to an inexistent identity is not allowed.",
@@ -239,14 +246,14 @@ export class UsersMgmtController extends Controller {
     }
 
     await env.data.users.update(tenantId, userId, {
-      linked_to: body.link_with,
+      linked_to: link_with,
     });
 
     const linkedusers = await env.data.users.list(tenantId, {
       page: 0,
       per_page: 10,
       include_totals: false,
-      q: `linked_to:${body.link_with}`,
+      q: `linked_to:${link_with}`,
     });
 
     const identities = [user, ...linkedusers.users].map((u) => ({
