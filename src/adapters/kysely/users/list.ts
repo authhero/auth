@@ -3,6 +3,7 @@ import { Database } from "../../../types";
 import { Kysely, SelectQueryBuilder } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
+import { fixBooleans } from "./booleans";
 
 const searchableColumns = ["email", "name"];
 
@@ -99,7 +100,7 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      users,
+      users: users.map(fixBooleans),
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,
