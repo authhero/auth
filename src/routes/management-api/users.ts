@@ -234,8 +234,7 @@ export class UsersMgmtController extends Controller {
   ): Promise<Identity[]> {
     const { env } = request.ctx;
 
-    const link_with =
-      "link_with" in body ? body.link_with : `${body.provider}|${body.user_id}`;
+    const link_with = "link_with" in body ? body.link_with : body.user_id;
 
     const user = await env.data.users.get(tenantId, link_with);
     if (!user) {

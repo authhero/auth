@@ -354,7 +354,7 @@ describe("users", () => {
     });
   });
 
-  it("should link two users using user_id and connection parameter", async () => {
+  it("should link two users using user_id and provider parameter", async () => {
     const token = await getAdminToken();
 
     const createUserResponse1 = await worker.fetch("/api/v2/users", {
@@ -389,14 +389,14 @@ describe("users", () => {
     expect(createUserResponse2.status).toBe(201);
     const newUser2 = (await createUserResponse2.json()) as UserResponse;
 
-    const [provider, user_id] = newUser2.id.split("|");
+    const [provider] = newUser2.id.split("|");
     const linkUserResponse = await worker.fetch(
       `/api/v2/users/${newUser1.id}/identities`,
       {
         method: "POST",
         body: JSON.stringify({
           provider,
-          user_id,
+          user_id: newUser2.id,
         }),
         headers: {
           authorization: `Bearer ${token}`,
