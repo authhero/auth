@@ -101,7 +101,7 @@ app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   });
 });
 
-RegisterRoutes(app as unknown as Hono);
+export const tsoaApp = RegisterRoutes(app as unknown as Hono);
 
 export default app;
 export type AppType = typeof app;

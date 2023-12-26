@@ -5,8 +5,10 @@ import ReferenceMigrationProvider from "./ReferenceMigrationProvider";
 import migrations from "./migrations";
 import { getDb } from "../src/services/db";
 
-export async function migrateToLatest(dialect: Dialect) {
-  console.log("migrating...");
+export async function migrateToLatest(dialect: Dialect, debug = true) {
+  if (debug) {
+    console.log("migrating...");
+  }
 
   const provider = new ReferenceMigrationProvider(migrations);
   const db = getDb(dialect);
@@ -17,7 +19,11 @@ export async function migrateToLatest(dialect: Dialect) {
   const { error, results } = await migrator.migrateToLatest();
   results?.forEach((it) => {
     if (it.status === "Success") {
-      console.log(`migration "${it.migrationName}" was executed successfully`);
+      if (debug) {
+        console.log(
+          `migration "${it.migrationName}" was executed successfully`,
+        );
+      }
     } else if (it.status === "Error") {
       console.error(`failed to execute migration "${it.migrationName}"`);
     }
@@ -27,7 +33,6 @@ export async function migrateToLatest(dialect: Dialect) {
     console.error(error);
     throw error;
   }
-  await db.destroy();
 }
 
 export async function migrateDown(dialect: Dialect) {
@@ -52,5 +57,4 @@ export async function migrateDown(dialect: Dialect) {
     console.error(error);
     throw error;
   }
-  await db.destroy();
 }
