@@ -22,12 +22,21 @@ const SOCIAL_STATE_PARAM = btoa(
   }),
 ).replace("==", "");
 
+const EXPECTED_PROFILE_DATA = {
+  locale: "es-ES",
+  name: "Örjan Lindström",
+  given_name: "Örjan",
+  family_name: "Lindström",
+  picture:
+    "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
+};
+
 const EXPECTED_NEW_USER = {
   tenant_id: "tenantId",
-  name: "john.doe@example.com",
+  name: "örjan.lindström@example.com",
   provider: "demo-social-provider",
   connection: "demo-social-provider",
-  email: "john.doe@example.com",
+  email: "örjan.lindström@example.com",
   email_verified: true,
   last_ip: "",
   identities: [
@@ -40,8 +49,7 @@ const EXPECTED_NEW_USER = {
   ],
   login_count: 0,
   is_social: true,
-  profileData:
-    '{"locale":"es-ES","name":"John Doe","given_name":"John","family_name":"Doe","picture":"https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c"}',
+  profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
   user_id: "demo-social-provider|123456789012345678901",
 };
 
@@ -141,8 +149,8 @@ describe("social sign on", () => {
         expect(idTokenPayload.sub).toBe(
           "demo-social-provider|123456789012345678901",
         );
-        expect(idTokenPayload.name).toBe("john.doe@example.com");
-        expect(idTokenPayload.email).toBe("john.doe@example.com");
+        expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
+        expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
         expect(idTokenPayload.email_verified).toBe(true);
         // the same that we passed in
         expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
@@ -168,7 +176,7 @@ describe("social sign on", () => {
         expect(silentAuthIdTokenPayload).toMatchObject({
           sub: "demo-social-provider|123456789012345678901",
           aud: "clientId",
-          name: "john.doe@example.com",
+          name: "örjan.lindström@example.com",
         });
 
         // ---------------------------------------------
@@ -250,8 +258,8 @@ describe("social sign on", () => {
         expect(idTokenPayload.sub).toBe(
           "demo-social-provider|123456789012345678901",
         );
-        expect(idTokenPayload.name).toBe("john.doe@example.com");
-        expect(idTokenPayload.email).toBe("john.doe@example.com");
+        expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
+        expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
         expect(idTokenPayload.email_verified).toBe(true);
         // the same that we passed in
         expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
@@ -275,7 +283,7 @@ describe("social sign on", () => {
         expect(silentAuthIdTokenPayload).toMatchObject({
           sub: "demo-social-provider|123456789012345678901",
           aud: "clientId",
-          name: "john.doe@example.com",
+          name: "örjan.lindström@example.com",
         });
 
         // ---------------------------------------------
@@ -322,7 +330,7 @@ describe("social sign on", () => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          email: "john.doe@example.com",
+          email: "örjan.lindström@example.com",
           connection: "email",
           // password: "Test!",
           // will this have email_verfied though? as this is a code account that has never been used...
@@ -334,7 +342,7 @@ describe("social sign on", () => {
       const createEmailUser =
         (await createEmailUserResponse.json()) as UserResponse;
 
-      expect(createEmailUser.email).toBe("john.doe@example.com");
+      expect(createEmailUser.email).toBe("örjan.lindström@example.com");
       expect(createEmailUser.identities).toEqual([
         {
           connection: "email",
@@ -385,8 +393,8 @@ describe("social sign on", () => {
       // This is the big change here
       expect(idTokenPayload.sub).not.toBe("demo-social-provider|1234567890");
       expect(idTokenPayload.sub).toBe(createEmailUser.user_id);
-      expect(idTokenPayload.name).toBe("john.doe@example.com");
-      expect(idTokenPayload.email).toBe("john.doe@example.com");
+      expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
+      expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
       // TODO - we are pretending that the email is always verified
       // expect(idTokenPayload.email_verified).toBe(true);
 
@@ -405,7 +413,7 @@ describe("social sign on", () => {
       );
 
       const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
-      expect(newSocialUser.email).toBe("john.doe@example.com");
+      expect(newSocialUser.email).toBe("örjan.lindström@example.com");
 
       // ---------------------------------------------
       // check that the primary user has new identities
@@ -436,12 +444,12 @@ describe("social sign on", () => {
           user_id: "123456789012345678901",
           isSocial: true,
           profileData: {
-            name: "John Doe",
-            given_name: "John",
-            family_name: "Doe",
+            name: "Örjan Lindström",
+            given_name: "Örjan",
+            family_name: "Lindström",
             picture:
               "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
-            email: "john.doe@example.com",
+            email: "örjan.lindström@example.com",
             email_verified: true,
             locale: "es-ES",
           },
@@ -469,8 +477,8 @@ describe("social sign on", () => {
         // testing this means it must be working
         sub: createEmailUser.user_id,
         aud: "clientId",
-        name: "john.doe@example.com",
-        email: "john.doe@example.com",
+        name: "örjan.lindström@example.com",
+        email: "örjan.lindström@example.com",
         email_verified: false,
         nonce: "nonce",
         iss: "https://example.com/",
@@ -559,12 +567,12 @@ describe("social sign on", () => {
           user_id: "123456789012345678901",
           isSocial: true,
           profileData: {
-            name: "John Doe",
-            given_name: "John",
-            family_name: "Doe",
+            name: "Örjan Lindström",
+            given_name: "Örjan",
+            family_name: "Lindström",
             picture:
               "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
-            email: "john.doe@example.com",
+            email: "örjan.lindström@example.com",
             email_verified: true,
             locale: "es-ES",
           },
@@ -575,12 +583,12 @@ describe("social sign on", () => {
           user_id: "10451045104510451",
           isSocial: true,
           profileData: {
-            given_name: "John",
-            family_name: "Doe",
-            name: "John Doe",
+            name: "Örjan Lindström",
+            given_name: "Örjan",
+            family_name: "Lindström",
             picture:
               "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
-            email: "john.doe@example.com",
+            email: "örjan.lindström@example.com",
             email_verified: true,
           },
         },

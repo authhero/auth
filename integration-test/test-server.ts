@@ -153,8 +153,9 @@ data.users.create("tenantId", {
   id: "userId",
   email: "foo@example.com",
   email_verified: true,
-  name: "Foo Bar",
-  nickname: "Foo",
+  name: "Åkesson Þorsteinsson",
+  // use a norse nickname here? more realistic
+  nickname: "Åkesson Þorsteinsson",
   picture: "https://example.com/foo.png",
   tenant_id: "tenantId",
   login_count: 0,
