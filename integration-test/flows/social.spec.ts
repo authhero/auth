@@ -334,7 +334,7 @@ describe("social sign on", () => {
           connection: "email",
           // password: "Test!",
           // will this have email_verfied though? as this is a code account that has never been used...
-          // this does nothing. doesn't complain eitherw
+          // this does nothing. doesn't complain either
           email_verified: true,
         }),
       });
