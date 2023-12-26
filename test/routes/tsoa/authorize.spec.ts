@@ -7,7 +7,6 @@ import {
   CodeChallengeMethod,
   User,
 } from "../../../src/types";
-import { InvalidConnectionError } from "../../../src/errors";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { Session } from "../../../src/types/Session";
 import { Ticket } from "../../../src/types/Ticket";
@@ -398,7 +397,7 @@ describe("authorize", () => {
           connection: "invalid connection",
           response_type: AuthorizationResponseType.TOKEN,
         }),
-      ).rejects.toThrow(InvalidConnectionError);
+      ).rejects.toThrow("Connection Not Found");
     });
   });
 
