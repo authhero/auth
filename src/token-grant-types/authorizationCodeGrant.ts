@@ -9,7 +9,6 @@ import {
   TokenResponse,
   User,
 } from "../types";
-import { InvalidClientError } from "../errors";
 import { getClient } from "../services/clients";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import hash from "../utils/hash";
@@ -29,7 +28,7 @@ export async function authorizeCodeGrant(
   } = stateDecode(params.code); // this "code" is actually a stringified base64 encoded state object...
 
   if (params.client_id && state.authParams.client_id !== params.client_id) {
-    throw new InvalidClientError();
+    throw new HTTPException(403, { message: "Invalid Client" });
   }
 
   const client = await getClient(env, state.authParams.client_id);
@@ -40,7 +39,7 @@ export async function authorizeCodeGrant(
   // Check the secret if this is a code grant flow
   const secretHash = await hash(params.client_secret);
   if (client.client_secret !== secretHash) {
-    throw new InvalidClientError("Invalid Secret");
+    throw new HTTPException(403, { message: "Invalid Secret" });
   }
 
   return generateAuthResponse({

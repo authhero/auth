@@ -1,10 +1,8 @@
-// src/users/usersController.ts
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
-import { UnauthenticatedError } from "../../errors";
 import randomString from "../../utils/random-string";
-import { AuthParams, Client, Env, Ticket } from "../../types";
+import { Ticket } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 

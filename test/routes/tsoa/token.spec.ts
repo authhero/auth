@@ -1,8 +1,4 @@
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import {
-  InvalidClientError,
-  InvalidCodeVerifierError,
-} from "../../../src/errors";
 import { TokenRoutes } from "../../../src/routes/tsoa/token";
 import { CreateAccessTokenParams } from "../../../src/services/token-factory";
 import {
@@ -174,7 +170,7 @@ describe("token", () => {
 
       await expect(
         controller.token({ ctx } as RequestWithContext, tokenParams),
-      ).rejects.toThrowError(InvalidCodeVerifierError);
+      ).rejects.toThrowError("Invalid Code Challange");
     });
 
     it("should use the userId from the state to set the silent auth cookie", async () => {
@@ -268,7 +264,7 @@ describe("token", () => {
 
       await expect(
         controller.token({ ctx } as RequestWithContext, tokenParams),
-      ).rejects.toThrowError(InvalidClientError);
+      ).rejects.toThrowError("Invalid Client");
     });
   });
 

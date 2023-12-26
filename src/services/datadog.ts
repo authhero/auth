@@ -62,6 +62,7 @@ async function log(
       body,
       status_code: response.status,
       response_headers: instanceToJson(response.headers),
+      error: response.status >= 500 ? await ctx.res.text() : undefined,
     },
     useragent_details: {
       ua: req.header("user-agent") || "",

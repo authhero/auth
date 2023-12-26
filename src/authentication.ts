@@ -1,13 +1,8 @@
 import { z } from "zod";
-import {
-  ExpiredTokenError,
-  InvalidScopesError,
-  InvalidSignatureError,
-  UnauthorizedError,
-} from "./errors";
 import { Env } from "./types/Env";
 import { Context, Next } from "hono";
 import { Var } from "./types/Var";
+import { HTTPException } from "hono/http-exception";
 
 export enum SecuritySchemeName {
   oauth2 = "oauth2",
@@ -167,17 +162,15 @@ export async function getUser(
   const expiryDate = new Date(token.payload.exp * 1000);
   const currentDate = new Date(Date.now());
   if (expiryDate < currentDate) {
-    throw new ExpiredTokenError();
+    throw new HTTPException(403, { message: "Token Expired" });
   }
 
   if (!isValidPermissions(token, permissions)) {
-    throw new InvalidScopesError();
+    throw new HTTPException(403, { message: "Invalid Scopes" });
   }
 
   if (!(await isValidJwtSignature(ctx, securitySchemeName, token))) {
-    console.log("failed here");
-
-    throw new InvalidSignatureError();
+    throw new HTTPException(403, { message: "Invalid Signature" });
   }
 
   return token.payload;
@@ -220,7 +213,7 @@ export async function verifyTenantPermissions(
   );
 
   if (!member?.role) {
-    throw new UnauthorizedError();
+    throw new HTTPException(403, { message: "Unauthorized" });
   }
 
   if (["GET", "HEAD"].includes(ctx.req.method)) {
@@ -235,7 +228,7 @@ export async function verifyTenantPermissions(
     }
   }
 
-  throw new UnauthorizedError();
+  throw new HTTPException(403, { message: "Unauthorized" });
 }
 
 export interface Security {

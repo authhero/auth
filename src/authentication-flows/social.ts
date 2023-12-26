@@ -6,14 +6,12 @@ import {
   Client,
   Env,
   LoginState,
-  BaseUser,
 } from "../types";
 import { headers } from "../constants";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
 import { applyTokenResponse } from "../helpers/apply-token-response";
-import { InvalidConnectionError } from "../errors";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
 import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
@@ -35,7 +33,7 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
-    throw new InvalidConnectionError("Connection not found");
+    throw new HTTPException(403, { message: "Connection Not Found" });
   }
 
   const state = stateEncode({ authParams, connection });
