@@ -85,9 +85,9 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   if (!jwksUrls[jwksUrl]) {
     // If we're using the auth service itself for authenticating
     if (jwksUrl.startsWith(env.ISSUER)) {
-      const certificates = await env.data.certificates.listCertificates();
+      const certificates = await env.data.keys.list();
       const keys = certificates.map((cert: any) => {
-        return { kid: cert.kid, ...cert.publicKey };
+        return { kid: cert.kid, ...JSON.parse(cert.public_key) };
       });
 
       jwksUrls[jwksUrl] = keys;

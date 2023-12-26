@@ -1,4 +1,4 @@
-import { Certificate } from "../../../models";
+import { Certificate } from "../../../types";
 
 export function listCertificates(namespace: KVNamespace<string>) {
   return async (): Promise<Certificate[]> => {
@@ -8,6 +8,11 @@ export function listCertificates(namespace: KVNamespace<string>) {
       return [];
     }
 
-    return JSON.parse(certificateJson);
+    const parsed = JSON.parse(certificateJson);
+
+    return {
+      ...parsed,
+      private_key: JSON.stringify(parsed.private_key),
+    };
   };
 }

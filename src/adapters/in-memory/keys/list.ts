@@ -1,7 +1,7 @@
-import { SigningKey } from "../../../types/SigningKey";
+import { Certificate } from "../../../types";
 
-export function list(certificateStorage: SigningKey[]) {
-  return async (): Promise<SigningKey[]> => {
+export function list(certificateStorage: Certificate[]) {
+  return async (): Promise<Certificate[]> => {
     return certificateStorage;
   };
 }

@@ -1,4 +1,4 @@
-import { Certificate } from "../../models";
+import { Certificate } from "../../types";
 
 // Deprecated, use keys instead
 export interface CertificatesAdapter {

@@ -1,3 +1,11 @@
+export interface Certificate {
+  private_key: string;
+  public_key: string;
+  kid: string;
+  created_at: string;
+  revoked_at?: string;
+}
+
 export interface SigningKey {
   // The key id of the signing key
   kid: string;

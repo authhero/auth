@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Header,
-  Query,
   Request,
   Route,
   Security,
@@ -10,7 +9,7 @@ import {
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { z } from "zod";
-import { ListLogsResponse } from "../../adapters/interfaces/Logs";
+import { SigningKey } from "../../types";
 
 export const LogsFilterSchema = z.object({
   userId: z.string(),
@@ -24,12 +23,20 @@ export class KeysController extends Controller {
   public async list(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-  ) {
+  ): Promise<SigningKey[]> {
     const { ctx } = request;
     const { env } = ctx;
 
-    const result = await env.data.keys.list();
+    const keys = await env.data.keys.list();
 
-    return result;
+    return keys.map((key) => ({
+      kid: key.kid,
+      cert: key.public_key,
+      created_at: key.created_at,
+      revoked_at: key.revoked_at,
+      revoked: !!key.revoked_at,
+      fingerprint: "fingerprint",
+      thumbprint: "thumbprint",
+    }));
   }
 }

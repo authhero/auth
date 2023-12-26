@@ -1,11 +1,13 @@
 import { list } from "./list";
-import { SigningKey } from "../../../types/SigningKey";
+import { Certificate } from "../../../types";
 import { KeysAdapter } from "../../interfaces/Keys";
+import { create } from "./create";
 
 export function createKeysAdapter(): KeysAdapter {
-  const keysStorage: SigningKey[] = [];
+  const keysStorage: Certificate[] = [];
 
   return {
+    create: create(keysStorage),
     list: list(keysStorage),
   };
 }

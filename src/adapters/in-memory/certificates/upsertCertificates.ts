@@ -1,4 +1,4 @@
-import { Certificate } from "../../../models";
+import { Certificate } from "../../../types";
 
 export function upsertCertificates(certificatesStorage: Certificate[]) {
   return async (certificates: Certificate[]): Promise<void> => {

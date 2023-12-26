@@ -6,7 +6,7 @@ import {
   headers,
 } from "../../constants";
 import { Jwks, JwksKeys } from "../../types/jwks";
-import { Certificate } from "../../models";
+import { Certificate } from "../../types";
 
 export interface OpenIDConfiguration {
   issuer: string;
@@ -45,14 +45,17 @@ export class JWKSRoutes extends Controller {
 
     const certificates = await env.data.certificates.listCertificates();
     const keys = certificates.map((cert: Certificate): Jwks => {
-      const { publicKey } = cert;
-      if (!publicKey.alg || !publicKey.e || !publicKey.kty || !publicKey.n) {
+      const { alg, n, e, kty } = JSON.parse(cert.public_key);
+      if (!alg || !e || !kty || !n) {
         throw new Error("Invalid public key");
       }
 
       return {
         kid: cert.kid,
-        ...cert.publicKey,
+        alg,
+        n,
+        e,
+        kty,
       } as Jwks;
     });
 

@@ -1,12 +1,6 @@
 import { Env } from "../types/Env";
 import { JWKS_CACHE_TIMEOUT_IN_SECONDS } from "../constants";
-
-export interface Certificate {
-  privateKey: string;
-  publicKey: JsonWebKey;
-  kid: string;
-  created_at: number;
-}
+import { Certificate } from "../types";
 
 export async function getCertificate(env: Env): Promise<Certificate> {
   const certificates = await env.data.certificates.listCertificates();

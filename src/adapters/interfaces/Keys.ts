@@ -1,5 +1,6 @@
-import { SigningKey } from "../../types/SigningKey";
+import { Certificate } from "../../types/SigningKey";
 
 export interface KeysAdapter {
-  list: () => Promise<SigningKey[]>;
+  create: (key: Certificate) => Promise<void>;
+  list: () => Promise<Certificate[]>;
 }

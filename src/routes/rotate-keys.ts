@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { CERTIFICATE_EXPIRE_IN_SECONDS } from "../constants";
-import { Certificate } from "../models/Certificate";
+import { Certificate } from "../types";
 import { Env } from "../types/Env";
 import { create } from "../services/rsa-key";
 import { Var } from "../types/Var";

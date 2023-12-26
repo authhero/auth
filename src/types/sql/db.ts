@@ -1,6 +1,7 @@
 import {
   Tenant,
   Application,
+  Certificate,
   SqlConnection,
   Member,
   Migration,
@@ -19,6 +20,7 @@ import {
 export interface Database {
   codes: SqlCode;
   domains: SqlDomain;
+  keys: Certificate;
   users: SqlUser;
   members: Member;
   applications: Application;

@@ -6,7 +6,6 @@ import SQLite from "better-sqlite3";
 import { SqliteDialect } from "kysely";
 import createAdapters from "../../src/adapters/kysely";
 import { migrateToLatest } from "../../migrate/migrate";
-import createAdapter from "../../src/adapters/in-memory";
 import { getCertificate } from "../../integration-test/helpers/token";
 
 describe("tenants", () => {
@@ -17,24 +16,31 @@ describe("tenants", () => {
     await migrateToLatest(dialect, false);
     const db = getDb(dialect);
 
-    const { certificates } = createAdapter();
-    certificates.upsertCertificates([getCertificate()]);
-
-    const data = {
-      ...createAdapters(db),
-      certificates,
-    };
+    const data = createAdapters(db);
+    await data.keys.create(getCertificate());
+    await data.tenants.create({
+      id: "tenantId",
+      name: "test",
+      audience: "test",
+      sender_name: "test",
+      sender_email: "test@example.com",
+    });
 
     const token = await getAdminToken();
     const response = await testClient(tsoaApp, {
       data,
       JWKS_URL: "https://example.com/.well-known/jwks.json",
       ISSUER: "https://example.com/",
-    }).api.v2.tenants.$get(
+      READ_PERMISSION: "auth:read",
+      WRITE_PERMISSION: "auth:write",
+    }).api.v2.keys.signing.$get(
       {},
-      { headers: { authorization: `Bearer ${token}` } },
+      {
+        headers: { authorization: `Bearer ${token}`, "tenant-id": "tenantId" },
+      },
     );
 
+    const body = await response.text();
     expect(response.status).toBe(200);
   });
 });
