@@ -9,7 +9,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("private_key", "varchar(8192)")
-    .addColumn("public_key", "varchar(8192)")
+    .addColumn("public_key", "varchar(1024)")
     .addColumn("created_at", "varchar(255)")
     .addColumn("activate_at", "varchar(255)")
     .addColumn("revoked_at", "varchar(255)")

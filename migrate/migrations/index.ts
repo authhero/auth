@@ -13,7 +13,8 @@ import * as n12_userFields from "./2023-11-21T12:30:00_user-fields";
 import * as n13_userEmailIndex from "./2023-11-21T15:57:00_user-indexes";
 import * as n14_profileDataField from "./2023-11-23T17:44:00_profile-data-field";
 import * as n15_userEmailIndex from "./2023-12-08T15:59:00_user-linked-to-index";
-import * as n16_signingKeys from "./2023-12-26T10:58:00_signing-keys";
+import * as n16_userLocale from "./2023-12-21T15:05:00_user-locale";
+import * as n17_signingKeys from "./2023-12-26T10:58:00_signing-keys";
 
 // These need to be in alphabetic order
 export default {
@@ -32,5 +33,6 @@ export default {
   n13_userEmailIndex,
   n14_profileDataField,
   n15_userEmailIndex,
-  n16_signingKeys,
+  n16_userLocale,
+  n17_signingKeys,
 };

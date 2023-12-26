@@ -16,6 +16,7 @@ import { createUniversalLoginSessionsAdapter } from "./universal-auth-sessions";
 import { createConnectionsAdapter } from "./connections";
 import { Application, SqlConnection, Tenant, SqlDomain } from "../../types";
 import { createDomainsAdapter } from "./domains";
+import { createKeysAdapter } from "./keys";
 
 export default function createAdapters(): DataAdapters {
   const connections: SqlConnection[] = [];
@@ -29,6 +30,7 @@ export default function createAdapters(): DataAdapters {
     codes: createCodesAdapter(),
     clients: createClientsAdapter(applications, tenants, connections, domains),
     email: emailAdapter(),
+    keys: createKeysAdapter(),
     members: createMembersAdapter(),
     OTP: createOTPAdapter(),
     passwords: createPasswordsAdapter(),
