@@ -176,7 +176,6 @@ describe("code-flow", () => {
         client_id: "clientId",
         connection: "email",
         email: "test@example.com",
-        // can be code or link
         send: "code",
       }),
     });
