@@ -16,9 +16,6 @@ describe("code-flow", () => {
     worker.stop();
   });
 
-  // TODO - as describe block, then test
-  // - new user: new-user@example.com - even assert that user does not exist first like on code flow
-  // - existing user - assert user DOES exist first
   describe("should log in using the sent magic link, when", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
@@ -251,6 +248,7 @@ describe("code-flow", () => {
 
     // -----------
     // get code to log in
+    // -----------
     await worker.fetch("/passwordless/start", {
       headers: {
         "content-type": "application/json",
@@ -287,18 +285,85 @@ describe("code-flow", () => {
     expect(authenticateResponse2.status).toBe(302);
   });
 
-  it("should not accept an invalid code", async () => {
-    // example magic link
-    // https://auth2.sesamy.dev/passwordless/verify_redirect?scope=openid+profile+email&response_type=token+id_token&redirect_uri=https%3A%2F%2Flogin2-8hgvh9s7y.vercel.sesamy.dev%2Fsv%2Fcallback&state=redirect_uri%3Dhttps%253A%252F%252Fexample.com%26client_id%3Dkvartal%26vendor_id%3Dkvartal%26service_id%3Dspotify%26service_id%3Dspotify%26connection%3Dauth2&nonce=5hl0M%7E3bZZtlCISjISqIjAHME1-xFc3X&connection=email&client_id=kvartal&email=dan%2B456%40sesamy.com&verification_code=623581
-    // manually make a bad one with wrong code?
-    // wrong and expired are treated the same...
-    // we should get a redirect back to login2 with a page informing us that the link is bad...
-    // BUT here we can just read the URL
+  it("should not accept any invalid params on the magic link", async () => {
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    // -----------
+    // get code to log in
+    // -----------
+    await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "test@example.com",
+        send: "link",
+      }),
+    });
+
+    const emailResponse = await worker.fetch("/test/email");
+    const [sentEmail] = (await emailResponse.json()) as Email[];
+    const link = sentEmail.magicLink;
+
+    // ------------
+    // Overwrite the magic link with a bad code, and try and use it
+    // ----------------
+    const magicLinkWithBadCode = new URL(link!);
+    magicLinkWithBadCode.searchParams.set("verification_code", "123456");
+
+    const authenticatePath = magicLinkWithBadCode.href.split(
+      "https://example.com",
+    )[1];
+
+    const authenticateResponse = await worker.fetch(authenticatePath, {
+      redirect: "manual",
+    });
+
+    // we are still getting a redirect but to a page on login2 saying the code is expired
+    expect(authenticateResponse.status).toBe(302);
+
+    const redirectUri = new URL(authenticateResponse.headers.get("location")!);
+
+    expect(redirectUri.hostname).toBe("login2.sesamy.dev");
+    expect(redirectUri.pathname).toBe("/sv/expired-code");
+    expect(redirectUri.searchParams.get("email")).toBe(
+      encodeURIComponent("test@example.com"),
+    );
+
+    // ------------
+    // Overwrite the magic link with a bad email, and try and use it
+    // ----------------
+    const magicLinkWithBadEmail = new URL(link!);
+    magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
+
+    const authenticatePath2 = magicLinkWithBadEmail.href.split(
+      "https://example.com",
+    )[1];
+
+    const authenticateResponse2 = await worker.fetch(authenticatePath2, {
+      redirect: "manual",
+    });
+
+    expect(authenticateResponse2.status).toBe(302);
+
+    const redirectUri2 = new URL(
+      authenticateResponse2.headers.get("location")!,
+    );
+
+    expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
+    expect(redirectUri2.pathname).toBe("/sv/expired-code");
+    expect(redirectUri2.searchParams.get("email")).toBe(
+      encodeURIComponent("another@email.com"),
+    );
   });
-  // TO TEST
-  // - that can reuse same magic link again
-  // "bad" magic link doesn't work
-  // - incorrect email
-  // - incorrect code
-  // anything else worth testing?   Not sure how much time we want to spend on validating access protection... probably a bit for security holes
 });
