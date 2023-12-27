@@ -2,6 +2,7 @@ import { UserResponse } from "../../src/types/auth0";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
+import createTestUsers from "../setups/createTestUsers";
 
 describe("users", () => {
   let worker: UnstableDevWorker;
@@ -210,37 +211,7 @@ describe("users", () => {
     it("should link two users using link_to parameter", async () => {
       const token = await getAdminToken();
 
-      const createUserResponse1 = await worker.fetch("/api/v2/users", {
-        method: "POST",
-        body: JSON.stringify({
-          email: "test1@example.com",
-          connection: "email",
-        }),
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "test",
-          "content-type": "application/json",
-        },
-      });
-
-      expect(createUserResponse1.status).toBe(201);
-      const newUser1 = (await createUserResponse1.json()) as UserResponse;
-
-      const createUserResponse2 = await worker.fetch("/api/v2/users", {
-        method: "POST",
-        body: JSON.stringify({
-          email: "test2@example.com",
-          connection: "email",
-        }),
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "test",
-          "content-type": "application/json",
-        },
-      });
-
-      expect(createUserResponse2.status).toBe(201);
-      const newUser2 = (await createUserResponse2.json()) as UserResponse;
+      const [newUser1, newUser2] = await createTestUsers(worker);
 
       const linkUserResponse = await worker.fetch(
         `/api/v2/users/${newUser1.id}/identities`,
@@ -356,37 +327,7 @@ describe("users", () => {
     it("should link two users using user_id and provider parameter", async () => {
       const token = await getAdminToken();
 
-      const createUserResponse1 = await worker.fetch("/api/v2/users", {
-        method: "POST",
-        body: JSON.stringify({
-          email: "test1@example.com",
-          connection: "email",
-        }),
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "test",
-          "content-type": "application/json",
-        },
-      });
-
-      expect(createUserResponse1.status).toBe(201);
-      const newUser1 = (await createUserResponse1.json()) as UserResponse;
-
-      const createUserResponse2 = await worker.fetch("/api/v2/users", {
-        method: "POST",
-        body: JSON.stringify({
-          email: "test2@example.com",
-          connection: "email",
-        }),
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "test",
-          "content-type": "application/json",
-        },
-      });
-
-      expect(createUserResponse2.status).toBe(201);
-      const newUser2 = (await createUserResponse2.json()) as UserResponse;
+      const [newUser1, newUser2] = await createTestUsers(worker);
 
       const [provider] = newUser2.id.split("|");
       const linkUserResponse = await worker.fetch(
