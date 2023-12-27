@@ -1,5 +1,6 @@
 import { OpenIDConfiguration } from "../src/routes/tsoa/jwks";
 import { Jwks } from "../src/types/jwks";
+import { getAdminToken } from "./helpers/token";
 import { start } from "./start";
 import type { UnstableDevWorker } from "wrangler";
 
@@ -24,11 +25,19 @@ describe("jwks", () => {
   });
 
   it("should create a new rsa-key and return it", async () => {
-    const createKeyResponse = await worker.fetch("/create-key", {
-      method: "POST",
-    });
+    const token = await getAdminToken();
+    const createKeyResponse = await worker.fetch(
+      "/api/v2/keys/signing/rotate",
+      {
+        method: "POST",
+        headers: {
+          "tenant-id": "tenantId",
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
-    expect(createKeyResponse.status).toBe(200);
+    expect(createKeyResponse.status).toBe(201);
 
     const response = await worker.fetch("/.well-known/jwks.json");
 
