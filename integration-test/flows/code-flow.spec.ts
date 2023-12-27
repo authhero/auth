@@ -465,8 +465,6 @@ describe("code-flow", () => {
   });
 
   it("should accept the same code multiple times", async () => {
-    const token = await getAdminToken();
-
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/sv/callback",
@@ -475,7 +473,7 @@ describe("code-flow", () => {
       state: "state",
     };
 
-    const response = await worker.fetch("/passwordless/start", {
+    await worker.fetch("/passwordless/start", {
       headers: {
         "content-type": "application/json",
       },
@@ -505,7 +503,6 @@ describe("code-flow", () => {
         username: "foo@example.com",
       }),
     });
-
     expect(authRes.status).toBe(200);
 
     // now use the same code again
@@ -526,6 +523,49 @@ describe("code-flow", () => {
     expect(authRes2.status).toBe(200);
   });
 
+  it("should not accept an invalid code", async () => {
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "foo@example.com",
+        send: "code",
+      }),
+    });
+    await worker.fetch("/test/email");
+
+    const BAD_CODE = "123456";
+
+    const authRes = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp: BAD_CODE,
+        realm: "email",
+        username: "foo@example.com",
+      }),
+    });
+
+    expect(authRes.status).toBe(403);
+  });
+
   // TO TEST
-  // - using expired codes?
+  // - using expired codes? how can we fast-forward time with wrangler...
 });
