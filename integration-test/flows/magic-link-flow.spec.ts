@@ -15,6 +15,9 @@ describe("code-flow", () => {
     worker.stop();
   });
 
+  // TODO - as describe block, then test
+  // - new user: new-user@example.com - even assert that user does not exist first like on code flow
+  // - existing user - assert user DOES exist first
   it("should log in using the sent magic link", async () => {
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/sv/callback";
@@ -37,8 +40,7 @@ describe("code-flow", () => {
         },
         client_id: "clientId",
         connection: "email",
-        // is this creating a new user? Want to test existing users also... another test flow with existing user
-        email: "test@example.com",
+        email: "new-user@example.com",
         send: "link",
       }),
     });
@@ -49,7 +51,7 @@ describe("code-flow", () => {
 
     const emailResponse = await worker.fetch("/test/email");
     const [sentEmail] = (await emailResponse.json()) as Email[];
-    expect(sentEmail.to).toBe("test@example.com");
+    expect(sentEmail.to).toBe("new-user@example.com");
 
     const link = sentEmail.magicLink;
 
@@ -79,7 +81,7 @@ describe("code-flow", () => {
 
     const idToken = redirectUri.searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
-    expect(idTokenPayload.email).toBe("test@example.com");
+    expect(idTokenPayload.email).toBe("new-user@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
     const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
@@ -108,8 +110,8 @@ describe("code-flow", () => {
     expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
       aud: "clientId",
-      name: "test@example.com",
-      email: "test@example.com",
+      name: "new-user@example.com",
+      email: "new-user@example.com",
       email_verified: true,
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       iss: "https://example.com/",
