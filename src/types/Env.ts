@@ -1,6 +1,5 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { DataAdapters } from "../adapters/interfaces";
-import { Application, Tenant } from "./sql";
 
 export interface ClientFactory<ClientType> {
   getInstanceById: (id: string) => ClientType;
@@ -17,9 +16,6 @@ export type Env = {
   DATABASE_PASSWORD: string;
   DATABASE_USERNAME: string;
   TOKEN_SERVICE: Fetcher;
-  USER: DurableObjectNamespace;
-  AUTH_DB: D1Database;
-  CERTIFICATES: KVNamespace;
   AUTH_TEMPLATES: R2Bucket;
   EMAIL_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
