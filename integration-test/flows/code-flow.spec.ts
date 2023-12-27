@@ -39,7 +39,6 @@ describe("code-flow", () => {
         },
       },
     );
-
     expect(resInitialQuery.status).toBe(404);
 
     // -----------------
@@ -164,6 +163,101 @@ describe("code-flow", () => {
     expect(sub).toContain("email|");
     expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
+      aud: "clientId",
+      name: "test@example.com",
+      email: "test@example.com",
+      email_verified: true,
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      iss: "https://example.com/",
+    });
+
+    // ----------------------------
+    // Now log in (previous flow was signup)
+    // ----------------------------
+    const passwordlessLoginStart = await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: {
+          nonce,
+          redirect_uri,
+          response_type,
+          scope,
+          state,
+        },
+        client_id: "clientId",
+        connection: "email",
+        email: "test@example.com",
+        // can be code or link
+        send: "code",
+      }),
+    });
+    const emailRes2 = await worker.fetch("/test/email");
+    const [sentEmail2] = (await emailRes2.json()) as Email[];
+    const otpLogin = sentEmail2.code;
+
+    const authRes2 = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "test@example.com",
+      }),
+    });
+    const { login_ticket: loginTicket2 } =
+      (await authRes2.json()) as LoginTicket;
+
+    const query2 = new URLSearchParams({
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket: loginTicket2,
+      nonce,
+      redirect_uri,
+      response_type,
+      scope,
+      state,
+      referrer: "https://login.example.com",
+      realm: "email",
+    });
+
+    const tokenRes2 = await worker.fetch(`/authorize?${query2.toString()}`, {
+      redirect: "manual",
+    });
+
+    const redirectUri2 = new URL(tokenRes2.headers.get("location")!);
+
+    // ----------------------------
+    // Now silent auth again - confirms that logging in works
+    // ----------------------------
+
+    const setCookiesHeader2 = tokenRes2.headers.get("set-cookie")!;
+    const { idToken: silentAuthIdTokenPayload2 } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader2,
+        worker,
+        nonce,
+        "clientId",
+      );
+
+    const {
+      // these are the fields that change on every test run
+      exp: exp2,
+      iat: iat2,
+      sid: sid2,
+      sub: sub2,
+      ...restOfIdTokenPayload2
+    } = silentAuthIdTokenPayload2;
+
+    expect(sub2).toContain("email|");
+    expect(sid2).toHaveLength(21);
+    expect(restOfIdTokenPayload2).toEqual({
       aud: "clientId",
       name: "test@example.com",
       email: "test@example.com",
@@ -392,7 +486,6 @@ describe("code-flow", () => {
   });
 
   // TO TEST
-  // - logging in with same primary code user - silent auth check, and log in second time
   // - reusing codes?
   // - using expired codes?
 });
