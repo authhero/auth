@@ -502,14 +502,13 @@ describe("code-flow", () => {
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
         realm: "email",
-        username: "test@example.com",
+        username: "foo@example.com",
       }),
     });
 
     expect(authRes.status).toBe(200);
 
     // now use the same code again
-
     const authRes2 = await worker.fetch("/co/authenticate", {
       headers: {
         "content-type": "application/json",
@@ -520,7 +519,7 @@ describe("code-flow", () => {
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
         realm: "email",
-        username: "test@example.com",
+        username: "foo@example.com",
       }),
     });
 
