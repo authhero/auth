@@ -13,7 +13,7 @@ import { Ticket } from "../../../src/types/Ticket";
 import { testUser } from "../../fixtures/user";
 
 describe("authorize", () => {
-  const date = new Date();
+  const date = new Date("2023-11-28T12:00:00.000Z");
 
   beforeAll(() => {
     jest.useFakeTimers();

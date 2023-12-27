@@ -1,5 +1,4 @@
 import { DataAdapters } from "../interfaces";
-import { createCertificateAdapter } from "./certificates";
 import { createUserAdapter } from "./users";
 import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";
@@ -26,7 +25,6 @@ export default function createAdapters(): DataAdapters {
 
   return {
     applications: createApplicationsAdapter(applications),
-    certificates: createCertificateAdapter(),
     codes: createCodesAdapter(),
     clients: createClientsAdapter(applications, tenants, connections, domains),
     email: emailAdapter(),

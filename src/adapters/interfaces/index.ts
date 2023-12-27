@@ -1,4 +1,3 @@
-import { CertificatesAdapter } from "./Certificates";
 import { ClientsAdapter } from "./Clients";
 import { CodesAdapter } from "./Codes";
 import { EmailAdapter } from "./Email";
@@ -19,7 +18,6 @@ import { KeysAdapter } from "./Keys";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;
-  certificates: CertificatesAdapter;
   codes: CodesAdapter;
   clients: ClientsAdapter;
   email: EmailAdapter;

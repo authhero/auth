@@ -43,7 +43,7 @@ export class JWKSRoutes extends Controller {
   ): Promise<JwksKeys> {
     const { env } = request.ctx;
 
-    const certificates = await env.data.certificates.listCertificates();
+    const certificates = await env.data.keys.list();
     const keys = certificates.map((cert: Certificate): Jwks => {
       const { alg, n, e, kty } = JSON.parse(cert.public_key);
       if (!alg || !e || !kty || !n) {

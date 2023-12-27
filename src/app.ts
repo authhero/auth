@@ -6,7 +6,6 @@ import { RegisterRoutes } from "../build/routes";
 import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
-import { rotateKeysRoute } from "./routes/rotate-keys";
 import { serve } from "./routes/login";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
@@ -76,7 +75,6 @@ app.get("/spec", async () => {
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 app.get("/static/:file{.*}", serve);
-app.post("/create-key", rotateKeysRoute);
 
 app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   const response = await ctx.env.data.applications.list(

@@ -256,9 +256,7 @@ export function authenticationHandler(
   ) {
     const authHeader = ctx.req.header("authorization");
     if (!authHeader || !authHeader.toLowerCase().startsWith("bearer")) {
-      return new Response("Forbidden", {
-        status: 403,
-      });
+      throw new HTTPException(403, { message: "Unauthorized" });
     }
     const bearer = authHeader.slice(7);
 
