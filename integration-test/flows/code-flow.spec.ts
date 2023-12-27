@@ -21,19 +21,12 @@ describe("code-flow", () => {
   it("should run a passwordless flow with code", async () => {
     const token = await getAdminToken();
 
-    const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
-    const redirect_uri = "https://login.example.com/sv/callback";
-    const response_type = "token id_token";
-    const scope = "openid profile email";
-    const state = "state";
-
     const AUTH_PARAMS = {
-      redirect_uri,
-      response_type,
-      scope,
-      state,
-      // should this be different on every request?
-      nonce,
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
     };
 
     // -----------------
@@ -146,7 +139,7 @@ describe("code-flow", () => {
     } = await doSilentAuthRequestAndReturnTokens(
       setCookiesHeader,
       worker,
-      nonce,
+      AUTH_PARAMS.nonce,
       "clientId",
     );
 
@@ -223,13 +216,12 @@ describe("code-flow", () => {
     // ----------------------------
     // Now silent auth again - confirms that logging in works
     // ----------------------------
-
     const setCookiesHeader2 = tokenRes2.headers.get("set-cookie")!;
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
         worker,
-        nonce,
+        AUTH_PARAMS.nonce,
         "clientId",
       );
 
@@ -472,7 +464,69 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload2.sub).toBe("userId");
   });
 
+  it("should accept the same code multiple times", async () => {
+    const token = await getAdminToken();
+
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    const response = await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "foo@example.com",
+        send: "code",
+      }),
+    });
+    const emailResponse = await worker.fetch("/test/email");
+    const [sentEmail] = (await emailResponse.json()) as Email[];
+    const otp = sentEmail.code;
+
+    const authRes = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "test@example.com",
+      }),
+    });
+
+    expect(authRes.status).toBe(200);
+
+    // now use the same code again
+
+    const authRes2 = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "test@example.com",
+      }),
+    });
+
+    expect(authRes2.status).toBe(200);
+  });
+
   // TO TEST
-  // - reusing codes?
   // - using expired codes?
 });
