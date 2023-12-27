@@ -19,12 +19,32 @@ describe("code-flow", () => {
   });
 
   it("should run a passwordless flow with code", async () => {
+    const token = await getAdminToken();
+
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/sv/callback";
     const response_type = "token id_token";
     const scope = "openid profile email";
     const state = "state";
 
+    // -----------------
+    // Doing a new signup here, so expect this email not to exist
+    // -----------------
+    const resInitialQuery = await worker.fetch(
+      "/api/v2/users-by-email?email=test@example.com",
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+
+    expect(resInitialQuery.status).toBe(404);
+
+    // -----------------
+    // Start the passwordless flow
+    // -----------------
     const response = await worker.fetch("/passwordless/start", {
       headers: {
         "content-type": "application/json",
