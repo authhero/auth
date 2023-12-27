@@ -37,6 +37,7 @@ describe("code-flow", () => {
         },
         client_id: "clientId",
         connection: "email",
+        // is this creating a new user? Want to test existing users also... another test flow with existing user
         email: "test@example.com",
         send: "link",
       }),
@@ -114,7 +115,66 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
+
+  it("should log in with the same magic link multiple times", async () => {
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    // -----------
+    // get code to log in
+    await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "test@example.com",
+        send: "link",
+      }),
+    });
+
+    const emailResponse = await worker.fetch("/test/email");
+    const [sentEmail] = (await emailResponse.json()) as Email[];
+    const link = sentEmail.magicLink;
+    const authenticatePath = link?.split("https://example.com")[1];
+
+    // ------------
+    // Authenticate using the magic link the first time
+    // ----------------
+    const authenticateResponse = await worker.fetch(authenticatePath, {
+      redirect: "manual",
+    });
+    expect(authenticateResponse.status).toBe(302);
+
+    // ------------
+    // Authenticate using the magic link the second time
+    // ----------------
+    const authenticateResponse2 = await worker.fetch(authenticatePath, {
+      redirect: "manual",
+    });
+    expect(authenticateResponse2.status).toBe(302);
+  });
+
+  it("should not accept an invalid code", async () => {
+    // example magic link
+    // https://auth2.sesamy.dev/passwordless/verify_redirect?scope=openid+profile+email&response_type=token+id_token&redirect_uri=https%3A%2F%2Flogin2-8hgvh9s7y.vercel.sesamy.dev%2Fsv%2Fcallback&state=redirect_uri%3Dhttps%253A%252F%252Fexample.com%26client_id%3Dkvartal%26vendor_id%3Dkvartal%26service_id%3Dspotify%26service_id%3Dspotify%26connection%3Dauth2&nonce=5hl0M%7E3bZZtlCISjISqIjAHME1-xFc3X&connection=email&client_id=kvartal&email=dan%2B456%40sesamy.com&verification_code=623581
+    // manually make a bad one with wrong code?
+    // wrong and expired are treated the same...
+    // we should get a redirect back to login2 with a page informing us that the link is bad...
+    // BUT here we can just read the URL
+  });
   // TO TEST
   // - that can reuse same magic link again
-  // - that a "bad" magic link doesn't work?  Not sure how much time we want to spend on validating access protection... probably a bit for security holes
+  // "bad" magic link doesn't work
+  // - incorrect email
+  // - incorrect code
+  // anything else worth testing?   Not sure how much time we want to spend on validating access protection... probably a bit for security holes
 });
