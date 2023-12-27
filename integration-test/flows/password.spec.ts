@@ -240,4 +240,5 @@ describe("password-flow", () => {
   // TO TEST
   // - login with existing user & password, but wrong password
   // - login with non-existing user & password
+  // - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
 });
