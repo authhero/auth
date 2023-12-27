@@ -3,6 +3,7 @@ import { start } from "../start";
 import type { UnstableDevWorker } from "wrangler";
 import type { Email } from "../../src/types/Email";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
+import { getAdminToken } from "../helpers/token";
 
 describe("code-flow", () => {
   let worker: UnstableDevWorker;
@@ -19,11 +20,29 @@ describe("code-flow", () => {
   // - new user: new-user@example.com - even assert that user does not exist first like on code flow
   // - existing user - assert user DOES exist first
   it("should log in using the sent magic link", async () => {
-    const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
-    const redirect_uri = "https://login.example.com/sv/callback";
-    const response_type = "token id_token";
-    const scope = "openid profile email";
-    const state = "state";
+    const token = await getAdminToken();
+
+    const AUTH_PARAMS = {
+      nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    // -----------------
+    // Doing a new signup here, so expect this email not to exist
+    // -----------------
+    const resInitialQuery = await worker.fetch(
+      "/api/v2/users-by-email?email=new-user@example.com",
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    expect(resInitialQuery.status).toBe(404);
 
     const response = await worker.fetch("/passwordless/start", {
       headers: {
@@ -31,13 +50,7 @@ describe("code-flow", () => {
       },
       method: "POST",
       body: JSON.stringify({
-        authParams: {
-          nonce,
-          redirect_uri,
-          response_type,
-          scope,
-          state,
-        },
+        authParams: AUTH_PARAMS,
         client_id: "clientId",
         connection: "email",
         email: "new-user@example.com",
@@ -93,7 +106,7 @@ describe("code-flow", () => {
     } = await doSilentAuthRequestAndReturnTokens(
       authCookieHeader,
       worker,
-      nonce,
+      AUTH_PARAMS.nonce,
       "clientId",
     );
 
@@ -113,7 +126,7 @@ describe("code-flow", () => {
       name: "new-user@example.com",
       email: "new-user@example.com",
       email_verified: true,
-      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
       iss: "https://example.com/",
     });
   });
