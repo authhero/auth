@@ -19,115 +19,224 @@ describe("code-flow", () => {
   // TODO - as describe block, then test
   // - new user: new-user@example.com - even assert that user does not exist first like on code flow
   // - existing user - assert user DOES exist first
-  it("should log in using the sent magic link", async () => {
-    const token = await getAdminToken();
+  describe("should log in using the sent magic link, when", () => {
+    it("is a new sign up", async () => {
+      const token = await getAdminToken();
 
-    const AUTH_PARAMS = {
-      nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-      redirect_uri: "https://login.example.com/sv/callback",
-      response_type: "token id_token",
-      scope: "openid profile email",
-      state: "state",
-    };
+      const AUTH_PARAMS = {
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        redirect_uri: "https://login.example.com/sv/callback",
+        response_type: "token id_token",
+        scope: "openid profile email",
+        state: "state",
+      };
 
-    // -----------------
-    // Doing a new signup here, so expect this email not to exist
-    // -----------------
-    const resInitialQuery = await worker.fetch(
-      "/api/v2/users-by-email?email=new-user@example.com",
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+      // -----------------
+      // Doing a new signup here, so expect this email not to exist
+      // -----------------
+      const resInitialQuery = await worker.fetch(
+        "/api/v2/users-by-email?email=new-user@example.com",
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
         },
-      },
-    );
-    expect(resInitialQuery.status).toBe(404);
+      );
+      expect(resInitialQuery.status).toBe(404);
 
-    const response = await worker.fetch("/passwordless/start", {
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({
-        authParams: AUTH_PARAMS,
-        client_id: "clientId",
-        connection: "email",
+      const response = await worker.fetch("/passwordless/start", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "new-user@example.com",
+          send: "link",
+        }),
+      });
+
+      if (response.status !== 200) {
+        throw new Error(await response.text());
+      }
+
+      const emailResponse = await worker.fetch("/test/email");
+      const [sentEmail] = (await emailResponse.json()) as Email[];
+      expect(sentEmail.to).toBe("new-user@example.com");
+
+      const link = sentEmail.magicLink;
+
+      const authenticatePath = link?.split("https://example.com")[1];
+
+      // Authenticate using the magic link
+      const authenticateResponse = await worker.fetch(authenticatePath, {
+        redirect: "manual",
+      });
+
+      if (authenticateResponse.status !== 302) {
+        const errorMessage = `Failed to verify redirect with status: ${
+          authenticateResponse.status
+        } and message: ${await response.text()}`;
+        throw new Error(errorMessage);
+      }
+
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login.example.com");
+
+      const accessToken = redirectUri.searchParams.get("access_token");
+
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("openid profile email");
+
+      const idToken = redirectUri.searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("new-user@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+
+      const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+
+      // now check silent auth works when logged in with magic link----------------------------------------
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        authCookieHeader,
+        worker,
+        AUTH_PARAMS.nonce,
+        "clientId",
+      );
+
+      const {
+        // these are the fields that change on every test run
+        exp,
+        iat,
+        sid,
+        sub,
+        ...restOfIdTokenPayload
+      } = silentAuthIdTokenPayload;
+
+      expect(sub).toContain("email|");
+      expect(sid).toHaveLength(21);
+      expect(restOfIdTokenPayload).toEqual({
+        aud: "clientId",
+        name: "new-user@example.com",
         email: "new-user@example.com",
-        send: "link",
-      }),
+        email_verified: true,
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        iss: "https://example.com/",
+      });
     });
+    it("is an existing user", async () => {
+      const token = await getAdminToken();
 
-    if (response.status !== 200) {
-      throw new Error(await response.text());
-    }
+      const AUTH_PARAMS = {
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        redirect_uri: "https://login.example.com/sv/callback",
+        response_type: "token id_token",
+        scope: "openid profile email",
+        state: "state",
+      };
 
-    const emailResponse = await worker.fetch("/test/email");
-    const [sentEmail] = (await emailResponse.json()) as Email[];
-    expect(sentEmail.to).toBe("new-user@example.com");
+      // -----------------
+      // User should already exist in default fixture
+      // -----------------
+      const resInitialQuery = await worker.fetch(
+        "/api/v2/users-by-email?email=foo@example.com",
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      expect(resInitialQuery.status).toBe(200);
 
-    const link = sentEmail.magicLink;
+      // -----------------
+      // Now get magic link emailed
+      // -----------------
+      await worker.fetch("/passwordless/start", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "link",
+        }),
+      });
 
-    const authenticatePath = link?.split("https://example.com")[1];
+      const emailResponse = await worker.fetch("/test/email");
+      const [sentEmail] = (await emailResponse.json()) as Email[];
+      expect(sentEmail.to).toBe("foo@example.com");
 
-    // Authenticate using the magic link
-    const authenticateResponse = await worker.fetch(authenticatePath, {
-      redirect: "manual",
-    });
+      const link = sentEmail.magicLink;
 
-    if (authenticateResponse.status !== 302) {
-      const errorMessage = `Failed to verify redirect with status: ${
-        authenticateResponse.status
-      } and message: ${await response.text()}`;
-      throw new Error(errorMessage);
-    }
+      const authenticatePath = link?.split("https://example.com")[1];
 
-    const redirectUri = new URL(authenticateResponse.headers.get("location")!);
-    expect(redirectUri.hostname).toBe("login.example.com");
+      // -----------------
+      // Authenticate using the magic link for the existing user
+      // -----------------
+      const authenticateResponse = await worker.fetch(authenticatePath, {
+        redirect: "manual",
+      });
 
-    const accessToken = redirectUri.searchParams.get("access_token");
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login.example.com");
 
-    const accessTokenPayload = parseJwt(accessToken!);
-    expect(accessTokenPayload.aud).toBe("default");
-    expect(accessTokenPayload.iss).toBe("https://example.com/");
-    expect(accessTokenPayload.scope).toBe("openid profile email");
+      const accessToken = redirectUri.searchParams.get("access_token");
 
-    const idToken = redirectUri.searchParams.get("id_token");
-    const idTokenPayload = parseJwt(idToken!);
-    expect(idTokenPayload.email).toBe("new-user@example.com");
-    expect(idTokenPayload.aud).toBe("clientId");
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("openid profile email");
+      expect(accessTokenPayload.sub).toBe("userId");
 
-    const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+      const idToken = redirectUri.searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("foo@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+      expect(idTokenPayload.sub).toBe("userId");
 
-    // now check silent auth works when logged in with magic link----------------------------------------
-    const {
-      accessToken: silentAuthAccessTokenPayload,
-      idToken: silentAuthIdTokenPayload,
-    } = await doSilentAuthRequestAndReturnTokens(
-      authCookieHeader,
-      worker,
-      AUTH_PARAMS.nonce,
-      "clientId",
-    );
+      const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
-    const {
-      // these are the fields that change on every test run
-      exp,
-      iat,
-      sid,
-      sub,
-      ...restOfIdTokenPayload
-    } = silentAuthIdTokenPayload;
+      // ----------------------------------------
+      // now check silent auth works when logged in with magic link for existing user
+      // ----------------------------------------
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          worker,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
 
-    expect(sub).toContain("email|");
-    expect(sid).toHaveLength(21);
-    expect(restOfIdTokenPayload).toEqual({
-      aud: "clientId",
-      name: "new-user@example.com",
-      email: "new-user@example.com",
-      email_verified: true,
-      nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-      iss: "https://example.com/",
+      const { exp, iat, sid, ...restOfIdTokenPayload } =
+        silentAuthIdTokenPayload;
+
+      expect(sid).toHaveLength(21);
+      expect(restOfIdTokenPayload).toEqual({
+        sub: "userId",
+        aud: "clientId",
+        name: "Åkesson Þorsteinsson",
+        nickname: "Åkesson Þorsteinsson",
+        picture: "https://example.com/foo.png",
+        email: "foo@example.com",
+        email_verified: true,
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        iss: "https://example.com/",
+      });
     });
   });
 
