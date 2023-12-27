@@ -366,4 +366,7 @@ describe("code-flow", () => {
       encodeURIComponent("another@email.com"),
     );
   });
+  // TO TEST
+  // like code-flow
+  // it("should return existing primary account when logging in with new code sign on with same email address", async () => {
 });
