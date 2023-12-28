@@ -19,25 +19,40 @@ describe("code-flow", () => {
   });
 
   it("should run a passwordless flow with code", async () => {
-    const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
-    const redirect_uri = "https://login.example.com/sv/callback";
-    const response_type = "token id_token";
-    const scope = "openid profile email";
-    const state = "state";
+    const token = await getAdminToken();
 
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    // -----------------
+    // Doing a new signup here, so expect this email not to exist
+    // -----------------
+    const resInitialQuery = await worker.fetch(
+      "/api/v2/users-by-email?email=test@example.com",
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    expect(resInitialQuery.status).toBe(404);
+
+    // -----------------
+    // Start the passwordless flow
+    // -----------------
     const response = await worker.fetch("/passwordless/start", {
       headers: {
         "content-type": "application/json",
       },
       method: "POST",
       body: JSON.stringify({
-        authParams: {
-          nonce,
-          redirect_uri,
-          response_type,
-          scope,
-          state,
-        },
+        authParams: AUTH_PARAMS,
         client_id: "clientId",
         connection: "email",
         email: "test@example.com",
@@ -82,14 +97,10 @@ describe("code-flow", () => {
     const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
     const query = new URLSearchParams({
+      ...AUTH_PARAMS,
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
       login_ticket,
-      nonce,
-      redirect_uri,
-      response_type,
-      scope,
-      state,
       referrer: "https://login.example.com",
       realm: "email",
     });
@@ -128,7 +139,7 @@ describe("code-flow", () => {
     } = await doSilentAuthRequestAndReturnTokens(
       setCookiesHeader,
       worker,
-      nonce,
+      AUTH_PARAMS.nonce,
       "clientId",
     );
 
@@ -144,6 +155,87 @@ describe("code-flow", () => {
     expect(sub).toContain("email|");
     expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
+      aud: "clientId",
+      name: "test@example.com",
+      email: "test@example.com",
+      email_verified: true,
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      iss: "https://example.com/",
+    });
+
+    // ----------------------------
+    // Now log in (previous flow was signup)
+    // ----------------------------
+    const passwordlessLoginStart = await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "test@example.com",
+        send: "code",
+      }),
+    });
+    const emailRes2 = await worker.fetch("/test/email");
+    const [sentEmail2] = (await emailRes2.json()) as Email[];
+    const otpLogin = sentEmail2.code;
+
+    const authRes2 = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp: otpLogin,
+        realm: "email",
+        username: "test@example.com",
+      }),
+    });
+    const { login_ticket: loginTicket2 } =
+      (await authRes2.json()) as LoginTicket;
+
+    const query2 = new URLSearchParams({
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket: loginTicket2,
+      ...AUTH_PARAMS,
+      referrer: "https://login.example.com",
+      realm: "email",
+    });
+
+    const tokenRes2 = await worker.fetch(`/authorize?${query2.toString()}`, {
+      redirect: "manual",
+    });
+
+    // ----------------------------
+    // Now silent auth again - confirms that logging in works
+    // ----------------------------
+    const setCookiesHeader2 = tokenRes2.headers.get("set-cookie")!;
+    const { idToken: silentAuthIdTokenPayload2 } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader2,
+        worker,
+        AUTH_PARAMS.nonce,
+        "clientId",
+      );
+
+    const {
+      // these are the fields that change on every test run
+      exp: exp2,
+      iat: iat2,
+      sid: sid2,
+      sub: sub2,
+      ...restOfIdTokenPayload2
+    } = silentAuthIdTokenPayload2;
+
+    expect(sub2).toContain("email|");
+    expect(sid2).toHaveLength(21);
+    expect(restOfIdTokenPayload2).toEqual({
       aud: "clientId",
       name: "test@example.com",
       email: "test@example.com",
@@ -371,8 +463,108 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload2.sub).toBe("userId");
   });
 
+  it("should accept the same code multiple times", async () => {
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "foo@example.com",
+        send: "code",
+      }),
+    });
+    const emailResponse = await worker.fetch("/test/email");
+    const [sentEmail] = (await emailResponse.json()) as Email[];
+    const otp = sentEmail.code;
+
+    const authRes = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "foo@example.com",
+      }),
+    });
+    expect(authRes.status).toBe(200);
+
+    // now use the same code again
+    const authRes2 = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "foo@example.com",
+      }),
+    });
+
+    expect(authRes2.status).toBe(200);
+  });
+
+  it("should not accept an invalid code", async () => {
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    await worker.fetch("/passwordless/start", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "foo@example.com",
+        send: "code",
+      }),
+    });
+    await worker.fetch("/test/email");
+
+    const BAD_CODE = "123456";
+
+    const authRes = await worker.fetch("/co/authenticate", {
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp: BAD_CODE,
+        realm: "email",
+        username: "foo@example.com",
+      }),
+    });
+
+    expect(authRes.status).toBe(403);
+  });
+
   // TO TEST
-  // - logging in with same primary code user - silent auth check, and log in second time
-  // - reusing codes?
-  // - using expired codes?
+  // - using expired codes? how can we fast-forward time with wrangler...
 });
