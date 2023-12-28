@@ -9,7 +9,7 @@ export async function getEnv() {
   console.log("start", Date.now());
 
   const dialect = new SqliteDialect({
-    database: new SQLite(`file:${Date.now()}?mode=memory`),
+    database: new SQLite(":memory:"),
   });
   await migrateToLatest(dialect, false);
   // Don't use getDb here as it will reuse the connection
