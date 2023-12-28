@@ -9,7 +9,7 @@ import { Database } from "../src/types";
 export async function migrateToLatest(
   dialect: Dialect,
   debug = true,
-  db: Kysely<Database> | undefined,
+  db?: Kysely<Database>,
 ) {
   if (debug) {
     console.log("migrating...");
