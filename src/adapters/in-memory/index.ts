@@ -1,5 +1,4 @@
 import { DataAdapters } from "../interfaces";
-import { createCertificateAdapter } from "./certificates";
 import { createUserAdapter } from "./users";
 import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";
@@ -16,6 +15,7 @@ import { createUniversalLoginSessionsAdapter } from "./universal-auth-sessions";
 import { createConnectionsAdapter } from "./connections";
 import { Application, SqlConnection, Tenant, SqlDomain } from "../../types";
 import { createDomainsAdapter } from "./domains";
+import { createKeysAdapter } from "./keys";
 
 export default function createAdapters(): DataAdapters {
   const connections: SqlConnection[] = [];
@@ -25,10 +25,10 @@ export default function createAdapters(): DataAdapters {
 
   return {
     applications: createApplicationsAdapter(applications),
-    certificates: createCertificateAdapter(),
     codes: createCodesAdapter(),
     clients: createClientsAdapter(applications, tenants, connections, domains),
     email: emailAdapter(),
+    keys: createKeysAdapter(),
     members: createMembersAdapter(),
     OTP: createOTPAdapter(),
     passwords: createPasswordsAdapter(),

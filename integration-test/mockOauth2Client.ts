@@ -16,7 +16,7 @@ function createTokenExample(payload: {
     },
     payload,
     // Would be good to use different certificates for each social provider and then test we are verifying the signature
-    pemKey: getCertificate().privateKey,
+    pemKey: getCertificate().private_key,
   });
 }
 

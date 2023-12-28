@@ -150,7 +150,7 @@ export function contextFixture(
   }
 
   // Add a known certificate
-  data.certificates.upsertCertificates([getCertificate()]);
+  data.keys.create(getCertificate());
 
   return {
     set: () => {},

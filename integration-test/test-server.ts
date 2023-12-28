@@ -13,7 +13,7 @@ import { mockOAuth2ClientFactory } from "./mockOauth2Client";
 
 const data = createAdapter();
 // Add a known certificate
-data.certificates.upsertCertificates([getCertificate()]);
+data.keys.create(getCertificate());
 
 // Create Default Settings----------------------------------------
 data.tenants.create({

@@ -6,6 +6,7 @@ export * from "./Client";
 export * from "./Profile";
 export * from "./Token";
 export * from "./RequestWithContext";
+export * from "./SigningKey";
 export * from "./sql";
 export * from "./Session";
 export * from "./OTP";

@@ -1,5 +1,5 @@
 import { PlanetScaleDialect } from "kysely-planetscale";
-import { migrateToLatest } from "./migrate";
+import { migrateToLatest, migrateDown } from "./migrate";
 
 const dialect = new PlanetScaleDialect({
   host: process.env.DATABASE_HOST,
@@ -10,6 +10,7 @@ const dialect = new PlanetScaleDialect({
 });
 
 migrateToLatest(dialect)
+  // migrateDown(dialect)
   .then(() => {
     console.log("migrated");
   })

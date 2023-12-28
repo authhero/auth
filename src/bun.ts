@@ -3,7 +3,6 @@ import { BunSqliteDialect } from "kysely-bun-sqlite";
 import * as bunSqlite from "bun:sqlite";
 import app from "../src/app";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";
-import { createCertificatesAdapter } from "./adapters/kv-storage/Certificates";
 import createAdapters from "./adapters/kysely";
 import createEmailAdapter from "./adapters/email";
 import { Env } from "./types";
@@ -22,7 +21,6 @@ const server = {
       ...process.env,
       oauth2ClientFactory: { create: oAuth2ClientFactory },
       data: {
-        certificates: createCertificatesAdapter(env),
         ...createEmailAdapter(env),
         ...createAdapters(db),
       },
