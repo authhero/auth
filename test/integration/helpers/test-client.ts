@@ -11,9 +11,10 @@ export async function getEnv() {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
-  await migrateToLatest(dialect, false);
   // Don't use getDb here as it will reuse the connection
   const db = new Kysely<Database>({ dialect: dialect });
+
+  await migrateToLatest(dialect, true, db);
 
   const data = createAdapters(db);
   await data.keys.create(getCertificate());

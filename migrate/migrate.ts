@@ -1,17 +1,22 @@
-import { Dialect, Migrator } from "kysely";
+import { Dialect, Kysely, Migrator } from "kysely";
 import "dotenv/config";
 
 import ReferenceMigrationProvider from "./ReferenceMigrationProvider";
 import migrations from "./migrations";
 import { getDb } from "../src/services/db";
+import { Database } from "../src/types";
 
-export async function migrateToLatest(dialect: Dialect, debug = true) {
+export async function migrateToLatest(
+  dialect: Dialect,
+  debug = true,
+  db: Kysely<Database>,
+) {
   if (debug) {
     console.log("migrating...");
   }
 
   const provider = new ReferenceMigrationProvider(migrations);
-  const db = getDb(dialect);
+  // const db = getDb(dialect);
   const migrator = new Migrator({
     db,
     provider,
