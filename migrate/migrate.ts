@@ -9,14 +9,18 @@ import { Database } from "../src/types";
 export async function migrateToLatest(
   dialect: Dialect,
   debug = true,
-  db: Kysely<Database>,
+  db: Kysely<Database> | undefined,
 ) {
   if (debug) {
     console.log("migrating...");
   }
 
   const provider = new ReferenceMigrationProvider(migrations);
-  // const db = getDb(dialect);
+
+  if (!db) {
+    db = getDb(dialect);
+  }
+
   const migrator = new Migrator({
     db,
     provider,
