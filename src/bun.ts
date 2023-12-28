@@ -7,6 +7,7 @@ import createAdapters from "./adapters/kysely";
 import createEmailAdapter from "./adapters/email";
 import { Env } from "./types";
 import { getDb } from "./services/db";
+import { migrateToLatest } from "../migrate/migrate";
 
 const env = process.env as unknown as Env;
 
@@ -16,6 +17,7 @@ const server = {
       database: new bunSqlite.Database("db.sqlite"),
     });
     const db = getDb(dialect);
+    migrateToLatest(dialect);
 
     return app.fetch(request, {
       ...process.env,
