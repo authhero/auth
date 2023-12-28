@@ -8,8 +8,8 @@ import createAdapters from "../../src/adapters/kysely";
 import { migrateToLatest } from "../../migrate/migrate";
 import { getCertificate } from "../../integration-test/helpers/token";
 
-describe("tenants", () => {
-  it("should add a new tenant", async () => {
+describe("keys", () => {
+  it("should add a new key", async () => {
     const dialect = new SqliteDialect({
       database: new SQLite(":memory:"),
     });
