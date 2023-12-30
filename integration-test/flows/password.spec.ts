@@ -393,6 +393,55 @@ describe("password-flow", () => {
       // no body returned
       expect(loginResponse.status).toBe(403);
     });
+
+    it("should not allow password of a different user to be used", async () => {
+      const createUserResponse = await worker.fetch(
+        "/clientId/dbconnection/register",
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            email: "new-username-password-user@example.com",
+            password: "password",
+          }),
+        },
+      );
+      const loginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "password",
+          username: "new-username-password-user@example.com",
+        }),
+      });
+      // is this enough to be sure the user is created? OR should we exchange the ticket...
+      // or is just calling /dbconnection/register enough?
+
+      const rejectedLoginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          // this is the password of foo@example.com
+          password: "Test!",
+          username: "new-username-password-user@example.com",
+        }),
+      });
+
+      // no body returned
+      expect(rejectedLoginResponse.status).toBe(403);
+    });
   });
   // TO TEST
   // - correct password but a different user
