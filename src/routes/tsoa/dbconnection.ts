@@ -77,6 +77,9 @@ export class DbConnectionController extends Controller {
       });
     }
 
+    // This seems like an existing issue... if the user exists we should just return this...
+    // BUT we are leaking the existence of a user...
+    // so we could always return `ok` but DO NOT actually change the password
     // Store the password
     await ctx.env.data.passwords.create(client.tenant_id, {
       user_id: user.id,

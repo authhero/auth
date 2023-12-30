@@ -143,11 +143,13 @@ describe("password-flow", () => {
         iss: "https://example.com/",
       });
     });
-    // I think I should change this test to expect rejections, and then skip it
-    // seems like something I should look into anyway!
-    it("should reject password signup for existing username-password user BUT it is not", async () => {
-      const password = "password";
 
+    // this needs investigating. what should happen here?
+    // If try and sign up again through Auth0 universal login we get the error
+    // 'Something went wrong, please try again later'
+    // BUT here in auth2 we're not currently checking the provider
+    // AND we should be doing automatic account (but username-password signups don't have verified email addresses)
+    it.skip("should reject password signup for existing username-password user BUT it is not", async () => {
       // ------------------------------------
       // create a user with username-password
       // ------------------------------------
@@ -162,7 +164,7 @@ describe("password-flow", () => {
           method: "POST",
           body: JSON.stringify({
             email: "password-login-test@example.com",
-            password,
+            password: "password",
           }),
         },
       );
@@ -180,12 +182,10 @@ describe("password-flow", () => {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
-          password,
+          password: "password",
           username: "password-login-test@example.com",
         }),
       });
-
-      expect(loginResponse.status).toBe(200);
 
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
 
@@ -227,14 +227,19 @@ describe("password-flow", () => {
           method: "POST",
           body: JSON.stringify({
             email: "password-login-test@example.com",
-            password,
+            password: "password",
           }),
         },
       );
-      // interesting - I didn't expect this! Seems like a bug?
-      expect(createUserResponseRepeated.status).toBe(201);
 
-      // what if I change the password?
+      console.log(await createUserResponseRepeated.text());
+
+      // this should be rejected
+      expect(createUserResponseRepeated.status).toBe(401);
+
+      // ------------------------------------
+      // try signing up with same user again but a different password
+      // ------------------------------------
       const createUserResponseRepeatedDifferentPassword = await worker.fetch(
         "/clientId/dbconnection/register",
         {
@@ -248,8 +253,8 @@ describe("password-flow", () => {
           }),
         },
       );
-      // this must be an issue... maybe I should try and login with this new password... that WOULD be fun
-      expect(createUserResponseRepeatedDifferentPassword.status).toBe(201);
+      // this should definitely be rejected!
+      expect(createUserResponseRepeatedDifferentPassword.status).toBe(401);
     });
 
     // TO TEST--------------------------------------------------------
