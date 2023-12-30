@@ -286,8 +286,7 @@ describe("password-flow", () => {
   });
   describe("Login with password", () => {
     it("should login with existing user", async () => {
-      // email: "foo@example.com",
-      // password: "Test!",
+      // foo@example.com is an existing username-password user, with password - Test!
 
       const loginResponse = await worker.fetch("/co/authenticate", {
         headers: {
@@ -375,6 +374,24 @@ describe("password-flow", () => {
         nickname: "Åkesson Þorsteinsson",
         picture: "https://example.com/foo.png",
       });
+    });
+    it("should reject login of existing user with incorrect password", async () => {
+      const loginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "wrong-password",
+          username: "foo@example.com",
+        }),
+      });
+
+      // no body returned
+      expect(loginResponse.status).toBe(403);
     });
   });
   // TO TEST
