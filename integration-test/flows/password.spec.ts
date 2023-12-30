@@ -143,6 +143,146 @@ describe("password-flow", () => {
         iss: "https://example.com/",
       });
     });
+    it("should reject password signup for existing username-password user", async () => {
+      const password = "password";
+
+      // ------------------------------------
+      // create a user with username-password
+      // ------------------------------------
+
+      // where is the tenant passed here? Interesting...
+      const createUserResponse = await worker.fetch(
+        "/clientId/dbconnection/register",
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            email: "password-login-test@example.com",
+            password,
+          }),
+        },
+      );
+      expect(createUserResponse.status).toBe(201);
+
+      // ------------------------------------
+      // do a login to make sure the user exists
+      // ------------------------------------
+      const loginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password,
+          username: "password-login-test@example.com",
+        }),
+      });
+
+      expect(loginResponse.status).toBe(200);
+
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+
+      const query = new URLSearchParams({
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      });
+
+      // Trade the ticket for token
+      const tokenResponse = await worker.fetch(
+        `/authorize?${query.toString()}`,
+        {
+          redirect: "manual",
+        },
+      );
+
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      const idToken = redirectUri.searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("password-login-test@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+
+      // ------------------------------------
+      // try signing up with same user again
+      // ------------------------------------
+      const createUserResponseRepeated = await worker.fetch(
+        "/clientId/dbconnection/register",
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            email: "password-login-test@example.com",
+            password,
+          }),
+        },
+      );
+      // interesting - I didn't expect this! Seems like a bug?
+      expect(createUserResponseRepeated.status).toBe(201);
+
+      // what if I change the password?
+      const createUserResponseRepeatedDifferentPassword = await worker.fetch(
+        "/clientId/dbconnection/register",
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            email: "password-login-test@example.com",
+            password: "something totally different",
+          }),
+        },
+      );
+      // this must be an issue... maybe I should try and login with this new password... that WOULD be fun
+      expect(createUserResponseRepeatedDifferentPassword.status).toBe(201);
+    });
+
+    it("should do what with registration signup for existing email (code) user", async () => {
+      const password = "password";
+
+      const createUserResponse = await worker.fetch(
+        "/clientId/dbconnection/register",
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            // foo@example.com is an existing username-password user
+            email: "foo@example.com",
+            password,
+          }),
+        },
+      );
+
+      // inspect body and see what returned... identities?
+      // do the login?
+      expect(createUserResponse.status).toBe(201);
+
+      // fetch this user now and see what happens?
+    });
+    // TODO
+    // is this route handling different connections and doing account linking? I don't think so
+    // TO TEST -
+    // email: "foo@example.com", - email user already exists
+    // what happens if try and register with existing email user?
+    // ---- need an extra fixture... a user created with code signup...
+    // ---- CBA doing the actual signup... can just POST up a new code user?
+    // ---- does our endpoint actually allow this?
+    // same username-password user but a different tenant
   });
   describe("Login with password", () => {
     it("should login with existing user", async () => {
