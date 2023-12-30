@@ -408,6 +408,7 @@ describe("password-flow", () => {
           }),
         },
       );
+
       const loginResponse = await worker.fetch("/co/authenticate", {
         headers: {
           "content-type": "application/json",
@@ -421,9 +422,15 @@ describe("password-flow", () => {
           username: "new-username-password-user@example.com",
         }),
       });
+      // ------------------
       // is this enough to be sure the user is created? OR should we exchange the ticket...
       // or is just calling /dbconnection/register enough?
+      // ------------------
+      expect(loginResponse.status).toBe(200);
 
+      // ------------------
+      // now check we cannot use the wrong user's password
+      // ------------------
       const rejectedLoginResponse = await worker.fetch("/co/authenticate", {
         headers: {
           "content-type": "application/json",
@@ -439,15 +446,48 @@ describe("password-flow", () => {
         }),
       });
 
-      // no body returned
       expect(rejectedLoginResponse.status).toBe(403);
     });
+
+    it("should not allow non-existent user & password to login", async () => {
+      const loginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "any-password",
+          username: "non-existent-user@example.com",
+        }),
+      });
+
+      expect(loginResponse.status).toBe(403);
+    });
+
+    it("should not allow login to username-password but on different tenant", async () => {
+      const loginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "otherClientIdOnOtherTenant",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "Test!",
+          username: "foo@example.com",
+        }),
+      });
+
+      expect(loginResponse.status).toBe(403);
+    });
+    // TO TEST
+    // - username-password user across different clients on the same tenant
+    // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
   // TO TEST
-  // - correct password but a different user
-  // - login with non-existing user & password
-  // correct email + password but different tenant!
-  // hmmmm. Could go to town with these. have username-password user existing on two different tenants
-  // but with different passwords... then check each doesn't work on the other
   // - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
 });
