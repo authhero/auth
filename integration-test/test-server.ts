@@ -89,9 +89,9 @@ const testApplication: Application = {
 
 const testApplication2: Application = {
   id: "otherClientId",
-  name: "Test Client", // ooops, this already had the same name
+  name: "Test Other Client",
   tenant_id: "tenantId",
-  client_secret: "XjI8-WPndjtNHDu4ybXrD", // and this the same. more clear now
+  client_secret: "3nwvu0mzibzb0spr7z5d2g",
   allowed_callback_urls: "",
   allowed_logout_urls: "",
   allowed_web_origins: "",
@@ -119,10 +119,9 @@ const testConnection2: SqlConnection = {
 const anotherTenant: Tenant = {
   id: "otherTenant",
   name: "Other Tenant",
-  // had all these the same
-  audience: "https://example.com",
-  sender_email: "login@example.com",
-  sender_name: "SenderName",
+  audience: "https://another.example.com",
+  sender_email: "hello@another.example.com",
+  sender_name: "AnotherName",
   created_at: "created_at",
   updated_at: "updated_at",
 };
@@ -196,12 +195,7 @@ const server = {
       data,
     };
 
-    return app.fetch(
-      request,
-      // Add dependencies to the environment
-      finalEnv,
-      ctx,
-    );
+    return app.fetch(request, finalEnv, ctx);
   },
 };
 

@@ -74,15 +74,9 @@ describe("social sign on", () => {
     */
 
     it("should create correct args for social sign on from hitting /authorize with connection", async () => {
-      // TODO - can reuse here the same helper args above... dedupe these tests a bit as they're long
       const socialSignOnQuery = new URLSearchParams({
-        client_id: "clientId",
-        response_type: "token id_token",
-        redirect_uri: "https://login2.sesamy.dev/callback",
-        scope: "openid profile email",
+        ...SOCIAL_STATE_PARAM_AUTH_PARAMS,
         connection: "demo-social-provider",
-        state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-        nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
         auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       });
 
