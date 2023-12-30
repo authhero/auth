@@ -1,0 +1,28 @@
+{
+  "extends": [
+    "config:best-practices",
+    ":automergeTypes",
+    ":automergeLinters",
+    ":automergeTesters",
+    ":automergeRequireAllStatusChecks",
+    "helpers:disableTypesNodeMajor"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true
+  },
+  "internalChecksFilter": "strict",
+  "packageRules": [
+    {
+      "description": "Get GitHub Actions updates once a month",
+      "matchDepTypes": ["action"],
+      "extends": ["schedule:monthly"]
+    }
+  ],
+  "automergeSchedule": [
+    "after 10pm every weekday",
+    "before 5am every weekday",
+    "every weekend"
+  ],
+  "branchConcurrentLimit": 2
+}
