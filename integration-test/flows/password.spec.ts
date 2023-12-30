@@ -143,7 +143,9 @@ describe("password-flow", () => {
         iss: "https://example.com/",
       });
     });
-    it("should reject password signup for existing username-password user", async () => {
+    // I think I should change this test to expect rejections, and then skip it
+    // seems like something I should look into anyway!
+    it("should reject password signup for existing username-password user BUT it is not", async () => {
       const password = "password";
 
       // ------------------------------------
@@ -250,38 +252,17 @@ describe("password-flow", () => {
       expect(createUserResponseRepeatedDifferentPassword.status).toBe(201);
     });
 
-    it("should do what with registration signup for existing email (code) user", async () => {
-      const password = "password";
+    // TO TEST--------------------------------------------------------
+    // should do what with registration signup for existing email (code) user?
+    // - create new code user - copy-paste code from code flow tests
+    // - need to go the whole way and actually sign in with the code user to check it works
+    // OR do we add more fixtures in the initial setup? e.g. create and login with a code user
+    // Markus mentioned having the fixtures MUCH more populated. Probably a good idea.
+    // OR at least we seed the database directly
+    // We would then check that account linking happens (not implemented)
+    // currently we would just return the code user...
 
-      const createUserResponse = await worker.fetch(
-        "/clientId/dbconnection/register",
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({
-            // foo@example.com is an existing username-password user
-            email: "foo@example.com",
-            password,
-          }),
-        },
-      );
-
-      // inspect body and see what returned... identities?
-      // do the login?
-      expect(createUserResponse.status).toBe(201);
-
-      // fetch this user now and see what happens?
-    });
-    // TODO
-    // is this route handling different connections and doing account linking? I don't think so
-    // TO TEST -
-    // email: "foo@example.com", - email user already exists
-    // what happens if try and register with existing email user?
-    // ---- need an extra fixture... a user created with code signup...
-    // ---- CBA doing the actual signup... can just POST up a new code user?
-    // ---- does our endpoint actually allow this?
+    // TO TEST--------------------------------------------------------
     // same username-password user but a different tenant
   });
   describe("Login with password", () => {
@@ -393,9 +374,31 @@ describe("password-flow", () => {
       // no body returned
       expect(loginResponse.status).toBe(403);
     });
+
+    it("should reject login of existing user with incorrect password", async () => {
+      const loginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "wrong-password",
+          username: "foo@example.com",
+        }),
+      });
+
+      // no body returned
+      expect(loginResponse.status).toBe(403);
+    });
   });
   // TO TEST
-  // - login with existing user & password, but wrong password
+  // - correct password but a different user
   // - login with non-existing user & password
+  // correct email + password but different tenant!
+  // hmmmm. Could go to town with these. have username-password user existing on two different tenants
+  // but with different passwords... then check each doesn't work on the other
   // - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
 });
