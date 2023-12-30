@@ -80,11 +80,13 @@ export class DbConnectionController extends Controller {
     // This seems like an existing issue... if the user exists we should just return this...
     // BUT we are leaking the existence of a user...
     // so we could always return `ok` but DO NOT actually change the password
+    // TESTED - and it works, but I think it's because we're making multiple records... but always picking the first
     // Store the password
     await ctx.env.data.passwords.create(client.tenant_id, {
       user_id: user.id,
       password: body.password,
     });
+    // no, user_id is a primary key... so how can this be created again? Does it silently fail?
 
     this.setStatus(201);
     await ctx.env.data.logs.create({

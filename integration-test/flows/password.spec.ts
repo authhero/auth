@@ -144,6 +144,49 @@ describe("password-flow", () => {
       });
     });
 
+    it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
+      const aNewPassword = "a new password";
+
+      const createUserResponse = await worker.fetch(
+        "/clientId/dbconnection/register",
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            email: "foo@example.com",
+            // this should not overwrite the existing password
+            password: aNewPassword,
+          }),
+        },
+      );
+
+      // I don't think it should be what happens but I'm testing what we have
+      expect(createUserResponse.status).toBe(201);
+
+      const loginResponse = await worker.fetch("/co/authenticate", {
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: aNewPassword,
+          username: "foo@example.com",
+        }),
+      });
+
+      // ok this is working at least! unexpected
+      expect(loginResponse.status).toBe(403);
+
+      // TODO
+      // - check we're not creating multiple password records here...
+      // - update the password! and then check we can login... I don't think we have that flow tested
+    });
+
     // this needs investigating. what should happen here?
     // If try and sign up again through Auth0 universal login we get the error
     // 'Something went wrong, please try again later'
