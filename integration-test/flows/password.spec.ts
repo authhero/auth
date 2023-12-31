@@ -152,7 +152,6 @@ describe("password-flow", () => {
       // create a user with username-password
       // ------------------------------------
 
-      // where is the tenant passed here? Interesting...
       const createUserResponse = await worker.fetch(
         "/clientId/dbconnection/register",
         {
