@@ -28,6 +28,6 @@ jobs:
       - run: yarn lint
       - run: yarn format:ci-cd
       - run: yarn build
+      - run: yarn type-check
       - run: yarn test
       - run: yarn integration
-      - run: yarn type-check
