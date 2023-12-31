@@ -143,14 +143,10 @@ describe("password-flow", () => {
         iss: "https://example.com/",
       });
     });
-    // I think I should change this test to expect rejections, and then skip it
-    // seems like something I should look into anyway!
-    it("should reject password signup for existing username-password user BUT it is not", async () => {
-      const password = "password";
 
-      // ------------------------------------
-      // create a user with username-password
-      // ------------------------------------
+    // TODO - run this test using hono/testing+SQLite and see if the same thing happens
+    it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
+      const aNewPassword = "a new password";
 
       const createUserResponse = await worker.fetch(
         "/clientId/dbconnection/register",
@@ -160,16 +156,16 @@ describe("password-flow", () => {
           },
           method: "POST",
           body: JSON.stringify({
-            email: "password-login-test@example.com",
-            password,
+            email: "foo@example.com",
+            // this should not overwrite the existing password
+            password: aNewPassword,
           }),
         },
       );
+
+      // I don't think it should be what happens but I'm testing what we have... might be because we're using the data adapters which don't have primary keys
       expect(createUserResponse.status).toBe(201);
 
-      // ------------------------------------
-      // do a login to make sure the user exists
-      // ------------------------------------
       const loginResponse = await worker.fetch("/co/authenticate", {
         headers: {
           "content-type": "application/json",
@@ -179,89 +175,21 @@ describe("password-flow", () => {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
-          password,
-          username: "password-login-test@example.com",
+          password: aNewPassword,
+          username: "foo@example.com",
         }),
       });
 
-      expect(loginResponse.status).toBe(200);
+      // here at least the password has not been overwritten
+      expect(loginResponse.status).toBe(403);
 
-      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
-
-      const query = new URLSearchParams({
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      });
-
-      // Trade the ticket for token
-      const tokenResponse = await worker.fetch(
-        `/authorize?${query.toString()}`,
-        {
-          redirect: "manual",
-        },
-      );
-
-      const redirectUri = new URL(tokenResponse.headers.get("location")!);
-
-      const idToken = redirectUri.searchParams.get("id_token");
-      const idTokenPayload = parseJwt(idToken!);
-      expect(idTokenPayload.email).toBe("password-login-test@example.com");
-      expect(idTokenPayload.aud).toBe("clientId");
-
-      // ------------------------------------
-      // try signing up with same user again
-      // ------------------------------------
-      const createUserResponseRepeated = await worker.fetch(
-        "/clientId/dbconnection/register",
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({
-            email: "password-login-test@example.com",
-            password,
-          }),
-        },
-      );
-      // interesting - I didn't expect this! Seems like a bug?
-      expect(createUserResponseRepeated.status).toBe(201);
-
-      // what if I change the password?
-      const createUserResponseRepeatedDifferentPassword = await worker.fetch(
-        "/clientId/dbconnection/register",
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({
-            email: "password-login-test@example.com",
-            password: "something totally different",
-          }),
-        },
-      );
-      // this must be an issue... maybe I should try and login with this new password... that WOULD be fun
-      expect(createUserResponseRepeatedDifferentPassword.status).toBe(201);
+      // TODO
+      // - update the password and then check we can login... I don't think we have that flow tested... or implemented
     });
 
     // TO TEST--------------------------------------------------------
     // should do what with registration signup for existing email (code) user?
-    // - create new code user - copy-paste code from code flow tests
-    // - need to go the whole way and actually sign in with the code user to check it works
-    // OR do we add more fixtures in the initial setup? e.g. create and login with a code user
-    // Markus mentioned having the fixtures MUCH more populated. Probably a good idea.
-    // OR at least we seed the database directly
-    // We would then check that account linking happens (not implemented)
-    // currently we would just return the code user...
-
-    // TO TEST--------------------------------------------------------
+    // --- we don't have account linking implemented on this flow
     // same username-password user but a different tenant
   });
   describe("Login with password", () => {
