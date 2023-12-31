@@ -144,6 +144,7 @@ describe("password-flow", () => {
       });
     });
 
+    // TODO - run this test using hono/testing+SQLite and see if the same thing happens
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const aNewPassword = "a new password";
 
@@ -162,7 +163,7 @@ describe("password-flow", () => {
         },
       );
 
-      // I don't think it should be what happens but I'm testing what we have
+      // I don't think it should be what happens but I'm testing what we have... might be because we're using the data adapters which don't have primary keys
       expect(createUserResponse.status).toBe(201);
 
       const loginResponse = await worker.fetch("/co/authenticate", {
@@ -179,138 +180,16 @@ describe("password-flow", () => {
         }),
       });
 
-      // ok this is working at least! unexpected
+      // here at least the password has not been overwritten
       expect(loginResponse.status).toBe(403);
 
       // TODO
-      // - check we're not creating multiple password records here...
-      // - update the password! and then check we can login... I don't think we have that flow tested
-    });
-
-    // this needs investigating. what should happen here?
-    // If try and sign up again through Auth0 universal login we get the error
-    // 'Something went wrong, please try again later'
-    // BUT here in auth2 we're not currently checking the provider
-    // AND we should be doing automatic account (but username-password signups don't have verified email addresses)
-    it.skip("should reject password signup for existing username-password user BUT it is not", async () => {
-      // ------------------------------------
-      // create a user with username-password
-      // ------------------------------------
-
-      // where is the tenant passed here? Interesting...
-      const createUserResponse = await worker.fetch(
-        "/clientId/dbconnection/register",
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({
-            email: "password-login-test@example.com",
-            password: "password",
-          }),
-        },
-      );
-      expect(createUserResponse.status).toBe(201);
-
-      // ------------------------------------
-      // do a login to make sure the user exists
-      // ------------------------------------
-      const loginResponse = await worker.fetch("/co/authenticate", {
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-          realm: "Username-Password-Authentication",
-          password: "password",
-          username: "password-login-test@example.com",
-        }),
-      });
-
-      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
-
-      const query = new URLSearchParams({
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      });
-
-      // Trade the ticket for token
-      const tokenResponse = await worker.fetch(
-        `/authorize?${query.toString()}`,
-        {
-          redirect: "manual",
-        },
-      );
-
-      const redirectUri = new URL(tokenResponse.headers.get("location")!);
-
-      const idToken = redirectUri.searchParams.get("id_token");
-      const idTokenPayload = parseJwt(idToken!);
-      expect(idTokenPayload.email).toBe("password-login-test@example.com");
-      expect(idTokenPayload.aud).toBe("clientId");
-
-      // ------------------------------------
-      // try signing up with same user again
-      // ------------------------------------
-      const createUserResponseRepeated = await worker.fetch(
-        "/clientId/dbconnection/register",
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({
-            email: "password-login-test@example.com",
-            password: "password",
-          }),
-        },
-      );
-
-      console.log(await createUserResponseRepeated.text());
-
-      // this should be rejected
-      expect(createUserResponseRepeated.status).toBe(401);
-
-      // ------------------------------------
-      // try signing up with same user again but a different password
-      // ------------------------------------
-      const createUserResponseRepeatedDifferentPassword = await worker.fetch(
-        "/clientId/dbconnection/register",
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({
-            email: "password-login-test@example.com",
-            password: "something totally different",
-          }),
-        },
-      );
-      // this should definitely be rejected!
-      expect(createUserResponseRepeatedDifferentPassword.status).toBe(401);
+      // - update the password and then check we can login... I don't think we have that flow tested... or implemented
     });
 
     // TO TEST--------------------------------------------------------
     // should do what with registration signup for existing email (code) user?
-    // - create new code user - copy-paste code from code flow tests
-    // - need to go the whole way and actually sign in with the code user to check it works
-    // OR do we add more fixtures in the initial setup? e.g. create and login with a code user
-    // Markus mentioned having the fixtures MUCH more populated. Probably a good idea.
-    // OR at least we seed the database directly
-    // We would then check that account linking happens (not implemented)
-    // currently we would just return the code user...
-
-    // TO TEST--------------------------------------------------------
+    // --- we don't have account linking implemented on this flow
     // same username-password user but a different tenant
   });
   describe("Login with password", () => {
