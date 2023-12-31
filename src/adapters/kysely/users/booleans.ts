@@ -6,5 +6,9 @@ export function fixBooleans(user: User) {
     user.email_verified = !!user.email_verified;
   }
 
+  if (user.is_social !== undefined) {
+    user.is_social = !!user.is_social;
+  }
+
   return user;
 }
