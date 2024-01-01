@@ -15,7 +15,7 @@ export function create(db: Kysely<Database>) {
       if (typeof data[key] === "boolean") {
         data[key] = data[key] ? 1 : 0;
       }
-      data.linked_to = null;
+      // data.linked_to = null;
     });
 
     await db.insertInto("users").values(sqlUser).execute();

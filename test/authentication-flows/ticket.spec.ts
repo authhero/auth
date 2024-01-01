@@ -68,7 +68,7 @@ describe("passwordlessAuth", () => {
     expect(controller.getStatus()).toEqual(302);
     expect(accessToken).toEqual({
       aud: "default",
-      sub: "email|testid",
+      sub: "email|testid-0",
       scope: "openid profile email",
       iss: "https://auth.example.com/",
       iat: Math.floor(date.getTime() / 1000),

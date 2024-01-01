@@ -6,8 +6,6 @@ import { getCertificate } from "../../../integration-test/helpers/token";
 import { Database } from "../../../src/types";
 
 export async function getEnv() {
-  console.log("start", Date.now());
-
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
@@ -35,3 +33,5 @@ export async function getEnv() {
     db,
   };
 }
+
+export type EnvType = Awaited<ReturnType<typeof getEnv>>;
