@@ -214,12 +214,12 @@ describe("users", () => {
       const [newUser1, newUser2] = await createTestUsers(worker);
 
       const linkUserResponse = await worker.fetch(
-        `/api/v2/users/${newUser1.id}/identities`,
+        `/api/v2/users/${newUser2.id}/identities`,
         {
           method: "POST",
           body: JSON.stringify({
             // so we want to pass up the provider-id, but only persist the id?
-            link_with: newUser2.id,
+            link_with: newUser1.id,
           }),
           headers: {
             authorization: `Bearer ${token}`,
@@ -331,12 +331,12 @@ describe("users", () => {
 
       const [provider] = newUser2.id.split("|");
       const linkUserResponse = await worker.fetch(
-        `/api/v2/users/${newUser1.id}/identities`,
+        `/api/v2/users/${newUser2.id}/identities`,
         {
           method: "POST",
           body: JSON.stringify({
             provider,
-            user_id: newUser2.id,
+            user_id: newUser1.id,
           }),
           headers: {
             authorization: `Bearer ${token}`,
