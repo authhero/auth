@@ -250,7 +250,7 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
       const state = redirectUrl.searchParams.get("state");
 
-      expect(state).toBe("testid");
+      expect(state?.startsWith("testid-")).toBe(true);
 
       expect(actual).toBe("Redirecting...");
       expect(controller.getStatus()).toBe(302);
@@ -456,7 +456,7 @@ describe("authorize", () => {
       expect(accessToken).toEqual({
         aud: "default",
         scope: "openid profile email",
-        sub: "email|testid",
+        sub: "email|testid-1",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
@@ -520,9 +520,9 @@ describe("authorize", () => {
 
       expect(idToken).toEqual({
         aud: "clientId",
-        sub: "email|testid",
+        sub: "email|testid-3",
         nonce: "nonce",
-        sid: "testid",
+        sid: "testid-4",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
@@ -576,14 +576,14 @@ describe("authorize", () => {
           response_type: AuthorizationResponseType.CODE,
           client_id: "clientId",
         },
-        sid: "testid",
+        sid: "testid-6",
         state: "state",
         user: {
           connection: "email",
           created_at: "2023-11-28T12:00:00.000Z",
           email: "test@example.com",
           email_verified: true,
-          id: "email|testid",
+          id: "email|testid-5",
           is_social: false,
           last_ip: "",
           last_login: "2023-11-28T12:00:00.000Z",
@@ -593,7 +593,7 @@ describe("authorize", () => {
           tenant_id: "tenantId",
           updated_at: "2023-11-28T12:00:00.000Z",
         },
-        userId: "email|testid",
+        userId: "email|testid-5",
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
@@ -625,7 +625,7 @@ describe("authorize", () => {
 
       const locationHeader = controller.getHeader("location") as string;
       // The state is stored in a durable object
-      expect(locationHeader).toBe("/u/login?state=testid");
+      expect(locationHeader).toBe("/u/login?state=testid-7");
     });
   });
 });

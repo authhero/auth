@@ -13,11 +13,19 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("category", "varchar(255)", (col) => col.notNull())
     .addColumn("message", "varchar(255)", (col) => col.notNull())
     // Added in later migration
-    .addColumn("tenant_id", "varchar(255)", (col) =>
-      col.references("tenants.id").onDelete("cascade").notNull(),
-    )
-    .addColumn("user_id", "varchar(255)", (col) =>
-      col.references("users.id").onDelete("cascade").notNull(),
+    // .addColumn("tenant_id", "varchar(255)", (col) =>
+    //   col.references("tenants.id").onDelete("cascade").notNull(),
+    // )
+    // .addColumn("user_id", "varchar(255)", (col) =>
+    //   col.references("users.id").onDelete("cascade").notNull(),
+    // )
+    .addColumn("tenant_id", "varchar(255)")
+    .addColumn("user_id", "varchar(255)")
+    .addForeignKeyConstraint(
+      "user_id_constraint",
+      ["user_id", "tenant_id"],
+      "users",
+      ["id", "tenant_id"],
     )
     // End added columns
     .execute();
