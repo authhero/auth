@@ -156,13 +156,10 @@ export async function getEnv() {
   data.connections.create("tenantId", testConnection2);
 
   data.users.create("tenantId", {
-    // my test correctly informs this is not a valid user_id!
-    // TODO - fix this in another PR? or do we want backwards compatibility?
     id: "userId",
     email: "foo@example.com",
     email_verified: true,
     name: "Åkesson Þorsteinsson",
-    // use a norse nickname here? more realistic
     nickname: "Åkesson Þorsteinsson",
     picture: "https://example.com/foo.png",
     tenant_id: "tenantId",
