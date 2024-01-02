@@ -236,22 +236,22 @@ export class UsersMgmtController extends Controller {
 
     const link_with = "link_with" in body ? body.link_with : body.user_id;
 
-    const user = await env.data.users.get(tenantId, link_with);
+    const user = await env.data.users.get(tenantId, userId);
     if (!user) {
       throw new HTTPException(400, {
-        message: "Linking to an inexistent identity is not allowed.",
+        message: "Linking an inexistent identity is not allowed.",
       });
     }
 
-    await env.data.users.update(tenantId, userId, {
-      linked_to: link_with,
+    await env.data.users.update(tenantId, link_with, {
+      linked_to: userId,
     });
 
     const linkedusers = await env.data.users.list(tenantId, {
       page: 0,
       per_page: 10,
       include_totals: false,
-      q: `linked_to:${link_with}`,
+      q: `linked_to:${userId}`,
     });
 
     const identities = [user, ...linkedusers.users].map((u) => ({
