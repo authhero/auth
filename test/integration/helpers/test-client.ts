@@ -19,7 +19,7 @@ export async function getEnv() {
   // Don't use getDb here as it will reuse the connection
   const db = new Kysely<Database>({ dialect: dialect });
 
-  await migrateToLatest(dialect, true, db);
+  await migrateToLatest(dialect, false, db);
 
   const data = createAdapters(db);
   await data.keys.create(getCertificate());
@@ -169,6 +169,11 @@ export async function getEnv() {
     is_social: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+  });
+
+  data.passwords.create("tenantId", {
+    user_id: "userId",
+    password: "Test!",
   });
 
   return {
