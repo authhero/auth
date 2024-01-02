@@ -7,6 +7,9 @@ import { Database } from "../../../src/types";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
+  Application,
+  SqlConnection,
+  Tenant,
 } from "../../../src/types";
 
 export async function getEnv() {
@@ -69,13 +72,89 @@ export async function getEnv() {
 
   // Create fixtures----------------------------------------
 
-  await data.tenants.create({
+  const testTenant: Tenant = {
     id: "tenantId",
-    name: "test",
-    audience: "test",
-    sender_name: "test",
-    sender_email: "test@example.com",
-  });
+    name: "Test Tenant",
+    audience: "https://example.com",
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+    support_url: "https://example.com/support",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+
+  const testApplication: Application = {
+    id: "clientId",
+    name: "Test Client",
+    tenant_id: "tenantId",
+    client_secret: "XjI8-WPndjtNHDu4ybXrD",
+    allowed_callback_urls: "",
+    allowed_logout_urls: "",
+    allowed_web_origins: "",
+    email_validation: "enforced",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+
+  const testApplication2: Application = {
+    id: "otherClientId",
+    name: "Test Client", // ooops, this already had the same name
+    tenant_id: "tenantId",
+    client_secret: "XjI8-WPndjtNHDu4ybXrD", // and this the same. more clear now
+    allowed_callback_urls: "",
+    allowed_logout_urls: "",
+    allowed_web_origins: "",
+    email_validation: "enforced",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+
+  const testConnection1: SqlConnection = {
+    id: "connectionId1",
+    name: "demo-social-provider",
+    created_at: "created_at",
+    updated_at: "updated_at",
+    tenant_id: "tenantId",
+  };
+
+  const testConnection2: SqlConnection = {
+    id: "connectionId2",
+    name: "other-social-provider",
+    created_at: "created_at",
+    updated_at: "updated_at",
+    tenant_id: "tenantId",
+  };
+
+  const anotherTenant: Tenant = {
+    id: "otherTenant",
+    name: "Other Tenant",
+    // had all these the same
+    audience: "https://example.com",
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+  const anotherAppOnAnotherTenant: Application = {
+    id: "otherClientIdOnOtherTenant",
+    name: "Test Client",
+    tenant_id: "otherTenant",
+    client_secret: "XjI8-WPndjtNHDu4ybXrD",
+    allowed_callback_urls: "",
+    allowed_logout_urls: "",
+    allowed_web_origins: "",
+    email_validation: "enforced",
+    created_at: "created_at",
+    updated_at: "updated_at",
+  };
+
+  data.tenants.create(testTenant);
+  data.tenants.create(anotherTenant);
+  data.applications.create("tenantId", testApplication);
+  data.applications.create("tenantId", testApplication2);
+  data.applications.create("otherTenant", anotherAppOnAnotherTenant);
+  data.connections.create("tenantId", testConnection1);
+  data.connections.create("tenantId", testConnection2);
 
   return {
     data,
