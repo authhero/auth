@@ -201,13 +201,12 @@ describe("users by email", () => {
     expect(barEmailUsers).toHaveLength(1);
     const barEmailId = barEmailUsers[0].user_id;
 
-    // Note - we are not testing linking anwyhere else in the integration tests
     const linkResponse = await worker.fetch(
-      `/api/v2/users/${barEmailId}/identities`,
+      `/api/v2/users/${fooEmailId}/identities`,
       {
         method: "POST",
         body: JSON.stringify({
-          link_with: fooEmailId,
+          link_with: barEmailId,
         }),
         headers: {
           authorization: `Bearer ${token}`,
