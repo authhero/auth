@@ -236,10 +236,10 @@ describe("users", () => {
 
       const params = {
         param: {
-          user_id: newUser1.id,
+          user_id: newUser2.id,
         },
         json: {
-          link_with: newUser2.id,
+          link_with: newUser1.id,
         },
       };
       const linkUserResponse = await client.api.v2.users[
@@ -361,10 +361,10 @@ describe("users", () => {
 
       const [provider] = newUser2.id.split("|");
       const params = {
-        param: { user_id: newUser1.id },
+        param: { user_id: newUser2.id },
         json: {
           provider,
-          user_id: newUser2.id,
+          user_id: newUser1.id,
         },
       };
 
