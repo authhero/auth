@@ -41,7 +41,9 @@ crons = ["0 3 * * *"]
 [env.production]
 account_id = "d684d0f34602a66c97de230566a2fa87"
 workers_dev = true
-route = "auth2.sesamy.com/*"
+routes = [
+    { pattern = "auth2.sesamy.com/*", zone_id = "b944b5871689ada6ce48e380968a06b5" },
+]
 
 services = [{ binding = "TOKEN_SERVICE", service = "token-service-prod" }]
 
