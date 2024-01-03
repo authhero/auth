@@ -12,11 +12,14 @@ import {
   Path,
   Patch,
   Delete,
+  Middlewares,
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Totals } from "../../types/auth0";
 import { HTTPException } from "hono/http-exception";
+import { Context, Env } from "hono";
+import { Next } from "tsoa-hono/Next";
 
 export interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
@@ -41,10 +44,18 @@ function parseSort(sort?: string):
   };
 }
 
+async function customMiddleware(ctx: Context<{ Bindings: Env }>, next: Next) {
+  console.log("customMiddleware");
+
+  // Perform any necessary operations or modifications
+  return next();
+}
+
 @Route("api/v2/tenants")
 @Tags("tenants")
 export class TenantsController extends Controller {
   @Get("")
+  @Middlewares(customMiddleware)
   @Security("oauth2managementApi", [])
   /**
    * This endpoint is not available in the Auth0 Management API as it only handles one tenant per domain.
