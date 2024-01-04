@@ -12,7 +12,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       col.references("applications.id").onDelete("cascade").notNull(),
     )
     .addColumn("user_id", "varchar(255)", (col) =>
-      col.references("user.id").onDelete("cascade").notNull(),
+      col.references("users.id").onDelete("cascade").notNull(),
     )
     .addColumn("created_at", "varchar(255)")
     .addColumn("expires_at", "varchar(255)")

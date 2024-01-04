@@ -8,7 +8,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
     //   col.references("tenants.id").onDelete("cascade").notNull(),
     // )
     // .addColumn("user_id", "varchar(255)", (col) =>
-    //   col.references("user.id").onDelete("cascade").primaryKey(),
+    //   col.references("users.id").onDelete("cascade").primaryKey(),
     // )
     .addColumn("tenant_id", "varchar(255)")
     .addColumn("user_id", "varchar(255)")
@@ -30,7 +30,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("user_id", "varchar(255)", (col) =>
-      col.references("user.id").onDelete("cascade").notNull(),
+      col.references("users.id").onDelete("cascade").notNull(),
     )
     .addColumn("type", "varchar(255)", (col) => col.notNull())
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
