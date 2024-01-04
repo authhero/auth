@@ -53,8 +53,14 @@ export async function getClient(
         defaultSettings?.connections?.find((c) => c.name === connection.name) ||
         {};
 
+      const envDefaultConnection =
+        envDefaultSettings?.connections?.find(
+          (c) => c.name === connection.name,
+        ) || {};
+
       const mergedConnection = {
         ...defaultConnection,
+        ...envDefaultConnection,
         ...connection,
         scope: connection.scope || "openid profile email",
       };
