@@ -38,8 +38,10 @@ export function getClient(
     );
     if (!tenant) return null;
 
+    const tenantIds = [application.tenant_id, "DEFAULT_SETTINGS"];
+
     const connections = connectionsList
-      .filter((connection) => connection.tenant_id === application.tenant_id)
+      .filter((connection) => tenantIds.includes(connection.tenant_id))
       .map((connection) => removeNullProperties(connection));
 
     const domains = domainsList
