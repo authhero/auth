@@ -1,18 +1,18 @@
 import { Database, Ticket } from "../../../types";
 import { Kysely } from "kysely";
+import { SqlTicket } from "../../../types/sql/Ticket";
 
 export function create(db: Kysely<Database>) {
   return async (ticket: Ticket) => {
-    const { authParams } = ticket;
+    const { authParams, ...rest } = ticket;
 
-    const rest = {
-      ...ticket,
-      created_at: new Date(ticket.created_at).toISOString(),
-      expires_at: new Date(ticket.expires_at).toISOString(),
+    const sqlTicket: SqlTicket = {
+      ...rest,
+      ...authParams,
+      created_at: ticket.created_at.toISOString(),
+      expires_at: ticket.expires_at.toISOString(),
     };
-    await db
-      .insertInto("tickets")
-      .values({ ...rest, ...authParams })
-      .execute();
+
+    await db.insertInto("tickets").values(sqlTicket).execute();
   };
 }
