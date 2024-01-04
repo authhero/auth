@@ -62,7 +62,6 @@ export async function getClient(
         ...defaultConnection,
         ...envDefaultConnection,
         ...connection,
-        scope: connection.scope || "openid profile email",
       };
 
       try {
