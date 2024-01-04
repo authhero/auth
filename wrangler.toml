@@ -9,10 +9,12 @@ account_id = "0c8c22bdcd98c3dc6a35190650ef7906"
 
 services = [{ binding = "TOKEN_SERVICE", service = "token-service-dev" }]
 
-routes = [
-    { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" },
-    { pattern = "*.auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" },
-]
+# as an experiemnt we had
+# routes = [
+#     { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" },
+#     { pattern = "*.auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" },
+# ]
+route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2e8ba8" }
 
 [vars]
 IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"
@@ -41,11 +43,12 @@ crons = ["0 3 * * *"]
 [env.production]
 account_id = "d684d0f34602a66c97de230566a2fa87"
 workers_dev = true
-routes = [
-    { pattern = "auth2.sesamy.com/*", zone_id = "b944b5871689ada6ce48e380968a06b5" },
-]
-
 services = [{ binding = "TOKEN_SERVICE", service = "token-service-prod" }]
+# if we use multiple routes on dev then change this
+# routes = [
+#     { pattern = "auth2.sesamy.com/*", zone_id = "b944b5871689ada6ce48e380968a06b5" },
+# ]
+route = { pattern = "auth2.sesamy.com/*", zone_id = "b944b5871689ada6ce48e380968a06b5" }
 
 [env.production.vars]
 ISSUER = "https://auth2.sesamy.com/"
