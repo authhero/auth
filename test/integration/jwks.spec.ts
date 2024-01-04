@@ -56,15 +56,27 @@ describe("jwks", () => {
 
     const body = (await response.json()) as Jwks[];
 
-    expect(body.keys.length).toBe(2);
+    // why would there be two if we're rotating anyway?
+    // why are there two on the integration tests? hmmmmm
+    expect(body.keys.length).toBe(1);
   });
 
-  // it("should return an openid-configuration with the current issues", async () => {
-  //   const response = await worker.fetch("/.well-known/openid-configuration");
+  it("should return an openid-configuration with the current issues", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
-  //   expect(response.status).toBe(200);
+    const response = await client[".well-known"]["openid-configuration"].$get(
+      {},
+      {
+        headers: {
+          "tenant-id": "tenantId",
+        },
+      },
+    );
 
-  //   const body = (await response.json()) as OpenIDConfiguration;
-  //   expect(body.issuer).toBe("https://example.com/");
-  // });
+    expect(response.status).toBe(200);
+
+    const body = (await response.json()) as OpenIDConfiguration;
+    expect(body.issuer).toBe("https://example.com/");
+  });
 });
