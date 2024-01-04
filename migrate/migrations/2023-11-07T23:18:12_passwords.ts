@@ -17,7 +17,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       ["user_id", "tenant_id"],
       "users",
       ["id", "tenant_id"],
-      // TODO - add cascading delete on all the addForeignKeyConstraint
+      (cb) => cb.onDelete("cascade"),
     )
     .addColumn("created_at", "varchar(255)")
     .addColumn("updated_at", "varchar(255)")
