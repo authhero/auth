@@ -16,6 +16,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       ["user_id", "tenant_id"],
       "users",
       ["id", "tenant_id"],
+      (cb) => cb.onDelete("cascade"),
     )
     .addColumn("created_at", "varchar(255)")
     .addColumn("expires_at", "varchar(255)")

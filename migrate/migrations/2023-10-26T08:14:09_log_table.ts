@@ -26,6 +26,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       ["user_id", "tenant_id"],
       "users",
       ["id", "tenant_id"],
+      (cb) => cb.onDelete("cascade"),
     )
     // End added columns
     .execute();
