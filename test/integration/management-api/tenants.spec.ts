@@ -1,45 +1,47 @@
-import { Tenant } from "../../src/types";
-import { getAdminToken } from "../helpers/token";
-import { start } from "../start";
-import type { UnstableDevWorker } from "wrangler";
+import { testClient } from "hono/testing";
+import { tsoaApp } from "../../../src/app";
+import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getEnv } from "../helpers/test-client";
+import { UserResponse } from "../../../src/types/auth0";
+import { Identity } from "../../../src/types/auth0/Identity";
+import { Tenant } from "../../../src/types";
 
 describe("tenants", () => {
-  let worker: UnstableDevWorker;
-
-  beforeEach(async () => {
-    worker = await start();
-  });
-
-  afterEach(() => {
-    worker.stop();
-  });
-
   it("should add a new tenant", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
     const token = await getAdminToken();
-    const tenantsResponse1 = await worker.fetch("/api/v2/tenants", {
-      headers: {
-        authorization: `Bearer ${token}`,
+    const tenantsResponse1 = await client.api.v2.tenants.$get(
+      {},
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
     expect(tenantsResponse1.status).toBe(200);
     const body1 = (await tenantsResponse1.json()) as Tenant[];
     // check we have only initially seeded tenants
     expect(body1.length).toEqual(3);
 
     // now create the tenant
-    const createTenantResponse = await worker.fetch("/api/v2/tenants", {
-      method: "POST",
-      body: JSON.stringify({
-        name: "test",
-        audience: "test",
-        sender_name: "test",
-        sender_email: "test@example.com",
-      }),
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
+    const createTenantResponse = await client.api.v2.tenants.$post(
+      {
+        json: {
+          name: "test",
+          audience: "test",
+          sender_name: "test",
+          sender_email: "test@example.com",
+        },
       },
-    });
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+      },
+    );
 
     expect(createTenantResponse.status).toBe(201);
     const createdTenant = (await createTenantResponse.json()) as Tenant;
@@ -47,11 +49,14 @@ describe("tenants", () => {
     expect(createdTenant.name).toBe("test");
 
     // now fetch list of tenants again to assert tenant deleted
-    const tenantsResponse2 = await worker.fetch("/api/v2/tenants", {
-      headers: {
-        authorization: `Bearer ${token}`,
+    const tenantsResponse2 = await client.api.v2.tenants.$get(
+      {},
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
     expect(tenantsResponse2.status).toBe(200);
     const body2 = (await tenantsResponse2.json()) as Tenant[];
     expect(body2.length).toEqual(4);
@@ -59,22 +64,31 @@ describe("tenants", () => {
   });
 
   it("should remove a tenant", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
     const token = await getAdminToken();
-    const tenantsResponse1 = await worker.fetch("/api/v2/tenants", {
-      headers: {
-        authorization: `Bearer ${token}`,
+    const tenantsResponse1 = await client.api.v2.tenants.$get(
+      {},
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     expect(tenantsResponse1.status).toBe(200);
     const body1 = (await tenantsResponse1.json()) as Tenant[];
     // base tenant + two tenants in test-server
     expect(body1.length).toEqual(3);
 
-    const deleteTenantResponse = await worker.fetch(
-      `/api/v2/tenants/otherTenant`,
+    const deleteTenantResponse = await client.api.v2.tenants[":id"].$delete(
       {
-        method: "DELETE",
+        param: {
+          id: "otherTenant",
+        },
+      },
+      {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -84,11 +98,14 @@ describe("tenants", () => {
     expect(deleteTenantResponse.status).toBe(200);
 
     // fetch list of tenants again - assert we are one down
-    const tenantsResponse2 = await worker.fetch("/api/v2/tenants", {
-      headers: {
-        authorization: `Bearer ${token}`,
+    const tenantsResponse2 = await client.api.v2.tenants.$get(
+      {},
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
     expect(tenantsResponse2.status).toBe(200);
     const body2 = (await tenantsResponse2.json()) as Tenant[];
     expect(body2.length).toEqual(2);
