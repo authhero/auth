@@ -1,41 +1,22 @@
-import { UserResponse } from "../../src/types/auth0";
-import { getAdminToken } from "../helpers/token";
-import { start } from "../start";
-import type { UnstableDevWorker } from "wrangler";
-import { Identity } from "../../src/types/auth0/Identity";
+import { testClient } from "hono/testing";
+import { tsoaApp } from "../../../src/app";
+import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getEnv } from "../helpers/test-client";
+import { UserResponse } from "../../../src/types/auth0";
+import { Identity } from "../../../src/types/auth0/Identity";
 
 describe("users by email", () => {
-  let worker: UnstableDevWorker;
-  let token;
-
-  beforeEach(async () => {
-    worker = await start();
-
-    token = await getAdminToken();
-    await worker.fetch("/api/v2/tenants", {
-      method: "POST",
-      body: JSON.stringify({
-        name: "test",
-        audience: "test",
-        sender_name: "test",
-        sender_email: "test@example.com",
-      }),
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-    });
-  });
-
-  afterEach(() => {
-    worker.stop();
-  });
-
   it("should return 404 for non existent email address?", async () => {
-    const token = await getAdminToken();
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
-    const response = await worker.fetch(
-      "/api/v2/users-by-email?email=i-do-not-exist@all.com",
+    const token = await getAdminToken();
+    const response = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "i-do-not-exist@all.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -48,10 +29,17 @@ describe("users by email", () => {
   });
 
   it("should return a single user for a simple get by email - no linked accounts", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
     const token = await getAdminToken();
 
-    const response = await worker.fetch(
-      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+    const response = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "foo@example.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -91,30 +79,41 @@ describe("users by email", () => {
   });
 
   it("should return multiple users for a simple get by email - no linked accounts", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
     const token = await getAdminToken();
 
     // duplicate existing email foo@example.com for provider: 'username - password'
     // This assumes the POST endpoint doesn't do automatic account linking...
     // would be better if we could initialise the database with multiple accounts...
     // and different on different test runs... TBD another time
-    const createDuplicateUserResponse = await worker.fetch("/api/v2/users", {
-      method: "POST",
-      body: JSON.stringify({
-        email: "foo@example.com",
-        connection: "Username-Password-Authentication",
-        // seems odd that this isn't allowed... I think this endpoint needs looking at
-        // maybe it's good we have to use the mgmt API for our test fixtures
-        // provider: "auth2",
-      }),
-      headers: {
-        authorization: `Bearer ${token}`,
-        "tenant-id": "tenantId",
-        "content-type": "application/json",
+    const createDuplicateUserResponse = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "foo@example.com",
+          connection: "Username-Password-Authentication",
+          // seems odd that this isn't allowed... I think this endpoint needs looking at
+          // maybe it's good we have to use the mgmt API for our test fixtures
+          // provider: "auth2",
+        },
       },
-    });
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
+      },
+    );
+    expect(createDuplicateUserResponse.status).toBe(201);
 
-    const response = await worker.fetch(
-      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+    const response = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "foo@example.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -160,23 +159,34 @@ describe("users by email", () => {
   });
 
   it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
     const token = await getAdminToken();
-    const createBarEmailUser = await worker.fetch("/api/v2/users", {
-      method: "POST",
-      body: JSON.stringify({
-        email: "bar@example.com",
-        connection: "email",
-      }),
-      headers: {
-        authorization: `Bearer ${token}`,
-        "tenant-id": "tenantId",
-        "content-type": "application/json",
+    const createBarEmailUser = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "bar@example.com",
+          connection: "Username-Password-Authentication",
+        },
       },
-    });
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
+      },
+    );
+    expect(createBarEmailUser.status).toBe(201);
 
     // both these return one result now
-    const fooEmail = await worker.fetch(
-      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+    const fooEmail = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "foo@example.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -188,8 +198,12 @@ describe("users by email", () => {
     expect(fooEmailUsers).toHaveLength(1);
     const fooEmailId = fooEmailUsers[0].user_id;
 
-    const barEmail = await worker.fetch(
-      `/api/v2/users-by-email?email=${encodeURIComponent("bar@example.com")}`,
+    const barEmail = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "bar@example.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -201,13 +215,18 @@ describe("users by email", () => {
     expect(barEmailUsers).toHaveLength(1);
     const barEmailId = barEmailUsers[0].user_id;
 
-    const linkResponse = await worker.fetch(
-      `/api/v2/users/${fooEmailId}/identities`,
+    const params = {
+      param: {
+        user_id: fooEmailId,
+      },
+      json: {
+        link_with: barEmailId,
+      },
+    };
+
+    const linkResponse = await client.api.v2.users[":user_id"].identities.$post(
+      params,
       {
-        method: "POST",
-        body: JSON.stringify({
-          link_with: barEmailId,
-        }),
         headers: {
           authorization: `Bearer ${token}`,
           "tenant-id": "tenantId",
@@ -236,8 +255,12 @@ describe("users by email", () => {
     // we can then assert that we have a profileData key on the bar sub account
 
     // foo@example.com should exist with bar as an identity
-    const fooEmailAfterLink = await worker.fetch(
-      `/api/v2/users-by-email?email=${encodeURIComponent("foo@example.com")}`,
+    const fooEmailAfterLink = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "foo@example.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -270,8 +293,12 @@ describe("users by email", () => {
     ]);
 
     // bar@example.com should not be searchable by email
-    const barEmailAfterLink = await worker.fetch(
-      `/api/v2/users-by-email?email=${encodeURIComponent("bar@example.com")}`,
+    const barEmailAfterLink = await await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "bar@example.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
