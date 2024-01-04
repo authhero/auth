@@ -1,6 +1,5 @@
-import { Database, Ticket } from "../../../types";
+import { Database, Ticket, SqlTicket } from "../../../types";
 import { Kysely } from "kysely";
-import { SqlTicket } from "../../../types/sql/Ticket";
 
 export function create(db: Kysely<Database>) {
   return async (ticket: Ticket) => {

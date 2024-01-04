@@ -115,32 +115,37 @@ describe("code-flow", () => {
       },
     );
 
-    // if (authenticateResponse.status !== 200) {
-    //   throw new Error(
-    //     `Failed to authenticate with status: ${
-    //       authenticateResponse.status
-    //     } and message: ${await response.text()}`,
-    //   );
-    // }
+    if (authenticateResponse.status !== 200) {
+      throw new Error(
+        `Failed to authenticate with status: ${
+          authenticateResponse.status
+        } and message: ${await response.text()}`,
+      );
+    }
 
-    // const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
-    // const query = new URLSearchParams({
-    //   ...AUTH_PARAMS,
-    //   auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-    //   client_id: "clientId",
-    //   login_ticket,
-    //   referrer: "https://login.example.com",
-    //   realm: "email",
-    // });
+    const query = {
+      ...AUTH_PARAMS,
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket,
+      referrer: "https://login.example.com",
+      realm: "email",
+    };
 
-    // // Trade the ticket for token
-    // const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
-    //   redirect: "manual",
-    // });
+    // Trade the ticket for token
+    const tokenResponse = await client.authorize.$get(
+      {
+        query,
+      },
+      {
+        // redirect: "manual",
+      },
+    );
 
-    // expect(tokenResponse.status).toBe(302);
-    // expect(await tokenResponse.text()).toBe("Redirecting");
+    expect(tokenResponse.status).toBe(302);
+    expect(await tokenResponse.text()).toBe("Redirecting");
 
     // const redirectUri = new URL(tokenResponse.headers.get("location")!);
 

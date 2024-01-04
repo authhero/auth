@@ -5,7 +5,7 @@ import {
   SqlConnection,
   Member,
   Migration,
-  Session,
+  SqlSession,
   SqlUser,
   SqlCode,
   SqlDomain,
@@ -28,7 +28,7 @@ export interface Database {
   migrations: Migration;
   otps: SqlOTP;
   passwords: SqlPassword;
-  sessions: Session;
+  sessions: SqlSession;
   tenants: Tenant;
   tickets: SqlTicket;
   universal_login_sessions: SqlUniversalLoginSession;
