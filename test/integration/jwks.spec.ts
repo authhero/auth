@@ -13,7 +13,7 @@ describe("jwks", () => {
 
     // const response = await worker.fetch("/.well-known/jwks.json");
 
-    const response = await client.api.v2["jwks"].$get(
+    const response = await client[".well-known"]["jwks.json"].$get(
       {},
       {
         headers: {
