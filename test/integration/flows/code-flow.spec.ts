@@ -92,27 +92,28 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    // const emailResponse = await worker.fetch("/test/email");
-    // const [sentEmail] = (await emailResponse.json()) as Email[];
     expect(emailInfo).toHaveLength(1);
     expect(emailInfo[0].email).toBe("test@example.com");
 
     const otp = emailInfo[0].code;
 
-    // // Authenticate using the code
-    // const authenticateResponse = await worker.fetch("/co/authenticate", {
-    //   headers: {
-    //     "content-type": "application/json",
-    //   },
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     client_id: "clientId",
-    //     credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-    //     otp,
-    //     realm: "email",
-    //     username: "test@example.com",
-    //   }),
-    // });
+    // Authenticate using the code
+    const authenticateResponse = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "test@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
     // if (authenticateResponse.status !== 200) {
     //   throw new Error(
