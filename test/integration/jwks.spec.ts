@@ -1,5 +1,5 @@
 import { OpenIDConfiguration } from "../../src/routes/tsoa/jwks";
-import { Jwks } from "../../src/types/jwks";
+import { Jwks, JwksKeys } from "../../src/types/jwks";
 // let's move this into a common folder?
 import { getAdminToken } from "../../integration-test/helpers/token";
 import { getEnv } from "./helpers/test-client";
@@ -29,6 +29,19 @@ describe("jwks", () => {
   it("should create a new rsa-key and return it", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+
+    const initialKey = await client[".well-known"]["jwks.json"].$get(
+      {},
+      {
+        headers: {
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+
+    const initialKeys = (await initialKey.json()) as JwksKeys;
+    expect(initialKeys.keys[0].kid).not.toBe("testid-0");
+
     const token = await getAdminToken();
 
     const createKeyResponse = await client.api.v2.keys.signing.rotate.$post(
@@ -54,11 +67,13 @@ describe("jwks", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as Jwks[];
+    const body = (await response.json()) as JwksKeys;
 
-    // why would there be two if we're rotating anyway?
-    // why are there two on the integration tests? hmmmmm
+    // this is correct because the above endpoint filters out any revoked certificates
     expect(body.keys.length).toBe(1);
+
+    // this is a new key because the kid is different - note it's the first generation of our mock nanoid
+    expect(body.keys[0].kid).toBe("testid-0");
   });
 
   it("should return an openid-configuration with the current issues", async () => {
