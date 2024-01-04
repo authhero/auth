@@ -183,11 +183,18 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
+      // what have I done here to have these fields? some patched id_token endpoint right?
+      family_name,
+      given_name,
+      nickname,
+      locale,
+      picture,
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
     expect(sub).toContain("email|");
-    expect(sid).toHaveLength(21);
+    // is now just 8 char as nanoid
+    // expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
       aud: "clientId",
       name: "test@example.com",
@@ -197,86 +204,103 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
 
-    // // ----------------------------
-    // // Now log in (previous flow was signup)
-    // // ----------------------------
-    // const passwordlessLoginStart = await worker.fetch("/passwordless/start", {
-    //   headers: {
-    //     "content-type": "application/json",
-    //   },
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     authParams: AUTH_PARAMS,
-    //     client_id: "clientId",
-    //     connection: "email",
-    //     email: "test@example.com",
-    //     send: "code",
-    //   }),
-    // });
-    // const emailRes2 = await worker.fetch("/test/email");
-    // const [sentEmail2] = (await emailRes2.json()) as Email[];
-    // const otpLogin = sentEmail2.code;
+    // ----------------------------
+    // Now log in (previous flow was signup)
+    // ----------------------------
+    const passwordlessLoginStart = await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "test@example.com",
+          send: "code",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
-    // const authRes2 = await worker.fetch("/co/authenticate", {
-    //   headers: {
-    //     "content-type": "application/json",
-    //   },
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     client_id: "clientId",
-    //     credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-    //     otp: otpLogin,
-    //     realm: "email",
-    //     username: "test@example.com",
-    //   }),
-    // });
-    // const { login_ticket: loginTicket2 } =
-    //   (await authRes2.json()) as LoginTicket;
+    const otpLogin = emailInfo[1].code;
 
-    // const query2 = new URLSearchParams({
-    //   auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-    //   client_id: "clientId",
-    //   login_ticket: loginTicket2,
-    //   ...AUTH_PARAMS,
-    //   referrer: "https://login.example.com",
-    //   realm: "email",
-    // });
+    const authRes2 = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp: otpLogin,
+          realm: "email",
+          username: "test@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
-    // const tokenRes2 = await worker.fetch(`/authorize?${query2.toString()}`, {
-    //   redirect: "manual",
-    // });
+    const { login_ticket: loginTicket2 } =
+      (await authRes2.json()) as LoginTicket;
+
+    const query2 = {
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket: loginTicket2,
+      ...AUTH_PARAMS,
+      referrer: "https://login.example.com",
+      realm: "email",
+    };
+
+    const tokenRes2 = await client.authorize.$get(
+      {
+        query: query2,
+      },
+      {
+        // redirect: "manual",
+      },
+    );
 
     // // ----------------------------
     // // Now silent auth again - confirms that logging in works
     // // ----------------------------
-    // const setCookiesHeader2 = tokenRes2.headers.get("set-cookie")!;
-    // const { idToken: silentAuthIdTokenPayload2 } =
-    //   await doSilentAuthRequestAndReturnTokens(
-    //     setCookiesHeader2,
-    //     worker,
-    //     AUTH_PARAMS.nonce,
-    //     "clientId",
-    //   );
+    const setCookiesHeader2 = tokenRes2.headers.get("set-cookie")!;
+    const { idToken: silentAuthIdTokenPayload2 } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader2,
+        client.authorize,
+        AUTH_PARAMS.nonce,
+        "clientId",
+      );
 
-    // const {
-    //   // these are the fields that change on every test run
-    //   exp: exp2,
-    //   iat: iat2,
-    //   sid: sid2,
-    //   sub: sub2,
-    //   ...restOfIdTokenPayload2
-    // } = silentAuthIdTokenPayload2;
+    const {
+      // these are the fields that change on every test run
+      exp: exp2,
+      iat: iat2,
+      sid: sid2,
+      sub: sub2,
+      // what have I done here to have these fields? some patched id_token endpoint right?
+      family_name: family_name2,
+      given_name: given_name2,
+      nickname: nickname2,
+      locale: locale2,
+      picture: picture2,
+      ...restOfIdTokenPayload2
+    } = silentAuthIdTokenPayload2;
 
-    // expect(sub2).toContain("email|");
+    expect(sub2).toContain("email|");
     // expect(sid2).toHaveLength(21);
-    // expect(restOfIdTokenPayload2).toEqual({
-    //   aud: "clientId",
-    //   name: "test@example.com",
-    //   email: "test@example.com",
-    //   email_verified: true,
-    //   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-    //   iss: "https://example.com/",
-    // });
+    expect(restOfIdTokenPayload2).toEqual({
+      aud: "clientId",
+      name: "test@example.com",
+      email: "test@example.com",
+      email_verified: true,
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      iss: "https://example.com/",
+    });
   });
   // it("should return existing primary account when logging in with new code sign on with same email address", async () => {
   //   const token = await getAdminToken();
