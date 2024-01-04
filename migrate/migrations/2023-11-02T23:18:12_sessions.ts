@@ -4,15 +4,18 @@ import { Database } from "../../src/types";
 export async function up(db: Kysely<Database>): Promise<void> {
   await db.schema
     .createTable("sessions")
-    .addColumn("tenant_id", "varchar(255)", (col) =>
-      col.references("tenants.id").onDelete("cascade").notNull(),
-    )
     .addColumn("id", "varchar(255)", (col) => col.primaryKey())
     .addColumn("client_id", "varchar(255)", (col) =>
       col.references("applications.id").onDelete("cascade").notNull(),
     )
-    .addColumn("user_id", "varchar(255)", (col) =>
-      col.references("users.id").onDelete("cascade").notNull(),
+    .addColumn("tenant_id", "varchar(255)")
+    .addColumn("user_id", "varchar(255)")
+    .addForeignKeyConstraint(
+      "user_id_constraint",
+      ["user_id", "tenant_id"],
+      "users",
+      ["id", "tenant_id"],
+      (cb) => cb.onDelete("cascade"),
     )
     .addColumn("created_at", "varchar(255)")
     .addColumn("expires_at", "varchar(255)")
