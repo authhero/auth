@@ -8,10 +8,26 @@ import { tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../../../integration-test/helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { Tenant } from "../../../src/types";
+import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
+
+const codes: string[] = [];
+
+const email: EmailAdapter = {
+  sendLink: (env, client, to, code, magicLink) => {
+    codes.push(code);
+    return Promise.resolve();
+  },
+  sendCode: (env, client, to, code) => {
+    codes.push(code);
+    return Promise.resolve();
+  },
+};
+
 describe("code-flow", () => {
   it("should run a passwordless flow with code", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const env = (await getEnv()) as any;
+    env.data.email = email;
     const client = testClient(tsoaApp, env);
 
     const AUTH_PARAMS = {
@@ -43,20 +59,6 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    // const response = await worker.fetch("/passwordless/start", {
-    //   headers: {
-    //     "content-type": "application/json",
-    //   },
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     authParams: AUTH_PARAMS,
-    //     client_id: "clientId",
-    //     connection: "email",
-    //     email: "test@example.com",
-    //     // can be code or link
-    //     send: "code",
-    //   }),
-    // });
     const response = await client.passwordless.start.$post(
       {
         json: {
@@ -71,8 +73,6 @@ describe("code-flow", () => {
       {
         headers: {
           "content-type": "application/json",
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -80,6 +80,8 @@ describe("code-flow", () => {
     if (response.status !== 200) {
       throw new Error(await response.text());
     }
+
+    console.log("codes: ", codes);
 
     // const emailResponse = await worker.fetch("/test/email");
     // const [sentEmail] = (await emailResponse.json()) as Email[];
