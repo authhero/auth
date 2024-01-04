@@ -1,10 +1,9 @@
 import { parseJwt } from "../../../src/utils/parse-jwt";
 
-import type { UnstableDevWorker } from "wrangler";
-
 export async function doSilentAuthRequestAndReturnTokens(
   setCookiesHeader: string,
   // don't think hono exports these types...
+  // worth manually recreating it I think
   authorize: any,
   nonce: string,
   clientId: string,
@@ -12,16 +11,6 @@ export async function doSilentAuthRequestAndReturnTokens(
   const cookies = setCookiesHeader.split(";").map((c) => c.trim());
   const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
-  // const silentAuthSearchParams = new URLSearchParams();
-  // silentAuthSearchParams.set("client_id", clientId);
-  // silentAuthSearchParams.set("response_type", "token id_token");
-  // silentAuthSearchParams.set("scope", "openid profile email");
-  // silentAuthSearchParams.set("redirect_uri", "http://localhost:3000/callback");
-  // silentAuthSearchParams.set("state", "state");
-  // // silent auth pararms!
-  // silentAuthSearchParams.set("prompt", "none");
-  // silentAuthSearchParams.set("nonce", nonce);
-  // silentAuthSearchParams.set("response_mode", "web_message");
   const query = {
     client_id: clientId,
     response_type: "token id_token",
@@ -34,14 +23,6 @@ export async function doSilentAuthRequestAndReturnTokens(
     response_mode: "web_message",
   };
 
-  // const silentAuthResponse = await worker.fetch(
-  //   `/authorize?${silentAuthSearchParams.toString()}`,
-  //   {
-  //     headers: {
-  //       cookie: authCookie,
-  //     },
-  //   },
-  // );
   const silentAuthResponse = await authorize.$get(
     {
       query,

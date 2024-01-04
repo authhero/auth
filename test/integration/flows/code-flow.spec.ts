@@ -2,7 +2,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import type { Email } from "../../../src/types/Email";
 import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { UserResponse } from "../../../src/types/auth0";
-import { doSilentAuthRequestAndReturnTokens } from "../../../integration-test/helpers/silent-auth";
+import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../../../integration-test/helpers/token";
@@ -147,55 +147,55 @@ describe("code-flow", () => {
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
 
-    // const redirectUri = new URL(tokenResponse.headers.get("location")!);
+    const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
-    // expect(redirectUri.hostname).toBe("login.example.com");
-    // expect(redirectUri.searchParams.get("state")).toBe("state");
+    expect(redirectUri.hostname).toBe("login.example.com");
+    expect(redirectUri.searchParams.get("state")).toBe("state");
 
-    // const accessToken = redirectUri.searchParams.get("access_token");
+    const accessToken = redirectUri.searchParams.get("access_token");
 
-    // const accessTokenPayload = parseJwt(accessToken!);
-    // expect(accessTokenPayload.aud).toBe("default");
-    // expect(accessTokenPayload.iss).toBe("https://example.com/");
-    // expect(accessTokenPayload.scope).toBe("openid profile email");
+    const accessTokenPayload = parseJwt(accessToken!);
+    expect(accessTokenPayload.aud).toBe("default");
+    expect(accessTokenPayload.iss).toBe("https://example.com/");
+    expect(accessTokenPayload.scope).toBe("openid profile email");
 
-    // const idToken = redirectUri.searchParams.get("id_token");
-    // const idTokenPayload = parseJwt(idToken!);
-    // expect(idTokenPayload.email).toBe("test@example.com");
-    // expect(idTokenPayload.aud).toBe("clientId");
+    const idToken = redirectUri.searchParams.get("id_token");
+    const idTokenPayload = parseJwt(idToken!);
+    expect(idTokenPayload.email).toBe("test@example.com");
+    expect(idTokenPayload.aud).toBe("clientId");
 
-    // // now check silent auth works when logged in with code----------------------------------------
-    // const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
+    // now check silent auth works when logged in with code----------------------------------------
+    const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
 
-    // const {
-    //   accessToken: silentAuthAccessTokenPayload,
-    //   idToken: silentAuthIdTokenPayload,
-    // } = await doSilentAuthRequestAndReturnTokens(
-    //   setCookiesHeader,
-    //   worker,
-    //   AUTH_PARAMS.nonce,
-    //   "clientId",
-    // );
+    const {
+      accessToken: silentAuthAccessTokenPayload,
+      idToken: silentAuthIdTokenPayload,
+    } = await doSilentAuthRequestAndReturnTokens(
+      setCookiesHeader,
+      client.authorize,
+      AUTH_PARAMS.nonce,
+      "clientId",
+    );
 
-    // const {
-    //   // these are the fields that change on every test run
-    //   exp,
-    //   iat,
-    //   sid,
-    //   sub,
-    //   ...restOfIdTokenPayload
-    // } = silentAuthIdTokenPayload;
+    const {
+      // these are the fields that change on every test run
+      exp,
+      iat,
+      sid,
+      sub,
+      ...restOfIdTokenPayload
+    } = silentAuthIdTokenPayload;
 
-    // expect(sub).toContain("email|");
-    // expect(sid).toHaveLength(21);
-    // expect(restOfIdTokenPayload).toEqual({
-    //   aud: "clientId",
-    //   name: "test@example.com",
-    //   email: "test@example.com",
-    //   email_verified: true,
-    //   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-    //   iss: "https://example.com/",
-    // });
+    expect(sub).toContain("email|");
+    expect(sid).toHaveLength(21);
+    expect(restOfIdTokenPayload).toEqual({
+      aud: "clientId",
+      name: "test@example.com",
+      email: "test@example.com",
+      email_verified: true,
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      iss: "https://example.com/",
+    });
 
     // // ----------------------------
     // // Now log in (previous flow was signup)
