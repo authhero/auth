@@ -10,6 +10,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
     )
     .addColumn("tenant_id", "varchar(255)")
     .addColumn("user_id", "varchar(255)")
+    // same change here as on other tables - FK reference needed to users table
     .addForeignKeyConstraint(
       "user_id_constraint",
       ["user_id", "tenant_id"],

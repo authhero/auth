@@ -8,7 +8,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
     //   col.references("tenants.id").onDelete("cascade").notNull(),
     // )
     // .addColumn("user_id", "varchar(255)", (col) =>
-    //   col.references("users.id").onDelete("cascade").primaryKey(),
+    //   col.references("user.id").onDelete("cascade").primaryKey(),
     // )
     .addColumn("tenant_id", "varchar(255)")
     .addColumn("user_id", "varchar(255)")
@@ -31,9 +31,9 @@ export async function up(db: Kysely<Database>): Promise<void> {
     // )
     .addColumn("user_id", "varchar(255)")
     .addColumn("tenant_id", "varchar(255)")
-    // fk mismatch - codes referencing users - eh?
+    // fk mismatch - we were referencing user - singular - non-existent table
     // .addColumn("user_id", "varchar(255)", (col) =>
-    //   col.references("users.id").onDelete("cascade").notNull(),
+    //   col.references("user.id").onDelete("cascade").notNull(),
     // )
     .addForeignKeyConstraint(
       "user_id_constraint",
