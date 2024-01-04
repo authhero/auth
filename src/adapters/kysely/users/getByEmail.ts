@@ -1,5 +1,6 @@
 import { Database, SqlUser } from "../../../types";
 import { Kysely } from "kysely";
+import { parseBooleans } from "./booleans";
 
 export function getByEmail(db: Kysely<Database>) {
   return async (tenantId: string, email: string): Promise<SqlUser[]> => {
@@ -10,6 +11,6 @@ export function getByEmail(db: Kysely<Database>) {
       .selectAll()
       .execute();
 
-    return users;
+    return users.map(parseBooleans);
   };
 }
