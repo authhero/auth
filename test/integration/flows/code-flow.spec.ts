@@ -10,15 +10,26 @@ import { getEnv } from "../helpers/test-client";
 import { Tenant } from "../../../src/types";
 import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 
-const codes: string[] = [];
+const emailInfo: {
+  email: string;
+  code: string;
+  magicLink?: string;
+}[] = [];
 
 const email: EmailAdapter = {
   sendLink: (env, client, to, code, magicLink) => {
-    codes.push(code);
+    emailInfo.push({
+      email: to,
+      code,
+      magicLink,
+    });
     return Promise.resolve();
   },
   sendCode: (env, client, to, code) => {
-    codes.push(code);
+    emailInfo.push({
+      email: to,
+      code,
+    });
     return Promise.resolve();
   },
 };
@@ -81,13 +92,12 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    console.log("codes: ", codes);
-
     // const emailResponse = await worker.fetch("/test/email");
     // const [sentEmail] = (await emailResponse.json()) as Email[];
-    // expect(sentEmail.to).toBe("test@example.com");
+    expect(emailInfo).toHaveLength(1);
+    expect(emailInfo[0].email).toBe("test@example.com");
 
-    // const otp = sentEmail.code;
+    const otp = emailInfo[0].code;
 
     // // Authenticate using the code
     // const authenticateResponse = await worker.fetch("/co/authenticate", {
