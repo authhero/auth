@@ -10,20 +10,7 @@ describe("password-flow", () => {
     it("should return a 400 if an invalid client is passed", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      //     const response = await worker.fetch(
-      //       "/invalidClientId/dbconnection/register",
-      //       {
-      //         headers: {
-      //           "content-type": "application/json",
-      //         },
-      //         method: "POST",
-      //         body: JSON.stringify({
-      //           email: "test@example.com",
-      //           password: "password",
-      //         }),
-      //       },
-      //     );
-      // const response = await client.api.v2.dbconnection.register.$post(
+
       const typesDoNotWorkWithThisSetup___PARAMS = {
         param: {
           clientId: "invalidClientId",
@@ -49,19 +36,7 @@ describe("password-flow", () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      //     const createUserResponse = await worker.fetch(
-      //       "/clientId/dbconnection/register",
-      //       {
-      //         headers: {
-      //           "content-type": "application/json",
-      //         },
-      //         method: "POST",
-      //         body: JSON.stringify({
-      //           email: "password-login-test@example.com",
-      //           password,
-      //         }),
-      //       },
-      //     );
+
       const typesDoNotWorkWithThisSetup___PARAMS = {
         param: {
           clientId: "clientId",
@@ -80,19 +55,7 @@ describe("password-flow", () => {
       });
 
       expect(createUserResponse.status).toBe(201);
-      //     const loginResponse = await worker.fetch("/co/authenticate", {
-      //       headers: {
-      //         "content-type": "application/json",
-      //       },
-      //       method: "POST",
-      //       body: JSON.stringify({
-      //         client_id: "clientId",
-      //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //         realm: "Username-Password-Authentication",
-      //         password,
-      //         username: "password-login-test@example.com",
-      //       }),
-      //     });
+
       const loginResponse = await client.co.authenticate.$post(
         {
           json: {
@@ -109,72 +72,73 @@ describe("password-flow", () => {
           },
         },
       );
-      // ah of course. will not work. because we need the other PR merging that has all the new SQL types and etc...
-      // address that next is probably best
-      expect(loginResponse.status).toBe(200);
-      //     const { login_ticket } = (await loginResponse.json()) as LoginTicket;
-      //     const query = new URLSearchParams({
-      //       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      //       client_id: "clientId",
-      //       login_ticket,
-      //       referrer: "https://login.example.com",
-      //       response_type: "token id_token",
-      //       redirect_uri: "http://login.example.com",
-      //       state: "state",
-      //       realm: "Username-Password-Authentication",
-      //     });
-      //     // Trade the ticket for token
-      //     const tokenResponse = await worker.fetch(
-      //       `/authorize?${query.toString()}`,
-      //       {
-      //         redirect: "manual",
-      //       },
-      //     );
-      //     expect(tokenResponse.status).toBe(302);
-      //     expect(await tokenResponse.text()).toBe("Redirecting");
-      //     const redirectUri = new URL(tokenResponse.headers.get("location")!);
-      //     expect(redirectUri.hostname).toBe("login.example.com");
-      //     expect(redirectUri.searchParams.get("state")).toBe("state");
-      //     const accessToken = redirectUri.searchParams.get("access_token");
-      //     const accessTokenPayload = parseJwt(accessToken!);
-      //     expect(accessTokenPayload.aud).toBe("default");
-      //     expect(accessTokenPayload.iss).toBe("https://example.com/");
-      //     expect(accessTokenPayload.scope).toBe("");
-      //     const idToken = redirectUri.searchParams.get("id_token");
-      //     const idTokenPayload = parseJwt(idToken!);
-      //     expect(idTokenPayload.email).toBe("password-login-test@example.com");
-      //     expect(idTokenPayload.aud).toBe("clientId");
-      //     const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
-      //     // now check silent auth works after password login
-      //     const {
-      //       accessToken: silentAuthAccessTokenPayload,
-      //       idToken: silentAuthIdTokenPayload,
-      //     } = await doSilentAuthRequestAndReturnTokens(
-      //       authCookieHeader,
-      //       worker,
-      //       "unique-nonce",
-      //       "clientId",
-      //     );
-      //     const {
-      //       // these are the fields that change on every test run
-      //       exp,
-      //       iat,
-      //       sid,
-      //       sub,
-      //       ...restOfIdTokenPayload
-      //     } = silentAuthIdTokenPayload;
-      //     expect(sub).toContain("email|");
-      //     expect(sid).toHaveLength(21);
-      //     expect(restOfIdTokenPayload).toEqual({
-      //       aud: "clientId",
-      //       email: "password-login-test@example.com",
-      //       // this is correct for password login
-      //       email_verified: false,
-      //       nonce: "unique-nonce",
-      //       iss: "https://example.com/",
-      //     });
+
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      const query = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
+      // Trade the ticket for token
+
+      const tokenResponse = await client.authorize.$get({ query });
+
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      expect(redirectUri.hostname).toBe("login.example.com");
+      expect(redirectUri.searchParams.get("state")).toBe("state");
+      const accessToken = redirectUri.searchParams.get("access_token");
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("");
+      const idToken = redirectUri.searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("password-login-test@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+      // now check silent auth works after password login
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        authCookieHeader,
+        client.authorize,
+        "unique-nonce",
+        "clientId",
+      );
+      const {
+        // these are the fields that change on every test run
+        exp,
+        iat,
+        sid,
+        sub,
+        //
+        family_name,
+        given_name,
+        name,
+        nickname,
+        picture,
+        locale,
+        ...restOfIdTokenPayload
+      } = silentAuthIdTokenPayload;
+      expect(sub).toContain("email|");
+      expect(restOfIdTokenPayload).toEqual({
+        aud: "clientId",
+        email: "password-login-test@example.com",
+        // this is correct for password login
+        email_verified: false,
+        nonce: "unique-nonce",
+        iss: "https://example.com/",
+      });
     });
-    //   // TODO - run this test using hono/testing+SQLite and see if the same thing happens
+    // TODO - run this test using hono/testing+SQLite and see if the same thing happens
     //   it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
     //     const aNewPassword = "a new password";
     //     const createUserResponse = await worker.fetch(
