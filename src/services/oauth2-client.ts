@@ -94,14 +94,15 @@ export class OAuth2Client implements IOAuth2Client {
     const params = new URLSearchParams({
       grant_type: "authorization_code",
       code,
-      client_id: this.params.client_id,
-      client_secret: clientSecret,
       redirect_uri: this.redirectUri,
     });
 
     const response = await fetch(this.params.token_endpoint, {
       method: "POST",
       headers: {
+        Authorization: `Basic ${btoa(
+          `${this.params.client_id}:${clientSecret}`,
+        )}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: params.toString(),
