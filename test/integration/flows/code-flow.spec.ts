@@ -303,33 +303,8 @@ describe("code-flow", () => {
     });
   });
   it("should return existing primary account when logging in with new code sign on with same email address", async () => {
-    const emailInfo: {
-      email: string;
-      code: string;
-      magicLink?: string;
-    }[] = [];
-
-    const email: EmailAdapter = {
-      sendLink: (env, client, to, code, magicLink) => {
-        emailInfo.push({
-          email: to,
-          code,
-          magicLink,
-        });
-        return Promise.resolve();
-      },
-      sendCode: (env, client, to, code) => {
-        emailInfo.push({
-          email: to,
-          code,
-        });
-        return Promise.resolve();
-      },
-    };
-
     const token = await getAdminToken();
-    const env = (await getEnv()) as any;
-    env.data.email = email;
+    const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
@@ -362,7 +337,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = emailInfo;
+    const [{ code: otp }] = await env.data.email.list!();
 
     const authenticateResponse = await client.co.authenticate.$post(
       {
@@ -506,7 +481,7 @@ describe("code-flow", () => {
       },
     );
 
-    const otp2 = emailInfo[1].code;
+    const [{}, { code: otp2 }] = await env.data.email.list!();
 
     const authenticateResponse2 = await client.co.authenticate.$post(
       {
@@ -577,8 +552,7 @@ describe("code-flow", () => {
       state: "state",
     };
 
-    const env = (await getEnv()) as any;
-    env.data.email = email;
+    const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
     await client.passwordless.start.$post(
@@ -598,7 +572,7 @@ describe("code-flow", () => {
       },
     );
 
-    const otp = emailInfo[0].code;
+    const [{ code: otp }] = await env.data.email.list!();
 
     const authRes = await client.co.authenticate.$post(
       {
@@ -648,8 +622,7 @@ describe("code-flow", () => {
       state: "state",
     };
 
-    const env = (await getEnv()) as any;
-    env.data.email = email;
+    const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
     await client.passwordless.start.$post(
