@@ -337,86 +337,89 @@ describe("code-flow", () => {
       expect(authenticateResponse2.status).toBe(302);
     });
 
-    //   it("should not accept any invalid params on the magic link", async () => {
-    //     const AUTH_PARAMS = {
-    //       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-    //       redirect_uri: "https://login.example.com/sv/callback",
-    //       response_type: "token id_token",
-    //       scope: "openid profile email",
-    //       state: "state",
-    //     };
+    it("should not accept any invalid params on the magic link", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    //     // -----------
-    //     // get code to log in
-    //     // -----------
-    //     await worker.fetch("/passwordless/start", {
-    //       headers: {
-    //         "content-type": "application/json",
-    //       },
-    //       method: "POST",
-    //       body: JSON.stringify({
-    //         authParams: AUTH_PARAMS,
-    //         client_id: "clientId",
-    //         connection: "email",
-    //         email: "test@example.com",
-    //         send: "link",
-    //       }),
-    //     });
+      const AUTH_PARAMS = {
+        nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+        redirect_uri: "https://login.example.com/sv/callback",
+        response_type: "token id_token",
+        scope: "openid profile email",
+        state: "state",
+      };
+      // -----------
+      // get code to log in
+      // -----------
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "test@example.com",
+            send: "link",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
 
-    //     const emailResponse = await worker.fetch("/test/email");
-    //     const [sentEmail] = (await emailResponse.json()) as Email[];
-    //     const link = sentEmail.magicLink;
+      const [{ magicLink }] = await env.data.email.list!();
 
-    //     // ------------
-    //     // Overwrite the magic link with a bad code, and try and use it
-    //     // ----------------
-    //     const magicLinkWithBadCode = new URL(link!);
-    //     magicLinkWithBadCode.searchParams.set("verification_code", "123456");
+      const link = magicLink!;
+      // ------------
+      // Overwrite the magic link with a bad code, and try and use it
+      // ----------------
+      const magicLinkWithBadCode = new URL(link!);
+      magicLinkWithBadCode.searchParams.set("verification_code", "123456");
 
-    //     const authenticatePath = magicLinkWithBadCode.href.split(
-    //       "https://example.com",
-    //     )[1];
+      const query = Object.fromEntries(
+        magicLinkWithBadCode.searchParams.entries(),
+      );
 
-    //     const authenticateResponse = await worker.fetch(authenticatePath, {
-    //       redirect: "manual",
-    //     });
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
 
-    //     // we are still getting a redirect but to a page on login2 saying the code is expired
-    //     expect(authenticateResponse.status).toBe(302);
-
-    //     const redirectUri = new URL(authenticateResponse.headers.get("location")!);
-
-    //     expect(redirectUri.hostname).toBe("login2.sesamy.dev");
-    //     expect(redirectUri.pathname).toBe("/sv/expired-code");
-    //     expect(redirectUri.searchParams.get("email")).toBe(
-    //       encodeURIComponent("test@example.com"),
-    //     );
-
-    //     // ------------
-    //     // Overwrite the magic link with a bad email, and try and use it
-    //     // ----------------
-    //     const magicLinkWithBadEmail = new URL(link!);
-    //     magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
-
-    //     const authenticatePath2 = magicLinkWithBadEmail.href.split(
-    //       "https://example.com",
-    //     )[1];
-
-    //     const authenticateResponse2 = await worker.fetch(authenticatePath2, {
-    //       redirect: "manual",
-    //     });
-
-    //     expect(authenticateResponse2.status).toBe(302);
-
-    //     const redirectUri2 = new URL(
-    //       authenticateResponse2.headers.get("location")!,
-    //     );
-
-    //     expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
-    //     expect(redirectUri2.pathname).toBe("/sv/expired-code");
-    //     expect(redirectUri2.searchParams.get("email")).toBe(
-    //       encodeURIComponent("another@email.com"),
-    //     );
+      // we are still getting a redirect but to a page on login2 saying the code is expired
+      expect(authenticateResponse.status).toBe(302);
+      // UP TO HERE! why is the domain undefined?
+      console.log(authenticateResponse.headers.get("location")!);
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login2.sesamy.dev");
+      expect(redirectUri.pathname).toBe("/sv/expired-code");
+      expect(redirectUri.searchParams.get("email")).toBe(
+        encodeURIComponent("test@example.com"),
+      );
+      //     // ------------
+      //     // Overwrite the magic link with a bad email, and try and use it
+      //     // ----------------
+      //     const magicLinkWithBadEmail = new URL(link!);
+      //     magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
+      //     const authenticatePath2 = magicLinkWithBadEmail.href.split(
+      //       "https://example.com",
+      //     )[1];
+      //     const authenticateResponse2 = await worker.fetch(authenticatePath2, {
+      //       redirect: "manual",
+      //     });
+      //     expect(authenticateResponse2.status).toBe(302);
+      //     const redirectUri2 = new URL(
+      //       authenticateResponse2.headers.get("location")!,
+      //     );
+      //     expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
+      //     expect(redirectUri2.pathname).toBe("/sv/expired-code");
+      //     expect(redirectUri2.searchParams.get("email")).toBe(
+      //       encodeURIComponent("another@email.com"),
+      //     );
+    });
   });
   //   // TO TEST
   //   // like code-flow
