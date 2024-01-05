@@ -302,8 +302,7 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
-  // wow - this test works in isolation... but NOT when ran after above test...
-  it.only("should return existing primary account when logging in with new code sign on with same email address", async () => {
+  it("should return existing primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
     const env = (await getEnv()) as any;
     env.data.email = email;
