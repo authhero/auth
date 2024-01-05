@@ -11,11 +11,36 @@ import {
   SqlConnection,
   Tenant,
 } from "../../../src/types";
+import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
+import type { Email } from "../../../src/types/Email";
 
 export async function getEnv() {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
+
+  const emails: Email[] = [];
+  const emailAdapter: EmailAdapter = {
+    sendLink: (env, client, to, code, magicLink) => {
+      emails.push({
+        to,
+        code,
+        magicLink,
+      });
+      return Promise.resolve();
+    },
+    sendCode: (env, client, to, code) => {
+      emails.push({
+        to,
+        code,
+      });
+      return Promise.resolve();
+    },
+    list: async () => {
+      return emails;
+    },
+  };
+
   // Don't use getDb here as it will reuse the connection
   const db = new Kysely<Database>({ dialect: dialect });
 
@@ -177,7 +202,10 @@ export async function getEnv() {
   });
 
   return {
-    data,
+    data: {
+      ...data,
+      email: emailAdapter,
+    },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     ISSUER: "https://example.com/",
     READ_PERMISSION: "auth:read",
