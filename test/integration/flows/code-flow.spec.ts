@@ -222,9 +222,9 @@ describe("code-flow", () => {
       query: query2,
     });
 
-    // // ----------------------------
-    // // Now silent auth again - confirms that logging in works
-    // // ----------------------------
+    // ----------------------------
+    // Now silent auth again - confirms that logging in works
+    // ----------------------------
     const setCookiesHeader2 = tokenRes2.headers.get("set-cookie")!;
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
@@ -399,7 +399,6 @@ describe("code-flow", () => {
     // this is the id of the primary account
     expect(sub).toBe("userId");
 
-    // expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
       aud: "clientId",
       email: "foo@example.com",
