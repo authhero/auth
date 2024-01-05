@@ -28,9 +28,11 @@ describe("password-flow", () => {
           },
         },
       );
-      // in wrangler test this was 400...
+      // so this is correct
+      expect(await response.text()).toBe("Client not found");
+
+      // but this is giving a 404...
       // expect(response.status).toBe(400);
-      // NOW it's a 404... does that actually make sense? is it the router magic not working?
     });
     it("should create a new user with a password and login", async () => {
       const password = "password";
@@ -138,315 +140,317 @@ describe("password-flow", () => {
         iss: "https://example.com/",
       });
     });
-    // TODO - run this test using hono/testing+SQLite and see if the same thing happens
-    //   it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
-    //     const aNewPassword = "a new password";
-    //     const createUserResponse = await worker.fetch(
-    //       "/clientId/dbconnection/register",
-    //       {
-    //         headers: {
-    //           "content-type": "application/json",
-    //         },
-    //         method: "POST",
-    //         body: JSON.stringify({
-    //           email: "foo@example.com",
-    //           // this should not overwrite the existing password
-    //           password: aNewPassword,
-    //         }),
-    //       },
-    //     );
-    //     // I don't think it should be what happens but I'm testing what we have... might be because we're using the data adapters which don't have primary keys
-    //     expect(createUserResponse.status).toBe(201);
-    //     const loginResponse = await worker.fetch("/co/authenticate", {
-    //       headers: {
-    //         "content-type": "application/json",
-    //       },
-    //       method: "POST",
-    //       body: JSON.stringify({
-    //         client_id: "clientId",
-    //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-    //         realm: "Username-Password-Authentication",
-    //         password: aNewPassword,
-    //         username: "foo@example.com",
-    //       }),
-    //     });
-    //     // here at least the password has not been overwritten
-    //     expect(loginResponse.status).toBe(403);
-    //     // TODO
-    //     // - update the password and then check we can login... I don't think we have that flow tested... or implemented
-    //   });
+
+    it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+      const aNewPassword = "a new password";
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        param: {
+          clientId: "clientId",
+        },
+        json: {
+          email: "foo@example.com",
+          password: aNewPassword,
+        },
+      };
+      const createUserResponse = await client[
+        ":clientId"
+      ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+
+      // I don't think it should be what happens but I'm testing what we have... might be because we're using the data adapters which don't have primary keys
+      expect(createUserResponse.status).toBe(201);
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: aNewPassword,
+            username: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      // here at least the password has not been overwritten
+      expect(loginResponse.status).toBe(403);
+      // TODO
+      // - update the password and then check we can login... I don't think we have that flow tested... or implemented
+    });
     //   // TO TEST--------------------------------------------------------
     //   // should do what with registration signup for existing email (code) user?
     //   // --- we don't have account linking implemented on this flow
     //   // same username-password user but a different tenant
-    // });
-    describe("Login with password", () => {
-      it("should login with existing user", async () => {
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
-        // foo@example.com is an existing username-password user, with password - Test!
+  });
+  describe("Login with password", () => {
+    it("should login with existing user", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+      // foo@example.com is an existing username-password user, with password - Test!
 
-        const loginResponse = await client.co.authenticate.$post(
-          {
-            json: {
-              client_id: "clientId",
-              credential_type:
-                "http://auth0.com/oauth/grant-type/password-realm",
-              realm: "Username-Password-Authentication",
-              password: "Test!",
-              username: "foo@example.com",
-            },
-          },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
-
-        expect(loginResponse.status).toBe(200);
-        const { login_ticket } = (await loginResponse.json()) as LoginTicket;
-        const query = {
-          auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-          client_id: "clientId",
-          login_ticket,
-          referrer: "https://login.example.com",
-          response_type: "token id_token",
-          redirect_uri: "http://login.example.com",
-          state: "state",
-          realm: "Username-Password-Authentication",
-        };
-
-        // Trade the ticket for token
-        const tokenResponse = await client.authorize.$get({ query });
-
-        expect(tokenResponse.status).toBe(302);
-        expect(await tokenResponse.text()).toBe("Redirecting");
-
-        const redirectUri = new URL(tokenResponse.headers.get("location")!);
-        expect(redirectUri.hostname).toBe("login.example.com");
-        expect(redirectUri.searchParams.get("state")).toBe("state");
-
-        const accessToken = redirectUri.searchParams.get("access_token");
-        const accessTokenPayload = parseJwt(accessToken!);
-        expect(accessTokenPayload.aud).toBe("default");
-        expect(accessTokenPayload.iss).toBe("https://example.com/");
-        expect(accessTokenPayload.scope).toBe("");
-
-        const idToken = redirectUri.searchParams.get("id_token");
-        const idTokenPayload = parseJwt(idToken!);
-        expect(idTokenPayload.email).toBe("foo@example.com");
-        expect(idTokenPayload.aud).toBe("clientId");
-
-        const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
-
-        // ------------------
-        // now check silent auth works after password login with existing user
-        // ------------------
-        const {
-          accessToken: silentAuthAccessTokenPayload,
-          idToken: silentAuthIdTokenPayload,
-        } = await doSilentAuthRequestAndReturnTokens(
-          authCookieHeader,
-          client.authorize,
-          "unique-nonce",
-          "clientId",
-        );
-        const {
-          exp,
-          iat,
-          sid,
-
-          family_name,
-          given_name,
-          locale,
-          ...restOfIdTokenPayload
-        } = silentAuthIdTokenPayload;
-        expect(restOfIdTokenPayload).toEqual({
-          sub: "userId",
-          aud: "clientId",
-          email: "foo@example.com",
-          email_verified: true,
-          nonce: "unique-nonce",
-          iss: "https://example.com/",
-          name: "Åkesson Þorsteinsson",
-          nickname: "Åkesson Þorsteinsson",
-          picture: "https://example.com/foo.png",
-        });
-      });
-      it("should reject login of existing user with incorrect password", async () => {
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
-
-        const loginResponse = await client.co.authenticate.$post(
-          {
-            json: {
-              client_id: "clientId",
-              credential_type:
-                "http://auth0.com/oauth/grant-type/password-realm",
-              realm: "Username-Password-Authentication",
-              password: "wrong-password",
-              username: "foo@example.com",
-            },
-          },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
-        // no body returned
-        expect(loginResponse.status).toBe(403);
-      });
-      it("should reject login of existing user with incorrect password", async () => {
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
-
-        const loginResponse = await client.co.authenticate.$post(
-          {
-            json: {
-              client_id: "clientId",
-              credential_type:
-                "http://auth0.com/oauth/grant-type/password-realm",
-              realm: "Username-Password-Authentication",
-              password: "wrong-password",
-              username: "foo@example.com",
-            },
-          },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
-        // no body returned
-        expect(loginResponse.status).toBe(403);
-      });
-      it("should not allow password of a different user to be used", async () => {
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
-
-        const typesDoNotWorkWithThisSetup___PARAMS = {
-          param: {
-            clientId: "clientId",
-          },
+      const loginResponse = await client.co.authenticate.$post(
+        {
           json: {
-            email: "new-username-password-user@example.com",
-            password: "password",
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "Test!",
+            username: "foo@example.com",
           },
-        };
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
 
-        await client[":clientId"].dbconnection.register.$post(
-          typesDoNotWorkWithThisSetup___PARAMS,
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+      expect(loginResponse.status).toBe(200);
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      const query = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
 
-        const loginResponse = await client.co.authenticate.$post(
-          {
-            json: {
-              client_id: "clientId",
-              credential_type:
-                "http://auth0.com/oauth/grant-type/password-realm",
-              realm: "Username-Password-Authentication",
-              password: "password",
-              username: "new-username-password-user@example.com",
-            },
-          },
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({ query });
 
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
 
-        // ------------------
-        // is this enough to be sure the user is created? OR should we exchange the ticket...
-        // or is just calling /dbconnection/register enough?
-        // ------------------
-        expect(loginResponse.status).toBe(200);
-        // ------------------
-        // now check we cannot use the wrong user's password
-        // ------------------
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      expect(redirectUri.hostname).toBe("login.example.com");
+      expect(redirectUri.searchParams.get("state")).toBe("state");
 
-        const rejectedLoginResponse = await client.co.authenticate.$post(
-          {
-            json: {
-              client_id: "clientId",
-              credential_type:
-                "http://auth0.com/oauth/grant-type/password-realm",
-              realm: "Username-Password-Authentication",
-              // this is the password of
-              password: "Test!",
-              username: "new-username-password-user@example.com",
-            },
-          },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+      const accessToken = redirectUri.searchParams.get("access_token");
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("");
 
-        expect(rejectedLoginResponse.status).toBe(403);
-      });
-      it("should not allow non-existent user & password to login", async () => {
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+      const idToken = redirectUri.searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("foo@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
 
-        const loginResponse = await client.co.authenticate.$post(
-          {
-            json: {
-              client_id: "clientId",
-              credential_type:
-                "http://auth0.com/oauth/grant-type/password-realm",
-              realm: "Username-Password-Authentication",
-              password: "any-password",
-              username: "non-existent-user@example.com",
-            },
-          },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
-        expect(loginResponse.status).toBe(403);
-      });
-      it("should not allow login to username-password but on different tenant", async () => {
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
 
-        const loginResponse = await client.co.authenticate.$post(
-          {
-            json: {
-              client_id: "otherClientIdOnOtherTenant",
-              credential_type:
-                "http://auth0.com/oauth/grant-type/password-realm",
-              realm: "Username-Password-Authentication",
-              password: "Test!",
-              username: "foo@example.com",
-            },
-          },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+      // ------------------
+      // now check silent auth works after password login with existing user
+      // ------------------
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        authCookieHeader,
+        client.authorize,
+        "unique-nonce",
+        "clientId",
+      );
+      const {
+        exp,
+        iat,
+        sid,
 
-        expect(loginResponse.status).toBe(403);
+        family_name,
+        given_name,
+        locale,
+        ...restOfIdTokenPayload
+      } = silentAuthIdTokenPayload;
+      expect(restOfIdTokenPayload).toEqual({
+        sub: "userId",
+        aud: "clientId",
+        email: "foo@example.com",
+        email_verified: true,
+        nonce: "unique-nonce",
+        iss: "https://example.com/",
+        name: "Åkesson Þorsteinsson",
+        nickname: "Åkesson Þorsteinsson",
+        picture: "https://example.com/foo.png",
       });
     });
+    it("should reject login of existing user with incorrect password", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    // TO TEST
-    // - username-password user across different clients on the same tenant
-    // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "wrong-password",
+            username: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      // no body returned
+      expect(loginResponse.status).toBe(403);
+    });
+    it("should reject login of existing user with incorrect password", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "wrong-password",
+            username: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      // no body returned
+      expect(loginResponse.status).toBe(403);
+    });
+    it("should not allow password of a different user to be used", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        param: {
+          clientId: "clientId",
+        },
+        json: {
+          email: "new-username-password-user@example.com",
+          password: "password",
+        },
+      };
+
+      await client[":clientId"].dbconnection.register.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "password",
+            username: "new-username-password-user@example.com",
+          },
+        },
+
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      // ------------------
+      // is this enough to be sure the user is created? OR should we exchange the ticket...
+      // or is just calling /dbconnection/register enough?
+      // ------------------
+      expect(loginResponse.status).toBe(200);
+      // ------------------
+      // now check we cannot use the wrong user's password
+      // ------------------
+
+      const rejectedLoginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            // this is the password of
+            password: "Test!",
+            username: "new-username-password-user@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(rejectedLoginResponse.status).toBe(403);
+    });
+    it("should not allow non-existent user & password to login", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "any-password",
+            username: "non-existent-user@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(loginResponse.status).toBe(403);
+    });
+    it("should not allow login to username-password but on different tenant", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "otherClientIdOnOtherTenant",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "Test!",
+            username: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(loginResponse.status).toBe(403);
+    });
   });
+
   // TO TEST
-  // - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
+  // - username-password user across different clients on the same tenant
+  // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
 });
+// TO TEST
+// - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
