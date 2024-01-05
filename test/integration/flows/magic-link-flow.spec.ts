@@ -41,7 +41,7 @@ describe("code-flow", () => {
 
       const response = await client.passwordless.start.$post(
         {
-          // ouch! this was param body... no typesafety...
+          // ouch! I had this typed as "body"... no typesafety...
           json: {
             authParams: AUTH_PARAMS,
             client_id: "clientId",
@@ -63,75 +63,85 @@ describe("code-flow", () => {
 
       const [{ to, magicLink }] = await env.data.email.list!();
 
-      //       const emailResponse = await worker.fetch("/test/email");
-      //       const [sentEmail] = (await emailResponse.json()) as Email[];
       expect(to).toBe("new-user@example.com");
 
       const link = magicLink!;
 
       const authenticatePath = link?.split("https://example.com")[1];
 
-      // Authenticate using the magic link
-      //       const authenticateResponse = await worker.fetch(authenticatePath, {
-      //         redirect: "manual",
-      //       });
+      expect(authenticatePath).toContain("/passwordless/verify_redirect");
 
-      //       if (authenticateResponse.status !== 302) {
-      //         const errorMessage = `Failed to verify redirect with status: ${
-      //           authenticateResponse.status
-      //         } and message: ${await response.text()}`;
-      //         throw new Error(errorMessage);
-      //       }
+      const querySearchParams = new URLSearchParams(
+        authenticatePath.split("?")[1],
+      );
+      const query = Object.fromEntries(querySearchParams.entries());
 
-      //       const redirectUri = new URL(
-      //         authenticateResponse.headers.get("location")!,
-      //       );
-      //       expect(redirectUri.hostname).toBe("login.example.com");
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
 
-      //       const accessToken = redirectUri.searchParams.get("access_token");
+      if (authenticateResponse.status !== 302) {
+        const errorMessage = `Failed to verify redirect with status: ${
+          authenticateResponse.status
+        } and message: ${await response.text()}`;
+        throw new Error(errorMessage);
+      }
 
-      //       const accessTokenPayload = parseJwt(accessToken!);
-      //       expect(accessTokenPayload.aud).toBe("default");
-      //       expect(accessTokenPayload.iss).toBe("https://example.com/");
-      //       expect(accessTokenPayload.scope).toBe("openid profile email");
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login.example.com");
 
-      //       const idToken = redirectUri.searchParams.get("id_token");
-      //       const idTokenPayload = parseJwt(idToken!);
-      //       expect(idTokenPayload.email).toBe("new-user@example.com");
-      //       expect(idTokenPayload.aud).toBe("clientId");
+      const accessToken = redirectUri.searchParams.get("access_token");
 
-      //       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("openid profile email");
 
-      //       // now check silent auth works when logged in with magic link----------------------------------------
-      //       const {
-      //         accessToken: silentAuthAccessTokenPayload,
-      //         idToken: silentAuthIdTokenPayload,
-      //       } = await doSilentAuthRequestAndReturnTokens(
-      //         authCookieHeader,
-      //         worker,
-      //         AUTH_PARAMS.nonce,
-      //         "clientId",
-      //       );
+      const idToken = redirectUri.searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("new-user@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
 
-      //       const {
-      //         // these are the fields that change on every test run
-      //         exp,
-      //         iat,
-      //         sid,
-      //         sub,
-      //         ...restOfIdTokenPayload
-      //       } = silentAuthIdTokenPayload;
+      const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
-      //       expect(sub).toContain("email|");
-      //       expect(sid).toHaveLength(21);
-      //       expect(restOfIdTokenPayload).toEqual({
-      //         aud: "clientId",
-      //         name: "new-user@example.com",
-      //         email: "new-user@example.com",
-      //         email_verified: true,
-      //         nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-      //         iss: "https://example.com/",
-      //       });
+      // now check silent auth works when logged in with magic link----------------------------------------
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        authCookieHeader,
+        client.authorize,
+        AUTH_PARAMS.nonce,
+        "clientId",
+      );
+
+      const {
+        // these are the fields that change on every test run
+        exp,
+        iat,
+        sid,
+        sub,
+        //
+        family_name,
+        given_name,
+        nickname,
+        picture,
+        locale,
+        ...restOfIdTokenPayload
+      } = silentAuthIdTokenPayload;
+
+      expect(sub).toContain("email|");
+      expect(restOfIdTokenPayload).toEqual({
+        aud: "clientId",
+        name: "new-user@example.com",
+        email: "new-user@example.com",
+        email_verified: true,
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        iss: "https://example.com/",
+      });
     });
     //     it("is an existing user", async () => {
     //       const token = await getAdminToken();
