@@ -41,7 +41,8 @@ describe("code-flow", () => {
 
       const response = await client.passwordless.start.$post(
         {
-          body: {
+          // ouch! this was param body... no typesafety...
+          json: {
             authParams: AUTH_PARAMS,
             client_id: "clientId",
             connection: "email",
@@ -60,20 +61,17 @@ describe("code-flow", () => {
         throw new Error(await response.text());
       }
 
-      const mails = await env.data.email.list!();
-      console.log(mails);
-
-      // const [{ to, magicLink }] = await env.data.email.list!();
+      const [{ to, magicLink }] = await env.data.email.list!();
 
       //       const emailResponse = await worker.fetch("/test/email");
       //       const [sentEmail] = (await emailResponse.json()) as Email[];
-      // expect(to).toBe("new-user@example.com");
+      expect(to).toBe("new-user@example.com");
 
-      // const link = magicLink!;
+      const link = magicLink!;
 
-      //       const authenticatePath = link?.split("https://example.com")[1];
+      const authenticatePath = link?.split("https://example.com")[1];
 
-      //       // Authenticate using the magic link
+      // Authenticate using the magic link
       //       const authenticateResponse = await worker.fetch(authenticatePath, {
       //         redirect: "manual",
       //       });
