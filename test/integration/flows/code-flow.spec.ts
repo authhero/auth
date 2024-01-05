@@ -639,48 +639,57 @@ describe("code-flow", () => {
     expect(authRes2.status).toBe(200);
   });
 
-  // it("should not accept an invalid code", async () => {
-  //   const AUTH_PARAMS = {
-  //     nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-  //     redirect_uri: "https://login.example.com/sv/callback",
-  //     response_type: "token id_token",
-  //     scope: "openid profile email",
-  //     state: "state",
-  //   };
+  it("should not accept an invalid code", async () => {
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
 
-  //   await worker.fetch("/passwordless/start", {
-  //     headers: {
-  //       "content-type": "application/json",
-  //     },
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       authParams: AUTH_PARAMS,
-  //       client_id: "clientId",
-  //       connection: "email",
-  //       email: "foo@example.com",
-  //       send: "code",
-  //     }),
-  //   });
-  //   await worker.fetch("/test/email");
+    const env = (await getEnv()) as any;
+    env.data.email = email;
+    const client = testClient(tsoaApp, env);
 
-  //   const BAD_CODE = "123456";
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "code",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
-  //   const authRes = await worker.fetch("/co/authenticate", {
-  //     headers: {
-  //       "content-type": "application/json",
-  //     },
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       client_id: "clientId",
-  //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-  //       otp: BAD_CODE,
-  //       realm: "email",
-  //       username: "foo@example.com",
-  //     }),
-  //   });
+    const BAD_CODE = "123456";
 
-  //   expect(authRes.status).toBe(403);
-  // });
+    const authRes = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp: BAD_CODE,
+          realm: "email",
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    expect(authRes.status).toBe(403);
+  });
 
   // TO TEST
   // - using expired codes? how can we fast-forward time with wrangler...
