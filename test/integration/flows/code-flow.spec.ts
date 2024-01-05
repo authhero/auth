@@ -10,32 +10,32 @@ import { getEnv } from "../helpers/test-client";
 import { Tenant } from "../../../src/types";
 import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 
-const emailInfo: {
-  email: string;
-  code: string;
-  magicLink?: string;
-}[] = [];
-
-const email: EmailAdapter = {
-  sendLink: (env, client, to, code, magicLink) => {
-    emailInfo.push({
-      email: to,
-      code,
-      magicLink,
-    });
-    return Promise.resolve();
-  },
-  sendCode: (env, client, to, code) => {
-    emailInfo.push({
-      email: to,
-      code,
-    });
-    return Promise.resolve();
-  },
-};
-
 describe("code-flow", () => {
   it("should run a passwordless flow with code", async () => {
+    const emailInfo: {
+      email: string;
+      code: string;
+      magicLink?: string;
+    }[] = [];
+
+    const email: EmailAdapter = {
+      sendLink: (env, client, to, code, magicLink) => {
+        emailInfo.push({
+          email: to,
+          code,
+          magicLink,
+        });
+        return Promise.resolve();
+      },
+      sendCode: (env, client, to, code) => {
+        emailInfo.push({
+          email: to,
+          code,
+        });
+        return Promise.resolve();
+      },
+    };
+
     const token = await getAdminToken();
     const env = (await getEnv()) as any;
     env.data.email = email;
@@ -303,6 +303,30 @@ describe("code-flow", () => {
     });
   });
   it("should return existing primary account when logging in with new code sign on with same email address", async () => {
+    const emailInfo: {
+      email: string;
+      code: string;
+      magicLink?: string;
+    }[] = [];
+
+    const email: EmailAdapter = {
+      sendLink: (env, client, to, code, magicLink) => {
+        emailInfo.push({
+          email: to,
+          code,
+          magicLink,
+        });
+        return Promise.resolve();
+      },
+      sendCode: (env, client, to, code) => {
+        emailInfo.push({
+          email: to,
+          code,
+        });
+        return Promise.resolve();
+      },
+    };
+
     const token = await getAdminToken();
     const env = (await getEnv()) as any;
     env.data.email = email;
