@@ -143,112 +143,136 @@ describe("code-flow", () => {
         iss: "https://example.com/",
       });
     });
-    //     it("is an existing user", async () => {
-    //       const token = await getAdminToken();
+    it("is an existing user", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    //       const AUTH_PARAMS = {
-    //         nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-    //         redirect_uri: "https://login.example.com/sv/callback",
-    //         response_type: "token id_token",
-    //         scope: "openid profile email",
-    //         state: "state",
-    //       };
+      const AUTH_PARAMS = {
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        redirect_uri: "https://login.example.com/sv/callback",
+        response_type: "token id_token",
+        scope: "openid profile email",
+        state: "state",
+      };
 
-    //       // -----------------
-    //       // User should already exist in default fixture
-    //       // -----------------
-    //       const resInitialQuery = await worker.fetch(
-    //         "/api/v2/users-by-email?email=foo@example.com",
-    //         {
-    //           headers: {
-    //             authorization: `Bearer ${token}`,
-    //             "tenant-id": "tenantId",
-    //           },
-    //         },
-    //       );
-    //       expect(resInitialQuery.status).toBe(200);
+      // -----------------
+      // User should already exist in default fixture
+      // -----------------
 
-    //       // -----------------
-    //       // Now get magic link emailed
-    //       // -----------------
-    //       await worker.fetch("/passwordless/start", {
-    //         headers: {
-    //           "content-type": "application/json",
-    //         },
-    //         method: "POST",
-    //         body: JSON.stringify({
-    //           authParams: AUTH_PARAMS,
-    //           client_id: "clientId",
-    //           connection: "email",
-    //           email: "foo@example.com",
-    //           send: "link",
-    //         }),
-    //       });
+      const resInitialQuery = await client.api.v2["users-by-email"].$get(
+        {
+          query: {
+            email: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      expect(resInitialQuery.status).toBe(200);
 
-    //       const emailResponse = await worker.fetch("/test/email");
-    //       const [sentEmail] = (await emailResponse.json()) as Email[];
-    //       expect(sentEmail.to).toBe("foo@example.com");
+      // -----------------
+      // Now get magic link emailed
+      // -----------------
 
-    //       const link = sentEmail.magicLink;
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "foo@example.com",
+            send: "link",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
 
-    //       const authenticatePath = link?.split("https://example.com")[1];
+      const [{ to, magicLink }] = await env.data.email.list!();
 
-    //       // -----------------
-    //       // Authenticate using the magic link for the existing user
-    //       // -----------------
-    //       const authenticateResponse = await worker.fetch(authenticatePath, {
-    //         redirect: "manual",
-    //       });
+      expect(to).toBe("foo@example.com");
 
-    //       const redirectUri = new URL(
-    //         authenticateResponse.headers.get("location")!,
-    //       );
-    //       expect(redirectUri.hostname).toBe("login.example.com");
+      const link = magicLink!;
 
-    //       const accessToken = redirectUri.searchParams.get("access_token");
+      const authenticatePath = link?.split("https://example.com")[1];
 
-    //       const accessTokenPayload = parseJwt(accessToken!);
-    //       expect(accessTokenPayload.aud).toBe("default");
-    //       expect(accessTokenPayload.iss).toBe("https://example.com/");
-    //       expect(accessTokenPayload.scope).toBe("openid profile email");
-    //       expect(accessTokenPayload.sub).toBe("userId");
+      expect(authenticatePath).toContain("/passwordless/verify_redirect");
 
-    //       const idToken = redirectUri.searchParams.get("id_token");
-    //       const idTokenPayload = parseJwt(idToken!);
-    //       expect(idTokenPayload.email).toBe("foo@example.com");
-    //       expect(idTokenPayload.aud).toBe("clientId");
-    //       expect(idTokenPayload.sub).toBe("userId");
+      const querySearchParams = new URLSearchParams(
+        authenticatePath.split("?")[1],
+      );
+      const query = Object.fromEntries(querySearchParams.entries());
 
-    //       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+      // -----------------
+      // Authenticate using the magic link for the existing user
+      // -----------------
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
 
-    //       // ----------------------------------------
-    //       // now check silent auth works when logged in with magic link for existing user
-    //       // ----------------------------------------
-    //       const { idToken: silentAuthIdTokenPayload } =
-    //         await doSilentAuthRequestAndReturnTokens(
-    //           authCookieHeader,
-    //           worker,
-    //           AUTH_PARAMS.nonce,
-    //           "clientId",
-    //         );
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login.example.com");
 
-    //       const { exp, iat, sid, ...restOfIdTokenPayload } =
-    //         silentAuthIdTokenPayload;
+      const accessToken = redirectUri.searchParams.get("access_token");
 
-    //       expect(sid).toHaveLength(21);
-    //       expect(restOfIdTokenPayload).toEqual({
-    //         sub: "userId",
-    //         aud: "clientId",
-    //         name: "Åkesson Þorsteinsson",
-    //         nickname: "Åkesson Þorsteinsson",
-    //         picture: "https://example.com/foo.png",
-    //         email: "foo@example.com",
-    //         email_verified: true,
-    //         nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-    //         iss: "https://example.com/",
-    //       });
-    //     });
-    //   });
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("openid profile email");
+      expect(accessTokenPayload.sub).toBe("userId");
+
+      const idToken = redirectUri.searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("foo@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+      expect(idTokenPayload.sub).toBe("userId");
+
+      const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+
+      // ----------------------------------------
+      // now check silent auth works when logged in with magic link for existing user
+      // ----------------------------------------
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client.authorize,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
+
+      const {
+        exp,
+        iat,
+        sid,
+        family_name,
+        given_name,
+        locale,
+        ...restOfIdTokenPayload
+      } = silentAuthIdTokenPayload;
+
+      expect(restOfIdTokenPayload).toEqual({
+        sub: "userId",
+        aud: "clientId",
+        name: "Åkesson Þorsteinsson",
+        nickname: "Åkesson Þorsteinsson",
+        picture: "https://example.com/foo.png",
+        email: "foo@example.com",
+        email_verified: true,
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        iss: "https://example.com/",
+      });
+    });
 
     //   it("should log in with the same magic link multiple times", async () => {
     //     const AUTH_PARAMS = {
