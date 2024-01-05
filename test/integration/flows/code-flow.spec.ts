@@ -1,5 +1,4 @@
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import type { Email } from "../../../src/types/Email";
 import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
@@ -7,38 +6,12 @@ import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../../../integration-test/helpers/token";
 import { getEnv } from "../helpers/test-client";
-import { Tenant } from "../../../src/types";
 import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 
 describe("code-flow", () => {
   it("should run a passwordless flow with code", async () => {
-    const emailInfo: {
-      email: string;
-      code: string;
-      magicLink?: string;
-    }[] = [];
-
-    const email: EmailAdapter = {
-      sendLink: (env, client, to, code, magicLink) => {
-        emailInfo.push({
-          email: to,
-          code,
-          magicLink,
-        });
-        return Promise.resolve();
-      },
-      sendCode: (env, client, to, code) => {
-        emailInfo.push({
-          email: to,
-          code,
-        });
-        return Promise.resolve();
-      },
-    };
-
     const token = await getAdminToken();
-    const env = (await getEnv()) as any;
-    env.data.email = email;
+    const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
     const AUTH_PARAMS = {
@@ -92,10 +65,7 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    expect(emailInfo).toHaveLength(1);
-    expect(emailInfo[0].email).toBe("test@example.com");
-
-    const otp = emailInfo[0].code;
+    const [{ code: otp }] = await env.data.email.list!();
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -135,14 +105,9 @@ describe("code-flow", () => {
     };
 
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get(
-      {
-        query,
-      },
-      {
-        // redirect: "manual",
-      },
-    );
+    const tokenResponse = await client.authorize.$get({
+      query,
+    });
 
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
@@ -193,8 +158,6 @@ describe("code-flow", () => {
     } = silentAuthIdTokenPayload;
 
     expect(sub).toContain("email|");
-    // is now just 8 char as nanoid
-    // expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
       aud: "clientId",
       name: "test@example.com",
@@ -224,7 +187,7 @@ describe("code-flow", () => {
       },
     );
 
-    const otpLogin = emailInfo[1].code;
+    const [{}, { code: otpLogin }] = await env.data.email.list!();
 
     const authRes2 = await client.co.authenticate.$post(
       {
@@ -255,14 +218,9 @@ describe("code-flow", () => {
       realm: "email",
     };
 
-    const tokenRes2 = await client.authorize.$get(
-      {
-        query: query2,
-      },
-      {
-        // redirect: "manual",
-      },
-    );
+    const tokenRes2 = await client.authorize.$get({
+      query: query2,
+    });
 
     // // ----------------------------
     // // Now silent auth again - confirms that logging in works
@@ -282,7 +240,7 @@ describe("code-flow", () => {
       iat: iat2,
       sid: sid2,
       sub: sub2,
-      // what have I done here to have these fields? some patched id_token endpoint right?
+      //
       family_name: family_name2,
       given_name: given_name2,
       nickname: nickname2,
@@ -292,7 +250,6 @@ describe("code-flow", () => {
     } = silentAuthIdTokenPayload2;
 
     expect(sub2).toContain("email|");
-    // expect(sid2).toHaveLength(21);
     expect(restOfIdTokenPayload2).toEqual({
       aud: "clientId",
       name: "test@example.com",
@@ -432,7 +389,7 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
-      // what have I done here to have these fields? some patched id_token endpoint right?
+      //
       family_name,
       given_name,
       locale,
