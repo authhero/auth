@@ -44,9 +44,11 @@ describe("password-flow", () => {
       // in wrangler test this was 400...
       // expect(response.status).toBe(400);
       // NOW it's a 404... does that actually make sense? is it the router magic not working?
-      //   });
-      //   it("should create a new user with a password and login", async () => {
-      //     const password = "password";
+    });
+    it("should create a new user with a password and login", async () => {
+      const password = "password";
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
       //     const createUserResponse = await worker.fetch(
       //       "/clientId/dbconnection/register",
       //       {
@@ -60,7 +62,24 @@ describe("password-flow", () => {
       //         }),
       //       },
       //     );
-      //     expect(createUserResponse.status).toBe(201);
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        param: {
+          clientId: "clientId",
+        },
+        json: {
+          email: "password-login-test@example.com",
+          password,
+        },
+      };
+      const createUserResponse = await client[
+        ":clientId"
+      ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+
+      expect(createUserResponse.status).toBe(201);
       //     const loginResponse = await worker.fetch("/co/authenticate", {
       //       headers: {
       //         "content-type": "application/json",
@@ -74,7 +93,25 @@ describe("password-flow", () => {
       //         username: "password-login-test@example.com",
       //       }),
       //     });
-      //     expect(loginResponse.status).toBe(200);
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password,
+            username: "password-login-test@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      // ah of course. will not work. because we need the other PR merging that has all the new SQL types and etc...
+      // address that next is probably best
+      expect(loginResponse.status).toBe(200);
       //     const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       //     const query = new URLSearchParams({
       //       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
