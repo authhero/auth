@@ -377,11 +377,6 @@ describe("code-flow", () => {
       query,
     });
 
-    console.log(tokenResponse.status);
-    console.log(await tokenResponse.text());
-
-    console.log(tokenResponse.headers.get("location"));
-
     const redirectUri = new URL(tokenResponse.headers.get("location")!);
     const accessToken = redirectUri.searchParams.get("access_token");
     const accessTokenPayload = parseJwt(accessToken!);
@@ -397,15 +392,6 @@ describe("code-flow", () => {
     // ----------------------------
     // now check the primary user has a new 'email' connection identity
     // ----------------------------
-    //   const primaryUserRes = await worker.fetch(`/api/v2/users/userId`, {
-    //     headers: {
-    //       authorization: `Bearer ${token}`,
-    //       "tenant-id": "tenantId",
-    //     },
-    //   });
-
-    // client.api.v2.users[":user_id"]
-
     const primaryUserRes = await client.api.v2.users[":user_id"].$get(
       {
         param: {
@@ -433,228 +419,233 @@ describe("code-flow", () => {
     // now check silent auth works when logged in with code
     // ----------------------------
 
-    //   const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
-    //   const { idToken: silentAuthIdTokenPayload } =
-    //     await doSilentAuthRequestAndReturnTokens(
-    //       setCookiesHeader,
-    //       worker,
-    //       nonce,
-    //       "clientId",
-    //     );
+    const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
+    const { idToken: silentAuthIdTokenPayload } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader,
+        client.authorize,
+        nonce,
+        "clientId",
+      );
 
-    //   const {
-    //     // these are the fields that change on every test run
-    //     exp,
-    //     iat,
-    //     sid,
-    //     sub,
-    //     ...restOfIdTokenPayload
-    //   } = silentAuthIdTokenPayload;
+    const {
+      // these are the fields that change on every test run
+      exp,
+      iat,
+      sid,
+      sub,
+      // what have I done here to have these fields? some patched id_token endpoint right?
+      family_name,
+      given_name,
+      locale,
+      ...restOfIdTokenPayload
+    } = silentAuthIdTokenPayload;
 
-    //   // this is the id of the primary account
-    //   expect(sub).toBe("userId");
+    // this is the id of the primary account
+    expect(sub).toBe("userId");
 
-    //   expect(sid).toHaveLength(21);
-    //   expect(restOfIdTokenPayload).toEqual({
-    //     aud: "clientId",
-    //     email: "foo@example.com",
-    //     email_verified: true,
-    //     iss: "https://example.com/",
-    //     name: "Åkesson Þorsteinsson",
-    //     nickname: "Åkesson Þorsteinsson",
-    //     nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-    //     picture: "https://example.com/foo.png",
-    //   });
+    // expect(sid).toHaveLength(21);
+    expect(restOfIdTokenPayload).toEqual({
+      aud: "clientId",
+      email: "foo@example.com",
+      email_verified: true,
+      iss: "https://example.com/",
+      name: "Åkesson Þorsteinsson",
+      nickname: "Åkesson Þorsteinsson",
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      picture: "https://example.com/foo.png",
+    });
 
-    //   // ----------------------------
-    //   // now log in again with the same email and code user
-    //   // ----------------------------
+    // ----------------------------
+    // now log in again with the same email and code user
+    // ----------------------------
 
-    //   await worker.fetch("/passwordless/start", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       authParams: {
-    //         nonce: "nonce",
-    //         redirect_uri,
-    //         response_type,
-    //         scope,
-    //         state,
-    //       },
-    //       client_id: "clientId",
-    //       connection: "email",
-    //       email: "foo@example.com",
-    //       send: "link",
-    //     }),
-    //   });
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: {
+            nonce: "nonce",
+            redirect_uri,
+            response_type,
+            scope,
+            state,
+          },
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "link",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
-    //   const [{ code: otp2 }] = (await (
-    //     await worker.fetch("/test/email")
-    //   ).json()) as Email[];
+    const otp2 = emailInfo[1].code;
 
-    //   const authenticateResponse2 = await worker.fetch("/co/authenticate", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       client_id: "clientId",
-    //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-    //       otp: otp2,
-    //       realm: "email",
-    //       username: "foo@example.com",
-    //     }),
-    //   });
-    //   const { login_ticket: loginTicket2 } =
-    //     (await authenticateResponse2.json()) as LoginTicket;
+    const authenticateResponse2 = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp: otp2,
+          realm: "email",
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
-    //   const query2 = new URLSearchParams({
-    //     auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-    //     client_id: "clientId",
-    //     login_ticket: loginTicket2,
-    //     nonce: "nonce",
-    //     redirect_uri,
-    //     response_type,
-    //     scope,
-    //     state,
-    //     referrer: "https://login.example.com",
-    //     realm: "email",
-    //   });
-    //   const tokenResponse2 = await worker.fetch(
-    //     `/authorize?${query2.toString()}`,
-    //     {
-    //       redirect: "manual",
-    //     },
-    //   );
+    const { login_ticket: loginTicket2 } =
+      (await authenticateResponse2.json()) as LoginTicket;
 
-    //   const accessToken2 = parseJwt(
-    //     new URL(tokenResponse2.headers.get("location")!).searchParams.get(
-    //       "access_token",
-    //     )!,
-    //   );
+    const query2 = {
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket: loginTicket2,
+      nonce: "nonce",
+      redirect_uri,
+      response_type,
+      scope,
+      state,
+      referrer: "https://login.example.com",
+      realm: "email",
+    };
+    const tokenResponse2 = await client.authorize.$get({
+      query: query2,
+    });
 
-    //   // this is the id of the primary account
-    //   expect(accessToken2.sub).toBe("userId");
+    const accessToken2 = parseJwt(
+      new URL(tokenResponse2.headers.get("location")!).searchParams.get(
+        "access_token",
+      )!,
+    );
 
-    //   // ----------------------------
-    //   // now check silent auth again!
-    //   // ----------------------------
+    // this is the id of the primary account
+    expect(accessToken2.sub).toBe("userId");
 
-    //   const setCookiesHeader2 = tokenResponse2.headers.get("set-cookie")!;
-    //   const { idToken: silentAuthIdTokenPayload2 } =
-    //     await doSilentAuthRequestAndReturnTokens(
-    //       setCookiesHeader2,
-    //       worker,
-    //       nonce,
-    //       "clientId",
-    //     );
-    //   // second time round make sure we get the primary userid again
-    //   expect(silentAuthIdTokenPayload2.sub).toBe("userId");
-    // });
-
-    // it("should accept the same code multiple times", async () => {
-    //   const AUTH_PARAMS = {
-    //     nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-    //     redirect_uri: "https://login.example.com/sv/callback",
-    //     response_type: "token id_token",
-    //     scope: "openid profile email",
-    //     state: "state",
-    //   };
-
-    //   await worker.fetch("/passwordless/start", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       authParams: AUTH_PARAMS,
-    //       client_id: "clientId",
-    //       connection: "email",
-    //       email: "foo@example.com",
-    //       send: "code",
-    //     }),
-    //   });
-    //   const emailResponse = await worker.fetch("/test/email");
-    //   const [sentEmail] = (await emailResponse.json()) as Email[];
-    //   const otp = sentEmail.code;
-
-    //   const authRes = await worker.fetch("/co/authenticate", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       client_id: "clientId",
-    //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-    //       otp,
-    //       realm: "email",
-    //       username: "foo@example.com",
-    //     }),
-    //   });
-    //   expect(authRes.status).toBe(200);
-
-    //   // now use the same code again
-    //   const authRes2 = await worker.fetch("/co/authenticate", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       client_id: "clientId",
-    //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-    //       otp,
-    //       realm: "email",
-    //       username: "foo@example.com",
-    //     }),
-    //   });
-
-    //   expect(authRes2.status).toBe(200);
-    // });
-
-    // it("should not accept an invalid code", async () => {
-    //   const AUTH_PARAMS = {
-    //     nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-    //     redirect_uri: "https://login.example.com/sv/callback",
-    //     response_type: "token id_token",
-    //     scope: "openid profile email",
-    //     state: "state",
-    //   };
-
-    //   await worker.fetch("/passwordless/start", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       authParams: AUTH_PARAMS,
-    //       client_id: "clientId",
-    //       connection: "email",
-    //       email: "foo@example.com",
-    //       send: "code",
-    //     }),
-    //   });
-    //   await worker.fetch("/test/email");
-
-    //   const BAD_CODE = "123456";
-
-    //   const authRes = await worker.fetch("/co/authenticate", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       client_id: "clientId",
-    //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-    //       otp: BAD_CODE,
-    //       realm: "email",
-    //       username: "foo@example.com",
-    //     }),
-    //   });
-
-    //   expect(authRes.status).toBe(403);
+    // ----------------------------
+    // now check silent auth again!
+    // ----------------------------
+    const setCookiesHeader2 = tokenResponse2.headers.get("set-cookie")!;
+    const { idToken: silentAuthIdTokenPayload2 } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader2,
+        client.authorize,
+        nonce,
+        "clientId",
+      );
+    // second time round make sure we get the primary userid again
+    expect(silentAuthIdTokenPayload2.sub).toBe("userId");
   });
+
+  // it("should accept the same code multiple times", async () => {
+  //   const AUTH_PARAMS = {
+  //     nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+  //     redirect_uri: "https://login.example.com/sv/callback",
+  //     response_type: "token id_token",
+  //     scope: "openid profile email",
+  //     state: "state",
+  //   };
+
+  //   await worker.fetch("/passwordless/start", {
+  //     headers: {
+  //       "content-type": "application/json",
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify({
+  //       authParams: AUTH_PARAMS,
+  //       client_id: "clientId",
+  //       connection: "email",
+  //       email: "foo@example.com",
+  //       send: "code",
+  //     }),
+  //   });
+  //   const emailResponse = await worker.fetch("/test/email");
+  //   const [sentEmail] = (await emailResponse.json()) as Email[];
+  //   const otp = sentEmail.code;
+
+  //   const authRes = await worker.fetch("/co/authenticate", {
+  //     headers: {
+  //       "content-type": "application/json",
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify({
+  //       client_id: "clientId",
+  //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+  //       otp,
+  //       realm: "email",
+  //       username: "foo@example.com",
+  //     }),
+  //   });
+  //   expect(authRes.status).toBe(200);
+
+  //   // now use the same code again
+  //   const authRes2 = await worker.fetch("/co/authenticate", {
+  //     headers: {
+  //       "content-type": "application/json",
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify({
+  //       client_id: "clientId",
+  //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+  //       otp,
+  //       realm: "email",
+  //       username: "foo@example.com",
+  //     }),
+  //   });
+
+  //   expect(authRes2.status).toBe(200);
+  // });
+
+  // it("should not accept an invalid code", async () => {
+  //   const AUTH_PARAMS = {
+  //     nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+  //     redirect_uri: "https://login.example.com/sv/callback",
+  //     response_type: "token id_token",
+  //     scope: "openid profile email",
+  //     state: "state",
+  //   };
+
+  //   await worker.fetch("/passwordless/start", {
+  //     headers: {
+  //       "content-type": "application/json",
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify({
+  //       authParams: AUTH_PARAMS,
+  //       client_id: "clientId",
+  //       connection: "email",
+  //       email: "foo@example.com",
+  //       send: "code",
+  //     }),
+  //   });
+  //   await worker.fetch("/test/email");
+
+  //   const BAD_CODE = "123456";
+
+  //   const authRes = await worker.fetch("/co/authenticate", {
+  //     headers: {
+  //       "content-type": "application/json",
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify({
+  //       client_id: "clientId",
+  //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+  //       otp: BAD_CODE,
+  //       realm: "email",
+  //       username: "foo@example.com",
+  //     }),
+  //   });
+
+  //   expect(authRes.status).toBe(403);
+  // });
 
   // TO TEST
   // - using expired codes? how can we fast-forward time with wrangler...
