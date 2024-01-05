@@ -47,6 +47,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       ["linked_to", "tenant_id"],
       "users",
       ["id", "tenant_id"],
+      (cb) => cb.onDelete("cascade"),
     )
     .addColumn("last_ip", "varchar(255)")
     .addColumn("login_count", "integer")

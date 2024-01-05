@@ -44,34 +44,28 @@ export async function getClient(
     return;
   }
 
-  // backwards compatibility fix after changing the name of the field - this is due to us being unable to update KV storage
-  const clientPatchedObj = {
-    ...clientRawObj,
-    connections: clientRawObj.connections.map((connection: any) => ({
-      ...connection,
-      updated_at: connection.updated_at || connection.modified_at,
-    })),
-  };
-
-  const client = PartialClientSchema.parse(clientPatchedObj);
+  const client = PartialClientSchema.parse(clientRawObj);
   const envDefaultSettings = await getDefaultSettings(env);
 
   const connections = client.connections
     .map((connection) => {
-      const envDefaultConnection =
-        envDefaultSettings?.connections?.find(
-          (c) => c.name === connection.name,
-        ) || {};
       const defaultConnection =
         defaultSettings?.connections?.find((c) => c.name === connection.name) ||
         {};
 
+      const envDefaultConnection =
+        envDefaultSettings?.connections?.find(
+          (c) => c.name === connection.name,
+        ) || {};
+
+      const mergedConnection = {
+        ...defaultConnection,
+        ...envDefaultConnection,
+        ...connection,
+      };
+
       try {
-        return ConnectionSchema.parse({
-          ...defaultConnection,
-          ...envDefaultConnection,
-          ...connection,
-        });
+        return ConnectionSchema.parse(mergedConnection);
       } catch (err) {
         if (err instanceof Error) {
           console.log(err.message);

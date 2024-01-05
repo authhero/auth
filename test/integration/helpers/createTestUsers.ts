@@ -4,7 +4,7 @@ import { UserResponse } from "../../../src/types/auth0";
 import { EnvType } from "./test-client";
 import { tsoaApp } from "../../../src/app";
 
-export default async function createTestUsers(env: EnvType) {
+export default async function createTestUsers(env: EnvType, tenantId: string) {
   const token = await getAdminToken();
   const client = testClient(tsoaApp, env);
 
@@ -18,7 +18,7 @@ export default async function createTestUsers(env: EnvType) {
     {
       headers: {
         authorization: `Bearer ${token}`,
-        "tenant-id": "tenantId",
+        "tenant-id": tenantId,
         "content-type": "application/json",
       },
     },
@@ -37,7 +37,7 @@ export default async function createTestUsers(env: EnvType) {
     {
       headers: {
         authorization: `Bearer ${token}`,
-        "tenant-id": "tenantId",
+        "tenant-id": tenantId,
         "content-type": "application/json",
       },
     },

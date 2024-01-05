@@ -16,7 +16,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
         },
       },
     );
@@ -44,7 +44,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
           "content-type": "application/json",
         },
       },
@@ -69,7 +69,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
           "content-type": "application/json",
         },
       },
@@ -91,7 +91,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
         },
       },
     );
@@ -127,7 +127,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
           "content-type": "application/json",
         },
       },
@@ -153,7 +153,7 @@ describe("users", () => {
         headers: {
           authorization: `Bearer ${token}`,
           "content-type": "application/json",
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
         },
       },
     );
@@ -169,7 +169,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
         },
       },
     );
@@ -196,7 +196,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+            "tenant-id": "otherTenant",
             "content-type": "application/json",
           },
         },
@@ -214,7 +214,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+            "tenant-id": "otherTenant",
           },
         },
       );
@@ -232,7 +232,7 @@ describe("users", () => {
 
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const [newUser1, newUser2] = await createTestUsers(env);
+      const [newUser1, newUser2] = await createTestUsers(env, "otherTenant");
 
       const params = {
         param: {
@@ -247,7 +247,7 @@ describe("users", () => {
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
           "content-type": "application/json",
         },
       });
@@ -260,7 +260,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+            "tenant-id": "otherTenant",
           },
         },
       );
@@ -280,7 +280,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+            "tenant-id": "otherTenant",
           },
         },
       );
@@ -319,7 +319,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+            "tenant-id": "otherTenant",
             "content-type": "application/json",
           },
         },
@@ -333,7 +333,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+            "tenant-id": "otherTenant",
           },
         },
       );
@@ -357,7 +357,7 @@ describe("users", () => {
 
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const [newUser1, newUser2] = await createTestUsers(env);
+      const [newUser1, newUser2] = await createTestUsers(env, "otherTenant");
 
       const [provider] = newUser2.id.split("|");
       const params = {
@@ -373,7 +373,7 @@ describe("users", () => {
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
           "content-type": "application/json",
         },
       });
@@ -391,7 +391,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+            "tenant-id": "otherTenant",
           },
         },
       );
