@@ -216,23 +216,30 @@ describe("password-flow", () => {
           state: "state",
           realm: "Username-Password-Authentication",
         };
+
         // Trade the ticket for token
         const tokenResponse = await client.authorize.$get({ query });
+
         expect(tokenResponse.status).toBe(302);
         expect(await tokenResponse.text()).toBe("Redirecting");
+
         const redirectUri = new URL(tokenResponse.headers.get("location")!);
         expect(redirectUri.hostname).toBe("login.example.com");
         expect(redirectUri.searchParams.get("state")).toBe("state");
+
         const accessToken = redirectUri.searchParams.get("access_token");
         const accessTokenPayload = parseJwt(accessToken!);
         expect(accessTokenPayload.aud).toBe("default");
         expect(accessTokenPayload.iss).toBe("https://example.com/");
         expect(accessTokenPayload.scope).toBe("");
+
         const idToken = redirectUri.searchParams.get("id_token");
         const idTokenPayload = parseJwt(idToken!);
         expect(idTokenPayload.email).toBe("foo@example.com");
         expect(idTokenPayload.aud).toBe("clientId");
+
         const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+
         // ------------------
         // now check silent auth works after password login with existing user
         // ------------------
@@ -329,13 +336,14 @@ describe("password-flow", () => {
           },
         };
 
-        const createUserResponse = await client[
-          ":clientId"
-        ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
-          headers: {
-            "content-type": "application/json",
+        await client[":clientId"].dbconnection.register.$post(
+          typesDoNotWorkWithThisSetup___PARAMS,
+          {
+            headers: {
+              "content-type": "application/json",
+            },
           },
-        });
+        );
 
         const loginResponse = await client.co.authenticate.$post(
           {
@@ -386,38 +394,55 @@ describe("password-flow", () => {
 
         expect(rejectedLoginResponse.status).toBe(403);
       });
-      //   it("should not allow non-existent user & password to login", async () => {
-      //     const loginResponse = await worker.fetch("/co/authenticate", {
-      //       headers: {
-      //         "content-type": "application/json",
-      //       },
-      //       method: "POST",
-      //       body: JSON.stringify({
-      //         client_id: "clientId",
-      //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //         realm: "Username-Password-Authentication",
-      //         password: "any-password",
-      //         username: "non-existent-user@example.com",
-      //       }),
-      //     });
-      //     expect(loginResponse.status).toBe(403);
-      //   });
-      //   it("should not allow login to username-password but on different tenant", async () => {
-      //     const loginResponse = await worker.fetch("/co/authenticate", {
-      //       headers: {
-      //         "content-type": "application/json",
-      //       },
-      //       method: "POST",
-      //       body: JSON.stringify({
-      //         client_id: "otherClientIdOnOtherTenant",
-      //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //         realm: "Username-Password-Authentication",
-      //         password: "Test!",
-      //         username: "foo@example.com",
-      //       }),
-      //     });
-      //     expect(loginResponse.status).toBe(403);
+      it("should not allow non-existent user & password to login", async () => {
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+
+        const loginResponse = await client.co.authenticate.$post(
+          {
+            json: {
+              client_id: "clientId",
+              credential_type:
+                "http://auth0.com/oauth/grant-type/password-realm",
+              realm: "Username-Password-Authentication",
+              password: "any-password",
+              username: "non-existent-user@example.com",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+        expect(loginResponse.status).toBe(403);
+      });
+      it("should not allow login to username-password but on different tenant", async () => {
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+
+        const loginResponse = await client.co.authenticate.$post(
+          {
+            json: {
+              client_id: "otherClientIdOnOtherTenant",
+              credential_type:
+                "http://auth0.com/oauth/grant-type/password-realm",
+              realm: "Username-Password-Authentication",
+              password: "Test!",
+              username: "foo@example.com",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+
+        expect(loginResponse.status).toBe(403);
+      });
     });
+
     // TO TEST
     // - username-password user across different clients on the same tenant
     // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
