@@ -302,7 +302,8 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
-  it("should return existing primary account when logging in with new code sign on with same email address", async () => {
+  // wow - this test works in isolation... but NOT when ran after above test...
+  it.only("should return existing primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
     const env = (await getEnv()) as any;
     env.data.email = email;
@@ -314,26 +315,6 @@ describe("code-flow", () => {
     const scope = "openid profile email";
     const state = "state";
 
-    //   await worker.fetch("/passwordless/start", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       authParams: {
-    //         nonce,
-    //         redirect_uri,
-    //         response_type,
-    //         scope,
-    //         state,
-    //       },
-    //       client_id: "clientId",
-    //       connection: "email",
-    //       // this email already exists as a Username-Password-Authentication user
-    //       email: "foo@example.com",
-    //       send: "link",
-    //     }),
-    //   });
     await client.passwordless.start.$post(
       {
         json: {
@@ -358,23 +339,8 @@ describe("code-flow", () => {
       },
     );
 
-    //   const emailResponse = await worker.fetch("/test/email");
-    //   const [{ code: otp }] = (await emailResponse.json()) as Email[];
     const [{ code: otp }] = emailInfo;
 
-    //   const authenticateResponse = await worker.fetch("/co/authenticate", {
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       client_id: "clientId",
-    //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-    //       otp,
-    //       realm: "email",
-    //       username: "foo@example.com",
-    //     }),
-    //   });
     const authenticateResponse = await client.co.authenticate.$post(
       {
         json: {
@@ -394,19 +360,6 @@ describe("code-flow", () => {
 
     const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
-    //   const query = new URLSearchParams({
-    //     auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-    //     client_id: "clientId",
-    //     login_ticket,
-    //     nonce,
-    //     redirect_uri,
-    //     response_type,
-    //     scope,
-    //     state,
-    //     referrer: "https://login.example.com",
-    //     realm: "email",
-    //   });
-
     const query = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
@@ -420,33 +373,30 @@ describe("code-flow", () => {
       realm: "email",
     };
 
-    //   const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
-    //     redirect: "manual",
-    //   });
-    const tokenResponse = await client.authorize.$get(
-      {
-        query,
-      },
-      {
-        // redirect: "manual",
-      },
-    );
+    const tokenResponse = await client.authorize.$get({
+      query,
+    });
 
-    // const redirectUri = new URL(tokenResponse.headers.get("location")!);
-    //   const accessToken = redirectUri.searchParams.get("access_token");
-    //   const accessTokenPayload = parseJwt(accessToken!);
+    console.log(tokenResponse.status);
+    console.log(await tokenResponse.text());
 
-    //   // this is the id of the primary account
-    //   expect(accessTokenPayload.sub).toBe("userId");
+    console.log(tokenResponse.headers.get("location"));
 
-    //   const idToken = redirectUri.searchParams.get("id_token");
-    //   const idTokenPayload = parseJwt(idToken!);
+    const redirectUri = new URL(tokenResponse.headers.get("location")!);
+    const accessToken = redirectUri.searchParams.get("access_token");
+    const accessTokenPayload = parseJwt(accessToken!);
 
-    //   expect(idTokenPayload.sub).toBe("userId");
+    // this is the id of the primary account
+    expect(accessTokenPayload.sub).toBe("userId");
 
-    //   // ----------------------------
-    //   // now check the primary user has a new 'email' connection identity
-    //   // ----------------------------
+    const idToken = redirectUri.searchParams.get("id_token");
+    const idTokenPayload = parseJwt(idToken!);
+
+    expect(idTokenPayload.sub).toBe("userId");
+
+    // ----------------------------
+    // now check the primary user has a new 'email' connection identity
+    // ----------------------------
     //   const primaryUserRes = await worker.fetch(`/api/v2/users/userId`, {
     //     headers: {
     //       authorization: `Bearer ${token}`,
@@ -454,18 +404,34 @@ describe("code-flow", () => {
     //     },
     //   });
 
-    //   const primaryUser = (await primaryUserRes.json()) as UserResponse;
+    // client.api.v2.users[":user_id"]
 
-    //   expect(primaryUser.identities[1]).toMatchObject({
-    //     connection: "email",
-    //     provider: "email",
-    //     isSocial: false,
-    //     profileData: { email: "foo@example.com", email_verified: true },
-    //   });
+    const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+      {
+        param: {
+          user_id: "userId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
 
-    //   // ----------------------------
-    //   // now check silent auth works when logged in with code
-    //   // ----------------------------
+    const primaryUser = (await primaryUserRes.json()) as UserResponse;
+
+    expect(primaryUser.identities[1]).toMatchObject({
+      connection: "email",
+      provider: "email",
+      isSocial: false,
+      profileData: { email: "foo@example.com", email_verified: true },
+    });
+
+    // ----------------------------
+    // now check silent auth works when logged in with code
+    // ----------------------------
 
     //   const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
     //   const { idToken: silentAuthIdTokenPayload } =
