@@ -274,53 +274,68 @@ describe("code-flow", () => {
       });
     });
 
-    //   it("should log in with the same magic link multiple times", async () => {
-    //     const AUTH_PARAMS = {
-    //       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-    //       redirect_uri: "https://login.example.com/sv/callback",
-    //       response_type: "token id_token",
-    //       scope: "openid profile email",
-    //       state: "state",
-    //     };
+    it("should log in with the same magic link multiple times", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    //     // -----------
-    //     // get code to log in
-    //     // -----------
-    //     await worker.fetch("/passwordless/start", {
-    //       headers: {
-    //         "content-type": "application/json",
-    //       },
-    //       method: "POST",
-    //       body: JSON.stringify({
-    //         authParams: AUTH_PARAMS,
-    //         client_id: "clientId",
-    //         connection: "email",
-    //         email: "test@example.com",
-    //         send: "link",
-    //       }),
-    //     });
+      const AUTH_PARAMS = {
+        nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+        redirect_uri: "https://login.example.com/sv/callback",
+        response_type: "token id_token",
+        scope: "openid profile email",
+        state: "state",
+      };
+      // -----------
+      // get code to log in
+      // -----------
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "test@example.com",
+            send: "link",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
 
-    //     const emailResponse = await worker.fetch("/test/email");
-    //     const [sentEmail] = (await emailResponse.json()) as Email[];
-    //     const link = sentEmail.magicLink;
-    //     const authenticatePath = link?.split("https://example.com")[1];
+      const [{ to, magicLink }] = await env.data.email.list!();
 
-    //     // ------------
-    //     // Authenticate using the magic link the first time
-    //     // ----------------
-    //     const authenticateResponse = await worker.fetch(authenticatePath, {
-    //       redirect: "manual",
-    //     });
-    //     expect(authenticateResponse.status).toBe(302);
+      const link = magicLink!;
 
-    //     // ------------
-    //     // Authenticate using the magic link the second time
-    //     // ----------------
-    //     const authenticateResponse2 = await worker.fetch(authenticatePath, {
-    //       redirect: "manual",
-    //     });
-    //     expect(authenticateResponse2.status).toBe(302);
-    //   });
+      const authenticatePath = link?.split("https://example.com")[1];
+
+      expect(authenticatePath).toContain("/passwordless/verify_redirect");
+
+      const querySearchParams = new URLSearchParams(
+        authenticatePath.split("?")[1],
+      );
+      const query = Object.fromEntries(querySearchParams.entries());
+
+      // ------------
+      // Authenticate using the magic link the first time
+      // ----------------
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
+      expect(authenticateResponse.status).toBe(302);
+      // ------------
+      // Authenticate using the magic link the second time
+      // ----------------
+      const authenticateResponse2 =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
+      expect(authenticateResponse2.status).toBe(302);
+    });
 
     //   it("should not accept any invalid params on the magic link", async () => {
     //     const AUTH_PARAMS = {
