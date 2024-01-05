@@ -291,74 +291,101 @@ describe("password-flow", () => {
         // no body returned
         expect(loginResponse.status).toBe(403);
       });
-      //   it("should reject login of existing user with incorrect password", async () => {
-      //     const loginResponse = await worker.fetch("/co/authenticate", {
-      //       headers: {
-      //         "content-type": "application/json",
-      //       },
-      //       method: "POST",
-      //       body: JSON.stringify({
-      //         client_id: "clientId",
-      //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //         realm: "Username-Password-Authentication",
-      //         password: "wrong-password",
-      //         username: "foo@example.com",
-      //       }),
-      //     });
-      //     // no body returned
-      //     expect(loginResponse.status).toBe(403);
-      //   });
-      //   it("should not allow password of a different user to be used", async () => {
-      //     const createUserResponse = await worker.fetch(
-      //       "/clientId/dbconnection/register",
-      //       {
-      //         headers: {
-      //           "content-type": "application/json",
-      //         },
-      //         method: "POST",
-      //         body: JSON.stringify({
-      //           email: "new-username-password-user@example.com",
-      //           password: "password",
-      //         }),
-      //       },
-      //     );
-      //     const loginResponse = await worker.fetch("/co/authenticate", {
-      //       headers: {
-      //         "content-type": "application/json",
-      //       },
-      //       method: "POST",
-      //       body: JSON.stringify({
-      //         client_id: "clientId",
-      //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //         realm: "Username-Password-Authentication",
-      //         password: "password",
-      //         username: "new-username-password-user@example.com",
-      //       }),
-      //     });
-      //     // ------------------
-      //     // is this enough to be sure the user is created? OR should we exchange the ticket...
-      //     // or is just calling /dbconnection/register enough?
-      //     // ------------------
-      //     expect(loginResponse.status).toBe(200);
-      //     // ------------------
-      //     // now check we cannot use the wrong user's password
-      //     // ------------------
-      //     const rejectedLoginResponse = await worker.fetch("/co/authenticate", {
-      //       headers: {
-      //         "content-type": "application/json",
-      //       },
-      //       method: "POST",
-      //       body: JSON.stringify({
-      //         client_id: "clientId",
-      //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //         realm: "Username-Password-Authentication",
-      //         // this is the password of foo@example.com
-      //         password: "Test!",
-      //         username: "new-username-password-user@example.com",
-      //       }),
-      //     });
-      //     expect(rejectedLoginResponse.status).toBe(403);
-      //   });
+      it("should reject login of existing user with incorrect password", async () => {
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+
+        const loginResponse = await client.co.authenticate.$post(
+          {
+            json: {
+              client_id: "clientId",
+              credential_type:
+                "http://auth0.com/oauth/grant-type/password-realm",
+              realm: "Username-Password-Authentication",
+              password: "wrong-password",
+              username: "foo@example.com",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+        // no body returned
+        expect(loginResponse.status).toBe(403);
+      });
+      it("should not allow password of a different user to be used", async () => {
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+
+        const typesDoNotWorkWithThisSetup___PARAMS = {
+          param: {
+            clientId: "clientId",
+          },
+          json: {
+            email: "new-username-password-user@example.com",
+            password: "password",
+          },
+        };
+
+        const createUserResponse = await client[
+          ":clientId"
+        ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
+          headers: {
+            "content-type": "application/json",
+          },
+        });
+
+        const loginResponse = await client.co.authenticate.$post(
+          {
+            json: {
+              client_id: "clientId",
+              credential_type:
+                "http://auth0.com/oauth/grant-type/password-realm",
+              realm: "Username-Password-Authentication",
+              password: "password",
+              username: "new-username-password-user@example.com",
+            },
+          },
+
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+
+        // ------------------
+        // is this enough to be sure the user is created? OR should we exchange the ticket...
+        // or is just calling /dbconnection/register enough?
+        // ------------------
+        expect(loginResponse.status).toBe(200);
+        // ------------------
+        // now check we cannot use the wrong user's password
+        // ------------------
+
+        const rejectedLoginResponse = await client.co.authenticate.$post(
+          {
+            json: {
+              client_id: "clientId",
+              credential_type:
+                "http://auth0.com/oauth/grant-type/password-realm",
+              realm: "Username-Password-Authentication",
+              // this is the password of
+              password: "Test!",
+              username: "new-username-password-user@example.com",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+
+        expect(rejectedLoginResponse.status).toBe(403);
+      });
       //   it("should not allow non-existent user & password to login", async () => {
       //     const loginResponse = await worker.fetch("/co/authenticate", {
       //       headers: {
