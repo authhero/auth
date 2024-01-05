@@ -21,6 +21,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
     .addColumn("updated_at", "varchar(255)", (col) => col.notNull())
     .addColumn("expires_at", "varchar(255)", (col) => col.notNull())
+    // 5th Jan 2024 this column was missing
+    .addColumn("nonce", "varchar(255)")
     .execute();
 }
 
