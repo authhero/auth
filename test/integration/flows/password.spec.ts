@@ -185,19 +185,7 @@ describe("password-flow", () => {
         const env = await getEnv();
         const client = testClient(tsoaApp, env);
         // foo@example.com is an existing username-password user, with password - Test!
-        //     const loginResponse = await worker.fetch("/co/authenticate", {
-        //       headers: {
-        //         "content-type": "application/json",
-        //       },
-        //       method: "POST",
-        //       body: JSON.stringify({
-        //         client_id: "clientId",
-        //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-        //         realm: "Username-Password-Authentication",
-        //         password: "Test!",
-        //         username: "foo@example.com",
-        //       }),
-        //     });
+
         const loginResponse = await client.co.authenticate.$post(
           {
             json: {
@@ -229,12 +217,6 @@ describe("password-flow", () => {
           realm: "Username-Password-Authentication",
         };
         // Trade the ticket for token
-        //     const tokenResponse = await worker.fetch(
-        //       `/authorize?${query.toString()}`,
-        //       {
-        //         redirect: "manual",
-        //       },
-        //     );
         const tokenResponse = await client.authorize.$get({ query });
         expect(tokenResponse.status).toBe(302);
         expect(await tokenResponse.text()).toBe("Redirecting");
@@ -285,23 +267,30 @@ describe("password-flow", () => {
           picture: "https://example.com/foo.png",
         });
       });
-      //   it("should reject login of existing user with incorrect password", async () => {
-      //     const loginResponse = await worker.fetch("/co/authenticate", {
-      //       headers: {
-      //         "content-type": "application/json",
-      //       },
-      //       method: "POST",
-      //       body: JSON.stringify({
-      //         client_id: "clientId",
-      //         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //         realm: "Username-Password-Authentication",
-      //         password: "wrong-password",
-      //         username: "foo@example.com",
-      //       }),
-      //     });
-      //     // no body returned
-      //     expect(loginResponse.status).toBe(403);
-      //   });
+      it("should reject login of existing user with incorrect password", async () => {
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+
+        const loginResponse = await client.co.authenticate.$post(
+          {
+            json: {
+              client_id: "clientId",
+              credential_type:
+                "http://auth0.com/oauth/grant-type/password-realm",
+              realm: "Username-Password-Authentication",
+              password: "wrong-password",
+              username: "foo@example.com",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+        // no body returned
+        expect(loginResponse.status).toBe(403);
+      });
       //   it("should reject login of existing user with incorrect password", async () => {
       //     const loginResponse = await worker.fetch("/co/authenticate", {
       //       headers: {
