@@ -10,7 +10,7 @@ describe("logs", () => {
     const client = testClient(tsoaApp, env);
 
     const token = await getAdminToken();
-    const response = await client.api.v2.users.$get(
+    const response = await client.api.v2.logs.$get(
       {},
       {
         headers: {

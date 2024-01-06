@@ -2,6 +2,7 @@ import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
+import { luceneFilter } from "../helpers/filter";
 
 function mapLog(log: any) {
   const { id, details, ...rest } = log;
@@ -15,22 +16,12 @@ function mapLog(log: any) {
 
 export function listLogs(db: Kysely<Database>) {
   return async (tenantId: string, params: ListParams) => {
-    if (!params.q) {
-      throw new Error("No user_id provided");
+    let query = db.selectFrom("logs").where("logs.tenant_id", "=", tenantId);
+
+    if (params.q) {
+      query = luceneFilter(db, query, params.q, ["user_id"]);
     }
 
-    const userId = decodeURIComponent(params.q).split("user_id:")[1];
-
-    if (!userId) {
-      throw new Error("No user_id provided");
-    }
-
-    let query = db
-      .selectFrom("logs")
-      .where("logs.tenant_id", "=", tenantId)
-      .where("logs.user_id", "=", userId);
-
-    // TODO
     // if (params.sort && params.sort.sort_by) {
     //   const { ref } = db.dynamic;
     //   query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
