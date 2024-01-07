@@ -133,7 +133,7 @@ describe("social sign on", () => {
         // TO INVESTIGATE! this looks some issue... we're storing users with integers here...
         // but our types are thinking it's a boolean... an issue?
         // ALSO are deviating from planetscale?
-        // expect(idTokenPayload.email_verified).toBe(1);
+        expect(idTokenPayload.email_verified).toBe(1);
 
         // the same that we passed in
         expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
