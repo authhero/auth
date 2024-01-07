@@ -1,10 +1,8 @@
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
-import { getEnv } from "./test-client";
 
-const env = getEnv();
-const client = testClient(tsoaApp, env);
+const client = testClient(tsoaApp, {});
 type clientAppType = typeof client;
 
 export async function doSilentAuthRequestAndReturnTokens(
