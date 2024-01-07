@@ -56,23 +56,23 @@ const EXPECTED_NEW_USER = {
 
 describe("social sign on", () => {
   describe("Primary user", () => {
-    //   /* TO TEST
-    //   * silent auth! have since merged PRs testing silent auth
-    //   * for POST and GET SSO calls to /callback
-    //     assert that we
-    //     - get the auth cookie back
-    //     - can silent auth with it
-    //   */
+    /* TO TEST
+      * silent auth! have since merged PRs testing silent auth
+      * for POST and GET SSO calls to /callback
+        assert that we
+        - get the auth cookie back
+        - can silent auth with it
+      */
 
     it("should create correct args for social sign on from hitting /authorize with connection", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
       const socialSignOnQuery = {
         ...SOCIAL_STATE_PARAM_AUTH_PARAMS,
         connection: "demo-social-provider",
         auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       };
-
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
 
       const socialSignOnResponse = await client.authorize.$get({
         query: socialSignOnQuery,
@@ -96,7 +96,7 @@ describe("social sign on", () => {
     });
 
     describe("Create a new user from a social callback", () => {
-      //     // like most of the providers
+      // like most of the providers
       it("should receive params in the querystring when a GET", async () => {
         const socialCallbackQuery = {
           state: SOCIAL_STATE_PARAM,
@@ -108,7 +108,6 @@ describe("social sign on", () => {
         const socialCallbackResponse = await client.callback.$get({
           query: socialCallbackQuery,
         });
-        console.log(await socialCallbackResponse.text());
         expect(socialCallbackResponse.status).toBe(302);
         const location2 = new URL(
           socialCallbackResponse.headers.get("location")!,
@@ -273,15 +272,6 @@ describe("social sign on", () => {
         // ---------------------------------------------
         // now check that the user was created was properly in the data providers
         // ---------------------------------------------
-        //       const newSocialUserRes = await worker.fetch(
-        //         `/api/v2/users/${idTokenPayload.sub}`,
-        //         {
-        //           headers: {
-        //             authorization: `Bearer ${token}`,
-        //             "tenant-id": "tenantId",
-        //           },
-        //         },
-        //       );
         const newSocialUserRes = await client.api.v2.users[":user_id"].$get(
           {
             param: { user_id: "demo-social-provider|123456789012345678901" },
@@ -497,12 +487,6 @@ describe("social sign on", () => {
         ).replace("==", ""),
         code: "code",
       };
-      //     const socialCallbackResponseAnotherSSO = await worker.fetch(
-      //       `/callback?${socialCallbackQueryAnotherSSO.toString()}`,
-      //       {
-      //         redirect: "manual",
-      //       },
-      //     );
       const socialCallbackResponseAnotherSSO = await client.callback.$get({
         query: socialCallbackQueryAnotherSSO,
       });
