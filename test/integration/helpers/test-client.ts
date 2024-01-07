@@ -13,6 +13,7 @@ import {
 } from "../../../src/types";
 import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 import type { Email } from "../../../src/types/Email";
+import { mockOAuth2ClientFactory } from "../../../integration-test/mockOauth2Client";
 
 export async function getEnv() {
   const dialect = new SqliteDialect({
@@ -216,6 +217,7 @@ export async function getEnv() {
     WRITE_PERMISSION: "auth:write",
     LOGIN2_URL: "https://login2.sesamy.dev",
     db,
+    oauth2ClientFactory: mockOAuth2ClientFactory,
   };
 }
 
