@@ -575,73 +575,75 @@ describe("social sign on", () => {
     });
   });
 
-  // describe("Security", () => {
-  //   describe("auth2 should not create a new user if callback from non-existing social provider", () => {
-  //     it("should not when GET /callback", async () => {
-  //       const socialCallbackQuery = new URLSearchParams({
-  //         // this is the only difference from the other tests
-  //         state: btoa(
-  //           JSON.stringify({
-  //             authParams: {
-  //               redirect_uri: "https://login2.sesamy.dev/callback",
-  //               scope: "openid profile email",
-  //               state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-  //               client_id: "clientId",
-  //               nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-  //               response_type: "token id_token",
-  //             },
-  //             connection: "non-existing-social-provider",
-  //           }),
-  //         ).replace("==", ""),
-  //         code: "code",
-  //       });
+  describe("Security", () => {
+    describe("auth2 should not create a new user if callback from non-existing social provider", () => {
+      it("should not when GET /callback", async () => {
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
 
-  //       const socialCallbackResponse = await worker.fetch(
-  //         `/callback?${socialCallbackQuery.toString()}`,
-  //         {
-  //           redirect: "manual",
-  //         },
-  //       );
+        const socialCallbackQuery = {
+          // this is the only difference from the other tests
+          state: btoa(
+            JSON.stringify({
+              authParams: {
+                redirect_uri: "https://login2.sesamy.dev/callback",
+                scope: "openid profile email",
+                state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+                client_id: "clientId",
+                nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+                response_type: "token id_token",
+              },
+              connection: "non-existing-social-provider",
+            }),
+          ).replace("==", ""),
+          code: "code",
+        };
+        const socialCallbackResponse = await client.callback.$get({
+          query: socialCallbackQuery,
+        });
+        expect(socialCallbackResponse.status).toBe(403);
+        expect(await socialCallbackResponse.text()).toBe(
+          "Connection not found",
+        );
+      });
+      it("should not when POST /callback", async () => {
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
 
-  //       expect(socialCallbackResponse.status).toBe(403);
-  //       expect(await socialCallbackResponse.text()).toBe(
-  //         "Connection not found",
-  //       );
-  //     });
-  //     it("should not when POST /callback", async () => {
-  //       const socialCallbackResponse = await worker.fetch(`/callback`, {
-  //         method: "POST",
-  //         headers: {
-  //           "content-type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           state: btoa(
-  //             JSON.stringify({
-  //               authParams: {
-  //                 redirect_uri: "https://login2.sesamy.dev/callback",
-  //                 scope: "openid profile email",
-  //                 state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-  //                 client_id: "clientId",
-  //                 nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-  //                 response_type: "token id_token",
-  //               },
-  //               connection: "evil-social-provider",
-  //             }),
-  //           ).replace("==", ""),
-  //           code: "code",
-  //         }),
-  //         redirect: "manual",
-  //       });
+        const socialCallbackResponse = await client.callback.$post(
+          {
+            json: {
+              state: btoa(
+                JSON.stringify({
+                  authParams: {
+                    redirect_uri: "https://login2.sesamy.dev/callback",
+                    scope: "openid profile email",
+                    state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+                    client_id: "clientId",
+                    nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+                    response_type: "token id_token",
+                  },
+                  connection: "evil-social-provider",
+                }),
+              ).replace("==", ""),
+              code: "code",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
 
-  //       expect(socialCallbackResponse.status).toBe(403);
-  //       expect(await socialCallbackResponse.text()).toBe(
-  //         "Connection not found",
-  //       );
-  //     });
-  //   });
-
-  //   // TO TEST
-  //   // - bad params passed to us? e.g. bad redirect-uri, bad client_id?
-  //   // - should not create a new social user IF WE DID NOT FIRST CALL THEM? e.g. check the nonce?
-  // });
+        expect(socialCallbackResponse.status).toBe(403);
+        expect(await socialCallbackResponse.text()).toBe(
+          "Connection not found",
+        );
+      });
+    });
+    // TO TEST
+    // - bad params passed to us? e.g. bad redirect-uri, bad client_id?
+    // - should not create a new social user IF WE DID NOT FIRST CALL THEM? e.g. check the nonce?
+  });
 });
