@@ -389,8 +389,6 @@ describe("code-flow", () => {
 
       // we are still getting a redirect but to a page on login2 saying the code is expired
       expect(authenticateResponse.status).toBe(302);
-      // UP TO HERE! why is the domain undefined?
-      console.log(authenticateResponse.headers.get("location")!);
       const redirectUri = new URL(
         authenticateResponse.headers.get("location")!,
       );
