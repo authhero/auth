@@ -161,7 +161,6 @@ describe("password-flow", () => {
         },
       });
 
-      // I don't think it should be what happens but I'm testing what we have... might be because we're using the data adapters which don't have primary keys
       expect(createUserResponse.status).toBe(201);
 
       const loginResponse = await client.co.authenticate.$post(
@@ -185,10 +184,10 @@ describe("password-flow", () => {
       // TODO
       // - update the password and then check we can login... I don't think we have that flow tested... or implemented
     });
-    //   // TO TEST--------------------------------------------------------
-    //   // should do what with registration signup for existing email (code) user?
-    //   // --- we don't have account linking implemented on this flow
-    //   // same username-password user but a different tenant
+    // TO TEST--------------------------------------------------------
+    // should do what with registration signup for existing email (code) user?
+    // --- we don't have account linking implemented on this flow
+    // same username-password user but a different tenant
   });
   describe("Login with password", () => {
     it("should login with existing user", async () => {
@@ -444,11 +443,10 @@ describe("password-flow", () => {
 
       expect(loginResponse.status).toBe(403);
     });
+    // TO TEST
+    // - username-password user across different clients on the same tenant
+    // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
-
   // TO TEST
-  // - username-password user across different clients on the same tenant
-  // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
+  // - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
 });
-// TO TEST
-// - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
