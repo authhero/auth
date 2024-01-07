@@ -142,25 +142,25 @@ describe("social sign on", () => {
         // ---------------------------------------------
         // now do a silent auth check to make sure we are logged in properly
         // ---------------------------------------------
-        // const setCookiesHeader =
-        //         socialCallbackResponse.headers.get("set-cookie")!;
-        //       const {
-        //         accessToken: silentAuthAccessTokenPayload,
-        //         idToken: silentAuthIdTokenPayload,
-        //       } = await doSilentAuthRequestAndReturnTokens(
-        //         setCookiesHeader,
-        //         worker,
-        //         "nonce",
-        //         "clientId",
-        //       );
-        //       expect(silentAuthIdTokenPayload).toMatchObject({
-        //         sub: "demo-social-provider|123456789012345678901",
-        //         aud: "clientId",
-        //         name: "örjan.lindström@example.com",
-        //       });
-        //       // ---------------------------------------------
-        //       // now check that the user was created was properly in the data providers
-        //       // ---------------------------------------------
+        const setCookiesHeader =
+          socialCallbackResponse.headers.get("set-cookie")!;
+        const {
+          accessToken: silentAuthAccessTokenPayload,
+          idToken: silentAuthIdTokenPayload,
+        } = await doSilentAuthRequestAndReturnTokens(
+          setCookiesHeader,
+          client,
+          "nonce",
+          "clientId",
+        );
+        expect(silentAuthIdTokenPayload).toMatchObject({
+          sub: "demo-social-provider|123456789012345678901",
+          aud: "clientId",
+          name: "örjan.lindström@example.com",
+        });
+        // ---------------------------------------------
+        // now check that the user was created was properly in the data providers
+        // ---------------------------------------------
         //       const newSocialUserRes = await worker.fetch(
         //         `/api/v2/users/demo-social-provider|123456789012345678901`,
         //         {
@@ -170,14 +170,35 @@ describe("social sign on", () => {
         //           },
         //         },
         //       );
-        //       const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
-        //       const {
-        //         created_at,
-        //         updated_at,
-        //         last_login,
-        //         ...newSocialUserWithoutDates
-        //       } = newSocialUser;
-        //       expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
+        const newSocialUserRes = await client.api.v2.users[":user_id"].$get(
+          {
+            param: { user_id: "demo-social-provider|123456789012345678901" },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+            },
+          },
+        );
+        const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
+        const {
+          created_at,
+          updated_at,
+          last_login,
+          // again, investigate this
+          app_metadata,
+          family_name,
+          given_name,
+          linked_to,
+          locale,
+          nickname,
+          picture,
+          // this is a new one to destructure... might actually be a SQLite issue OR a production issue that we weren't picking up
+          tags,
+          ...newSocialUserWithoutDates
+        } = newSocialUser;
+        expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
       });
       //     // like apple
       //     it("should receive params in the body when a POST", async () => {
