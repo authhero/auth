@@ -399,15 +399,15 @@ describe("code-flow", () => {
       expect(redirectUri.searchParams.get("email")).toBe(
         encodeURIComponent("test@example.com"),
       );
-      //     // ------------
-      //     // Overwrite the magic link with a bad email, and try and use it
-      //     // ----------------
-      //     const magicLinkWithBadEmail = new URL(link!);
-      //     magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
-      //     const authenticatePath2 = magicLinkWithBadEmail.href.split(
-      //       "https://example.com",
-      //     )[1];
-      //     const authenticateResponse2 = await worker.fetch(authenticatePath2, {
+      // ------------
+      // Overwrite the magic link with a bad email, and try and use it
+      // ----------------
+      const magicLinkWithBadEmail = new URL(link!);
+      magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
+      const authenticatePath2 = magicLinkWithBadEmail.href.split(
+        "https://example.com",
+      )[1];
+      // const authenticateResponse2 = await worker.fetch(authenticatePath2, {
       //       redirect: "manual",
       //     });
       //     expect(authenticateResponse2.status).toBe(302);

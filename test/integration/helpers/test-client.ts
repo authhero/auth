@@ -210,6 +210,7 @@ export async function getEnv() {
     ISSUER: "https://example.com/",
     READ_PERMISSION: "auth:read",
     WRITE_PERMISSION: "auth:write",
+    LOGIN2_URL: "https://login2.sesamy.dev",
     db,
   };
 }
