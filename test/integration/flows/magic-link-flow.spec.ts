@@ -407,18 +407,21 @@ describe("code-flow", () => {
       const authenticatePath2 = magicLinkWithBadEmail.href.split(
         "https://example.com",
       )[1];
-      // const authenticateResponse2 = await worker.fetch(authenticatePath2, {
-      //       redirect: "manual",
-      //     });
-      //     expect(authenticateResponse2.status).toBe(302);
-      //     const redirectUri2 = new URL(
-      //       authenticateResponse2.headers.get("location")!,
-      //     );
-      //     expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
-      //     expect(redirectUri2.pathname).toBe("/sv/expired-code");
-      //     expect(redirectUri2.searchParams.get("email")).toBe(
-      //       encodeURIComponent("another@email.com"),
-      //     );
+      const authenticateResponse2 =
+        await client.passwordless.verify_redirect.$get({
+          query: Object.fromEntries(
+            magicLinkWithBadEmail.searchParams.entries(),
+          ),
+        });
+      expect(authenticateResponse2.status).toBe(302);
+      const redirectUri2 = new URL(
+        authenticateResponse2.headers.get("location")!,
+      );
+      expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
+      expect(redirectUri2.pathname).toBe("/sv/expired-code");
+      expect(redirectUri2.searchParams.get("email")).toBe(
+        encodeURIComponent("another@email.com"),
+      );
     });
   });
   //   // TO TEST
