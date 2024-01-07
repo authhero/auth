@@ -139,6 +139,7 @@ describe("password-flow", () => {
       });
     });
 
+    // I expected this test to fail now we've migrated to hono/testing and we're using a real SQL database...
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -149,7 +150,9 @@ describe("password-flow", () => {
           clientId: "clientId",
         },
         json: {
+          // existing password user in our fixtures
           email: "foo@example.com",
+          // this should not overwrite the existing password
           password: aNewPassword,
         },
       };
@@ -161,6 +164,8 @@ describe("password-flow", () => {
         },
       });
 
+      // I'm not sure this is what should happen
+      // TODO - investigate auth0 mgmt API
       expect(createUserResponse.status).toBe(201);
 
       const loginResponse = await client.co.authenticate.$post(
@@ -384,7 +389,7 @@ describe("password-flow", () => {
             client_id: "clientId",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
-            // this is the password of
+            // this is the password of foo@example.com
             password: "Test!",
             username: "new-username-password-user@example.com",
           },
