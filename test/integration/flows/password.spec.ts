@@ -28,11 +28,9 @@ describe("password-flow", () => {
           },
         },
       );
-      // so this is correct
       expect(await response.text()).toBe("Client not found");
 
-      // but this is giving a 404...
-      // expect(response.status).toBe(400);
+      expect(response.status).toBe(404);
     });
     it("should create a new user with a password and login", async () => {
       const password = "password";
