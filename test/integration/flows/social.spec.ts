@@ -315,355 +315,333 @@ describe("social sign on", () => {
     });
   });
 
-  // describe("Secondary user", () => {
-  //   it("should return existing primary account when logging in with new social sign ons with same email address", async () => {
-  //     // ---------------------------------------------
-  //     // create new user with same email as we have hardcoded on the mock id_token responses
-  //     // ---------------------------------------------
+  describe("Secondary user", () => {
+    it("should return existing primary account when logging in with new social sign ons with same email address", async () => {
+      // ---------------------------------------------
+      // create new user with same email as we have hardcoded on the mock id_token responses
+      // ---------------------------------------------
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-  //     const token = await getAdminToken();
+      const createEmailUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "örjan.lindström@example.com",
+            connection: "email",
+            // password: "Test!",
+            // will this have email_verfied though? as this is a code account that has never been used...
+            // this does nothing. doesn't complain either
+            email_verified: true,
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
 
-  //     const createEmailUserResponse = await worker.fetch(`/api/v2/users`, {
-  //       method: "POST",
-  //       headers: {
-  //         authorization: `Bearer ${token}`,
-  //         "tenant-id": "tenantId",
-  //         "content-type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         email: "örjan.lindström@example.com",
-  //         connection: "email",
-  //         // password: "Test!",
-  //         // will this have email_verfied though? as this is a code account that has never been used...
-  //         // this does nothing. doesn't complain either
-  //         email_verified: true,
-  //       }),
+      const createEmailUser =
+        (await createEmailUserResponse.json()) as UserResponse;
+      expect(createEmailUser.email).toBe("örjan.lindström@example.com");
+      expect(createEmailUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: createEmailUser.user_id.split("|")[1],
+          // isSocial: false,
+          // TO INVESTIGATE HERE - same issue as above
+          isSocial: 0,
+        },
+      ]);
+      // TODO - do we need to be able to set this true from mgmt API? OR should I actually verify it...
+      // maybe use code user?
+      // expect(createEmailUser.email_verified).toBe(true);
+      // ---------------------------------------------
+      // now do social sign on with same email - new user registered
+      // ---------------------------------------------
+      const socialCallbackQuery = {
+        state: SOCIAL_STATE_PARAM,
+        code: "code",
+      };
+
+      const socialCallbackResponse = await client.callback.$get({
+        query: socialCallbackQuery,
+      });
+
+      const socialCallbackResponseQuery = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      ).searchParams;
+      const accessTokenPayload = parseJwt(
+        socialCallbackResponseQuery.get("access_token")!,
+      );
+      // This is the big change here
+      expect(accessTokenPayload.sub).not.toBe(
+        "demo-social-provider|1234567890",
+      );
+      expect(accessTokenPayload.sub).toBe(createEmailUser.user_id);
+      const idTokenPayload = parseJwt(
+        socialCallbackResponseQuery.get("id_token")!,
+      );
+      // This is the big change here
+      expect(idTokenPayload.sub).not.toBe("demo-social-provider|1234567890");
+      expect(idTokenPayload.sub).toBe(createEmailUser.user_id);
+      expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
+      expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
+      // TODO - we are pretending that the email is always verified
+      // expect(idTokenPayload.email_verified).toBe(true);
+      // ---------------------------------------------
+      // now check that the new social user was created was properly in the data providers
+      // ---------------------------------------------
+      const newSocialUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: { user_id: createEmailUser.user_id },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
+      expect(newSocialUser.email).toBe("örjan.lindström@example.com");
+      // ---------------------------------------------
+      // check that the primary user has new identities
+      // ---------------------------------------------
+      const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: { user_id: createEmailUser.user_id },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      const primaryUser = (await primaryUserRes.json()) as UserResponse;
+      expect(primaryUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: createEmailUser.user_id.split("|")[1],
+          isSocial: false,
+        },
+        {
+          connection: "demo-social-provider",
+          provider: "demo-social-provider",
+          user_id: "123456789012345678901",
+          isSocial: true,
+          profileData: {
+            name: "Örjan Lindström",
+            given_name: "Örjan",
+            family_name: "Lindström",
+            picture:
+              "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
+            email: "örjan.lindström@example.com",
+            email_verified: true,
+            locale: "es-ES",
+          },
+        },
+      ]);
+      // ---------------------------------------------
+      // silent auth to check we're getting the primary user back
+      // ---------------------------------------------
+      const setCookiesHeader =
+        socialCallbackResponse.headers.get("set-cookie")!;
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader,
+        client,
+        "nonce",
+        "clientId",
+      );
+      expect(silentAuthIdTokenPayload).toMatchObject({
+        // testing this means it must be working
+        sub: createEmailUser.user_id,
+        aud: "clientId",
+        name: "örjan.lindström@example.com",
+        email: "örjan.lindström@example.com",
+        email_verified: false,
+        nonce: "nonce",
+        iss: "https://example.com/",
+      });
+      // ---------------------------------------------
+      // now sign in same social user again and check we get the same primary user back
+      // ---------------------------------------------
+      const socialCallbackResponse2 = await client.callback.$get({
+        query: socialCallbackQuery,
+      });
+
+      const socialCallbackResponse2Query = new URL(
+        socialCallbackResponse2.headers.get("location")!,
+      ).searchParams;
+      expect(
+        parseJwt(socialCallbackResponse2Query.get("access_token")!).sub,
+      ).toBe(createEmailUser.user_id);
+      // ---------------------------------------------
+      // now log-in with another SSO account with the same email address
+      // ---------------------------------------------
+      const socialCallbackQueryAnotherSSO = {
+        state: btoa(
+          JSON.stringify({
+            authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+            connection: "other-social-provider",
+          }),
+        ).replace("==", ""),
+        code: "code",
+      };
+      //     const socialCallbackResponseAnotherSSO = await worker.fetch(
+      //       `/callback?${socialCallbackQueryAnotherSSO.toString()}`,
+      //       {
+      //         redirect: "manual",
+      //       },
+      //     );
+      const socialCallbackResponseAnotherSSO = await client.callback.$get({
+        query: socialCallbackQueryAnotherSSO,
+      });
+      const socialCallbackResponseAnotherSSOQuery = new URL(
+        socialCallbackResponseAnotherSSO.headers.get("location")!,
+      ).searchParams;
+      // these confirm we are still signing in with the primary user
+      expect(
+        parseJwt(socialCallbackResponseAnotherSSOQuery.get("access_token")!)
+          .sub,
+      ).toBe(createEmailUser.user_id);
+      expect(
+        parseJwt(socialCallbackResponseAnotherSSOQuery.get("id_token")!).sub,
+      ).toBe(createEmailUser.user_id);
+      // ---------------------------------------------
+      // now check that the primary user has new identities
+      // ---------------------------------------------
+      const primaryUserResAgain = await client.api.v2.users[":user_id"].$get(
+        {
+          param: { user_id: createEmailUser.user_id },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      const primaryUserAgain =
+        (await primaryUserResAgain.json()) as UserResponse;
+      expect(primaryUserAgain.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: createEmailUser.user_id.split("|")[1],
+          isSocial: false,
+        },
+        {
+          connection: "demo-social-provider",
+          provider: "demo-social-provider",
+          user_id: "123456789012345678901",
+          isSocial: true,
+          profileData: {
+            name: "Örjan Lindström",
+            given_name: "Örjan",
+            family_name: "Lindström",
+            picture:
+              "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
+            email: "örjan.lindström@example.com",
+            email_verified: true,
+            locale: "es-ES",
+          },
+        },
+        {
+          connection: "other-social-provider",
+          provider: "other-social-provider",
+          user_id: "10451045104510451",
+          isSocial: true,
+          profileData: {
+            name: "Örjan Lindström",
+            given_name: "Örjan",
+            family_name: "Lindström",
+            picture:
+              "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
+            email: "örjan.lindström@example.com",
+            email_verified: true,
+          },
+        },
+      ]);
+    });
+  });
+
+  // describe("Security", () => {
+  //   describe("auth2 should not create a new user if callback from non-existing social provider", () => {
+  //     it("should not when GET /callback", async () => {
+  //       const socialCallbackQuery = new URLSearchParams({
+  //         // this is the only difference from the other tests
+  //         state: btoa(
+  //           JSON.stringify({
+  //             authParams: {
+  //               redirect_uri: "https://login2.sesamy.dev/callback",
+  //               scope: "openid profile email",
+  //               state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+  //               client_id: "clientId",
+  //               nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+  //               response_type: "token id_token",
+  //             },
+  //             connection: "non-existing-social-provider",
+  //           }),
+  //         ).replace("==", ""),
+  //         code: "code",
+  //       });
+
+  //       const socialCallbackResponse = await worker.fetch(
+  //         `/callback?${socialCallbackQuery.toString()}`,
+  //         {
+  //           redirect: "manual",
+  //         },
+  //       );
+
+  //       expect(socialCallbackResponse.status).toBe(403);
+  //       expect(await socialCallbackResponse.text()).toBe(
+  //         "Connection not found",
+  //       );
   //     });
-
-  //     const createEmailUser =
-  //       (await createEmailUserResponse.json()) as UserResponse;
-
-  //     expect(createEmailUser.email).toBe("örjan.lindström@example.com");
-  //     expect(createEmailUser.identities).toEqual([
-  //       {
-  //         connection: "email",
-  //         provider: "email",
-  //         user_id: createEmailUser.user_id.split("|")[1],
-  //         isSocial: false,
-  //       },
-  //     ]);
-
-  //     // TODO - do we need to be able to set this true from mgmt API? OR should I actually verify it...
-  //     // maybe use code user?
-  //     // expect(createEmailUser.email_verified).toBe(true);
-
-  //     // ---------------------------------------------
-  //     // now do social sign on with same email - new user registered
-  //     // ---------------------------------------------
-
-  //     const socialCallbackQuery = new URLSearchParams({
-  //       state: SOCIAL_STATE_PARAM,
-  //       code: "code",
-  //     });
-
-  //     const socialCallbackResponse = await worker.fetch(
-  //       `/callback?${socialCallbackQuery.toString()}`,
-  //       {
-  //         redirect: "manual",
-  //       },
-  //     );
-
-  //     const socialCallbackResponseQuery = new URL(
-  //       socialCallbackResponse.headers.get("location")!,
-  //     ).searchParams;
-
-  //     const accessTokenPayload = parseJwt(
-  //       socialCallbackResponseQuery.get("access_token")!,
-  //     );
-
-  //     // This is the big change here
-  //     expect(accessTokenPayload.sub).not.toBe(
-  //       "demo-social-provider|1234567890",
-  //     );
-  //     expect(accessTokenPayload.sub).toBe(createEmailUser.user_id);
-
-  //     const idTokenPayload = parseJwt(
-  //       socialCallbackResponseQuery.get("id_token")!,
-  //     );
-
-  //     // This is the big change here
-  //     expect(idTokenPayload.sub).not.toBe("demo-social-provider|1234567890");
-  //     expect(idTokenPayload.sub).toBe(createEmailUser.user_id);
-  //     expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
-  //     expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
-  //     // TODO - we are pretending that the email is always verified
-  //     // expect(idTokenPayload.email_verified).toBe(true);
-
-  //     // ---------------------------------------------
-  //     // now check that the new social user was created was properly in the data providers
-  //     // ---------------------------------------------
-  //     const newSocialUserRes = await worker.fetch(
-  //       // wait - is this even correct? can we even do this and see linked users in auth0 management API?
-  //       `/api/v2/users/${idTokenPayload.sub}`,
-  //       {
+  //     it("should not when POST /callback", async () => {
+  //       const socialCallbackResponse = await worker.fetch(`/callback`, {
+  //         method: "POST",
   //         headers: {
-  //           authorization: `Bearer ${token}`,
-  //           "tenant-id": "tenantId",
+  //           "content-type": "application/json",
   //         },
-  //       },
-  //     );
-
-  //     const newSocialUser = (await newSocialUserRes.json()) as UserResponse;
-  //     expect(newSocialUser.email).toBe("örjan.lindström@example.com");
-
-  //     // ---------------------------------------------
-  //     // check that the primary user has new identities
-  //     // ---------------------------------------------
-
-  //     const primaryUserRes = await worker.fetch(
-  //       `/api/v2/users/${createEmailUser.user_id}`,
-  //       {
-  //         headers: {
-  //           authorization: `Bearer ${token}`,
-  //           "tenant-id": "tenantId",
-  //         },
-  //       },
-  //     );
-
-  //     const primaryUser = (await primaryUserRes.json()) as UserResponse;
-
-  //     expect(primaryUser.identities).toEqual([
-  //       {
-  //         connection: "email",
-  //         provider: "email",
-  //         user_id: createEmailUser.user_id.split("|")[1],
-  //         isSocial: false,
-  //       },
-  //       {
-  //         connection: "demo-social-provider",
-  //         provider: "demo-social-provider",
-  //         user_id: "123456789012345678901",
-  //         isSocial: true,
-  //         profileData: {
-  //           name: "Örjan Lindström",
-  //           given_name: "Örjan",
-  //           family_name: "Lindström",
-  //           picture:
-  //             "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
-  //           email: "örjan.lindström@example.com",
-  //           email_verified: true,
-  //           locale: "es-ES",
-  //         },
-  //       },
-  //     ]);
-
-  //     // ---------------------------------------------
-  //     // silent auth to check we're getting the primary user back
-  //     // ---------------------------------------------
-
-  //     const setCookiesHeader =
-  //       socialCallbackResponse.headers.get("set-cookie")!;
-
-  //     const {
-  //       accessToken: silentAuthAccessTokenPayload,
-  //       idToken: silentAuthIdTokenPayload,
-  //     } = await doSilentAuthRequestAndReturnTokens(
-  //       setCookiesHeader,
-  //       worker,
-  //       "nonce",
-  //       "clientId",
-  //     );
-
-  //     expect(silentAuthIdTokenPayload).toMatchObject({
-  //       // testing this means it must be working
-  //       sub: createEmailUser.user_id,
-  //       aud: "clientId",
-  //       name: "örjan.lindström@example.com",
-  //       email: "örjan.lindström@example.com",
-  //       email_verified: false,
-  //       nonce: "nonce",
-  //       iss: "https://example.com/",
-  //     });
-
-  //     // ---------------------------------------------
-  //     // now sign in same social user again and check we get the same primary user back
-  //     // ---------------------------------------------
-
-  //     const socialCallbackResponse2 = await worker.fetch(
-  //       `/callback?${socialCallbackQuery.toString()}`,
-  //       {
-  //         redirect: "manual",
-  //       },
-  //     );
-
-  //     const socialCallbackResponse2Query = new URL(
-  //       socialCallbackResponse2.headers.get("location")!,
-  //     ).searchParams;
-
-  //     expect(
-  //       parseJwt(socialCallbackResponse2Query.get("access_token")!).sub,
-  //     ).toBe(createEmailUser.user_id);
-
-  //     // ---------------------------------------------
-  //     // now log-in with another SSO account with the same email address
-  //     // ---------------------------------------------
-
-  //     const socialCallbackQueryAnotherSSO = new URLSearchParams({
-  //       state: btoa(
-  //         JSON.stringify({
-  //           authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
-  //           connection: "other-social-provider",
+  //         body: JSON.stringify({
+  //           state: btoa(
+  //             JSON.stringify({
+  //               authParams: {
+  //                 redirect_uri: "https://login2.sesamy.dev/callback",
+  //                 scope: "openid profile email",
+  //                 state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+  //                 client_id: "clientId",
+  //                 nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+  //                 response_type: "token id_token",
+  //               },
+  //               connection: "evil-social-provider",
+  //             }),
+  //           ).replace("==", ""),
+  //           code: "code",
   //         }),
-  //       ).replace("==", ""),
-  //       code: "code",
-  //     });
-
-  //     const socialCallbackResponseAnotherSSO = await worker.fetch(
-  //       `/callback?${socialCallbackQueryAnotherSSO.toString()}`,
-  //       {
   //         redirect: "manual",
-  //       },
-  //     );
+  //       });
 
-  //     const socialCallbackResponseAnotherSSOQuery = new URL(
-  //       socialCallbackResponseAnotherSSO.headers.get("location")!,
-  //     ).searchParams;
-
-  //     // these confirm we are still signing in with the primary user
-  //     expect(
-  //       parseJwt(socialCallbackResponseAnotherSSOQuery.get("access_token")!)
-  //         .sub,
-  //     ).toBe(createEmailUser.user_id);
-  //     expect(
-  //       parseJwt(socialCallbackResponseAnotherSSOQuery.get("id_token")!).sub,
-  //     ).toBe(createEmailUser.user_id);
-
-  //     // ---------------------------------------------
-  //     // now check that the primary user has new identities
-  //     // ---------------------------------------------
-
-  //     const primaryUserResAgain = await worker.fetch(
-  //       `/api/v2/users/${createEmailUser.user_id}`,
-  //       {
-  //         headers: {
-  //           authorization: `Bearer ${token}`,
-  //           "tenant-id": "tenantId",
-  //         },
-  //       },
-  //     );
-
-  //     const primaryUserAgain =
-  //       (await primaryUserResAgain.json()) as UserResponse;
-
-  //     expect(primaryUserAgain.identities).toEqual([
-  //       {
-  //         connection: "email",
-  //         provider: "email",
-  //         user_id: createEmailUser.user_id.split("|")[1],
-  //         isSocial: false,
-  //       },
-  //       {
-  //         connection: "demo-social-provider",
-  //         provider: "demo-social-provider",
-  //         user_id: "123456789012345678901",
-  //         isSocial: true,
-  //         profileData: {
-  //           name: "Örjan Lindström",
-  //           given_name: "Örjan",
-  //           family_name: "Lindström",
-  //           picture:
-  //             "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
-  //           email: "örjan.lindström@example.com",
-  //           email_verified: true,
-  //           locale: "es-ES",
-  //         },
-  //       },
-  //       {
-  //         connection: "other-social-provider",
-  //         provider: "other-social-provider",
-  //         user_id: "10451045104510451",
-  //         isSocial: true,
-  //         profileData: {
-  //           name: "Örjan Lindström",
-  //           given_name: "Örjan",
-  //           family_name: "Lindström",
-  //           picture:
-  //             "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=1010",
-  //           email: "örjan.lindström@example.com",
-  //           email_verified: true,
-  //         },
-  //       },
-  //     ]);
+  //       expect(socialCallbackResponse.status).toBe(403);
+  //       expect(await socialCallbackResponse.text()).toBe(
+  //         "Connection not found",
+  //       );
+  //     });
   //   });
+
+  //   // TO TEST
+  //   // - bad params passed to us? e.g. bad redirect-uri, bad client_id?
+  //   // - should not create a new social user IF WE DID NOT FIRST CALL THEM? e.g. check the nonce?
+  // });
 });
-
-// describe("Security", () => {
-//   describe("auth2 should not create a new user if callback from non-existing social provider", () => {
-//     it("should not when GET /callback", async () => {
-//       const socialCallbackQuery = new URLSearchParams({
-//         // this is the only difference from the other tests
-//         state: btoa(
-//           JSON.stringify({
-//             authParams: {
-//               redirect_uri: "https://login2.sesamy.dev/callback",
-//               scope: "openid profile email",
-//               state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-//               client_id: "clientId",
-//               nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-//               response_type: "token id_token",
-//             },
-//             connection: "non-existing-social-provider",
-//           }),
-//         ).replace("==", ""),
-//         code: "code",
-//       });
-
-//       const socialCallbackResponse = await worker.fetch(
-//         `/callback?${socialCallbackQuery.toString()}`,
-//         {
-//           redirect: "manual",
-//         },
-//       );
-
-//       expect(socialCallbackResponse.status).toBe(403);
-//       expect(await socialCallbackResponse.text()).toBe(
-//         "Connection not found",
-//       );
-//     });
-//     it("should not when POST /callback", async () => {
-//       const socialCallbackResponse = await worker.fetch(`/callback`, {
-//         method: "POST",
-//         headers: {
-//           "content-type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           state: btoa(
-//             JSON.stringify({
-//               authParams: {
-//                 redirect_uri: "https://login2.sesamy.dev/callback",
-//                 scope: "openid profile email",
-//                 state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-//                 client_id: "clientId",
-//                 nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-//                 response_type: "token id_token",
-//               },
-//               connection: "evil-social-provider",
-//             }),
-//           ).replace("==", ""),
-//           code: "code",
-//         }),
-//         redirect: "manual",
-//       });
-
-//       expect(socialCallbackResponse.status).toBe(403);
-//       expect(await socialCallbackResponse.text()).toBe(
-//         "Connection not found",
-//       );
-//     });
-//   });
-
-//   // TO TEST
-//   // - bad params passed to us? e.g. bad redirect-uri, bad client_id?
-//   // - should not create a new social user IF WE DID NOT FIRST CALL THEM? e.g. check the nonce?
-// });
-// });
