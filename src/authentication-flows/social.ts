@@ -108,7 +108,10 @@ export async function socialAuthCallback({
     `${env.ISSUER}callback`,
   );
 
-  const token = await oauth2Client.exchangeCodeForTokenResponse(code);
+  const token = await oauth2Client.exchangeCodeForTokenResponse(
+    code,
+    connection.token_exchange_basic_auth,
+  );
 
   const idToken = parseJwt(token.id_token!);
 
