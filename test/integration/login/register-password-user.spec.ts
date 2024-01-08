@@ -37,41 +37,57 @@ describe("Register password user", () => {
     const location: string = response.headers.get("location")!;
     expect(location.startsWith("/u/login")).toBeTruthy;
 
-    // // Open login page
-    // const loginFormResponse = await worker.fetch(location, {});
-    // expect(loginFormResponse.status).toBe(200);
-    // const loginSearchParams = new URLSearchParams(location.split("?")[1]);
+    const stateParam = new URLSearchParams(location.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
 
-    // // Open signup page
-    // const getSignupResponse = await worker.fetch(
-    //   // I think we should follow the link here from the login page... get the href from that URL and visit it!
-    //   `/u/signup?${loginSearchParams.toString()}`,
-    // );
-    // expect(getSignupResponse.status).toBe(200);
+    // Open login page
+    const loginFormResponse = await client.u.login.$get({
+      query,
+    });
 
-    // // Signup
-    // const postSignupResponse = await worker.fetch(
-    //   `/u/signup?${loginSearchParams.toString()}`,
-    //   {
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       username: "test@example.com",
-    //       password: "password",
-    //     }),
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     redirect: "manual",
-    //   },
-    // );
+    expect(loginFormResponse.status).toBe(200);
 
-    // expect(postSignupResponse.status).toBe(302);
-    // const signupLocation: string = postSignupResponse.headers.get("location")!;
-    // const redirectUrl = new URL(signupLocation);
-    // expect(redirectUrl.pathname).toBe("/callback");
-    // const accessToken = redirectUrl.searchParams.get("access_token");
-    // expect(accessToken).toBeTruthy();
-    // const idToken = redirectUrl.searchParams.get("id_token");
-    // expect(idToken).toBeTruthy();
+    const loginSearchParams = new URLSearchParams(location.split("?")[1]);
+    const loginSearchParamsQuery = Object.fromEntries(
+      loginSearchParams.entries(),
+    );
+
+    // Open signup page
+    const getSignupResponse = await client.u.signup.$get({
+      query: loginSearchParamsQuery,
+    });
+    expect(getSignupResponse.status).toBe(200);
+
+    const signupSearchParams = new URLSearchParams(location.split("?")[1]);
+    const signupSearchParamsQuery = Object.fromEntries(
+      signupSearchParams.entries(),
+    );
+
+    // Signup
+    const postSignupResponse = await client.u.signup.$post(
+      {
+        query: signupSearchParamsQuery,
+        json: {
+          username: "test@example.com",
+          password: "password",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    console.log(await postSignupResponse.text());
+
+    expect(postSignupResponse.status).toBe(302);
+    const signupLocation: string = postSignupResponse.headers.get("location")!;
+    const redirectUrl = new URL(signupLocation);
+    expect(redirectUrl.pathname).toBe("/callback");
+    const accessToken = redirectUrl.searchParams.get("access_token");
+    expect(accessToken).toBeTruthy();
+    const idToken = redirectUrl.searchParams.get("id_token");
+    expect(idToken).toBeTruthy();
   });
 });
