@@ -169,12 +169,14 @@ export class LoginController extends Controller {
 
     request.ctx.set("log", `Code: ${code}`);
 
-    await env.data.logs.create({
-      category: "login",
-      message: "Create authentication code",
-      tenant_id: client.tenant_id,
-      user_id: params.username,
-    });
+    // this should be commented out right? what is the plan here...
+    // blows up with "FK constraint failed"
+    // await env.data.logs.create({
+    //   category: "login",
+    //   message: "Create authentication code",
+    //   tenant_id: client.tenant_id,
+    //   user_id: params.username,
+    // });
 
     // Add the username to the state
     session.authParams.username = params.username;
