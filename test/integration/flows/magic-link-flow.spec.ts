@@ -113,7 +113,7 @@ describe("code-flow", () => {
         idToken: silentAuthIdTokenPayload,
       } = await doSilentAuthRequestAndReturnTokens(
         authCookieHeader,
-        client.authorize,
+        client,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -246,7 +246,7 @@ describe("code-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client.authorize,
+          client,
           AUTH_PARAMS.nonce,
           "clientId",
         );

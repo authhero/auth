@@ -1,10 +1,13 @@
 import { parseJwt } from "../../../src/utils/parse-jwt";
+import { testClient } from "hono/testing";
+import { tsoaApp } from "../../../src/app";
+
+const client = testClient(tsoaApp, {});
+type clientAppType = typeof client;
 
 export async function doSilentAuthRequestAndReturnTokens(
   setCookiesHeader: string,
-  // don't think hono exports these types...
-  // worth manually recreating it I think
-  authorize: any,
+  client: clientAppType,
   nonce: string,
   clientId: string,
 ) {
@@ -23,7 +26,7 @@ export async function doSilentAuthRequestAndReturnTokens(
     response_mode: "web_message",
   };
 
-  const silentAuthResponse = await authorize.$get(
+  const silentAuthResponse = await client.authorize.$get(
     {
       query,
     },

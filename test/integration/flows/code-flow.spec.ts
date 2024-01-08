@@ -6,7 +6,6 @@ import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../../../integration-test/helpers/token";
 import { getEnv } from "../helpers/test-client";
-import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 
 describe("code-flow", () => {
   it("should run a passwordless flow with code", async () => {
@@ -137,7 +136,7 @@ describe("code-flow", () => {
       idToken: silentAuthIdTokenPayload,
     } = await doSilentAuthRequestAndReturnTokens(
       setCookiesHeader,
-      client.authorize,
+      client,
       AUTH_PARAMS.nonce,
       "clientId",
     );
@@ -229,7 +228,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        client.authorize,
+        client,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -378,7 +377,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        client.authorize,
+        client,
         nonce,
         "clientId",
       );
@@ -491,7 +490,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        client.authorize,
+        client,
         nonce,
         "clientId",
       );

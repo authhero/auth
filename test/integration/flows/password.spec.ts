@@ -109,7 +109,7 @@ describe("password-flow", () => {
         idToken: silentAuthIdTokenPayload,
       } = await doSilentAuthRequestAndReturnTokens(
         authCookieHeader,
-        client.authorize,
+        client,
         "unique-nonce",
         "clientId",
       );
@@ -261,7 +261,7 @@ describe("password-flow", () => {
         idToken: silentAuthIdTokenPayload,
       } = await doSilentAuthRequestAndReturnTokens(
         authCookieHeader,
-        client.authorize,
+        client,
         "unique-nonce",
         "clientId",
       );
