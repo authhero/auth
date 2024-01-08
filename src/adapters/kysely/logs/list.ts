@@ -1,10 +1,10 @@
-import { Database } from "../../../types";
+import { Database, LogsResponse, SqlLog } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { luceneFilter } from "../helpers/filter";
 
-function mapLog(log: any) {
+function mapLog(log: SqlLog): LogsResponse {
   const { id, details, ...rest } = log;
 
   return {

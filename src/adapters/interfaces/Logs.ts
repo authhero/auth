@@ -1,5 +1,5 @@
 import { Totals } from "../../types/auth0/Totals";
-import { Log } from "../../types/";
+import { LogsResponse, SqlLog } from "../../types/";
 import { ListParams } from "./ListParams";
 
 export interface CreateLogParams {
@@ -12,7 +12,7 @@ export interface CreateLogParams {
   client_name: string;
   date: string;
   user_agent?: string;
-  ip?: string;
+  ip: string;
   details?: {
     request: {
       method: string;
@@ -25,10 +25,10 @@ export interface CreateLogParams {
 }
 
 export interface ListLogsResponse extends Totals {
-  logs: Log[];
+  logs: LogsResponse[];
 }
 
 export interface LogsDataAdapter {
-  create(params: CreateLogParams): Promise<Log>;
+  create(params: CreateLogParams): Promise<SqlLog>;
   list(tenantId: string, params: ListParams): Promise<ListLogsResponse>;
 }

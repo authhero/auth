@@ -38,7 +38,7 @@ export function loggerMiddleware(logType: string, description?: string) {
           user_id: "userId",
           description: description || ctx.var.description || "",
           category: logType,
-          ip: ctx.req.header("x-real-ip"),
+          ip: ctx.req.header("x-real-ip") || "",
           type: ctx.var.logType || logType,
           client_id: ctx.var.user?.sub || ctx.var.client_id,
           client_name: "",

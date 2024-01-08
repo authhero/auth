@@ -22,11 +22,9 @@ export interface LogsResponse {
   client_id: string;
   client_name: string;
   ip: string;
-  hostname: string;
   user_id: string;
   user_name?: string;
   audience?: string;
-  scope: string;
   strategy?: string;
   strategy_type?: string;
   log_id: string;
@@ -34,5 +32,4 @@ export interface LogsResponse {
   details?: GetLogsResponseDetails;
   user_agent?: string;
   location_info?: GetLogsResponseLocationInfo;
-  [key: string]: any;
 }
