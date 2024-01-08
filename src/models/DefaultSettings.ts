@@ -18,6 +18,7 @@ const DefaultSettingsSchema = z.object({
         scope: z.string().optional(),
         authorization_endpoint: z.string().optional(),
         token_endpoint: z.string().optional(),
+        token_exchange_basic_auth: z.boolean().optional(),
         response_type: z.string().optional(),
         response_mode: z.string().optional(),
       }),
