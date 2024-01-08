@@ -25,7 +25,6 @@ describe("logs", () => {
 
     const body = (await response.json()) as UserResponse[];
     expect(body.length).toBe(0);
-    console.log("done");
   });
 
   it("should return a log row for a created user", async () => {
