@@ -2,8 +2,6 @@ import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../../../integration-test/helpers/token";
 import { getEnv } from "../helpers/test-client";
-import { UserResponse } from "../../../src/types/auth0";
-import { Identity } from "../../../src/types/auth0/Identity";
 import { Tenant } from "../../../src/types";
 
 describe("tenants", () => {

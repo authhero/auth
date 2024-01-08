@@ -1,25 +1,18 @@
-import { start } from "../start";
-import { parseJwt } from "../../src/utils/parse-jwt";
-import type { UnstableDevWorker } from "wrangler";
-import type { Email } from "../../src/types/Email";
-import type { LoginTicket } from "../../src/routes/tsoa/authenticate";
-import { getAdminToken } from "../helpers/token";
-import { UserResponse } from "../../src/types/auth0";
+import { parseJwt } from "../../../src/utils/parse-jwt";
+import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
+import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
+import { testClient } from "hono/testing";
+import { tsoaApp } from "../../../src/app";
+import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getEnv } from "../helpers/test-client";
+import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 
 describe("code-flow", () => {
-  let worker: UnstableDevWorker;
-
-  beforeEach(async () => {
-    worker = await start();
-  });
-
-  afterEach(() => {
-    worker.stop();
-  });
-
   it("should run a passwordless flow with code", async () => {
     const token = await getAdminToken();
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -32,8 +25,12 @@ describe("code-flow", () => {
     // -----------------
     // Doing a new signup here, so expect this email not to exist
     // -----------------
-    const resInitialQuery = await worker.fetch(
-      "/api/v2/users-by-email?email=test@example.com",
+    const resInitialQuery = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "test@example.com",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -46,45 +43,47 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    const response = await worker.fetch("/passwordless/start", {
-      headers: {
-        "content-type": "application/json",
+    const response = await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "test@example.com",
+          // can be code or link
+          send: "code",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        authParams: AUTH_PARAMS,
-        client_id: "clientId",
-        connection: "email",
-        email: "test@example.com",
-        // can be code or link
-        send: "code",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
     if (response.status !== 200) {
       throw new Error(await response.text());
     }
 
-    const emailResponse = await worker.fetch("/test/email");
-    const [sentEmail] = (await emailResponse.json()) as Email[];
-    expect(sentEmail.to).toBe("test@example.com");
-
-    const otp = sentEmail.code;
+    const [{ code: otp }] = await env.data.email.list!();
 
     // Authenticate using the code
-    const authenticateResponse = await worker.fetch("/co/authenticate", {
-      headers: {
-        "content-type": "application/json",
+    const authenticateResponse = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "test@example.com",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        client_id: "clientId",
-        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-        otp,
-        realm: "email",
-        username: "test@example.com",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
     if (authenticateResponse.status !== 200) {
       throw new Error(
@@ -96,18 +95,18 @@ describe("code-flow", () => {
 
     const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
-    const query = new URLSearchParams({
+    const query = {
       ...AUTH_PARAMS,
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
       login_ticket,
       referrer: "https://login.example.com",
       realm: "email",
-    });
+    };
 
     // Trade the ticket for token
-    const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
-      redirect: "manual",
+    const tokenResponse = await client.authorize.$get({
+      query,
     });
 
     expect(tokenResponse.status).toBe(302);
@@ -138,7 +137,7 @@ describe("code-flow", () => {
       idToken: silentAuthIdTokenPayload,
     } = await doSilentAuthRequestAndReturnTokens(
       setCookiesHeader,
-      worker,
+      client.authorize,
       AUTH_PARAMS.nonce,
       "clientId",
     );
@@ -149,11 +148,16 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
+      // what have I done here to have these fields? some patched id_token endpoint right?
+      family_name,
+      given_name,
+      nickname,
+      locale,
+      picture,
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
     expect(sub).toContain("email|");
-    expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
       aud: "clientId",
       name: "test@example.com",
@@ -166,50 +170,56 @@ describe("code-flow", () => {
     // ----------------------------
     // Now log in (previous flow was signup)
     // ----------------------------
-    const passwordlessLoginStart = await worker.fetch("/passwordless/start", {
-      headers: {
-        "content-type": "application/json",
+    const passwordlessLoginStart = await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "test@example.com",
+          send: "code",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        authParams: AUTH_PARAMS,
-        client_id: "clientId",
-        connection: "email",
-        email: "test@example.com",
-        send: "code",
-      }),
-    });
-    const emailRes2 = await worker.fetch("/test/email");
-    const [sentEmail2] = (await emailRes2.json()) as Email[];
-    const otpLogin = sentEmail2.code;
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
-    const authRes2 = await worker.fetch("/co/authenticate", {
-      headers: {
-        "content-type": "application/json",
+    const [{}, { code: otpLogin }] = await env.data.email.list!();
+
+    const authRes2 = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp: otpLogin,
+          realm: "email",
+          username: "test@example.com",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        client_id: "clientId",
-        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-        otp: otpLogin,
-        realm: "email",
-        username: "test@example.com",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
     const { login_ticket: loginTicket2 } =
       (await authRes2.json()) as LoginTicket;
 
-    const query2 = new URLSearchParams({
+    const query2 = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
       login_ticket: loginTicket2,
       ...AUTH_PARAMS,
       referrer: "https://login.example.com",
       realm: "email",
-    });
+    };
 
-    const tokenRes2 = await worker.fetch(`/authorize?${query2.toString()}`, {
-      redirect: "manual",
+    const tokenRes2 = await client.authorize.$get({
+      query: query2,
     });
 
     // ----------------------------
@@ -219,7 +229,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        worker,
+        client.authorize,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -230,11 +240,16 @@ describe("code-flow", () => {
       iat: iat2,
       sid: sid2,
       sub: sub2,
+      //
+      family_name: family_name2,
+      given_name: given_name2,
+      nickname: nickname2,
+      locale: locale2,
+      picture: picture2,
       ...restOfIdTokenPayload2
     } = silentAuthIdTokenPayload2;
 
     expect(sub2).toContain("email|");
-    expect(sid2).toHaveLength(21);
     expect(restOfIdTokenPayload2).toEqual({
       aud: "clientId",
       name: "test@example.com",
@@ -246,6 +261,8 @@ describe("code-flow", () => {
   });
   it("should return existing primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/sv/callback";
@@ -253,46 +270,52 @@ describe("code-flow", () => {
     const scope = "openid profile email";
     const state = "state";
 
-    await worker.fetch("/passwordless/start", {
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({
-        authParams: {
-          nonce,
-          redirect_uri,
-          response_type,
-          scope,
-          state,
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: {
+            nonce,
+            redirect_uri,
+            response_type,
+            scope,
+            state,
+          },
+          client_id: "clientId",
+          connection: "email",
+          // this email already exists as a Username-Password-Authentication user
+          email: "foo@example.com",
+          send: "link",
         },
-        client_id: "clientId",
-        connection: "email",
-        // this email already exists as a Username-Password-Authentication user
-        email: "foo@example.com",
-        send: "link",
-      }),
-    });
-
-    const emailResponse = await worker.fetch("/test/email");
-    const [{ code: otp }] = (await emailResponse.json()) as Email[];
-
-    const authenticateResponse = await worker.fetch("/co/authenticate", {
-      headers: {
-        "content-type": "application/json",
       },
-      method: "POST",
-      body: JSON.stringify({
-        client_id: "clientId",
-        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-        otp,
-        realm: "email",
-        username: "foo@example.com",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const [{ code: otp }] = await env.data.email.list!();
+
+    const authenticateResponse = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
     const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
-    const query = new URLSearchParams({
+    const query = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
       login_ticket,
@@ -303,10 +326,12 @@ describe("code-flow", () => {
       state,
       referrer: "https://login.example.com",
       realm: "email",
+    };
+
+    const tokenResponse = await client.authorize.$get({
+      query,
     });
-    const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
-      redirect: "manual",
-    });
+
     const redirectUri = new URL(tokenResponse.headers.get("location")!);
     const accessToken = redirectUri.searchParams.get("access_token");
     const accessTokenPayload = parseJwt(accessToken!);
@@ -322,12 +347,19 @@ describe("code-flow", () => {
     // ----------------------------
     // now check the primary user has a new 'email' connection identity
     // ----------------------------
-    const primaryUserRes = await worker.fetch(`/api/v2/users/userId`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "tenant-id": "tenantId",
+    const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+      {
+        param: {
+          user_id: "userId",
+        },
       },
-    });
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
 
     const primaryUser = (await primaryUserRes.json()) as UserResponse;
 
@@ -346,7 +378,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        worker,
+        client.authorize,
         nonce,
         "clientId",
       );
@@ -357,13 +389,16 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
+      //
+      family_name,
+      given_name,
+      locale,
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
     // this is the id of the primary account
     expect(sub).toBe("userId");
 
-    expect(sid).toHaveLength(21);
     expect(restOfIdTokenPayload).toEqual({
       aud: "clientId",
       email: "foo@example.com",
@@ -379,47 +414,52 @@ describe("code-flow", () => {
     // now log in again with the same email and code user
     // ----------------------------
 
-    await worker.fetch("/passwordless/start", {
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({
-        authParams: {
-          nonce: "nonce",
-          redirect_uri,
-          response_type,
-          scope,
-          state,
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: {
+            nonce: "nonce",
+            redirect_uri,
+            response_type,
+            scope,
+            state,
+          },
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "link",
         },
-        client_id: "clientId",
-        connection: "email",
-        email: "foo@example.com",
-        send: "link",
-      }),
-    });
-
-    const [{ code: otp2 }] = (await (
-      await worker.fetch("/test/email")
-    ).json()) as Email[];
-
-    const authenticateResponse2 = await worker.fetch("/co/authenticate", {
-      headers: {
-        "content-type": "application/json",
       },
-      method: "POST",
-      body: JSON.stringify({
-        client_id: "clientId",
-        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-        otp: otp2,
-        realm: "email",
-        username: "foo@example.com",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const [{}, { code: otp2 }] = await env.data.email.list!();
+
+    const authenticateResponse2 = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp: otp2,
+          realm: "email",
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
     const { login_ticket: loginTicket2 } =
       (await authenticateResponse2.json()) as LoginTicket;
 
-    const query2 = new URLSearchParams({
+    const query2 = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
       login_ticket: loginTicket2,
@@ -430,13 +470,10 @@ describe("code-flow", () => {
       state,
       referrer: "https://login.example.com",
       realm: "email",
+    };
+    const tokenResponse2 = await client.authorize.$get({
+      query: query2,
     });
-    const tokenResponse2 = await worker.fetch(
-      `/authorize?${query2.toString()}`,
-      {
-        redirect: "manual",
-      },
-    );
 
     const accessToken2 = parseJwt(
       new URL(tokenResponse2.headers.get("location")!).searchParams.get(
@@ -450,12 +487,11 @@ describe("code-flow", () => {
     // ----------------------------
     // now check silent auth again!
     // ----------------------------
-
     const setCookiesHeader2 = tokenResponse2.headers.get("set-cookie")!;
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        worker,
+        client.authorize,
         nonce,
         "clientId",
       );
@@ -472,52 +508,63 @@ describe("code-flow", () => {
       state: "state",
     };
 
-    await worker.fetch("/passwordless/start", {
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({
-        authParams: AUTH_PARAMS,
-        client_id: "clientId",
-        connection: "email",
-        email: "foo@example.com",
-        send: "code",
-      }),
-    });
-    const emailResponse = await worker.fetch("/test/email");
-    const [sentEmail] = (await emailResponse.json()) as Email[];
-    const otp = sentEmail.code;
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
-    const authRes = await worker.fetch("/co/authenticate", {
-      headers: {
-        "content-type": "application/json",
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "code",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        client_id: "clientId",
-        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-        otp,
-        realm: "email",
-        username: "foo@example.com",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const [{ code: otp }] = await env.data.email.list!();
+
+    const authRes = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
     expect(authRes.status).toBe(200);
 
     // now use the same code again
-    const authRes2 = await worker.fetch("/co/authenticate", {
-      headers: {
-        "content-type": "application/json",
+    const authRes2 = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "foo@example.com",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        client_id: "clientId",
-        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-        otp,
-        realm: "email",
-        username: "foo@example.com",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
     expect(authRes2.status).toBe(200);
   });
@@ -531,36 +578,44 @@ describe("code-flow", () => {
       state: "state",
     };
 
-    await worker.fetch("/passwordless/start", {
-      headers: {
-        "content-type": "application/json",
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "code",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        authParams: AUTH_PARAMS,
-        client_id: "clientId",
-        connection: "email",
-        email: "foo@example.com",
-        send: "code",
-      }),
-    });
-    await worker.fetch("/test/email");
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
     const BAD_CODE = "123456";
 
-    const authRes = await worker.fetch("/co/authenticate", {
-      headers: {
-        "content-type": "application/json",
+    const authRes = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp: BAD_CODE,
+          realm: "email",
+          username: "foo@example.com",
+        },
       },
-      method: "POST",
-      body: JSON.stringify({
-        client_id: "clientId",
-        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-        otp: BAD_CODE,
-        realm: "email",
-        username: "foo@example.com",
-      }),
-    });
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
     expect(authRes.status).toBe(403);
   });

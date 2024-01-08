@@ -3,12 +3,23 @@ import { Kysely } from "kysely";
 
 export function get(db: Kysely<Database>) {
   return async (id: string): Promise<Session | null> => {
-    const session = await db
+    const sqlSession = await db
       .selectFrom("sessions")
       .where("sessions.id", "=", id)
       .selectAll()
       .executeTakeFirst();
 
-    return session || null;
+    if (!sqlSession) return null;
+
+    const session: Session = {
+      id: sqlSession.id,
+      user_id: sqlSession.user_id,
+      tenant_id: sqlSession.tenant_id,
+      client_id: sqlSession.client_id,
+      created_at: new Date(sqlSession.created_at),
+      expires_at: new Date(sqlSession.expires_at),
+    };
+
+    return session;
   };
 }
