@@ -18,7 +18,6 @@ function getDefaultSilentAuthSearchParams() {
 }
 
 describe("silent-auth", () => {
-  // why is env empty on request?
   it("should return a 200 when not logged in, with a login_required error", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -44,98 +43,89 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
-  // it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
-  //   const loginResponse = await worker.fetch("/co/authenticate", {
-  //     headers: {
-  //       "content-type": "application/json",
-  //     },
-  //     method: "POST",
-  //     // this user already created when seeding db
-  //     body: JSON.stringify({
-  //       client_id: "clientId",
-  //       credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-  //       realm: "Username-Password-Authentication",
-  //       password: "Test!",
-  //       username: "foo@example.com",
-  //     }),
-  //   });
+  it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
-  //   expect(loginResponse.status).toBe(200);
+    const loginResponse = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "Test!",
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+    expect(loginResponse.status).toBe(200);
+    const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+    const query = {
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket,
+      referrer: "https://login.example.com",
+      response_type: "token id_token",
+      redirect_uri: "http://login.example.com",
+      state: "state",
+      realm: "Username-Password-Authentication",
+    };
+    // Trade the ticket for token
+    const tokenResponse = await client.authorize.$get({
+      query,
+    });
+    expect(tokenResponse.status).toBe(302);
+    expect(await tokenResponse.text()).toBe("Redirecting");
+    const setCookieHeader = tokenResponse.headers.get("set-cookie")!;
+    // -------------------------------------------------------------
+    // now check silent auth works on the same client
+    // -------------------------------------------------------------
+    const { accessToken: silentAuthAccessTokenPayload } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookieHeader,
+        client,
+        "nonce",
+        "clientId",
+      );
+    expect(silentAuthAccessTokenPayload).toBeDefined();
+    // this is tested more extensively on other flows
+    // -------------------------------------------------------------
+    // now check silent auth works on the same tenant
+    // -------------------------------------------------------------
+    const { accessToken: silentAuthAccessTokenPayloadOtherClient } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookieHeader,
+        client,
+        "nonce",
+        "otherClientId",
+      );
+    expect(silentAuthAccessTokenPayloadOtherClient).toBeDefined();
+    // -------------------------------------------------------------
+    // now check silent auth does not on a different tenant
+    // -------------------------------------------------------------
+    const silentAuthSearchParamsDifferentTenant = {
+      ...getDefaultSilentAuthSearchParams(),
+      client_id: "otherClientIdOnOtherTenant",
+    };
 
-  //   const { login_ticket } = (await loginResponse.json()) as LoginTicket;
-
-  //   const query = new URLSearchParams({
-  //     auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-  //     client_id: "clientId",
-  //     login_ticket,
-  //     referrer: "https://login.example.com",
-  //     response_type: "token id_token",
-  //     redirect_uri: "http://login.example.com",
-  //     state: "state",
-  //     realm: "Username-Password-Authentication",
-  //   });
-
-  //   // Trade the ticket for token
-  //   const tokenResponse = await worker.fetch(`/authorize?${query.toString()}`, {
-  //     redirect: "manual",
-  //   });
-
-  //   expect(tokenResponse.status).toBe(302);
-  //   expect(await tokenResponse.text()).toBe("Redirecting");
-
-  //   const setCookieHeader = tokenResponse.headers.get("set-cookie")!;
-
-  //   // -------------------------------------------------------------
-  //   // now check silent auth works on the same client
-  //   // -------------------------------------------------------------
-
-  //   const { accessToken: silentAuthAccessTokenPayload } =
-  //     await doSilentAuthRequestAndReturnTokens(
-  //       setCookieHeader,
-  //       worker,
-  //       "nonce",
-  //       "clientId",
-  //     );
-  //   expect(silentAuthAccessTokenPayload).toBeDefined();
-
-  //   // this is tested more extensively on other flows
-
-  //   // -------------------------------------------------------------
-  //   // now check silent auth works on the same tenant
-  //   // -------------------------------------------------------------
-  //   const { accessToken: silentAuthAccessTokenPayloadOtherClient } =
-  //     await doSilentAuthRequestAndReturnTokens(
-  //       setCookieHeader,
-  //       worker,
-  //       "nonce",
-  //       "otherClientId",
-  //     );
-  //   expect(silentAuthAccessTokenPayloadOtherClient).toBeDefined();
-
-  //   // -------------------------------------------------------------
-  //   // now check silent auth does not on a different tenant
-  //   // -------------------------------------------------------------
-  //   const silentAuthSearchParamsDifferentTenant =
-  //     getDefaultSilentAuthSearchParams();
-  //   silentAuthSearchParamsDifferentTenant.set(
-  //     "client_id",
-  //     "otherClientIdOnOtherTenant",
-  //   );
-
-  //   const silentAuthResponseDifferentTenant = await worker.fetch(
-  //     `/authorize?${silentAuthSearchParamsDifferentTenant.toString()}`,
-  //     {
-  //       headers: {
-  //         // here we set the auth cookie given to us from the previous successful auth request
-  //         cookie: setCookieHeader,
-  //       },
-  //     },
-  //   );
-
-  //   const bodyDifferentTenant = await silentAuthResponseDifferentTenant.text();
-
-  //   // This is the difference here
-  //   expect(bodyDifferentTenant).toContain("Login required");
-  //   expect(bodyDifferentTenant).not.toContain("access_token");
-  // });
+    const silentAuthResponseDifferentTenant = await client.authorize.$get(
+      {
+        query: silentAuthSearchParamsDifferentTenant,
+      },
+      {
+        headers: {
+          cookie: setCookieHeader,
+        },
+      },
+    );
+    const bodyDifferentTenant = await silentAuthResponseDifferentTenant.text();
+    // This is the difference here
+    expect(bodyDifferentTenant).toContain("Login required");
+    expect(bodyDifferentTenant).not.toContain("access_token");
+  });
 });
