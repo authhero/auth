@@ -14,7 +14,7 @@ export interface SqlTicket {
   response_type?: AuthorizationResponseType;
   response_mode?: AuthorizationResponseMode;
   redirect_uri?: string;
-  created_at: Date;
-  expires_at: Date;
+  created_at: string;
+  expires_at: string;
   used_at?: Date;
 }
