@@ -18,19 +18,11 @@ function getDefaultSilentAuthSearchParams() {
 }
 
 describe("silent-auth", () => {
+  // why is env empty on request?
   it("should return a 200 when not logged in, with a login_required error", async () => {
-    const env = getEnv();
+    const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
-    // client_id=clientId
-    //  response_type: token%20id_token
-    //  redirect_uri: https%3A%2F%2Flogin2.sesamy.dev%2Fsv%2Fcallback
-    //  scope: openid%20profile%20email
-    //  state: vaaQLli49FhEg894zjZXT1w.f~1gOEt0
-    //  nonce: Mh3lSnGeCS3mIjQuofbSjULzJn~GCfdN
-    //  response_mode: web_message
-    //  prompt: none
-    //  auth0Client: eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0%3D
     const query = {
       client_id: "clientId",
       response_type: "token id_token",
@@ -43,18 +35,13 @@ describe("silent-auth", () => {
       auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
     };
 
-    // const response = await worker.fetch(
-    //   "/authorize?client_id=clientId&response_type=token%20id_token&redirect_uri=https%3A%2F%2Flogin2.sesamy.dev%2Fsv%2Fcallback&scope=openid%20profile%20email&state=vaaQLli49FhEg894zjZXT1w.f~1gOEt0&nonce=Mh3lSnGeCS3mIjQuofbSjULzJn~GCfdN&response_mode=web_message&prompt=none&auth0Client=eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0%3D",
-    // );
     const response = await client.authorize.$get({
       query,
     });
 
-    console.log(await response.text());
-
     expect(response.status).toBe(200);
-    // const body = await response.text();
-    // expect(body).toContain("Login required");
+    const body = await response.text();
+    expect(body).toContain("Login required");
   });
 
   // it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
