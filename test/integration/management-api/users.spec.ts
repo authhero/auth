@@ -320,7 +320,6 @@ describe("users", () => {
           headers: {
             authorization: `Bearer ${token}`,
             "tenant-id": "otherTenant",
-            "content-type": "application/json",
           },
         },
       );

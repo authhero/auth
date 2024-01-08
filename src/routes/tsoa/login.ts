@@ -169,13 +169,6 @@ export class LoginController extends Controller {
 
     request.ctx.set("log", `Code: ${code}`);
 
-    await env.data.logs.create({
-      category: "login",
-      message: "Create authentication code",
-      tenant_id: client.tenant_id,
-      user_id: params.username,
-    });
-
     // Add the username to the state
     session.authParams.username = params.username;
     await env.data.universalLoginSessions.update(session.id, session);
@@ -410,13 +403,6 @@ export class LoginController extends Controller {
         password: loginParams.password,
       });
 
-      await env.data.logs.create({
-        category: "login",
-        message: "User created with password",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
-      });
-
       // if (client.email_validation === "enforced") {
       //   // Update the username in the state
       //   await setLoginState(env, state, {
@@ -503,13 +489,6 @@ export class LoginController extends Controller {
 
       request.ctx.set("log", `Code: ${code}`);
 
-      await env.data.logs.create({
-        category: "login",
-        message: "Send password reset",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
-      });
-
       await sendResetPassword(env, client, params.username, code, state);
     } else {
       console.log("User not found");
@@ -589,13 +568,6 @@ export class LoginController extends Controller {
         user_id: session.authParams.username,
         password: params.password,
       });
-
-      await env.data.logs.create({
-        category: "update",
-        message: "Reset password with code",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
-      });
     } catch (err) {
       return renderMessage(env, this, {
         ...session,
@@ -648,13 +620,6 @@ export class LoginController extends Controller {
       if (!valid) {
         return renderLogin(env, this, session, state, "Invalid password");
       }
-
-      await env.data.logs.create({
-        category: "login",
-        message: "Login with password",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
-      });
 
       return handleLogin(env, this, user, session);
     } catch (err: any) {

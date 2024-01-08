@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Middlewares,
   Post,
   Query,
   Request,
@@ -23,6 +24,7 @@ const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getClient } from "../../services/clients";
+import { LogTypes, loggerMiddleware } from "../../tsoa-middlewares/logger";
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -54,11 +56,15 @@ function getLocalePath(locale: string) {
 @Tags("passwordless")
 export class PasswordlessController extends Controller {
   @Post("start")
+  @Middlewares(loggerMiddleware(LogTypes.CODE_LINK_SENT))
   public async startPasswordless(
     @Body() body: PasswordlessOptions,
     @Request() request: RequestWithContext,
   ): Promise<string> {
-    const { env } = request.ctx;
+    const { ctx } = request;
+    const { env } = ctx;
+    ctx.set("client_id", body.client_id);
+    ctx.set("description", body.email);
 
     const client = await getClient(env, body.client_id);
 
@@ -82,16 +88,6 @@ export class PasswordlessController extends Controller {
     });
 
     request.ctx.set("log", `Code: ${code}`);
-
-    /* hardcoded user codes
-      "ulf.lindberg@maxm.se",
-      "markus+23@sesamy.com",
-      "klara.lindstroem@hmc.ox.ac.uk",
-      "carlotta.granath@next-tech.com",
-
-      should be 531523
-
-    */
 
     if (body.send === "link") {
       const magicLink = new URL(env.ISSUER);

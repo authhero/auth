@@ -9,7 +9,6 @@ import { createTicketsAdapter } from "./tickets";
 import { createSessionsAdapter } from "./sessions";
 import { createCodesAdapter } from "./Codes";
 import { createPasswordsAdapter } from "./Passwords";
-import { createLogsAdapter } from "./logs";
 import { createApplicationsAdapter } from "./applications";
 import { createUniversalLoginSessionsAdapter } from "./universal-auth-sessions";
 import { createConnectionsAdapter } from "./connections";
@@ -17,7 +16,7 @@ import { Application, SqlConnection, Tenant, SqlDomain } from "../../types";
 import { createDomainsAdapter } from "./domains";
 import { createKeysAdapter } from "./keys";
 
-export default function createAdapters(): DataAdapters {
+export default function createAdapters(): Omit<DataAdapters, "logs"> {
   const connections: SqlConnection[] = [];
   const tenants: Tenant[] = [];
   const applications: Application[] = [];
@@ -37,7 +36,6 @@ export default function createAdapters(): DataAdapters {
     sessions: createSessionsAdapter(),
     tenants: createTenantsAdapter(tenants),
     tickets: createTicketsAdapter(),
-    logs: createLogsAdapter(),
     connections: createConnectionsAdapter(connections),
     domains: createDomainsAdapter(domains),
     templates: {

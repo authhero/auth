@@ -13,7 +13,7 @@ import {
   SqlOTP,
   SqlPassword,
   SqlUniversalLoginSession,
-  Log,
+  SqlLog,
 } from "../";
 
 // Keys of this interface are table names.
@@ -32,5 +32,5 @@ export interface Database {
   tenants: Tenant;
   tickets: SqlTicket;
   universal_login_sessions: SqlUniversalLoginSession;
-  logs: Log;
+  logs: SqlLog;
 }
