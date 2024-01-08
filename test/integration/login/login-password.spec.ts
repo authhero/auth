@@ -28,8 +28,6 @@ describe("Login with password user", () => {
 
     expect(location.startsWith("/u/login")).toBeTruthy;
 
-    console.log(location);
-
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
