@@ -217,7 +217,10 @@ export class UsersMgmtController extends Controller {
   ): Promise<boolean> {
     const { env } = request.ctx;
 
-    const results = await env.data.users.update(tenant_id, user_id, user);
+    // verify_email is not persisted
+    const { verify_email, ...userFields } = user;
+
+    const results = await env.data.users.update(tenant_id, user_id, userFields);
 
     return results;
   }

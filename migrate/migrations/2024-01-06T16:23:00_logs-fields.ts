@@ -2,19 +2,19 @@ import { Kysely } from "kysely";
 import { Database } from "../../src/types";
 
 export async function up(db: Kysely<Database>): Promise<void> {
-  // await db.schema
-  //   .alterTable("logs")
-  //   .addColumn("ip", "varchar(255)")
-  //   .addColumn("type", "varchar(255)")
-  //   .addColumn("date", "varchar(255)")
-  //   .addColumn("description", "varchar(255)")
-  //   .addColumn("client_id", "varchar(255)")
-  //   .addColumn("client_name", "varchar(255)")
-  //   .addColumn("user_agent", "varchar(255)")
-  //   .addColumn("details", "varchar(2048)")
-  //   .dropColumn("timestamp")
-  //   .dropColumn("message")
-  //   .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("ip", "varchar(255)")
+    .addColumn("type", "varchar(255)")
+    .addColumn("date", "varchar(255)")
+    .addColumn("description", "varchar(255)")
+    .addColumn("client_id", "varchar(255)")
+    .addColumn("client_name", "varchar(255)")
+    .addColumn("user_agent", "varchar(255)")
+    .addColumn("details", "varchar(2048)")
+    .dropColumn("timestamp")
+    .dropColumn("message")
+    .execute();
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {

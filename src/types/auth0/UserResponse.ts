@@ -4,6 +4,7 @@ import { Totals } from "./Totals";
 
 export interface PostUsersBody extends BaseUser {
   password?: string;
+  // Whether this user will receive a verification email after creation (true) or no email (false). Overrides behavior of email_verified parameter.
   verify_email?: boolean;
   username?: string;
   connection?: string;
