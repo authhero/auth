@@ -1,15 +1,15 @@
-import { setup } from "../helpers/setup";
 import { getAdminToken } from "../helpers/token";
 import { start } from "../start";
+import type { UnstableDevWorker } from "wrangler";
 
 describe("Register password user", () => {
-  let worker;
+  let worker: UnstableDevWorker;
   let token;
 
   beforeEach(async () => {
     worker = await start();
 
-    token = await setup(worker);
+    token = await getAdminToken();
   });
 
   afterEach(() => {
@@ -34,7 +34,7 @@ describe("Register password user", () => {
     );
 
     expect(response.status).toBe(302);
-    const location: string = response.headers.get("location");
+    const location: string = response.headers.get("location")!;
     expect(location.startsWith("/u/login")).toBeTruthy;
 
     // Open login page
@@ -66,7 +66,7 @@ describe("Register password user", () => {
     );
 
     expect(postSignupResponse.status).toBe(302);
-    const signupLocation: string = postSignupResponse.headers.get("location");
+    const signupLocation: string = postSignupResponse.headers.get("location")!;
     const redirectUrl = new URL(signupLocation);
     expect(redirectUrl.pathname).toBe("/callback");
     const accessToken = redirectUrl.searchParams.get("access_token");

@@ -1,6 +1,5 @@
 import { contextFixture, controllerFixture } from "../fixtures";
 import { setSilentAuthCookies } from "../../src/helpers/silent-auth-cookie";
-import { AuthParams, Profile } from "../../src/types";
 import { headers } from "../../src/constants";
 import { testUser } from "../fixtures/user";
 
@@ -19,7 +18,7 @@ describe("silentAuthCookie", () => {
 
     const cookie = controller.getHeader(headers.setCookie) as string;
     expect(cookie).toBe(
-      "auth-token=testid; Max-Age=604800; Path=/; HttpOnly; Secure; SameSite=None",
+      "auth-token=testid-0; Max-Age=604800; Path=/; HttpOnly; Secure; SameSite=None",
     );
   });
 });

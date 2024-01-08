@@ -9,7 +9,7 @@
     // The following three options are set for
     "allowJs": true,
     "checkJs": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -27,10 +27,5 @@
       "*": ["node_modules/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "integration-test/test-server.ts",
-    "scripts/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"]
 }

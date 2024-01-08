@@ -137,7 +137,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
 
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
@@ -168,13 +168,6 @@ export class LoginController extends Controller {
     });
 
     request.ctx.set("log", `Code: ${code}`);
-
-    await env.data.logs.create({
-      category: "login",
-      message: "Create authentication code",
-      tenant_id: client.tenant_id,
-      user_id: params.username,
-    });
 
     // Add the username to the state
     session.authParams.username = params.username;
@@ -314,6 +307,9 @@ export class LoginController extends Controller {
     }
 
     const client = await getClient(env, session.authParams.client_id);
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
 
     try {
       // another duplicate here - DRY rule of three!
@@ -324,7 +320,8 @@ export class LoginController extends Controller {
         return renderEnterCode(env, this, session, "Code not found or expired");
       }
 
-      let user = await env.data.users.getByEmail(client.tenant_id, email);
+      // TODO - filter by primary user
+      let [user] = await env.data.users.getByEmail(client.tenant_id, email);
       if (!user) {
         throw new HTTPException(500, { message: "No user found" });
       }
@@ -365,7 +362,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
@@ -376,7 +373,8 @@ export class LoginController extends Controller {
     }
 
     try {
-      let user = await env.data.users.getByEmail(
+      // TODO - filter by primary user
+      let [user] = await env.data.users.getByEmail(
         client.tenant_id,
         loginParams.username,
       );
@@ -405,13 +403,6 @@ export class LoginController extends Controller {
         password: loginParams.password,
       });
 
-      await env.data.logs.create({
-        category: "login",
-        message: "User created with password",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
-      });
-
       // if (client.email_validation === "enforced") {
       //   // Update the username in the state
       //   await setLoginState(env, state, {
@@ -427,7 +418,7 @@ export class LoginController extends Controller {
 
       return handleLogin(env, this, user, session);
     } catch (err: any) {
-      return renderSignup(env, this, session, err.message);
+      return renderSignup(env, this, session, state, err.message);
     }
   }
 
@@ -466,7 +457,8 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.client_id);
+    const client = await getClient(env, session.client_id);
+
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
@@ -476,7 +468,8 @@ export class LoginController extends Controller {
       await env.data.universalLoginSessions.update(session.id, session);
     }
 
-    const user = await env.data.users.getByEmail(
+    // TODO - filter by primary user
+    const [user] = await env.data.users.getByEmail(
       client.tenant_id,
       params.username,
     );
@@ -495,13 +488,6 @@ export class LoginController extends Controller {
       });
 
       request.ctx.set("log", `Code: ${code}`);
-
-      await env.data.logs.create({
-        category: "login",
-        message: "Send password reset",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
-      });
 
       await sendResetPassword(env, client, params.username, code, state);
     } else {
@@ -556,12 +542,13 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Username required" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    const user = await env.data.users.getByEmail(
+    // TODO - filter by primary user
+    const [user] = await env.data.users.getByEmail(
       client.tenant_id,
       session.authParams.username,
     );
@@ -571,22 +558,15 @@ export class LoginController extends Controller {
 
     try {
       const codes = await env.data.codes.list(client.tenant_id, user.id);
-      const code = codes.find((otp) => otp.code === code);
+      const foundCode = codes.find((otp) => otp.code === code);
 
-      if (!code) {
+      if (!foundCode) {
         return renderEnterCode(env, this, session, "Code not found or expired");
       }
 
       await env.data.passwords.update(client.tenant_id, {
         user_id: session.authParams.username,
         password: params.password,
-      });
-
-      await env.data.logs.create({
-        category: "update",
-        message: "Reset password with code",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
       });
     } catch (err) {
       return renderMessage(env, this, {
@@ -615,14 +595,14 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    const client = await env.data.clients.get(session.authParams.client_id);
+    const client = await getClient(env, session.authParams.client_id);
 
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    // TODO - this needs to return multiple results or search by provider...
-    const user = await env.data.users.getByEmail(
+    // TODO - wait, each of these is different! need to search by  email AND provider, and then return the primary user...
+    const [user] = await env.data.users.getByEmail(
       client.tenant_id,
       loginParams.username,
     );
@@ -640,13 +620,6 @@ export class LoginController extends Controller {
       if (!valid) {
         return renderLogin(env, this, session, state, "Invalid password");
       }
-
-      await env.data.logs.create({
-        category: "login",
-        message: "Login with password",
-        tenant_id: client.tenant_id,
-        user_id: user.id,
-      });
 
       return handleLogin(env, this, user, session);
     } catch (err: any) {

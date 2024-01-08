@@ -11,6 +11,7 @@ import {
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
+import { getClient } from "../../services/clients";
 
 export interface RegisterUserParams {
   client_id: string;
@@ -49,14 +50,15 @@ export class DbConnectionController extends Controller {
   ): Promise<string> {
     const { ctx } = request;
 
-    const client = await ctx.env.data.clients.get(clientId);
+    const client = await getClient(ctx.env, clientId);
 
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
     // Ensure the user exists
-    let user = await ctx.env.data.users.getByEmail(
+    // TODO - filter this don't just take first
+    let [user] = await ctx.env.data.users.getByEmail(
       client.tenant_id,
       body.email,
     );
@@ -68,8 +70,8 @@ export class DbConnectionController extends Controller {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         email_verified: false,
-        provider: "email",
-        connection: "email",
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
         is_social: false,
         login_count: 0,
       });
@@ -82,12 +84,6 @@ export class DbConnectionController extends Controller {
     });
 
     this.setStatus(201);
-    await ctx.env.data.logs.create({
-      category: "login",
-      message: "User created with password",
-      tenant_id: client.tenant_id,
-      user_id: user.id,
-    });
     return "OK";
   }
 
@@ -98,13 +94,6 @@ export class DbConnectionController extends Controller {
     @Path("clientId") clientId: string,
   ): Promise<string> {
     throw new Error("Not implemented");
-
-    // await env.data.logs.create({
-    //   category: "login",
-    //   message: "Send password reset",
-    //   tenant_id,
-    //   user_id: id,
-    // });
   }
 
   @Post("verify_email")
@@ -114,12 +103,5 @@ export class DbConnectionController extends Controller {
     @Path("clientId") clientId: string,
   ): Promise<string> {
     throw new Error("Not implemented");
-
-    // await ctx.env.data.logs.create({
-    //   category: "validation",
-    //   message: "Validate with code",
-    //   tenant_id,
-    //   user_id: id,
-    // });
   }
 }

@@ -18,6 +18,7 @@ const DefaultSettingsSchema = z.object({
         scope: z.string().optional(),
         authorization_endpoint: z.string().optional(),
         token_endpoint: z.string().optional(),
+        token_exchange_basic_auth: z.boolean().optional(),
         response_type: z.string().optional(),
         response_mode: z.string().optional(),
       }),
@@ -31,7 +32,7 @@ const DefaultSettingsSchema = z.object({
         email_service: z
           .union([z.literal("mailchannels"), z.literal("mailgun")])
           .optional(),
-        api_key: z.string().optional(),
+        email_api_key: z.string().optional(),
       }),
     )
     .optional(),
@@ -48,15 +49,15 @@ const DefaultSettingsSchema = z.object({
 
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;
 
-export function getDefaultSettings(env: Env) {
-  const defaultSettingsString = env.DEFAULT_SETTINGS;
+export async function getDefaultSettings(env: Env) {
+  const defaultSetttingsClient = await env.data.clients.get("DEFAULT_CLIENT");
 
-  if (!defaultSettingsString) {
-    return {};
+  if (!defaultSetttingsClient) {
+    throw new Error("Failed to load default settings tenant");
   }
 
   try {
-    return DefaultSettingsSchema.parse(JSON.parse(defaultSettingsString));
+    return DefaultSettingsSchema.parse(defaultSetttingsClient);
   } catch (err: any) {
     console.log("Failed to load default settings: " + err.message);
     throw err;

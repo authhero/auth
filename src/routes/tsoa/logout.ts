@@ -27,6 +27,9 @@ export class LogoutController extends Controller {
     @Query("returnTo") returnTo?: string,
   ) {
     const client = await getClient(request.ctx.env, clientId);
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
 
     const redirectUri = returnTo || request.ctx.req.header("referer");
     if (!redirectUri) {

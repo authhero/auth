@@ -1,7 +1,7 @@
 import { Controller } from "@tsoa/runtime";
 
 export function controllerFixture(): Controller {
-  const headers = {};
+  const headers: { [key: string]: any } = {};
   let _status: number | undefined;
 
   return {

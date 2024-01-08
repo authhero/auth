@@ -18,7 +18,6 @@ import { nanoid } from "nanoid";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getDbFromEnv } from "../../services/db";
 import { Application } from "../../types/sql";
-import { updateClientInKV } from "../../hooks/update-client";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
@@ -90,8 +89,6 @@ export class ApplicationsController extends Controller {
       .where("applications.id", "=", id)
       .execute();
 
-    await updateClientInKV(env, id);
-
     return "OK";
   }
 
@@ -122,8 +119,6 @@ export class ApplicationsController extends Controller {
       .where("id", "=", id)
       .execute();
 
-    await updateClientInKV(env, id);
-
     return Number(results[0].numUpdatedRows);
   }
 
@@ -152,10 +147,6 @@ export class ApplicationsController extends Controller {
       id: body.id || nanoid(),
       client_secret: body.client_secret || nanoid(),
     });
-
-    if (env.hooks?.application?.onCreated) {
-      await env.hooks.application.onCreated(env, application);
-    }
 
     this.setStatus(201);
     return application;
@@ -206,8 +197,6 @@ export class ApplicationsController extends Controller {
         .where("id", "=", application.id)
         .execute();
     }
-
-    await updateClientInKV(env, application.id);
 
     this.setStatus(200);
     return application;

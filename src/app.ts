@@ -6,23 +6,11 @@ import { RegisterRoutes } from "../build/routes";
 import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
-import { rotateKeysRoute } from "./routes/rotate-keys";
 import { serve } from "./routes/login";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
-
-const app = new Hono<{ Bindings: Env }>();
-
-app.onError((err, ctx) => {
-  if (err instanceof HTTPException) {
-    // Get the custom response
-    return err.getResponse();
-  }
-
-  return ctx.text(err.message, 500);
-});
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -36,40 +24,49 @@ const ALLOWED_ORIGINS = [
   "https://appleid.apple.com",
 ];
 
-app.use(
-  "/*",
-  cors({
-    origin: (origin) => {
-      if (!origin) return "";
-      if (validateUrl(ALLOWED_ORIGINS, origin)) {
-        return origin;
-      }
-      return "";
-    },
-    allowHeaders: [
-      "Tenant-Id",
-      "Content-Type",
-      "Content-Range",
-      "Auth0-Client",
-      "Authorization",
-      "Range",
-      "Upgrade-Insecure-Requests",
-    ],
-    allowMethods: ["POST", "PUT", "GET", "DELETE", "PATCH", "OPTIONS"],
-    exposeHeaders: ["Content-Length", "Content-Range"],
-    maxAge: 600,
-    credentials: true,
-  }),
-);
+const app = new Hono<{ Bindings: Env }>()
+  .onError((err, ctx) => {
+    if (err instanceof HTTPException) {
+      // Get the custom response
+      return err.getResponse();
+    }
 
-app.use(loggerMiddleware);
-
-app.get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
-  return ctx.json({
-    name: packageJson.name,
-    version: packageJson.version,
+    return ctx.text(err.message, 500);
+  })
+  .use(
+    "/*",
+    cors({
+      origin: (origin) => {
+        if (!origin) return "";
+        if (validateUrl(ALLOWED_ORIGINS, origin)) {
+          return origin;
+        }
+        return "";
+      },
+      allowHeaders: [
+        "Tenant-Id",
+        "Content-Type",
+        "Content-Range",
+        "Auth0-Client",
+        "Authorization",
+        "Range",
+        "Upgrade-Insecure-Requests",
+      ],
+      allowMethods: ["POST", "PUT", "GET", "DELETE", "PATCH", "OPTIONS"],
+      exposeHeaders: ["Content-Length", "Content-Range"],
+      maxAge: 600,
+      credentials: true,
+    }),
+  )
+  .use(loggerMiddleware)
+  .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
+    const url = new URL(ctx.req.url);
+    const tenantId = url.hostname.split(".")[0];
+    return ctx.json({
+      name: tenantId,
+      version: packageJson.version,
+    });
   });
-});
 
 app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
@@ -78,7 +75,6 @@ app.get("/spec", async () => {
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 app.get("/static/:file{.*}", serve);
-app.post("/create-key", rotateKeysRoute);
 
 app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   const response = await ctx.env.data.applications.list(
@@ -103,7 +99,7 @@ app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   });
 });
 
-RegisterRoutes(app as unknown as Hono);
+export const tsoaApp = RegisterRoutes(app as unknown as Hono);
 
 export default app;
 export type AppType = typeof app;

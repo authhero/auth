@@ -63,7 +63,7 @@ describe("payload", () => {
     const encoder = new TextEncoder();
 
     const token = await createToken({
-      pemKey: certificate.privateKey,
+      pemKey: certificate.private_key,
       payload: {
         name: "ÅÄÖ",
       },

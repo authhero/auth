@@ -1,8 +1,7 @@
-export interface Log {
+import { LogsResponse } from "../auth0";
+
+export interface SqlLog extends Omit<LogsResponse, "log_id" | "details"> {
   id: string;
-  timestamp: string;
-  category: string;
-  message: string;
   tenant_id: string;
-  user_id: string;
+  details?: string;
 }

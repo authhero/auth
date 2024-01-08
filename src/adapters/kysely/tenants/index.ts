@@ -5,6 +5,7 @@ import { createTenant } from "./createTenant";
 import { getTenant } from "./getTenant";
 import { listTenants } from "./listTenants";
 import { updateTenant } from "./updateTenant";
+import { removeTenant } from "./removeTenant";
 
 export function createTenantsAdapter(db: Kysely<Database>): TenantsDataAdapter {
   return {
@@ -12,5 +13,6 @@ export function createTenantsAdapter(db: Kysely<Database>): TenantsDataAdapter {
     get: getTenant(db),
     list: listTenants(db),
     update: updateTenant(db),
+    remove: removeTenant(db),
   };
 }

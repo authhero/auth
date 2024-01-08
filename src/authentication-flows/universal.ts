@@ -6,6 +6,7 @@ import {
 } from "../constants";
 import { nanoid } from "nanoid";
 import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
+import { getClient } from "../services/clients";
 
 export interface UniversalAuthParams {
   env: Env;
@@ -18,7 +19,8 @@ export async function universalAuth({
   controller,
   authParams,
 }: UniversalAuthParams) {
-  const client = await env.data.clients.get(authParams.client_id);
+  const client = await getClient(env, authParams.client_id);
+
   if (!client) {
     throw new Error("Client not found");
   }

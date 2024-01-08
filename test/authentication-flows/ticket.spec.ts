@@ -55,6 +55,7 @@ describe("passwordlessAuth", () => {
         response_type: AuthorizationResponseType.TOKEN,
         response_mode: AuthorizationResponseMode.FRAGMENT,
       },
+      "email",
     );
 
     const redirectHeader = controller.getHeader("location") as string;
@@ -67,7 +68,7 @@ describe("passwordlessAuth", () => {
     expect(controller.getStatus()).toEqual(302);
     expect(accessToken).toEqual({
       aud: "default",
-      sub: "tenant_id|testid",
+      sub: "email|testid-0",
       scope: "openid profile email",
       iss: "https://auth.example.com/",
       iat: Math.floor(date.getTime() / 1000),

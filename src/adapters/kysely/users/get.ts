@@ -1,8 +1,9 @@
 import { Database, SqlUser } from "../../../types";
 import { Kysely } from "kysely";
+import { parseBooleans } from "./booleans";
 
 export function get(db: Kysely<Database>) {
-  return async (tenantId, id: string): Promise<SqlUser | null> => {
+  return async (tenantId: string, id: string): Promise<SqlUser | null> => {
     const user = await db
       .selectFrom("users")
       .where("users.tenant_id", "=", tenantId)
@@ -14,6 +15,6 @@ export function get(db: Kysely<Database>) {
       return null;
     }
 
-    return user;
+    return parseBooleans(user);
   };
 }

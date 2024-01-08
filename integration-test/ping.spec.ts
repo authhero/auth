@@ -1,26 +1,11 @@
-import { start } from "./start";
+import { testClient } from "hono/testing";
+import app from "../src/app";
 
 describe("ping", () => {
-  let worker;
-
-  beforeEach(async () => {
-    worker = await start();
-  });
-
-  afterEach(() => {
-    worker.stop();
-  });
-
   it("check that the root responds with a json document", async () => {
-    const response = await worker.fetch("/");
+    const response = await testClient(app, { env: {} }).index.$get();
 
-    if (!response.ok) {
-      throw new Error(`Test failed with ${await response.text()}`);
-    }
-
-    expect(response.status).toBe(200);
-
-    const body = await response.json();
-    expect(body.name).toBe("auth2");
+    const body: any = await response.json();
+    expect(body.name).toBe("localhost");
   });
 });

@@ -1,10 +1,11 @@
 import {
   Tenant,
   Application,
+  Certificate,
   SqlConnection,
   Member,
   Migration,
-  Session,
+  SqlSession,
   SqlUser,
   SqlCode,
   SqlDomain,
@@ -12,13 +13,14 @@ import {
   SqlOTP,
   SqlPassword,
   SqlUniversalLoginSession,
-  Log,
+  SqlLog,
 } from "../";
 
 // Keys of this interface are table names.
 export interface Database {
   codes: SqlCode;
   domains: SqlDomain;
+  keys: Certificate;
   users: SqlUser;
   members: Member;
   applications: Application;
@@ -26,9 +28,9 @@ export interface Database {
   migrations: Migration;
   otps: SqlOTP;
   passwords: SqlPassword;
-  sessions: Session;
+  sessions: SqlSession;
   tenants: Tenant;
   tickets: SqlTicket;
   universal_login_sessions: SqlUniversalLoginSession;
-  logs: Log;
+  logs: SqlLog;
 }

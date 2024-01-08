@@ -32,7 +32,10 @@ export function oAuth2ClientFactory(
 
 export interface IOAuth2Client {
   getAuthorizationUrl(state: string): Promise<string>;
-  exchangeCodeForTokenResponse(code: string): Promise<TokenResponse>;
+  exchangeCodeForTokenResponse(
+    code: string,
+    token_exchange_basic_auth?: boolean,
+  ): Promise<TokenResponse>;
   getUserProfile(accessToken: string): Promise<{ [key: string]: string }>;
 }
 
@@ -82,7 +85,10 @@ export class OAuth2Client implements IOAuth2Client {
     });
   }
 
-  async exchangeCodeForTokenResponse(code: string): Promise<TokenResponse> {
+  async exchangeCodeForTokenResponse(
+    code: string,
+    token_exchange_basic_auth = true,
+  ): Promise<TokenResponse> {
     const clientSecret = this.params.private_key
       ? await this.generateAppleClientSecret()
       : this.params.client_secret;
@@ -94,16 +100,26 @@ export class OAuth2Client implements IOAuth2Client {
     const params = new URLSearchParams({
       grant_type: "authorization_code",
       code,
-      client_id: this.params.client_id,
-      client_secret: clientSecret,
       redirect_uri: this.redirectUri,
     });
 
+    const headers = new Headers({
+      "Content-Type": "application/x-www-form-urlencoded",
+    });
+
+    if (token_exchange_basic_auth) {
+      headers.set(
+        "Authorization",
+        `Basic ${btoa(`${this.params.client_id}:${clientSecret}`)}`,
+      );
+    } else {
+      params.append("client_id", this.params.client_id);
+      params.append("client_secret", clientSecret);
+    }
+
     const response = await fetch(this.params.token_endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+      headers,
       body: params.toString(),
     });
 

@@ -7,6 +7,7 @@ import {
   Route,
   Tags,
   SuccessResponse,
+  Middlewares,
 } from "@tsoa/runtime";
 import {
   AuthorizationResponseMode,
@@ -23,6 +24,8 @@ import {
 } from "../../authentication-flows";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
+import { getClient } from "../../services/clients";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
 export interface AuthorizeParams {
   request: RequestWithContext;
@@ -49,6 +52,7 @@ export interface AuthorizeParams {
 export class AuthorizeController extends Controller {
   @Get("")
   @SuccessResponse(302, "Redirect")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION))
   public async authorize(
     @Request() request: RequestWithContext,
     /**
@@ -99,7 +103,9 @@ export class AuthorizeController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const client = await env.data.clients.get(client_id);
+    ctx.set("client_id", client_id);
+
+    const client = await getClient(env, client_id);
     if (!client) {
       throw new Error("Client not found");
     }
@@ -156,7 +162,14 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
-      return ticketAuth(env, client.tenant_id, this, loginTicket, authParams);
+      return ticketAuth(
+        env,
+        client.tenant_id,
+        this,
+        loginTicket,
+        authParams,
+        realm!,
+      );
     }
 
     return universalAuth({ env, controller: this, authParams });

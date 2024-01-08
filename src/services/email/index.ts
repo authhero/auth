@@ -15,11 +15,11 @@ export default async function sendEmail(
 
   switch (domain?.email_service) {
     case "mailgun":
-      if (!domain.api_key) {
+      if (!domain.email_api_key) {
         throw new Error("Api key required");
       }
 
-      return sendWithMailgun(emailOptions, domain.api_key);
+      return sendWithMailgun(emailOptions, domain.email_api_key);
     case "mailchannels":
     default:
       return sendWithMailchannels(emailOptions, domain?.dkim_private_key);

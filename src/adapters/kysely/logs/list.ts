@@ -1,30 +1,31 @@
-import { Database } from "../../../types";
+import { Database, LogsResponse, SqlLog } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
+import { luceneFilter } from "../helpers/filter";
+
+function mapLog(log: SqlLog): LogsResponse {
+  const { id, details, ...rest } = log;
+
+  return {
+    log_id: id,
+    details: details ? JSON.parse(details) : undefined,
+    ...rest,
+  };
+}
 
 export function listLogs(db: Kysely<Database>) {
-  return async (tenantId, params: ListParams) => {
-    if (!params.q) {
-      throw new Error("No user_id provided");
+  return async (tenantId: string, params: ListParams) => {
+    let query = db.selectFrom("logs").where("logs.tenant_id", "=", tenantId);
+
+    if (params.q) {
+      query = luceneFilter(db, query, params.q, ["user_id"]);
     }
 
-    const userId = decodeURIComponent(params.q).split("user_id:")[1];
-
-    if (!userId) {
-      throw new Error("No user_id provided");
+    if (params.sort && params.sort.sort_by) {
+      const { ref } = db.dynamic;
+      query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
     }
-
-    let query = db
-      .selectFrom("logs")
-      .where("logs.tenant_id", "=", tenantId)
-      .where("logs.user_id", "=", userId);
-
-    // TODO
-    // if (params.sort && params.sort.sort_by) {
-    //   const { ref } = db.dynamic;
-    //   query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
-    // }
 
     const filteredQuery = query
       .offset((params.page - 1) * params.per_page)
@@ -39,7 +40,7 @@ export function listLogs(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      logs,
+      logs: logs.map(mapLog),
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,

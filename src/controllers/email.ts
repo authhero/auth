@@ -3,6 +3,7 @@ import { translate } from "../utils/i18n";
 import { Client, Env } from "../types";
 import sendEmail from "../services/email";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
+import { en, sv } from "../locales";
 
 const engine = new Liquid();
 
@@ -33,6 +34,7 @@ export async function sendEmailValidation(
     env.IMAGE_PROXY_URL,
   );
 
+  // TODO - implement i18n
   const sendCodeTemplate = engine.parse(templateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
@@ -64,7 +66,9 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get("templates/email/code.liquid");
+  const response = await env.AUTH_TEMPLATES.get(
+    "templates/email/code-v2.liquid",
+  );
   if (!response) {
     throw new Error("Code template not found");
   }
@@ -72,6 +76,7 @@ export async function sendCode(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = language === "sv" ? sv : en;
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -79,7 +84,19 @@ export async function sendCode(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeTemplate = engine.parse(templateString);
+  const sendCodeUniversalTemplate = engine.parse(templateString);
+  const sendCodeTemplateString = await engine.render(
+    sendCodeUniversalTemplate,
+    {
+      ...locale,
+      code,
+      vendorName: client.name,
+      logo,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      buttonColor: client.tenant.primary_color || "#7d68f4",
+    },
+  );
+  const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
     vendorName: client.name,
@@ -113,7 +130,9 @@ export async function sendLink(
   code: string,
   magicLink: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get("templates/email/link.liquid");
+  const response = await env.AUTH_TEMPLATES.get(
+    "templates/email/link-v2.liquid",
+  );
   if (!response) {
     throw new Error("Code template not found");
   }
@@ -121,6 +140,7 @@ export async function sendLink(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = language === "sv" ? sv : en;
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -128,7 +148,21 @@ export async function sendLink(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeTemplate = engine.parse(templateString);
+  const sendCodeUniversalTemplate = engine.parse(templateString);
+  const sendCodeTemplateString = await engine.render(
+    sendCodeUniversalTemplate,
+    {
+      ...locale,
+      // pass in variables twice! no harm to overdo it
+      code,
+      vendorName: client.name,
+      logo,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      magicLink,
+      buttonColor: client.tenant.primary_color || "#7d68f4",
+    },
+  );
+  const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
     vendorName: client.name,
@@ -181,6 +215,7 @@ export async function sendResetPassword(
     env.IMAGE_PROXY_URL,
   );
 
+  // TODO - implement i18n
   const sendCodeTemplate = engine.parse(templateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     passwordResetUrl: `${env.ISSUER}u/reset-password?code=${code}&state=${state}`,

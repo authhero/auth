@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
-import { Certificate } from "../models/Certificate";
+import { Certificate } from "../types";
 
 export interface KeyPair {
-  privateKey: string;
+  private_key: string;
   publicKey: any;
   created_at: number;
 }
@@ -21,20 +21,20 @@ export async function create(): Promise<Certificate> {
 
   const kid = nanoid();
 
-  const privateKey = await toPrivatePEM(keyPair.privateKey, kid);
+  const private_key = await toPrivatePEM(keyPair.privateKey, kid);
   const publicJWKS = await toJWKS(keyPair.publicKey);
 
   return {
-    privateKey,
-    publicKey: {
+    private_key,
+    public_key: JSON.stringify({
       alg: "RS256",
       e: "AQAB",
       kty: "RSA",
       n: publicJWKS.n,
       use: "sig",
-    },
+    }),
     kid,
-    created_at: Date.now(),
+    created_at: new Date().toISOString(),
   };
 }
 

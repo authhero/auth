@@ -14,10 +14,6 @@ After having been burnt by several freemium model auth solutions that get too ex
 It's based on the following tech stack
 
 - Cloudflare workers (with TSOA)
-- Durable objects (with tRPC) for login logic and storage
-- Cloudflare queues for events
-- D1 Sqlite database for admin API
-- KV storage for logs
 - MailChannels for password reset and code/magic links
 
 It contains a hosted UI for the login forms that can be easily styled or modified using liquid templates. Or you can roll your own UI and just use the API.
@@ -64,16 +60,6 @@ When an oauth2 flow is initiated a state is passed from the client. Once the use
 
 The access token is used to query the profile endpoint and sync the user profile information.
 
-# Data storage
-
-Cloudflare provides different storage options that have different tradeoffs.
-
-For real-time requests such as user authentication, it's important to have low latency and high throughput which makes KV storage and durable objects a good fit. KV storage has global replication and is eventually consistent which makes it a good fit for storing data that doesn't need to be consistent in real-time, such as encryption keys and other configurations. We for instance use KV storage to store the client configurations that are fetched on almost every request.
-
-Durable objects are a good fit for storing user data and other data that needs to be consistent, which makes them a great fit for storing user data. They can also provide a small, readable wrapper around sensitive data making sure that there's no way to access the data without going through the API. We use durable objects to store user data and session state.
-
-SQLite provides a way of querying data for the admin API. It's currently not replicated and doesn't scale the same way as KV storage and durable objects, but it's a good fit for the admin API.
-
 # Entities
 
 ## SQL Entities
@@ -108,12 +94,6 @@ The certificates are stored in KV storage and are used to sign the tokens. They 
 
 The clients are stored in KV storage and contain the client id and the client secret. They are stored as snapshots together with the tenant data.
 
-## Durable Objects Entities
-
-### Users
-
-The users are stored in durable objects and contain the user profile and the login methods. When a user is updated it sends a message to the user queue to sync the user data to the SQLite database.
-
 # Linking accounts
 
 Each user object is connected to one email, so for instance, there would be one common user object for a user that logged in with email/password, code and Google. The user object will keep an array of the login methods and store separate profiles for syncing purposes.
@@ -135,8 +115,6 @@ The auth0-react uses the universal login with PKCE flow:
 - The id token is validated using the JWKS keys and the nonce is validated.
 
 ## @auth0/auth0-nextjs
-
-This library currently doesn't work due to a missing state cookie
 
 The `auth0-nextjs` library uses the universal login with a Code Grant Flow.
 
