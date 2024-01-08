@@ -38,37 +38,32 @@ describe("Login with password user", () => {
       query,
     });
 
-    console.log(await loginFormResponse.text());
     expect(loginFormResponse.status).toBe(200);
-    // const loginSearchParams = new URLSearchParams(location.split("?")[1]);
+    const loginSearchParams = new URLSearchParams(location.split("?")[1]);
+    const loginSearchParamsQuery = Object.fromEntries(
+      loginSearchParams.entries(),
+    );
 
-    // const postLoginResponse = await worker.fetch(
-    //   `/u/login?${loginSearchParams.toString()}`,
-    //   {
-    //     method: "POST",
-    //     body: JSON.stringify({
-    //       username: "foo@example.com",
-    //       password: "Test!",
-    //     }),
-    //     headers: {
-    //       "content-type": "application/json",
-    //     },
-    //     redirect: "manual",
-    //   },
-    // );
+    const postLoginResponse = await client.u.login.$post({
+      query: loginSearchParamsQuery,
+      json: {
+        username: "foo@example.com",
+        password: "Test!",
+      },
+    });
 
-    // expect(postLoginResponse.status).toBe(302);
-    // const loginLocation = postLoginResponse.headers.get("location");
+    expect(postLoginResponse.status).toBe(302);
+    const loginLocation = postLoginResponse.headers.get("location");
 
-    // if (!loginLocation) {
-    //   throw new Error("No login location header found");
-    // }
+    if (!loginLocation) {
+      throw new Error("No login location header found");
+    }
 
-    // const redirectUrl = new URL(loginLocation);
-    // expect(redirectUrl.pathname).toBe("/callback");
-    // const accessToken = redirectUrl.searchParams.get("access_token");
-    // expect(accessToken).toBeTruthy();
-    // const idToken = redirectUrl.searchParams.get("id_token");
-    // expect(idToken).toBeTruthy();
+    const redirectUrl = new URL(loginLocation);
+    expect(redirectUrl.pathname).toBe("/callback");
+    const accessToken = redirectUrl.searchParams.get("access_token");
+    expect(accessToken).toBeTruthy();
+    const idToken = redirectUrl.searchParams.get("id_token");
+    expect(idToken).toBeTruthy();
   });
 });
