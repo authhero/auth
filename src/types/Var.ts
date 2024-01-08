@@ -4,6 +4,9 @@ export type Var = {
   email: string;
   userId: string;
   log: string;
+  logType: string;
+  client_id: string;
+  description: string;
   user: {
     sub: string;
     azp: string;

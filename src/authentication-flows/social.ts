@@ -186,13 +186,6 @@ export async function socialAuthCallback({
   ctx.set("email", email);
   ctx.set("userId", user.id);
 
-  await env.data.logs.create({
-    category: "login",
-    message: `Login with ${connection.name}`,
-    tenant_id: client.tenant_id,
-    user_id: user.id,
-  });
-
   const sessionId = await setSilentAuthCookies(
     env,
     controller,

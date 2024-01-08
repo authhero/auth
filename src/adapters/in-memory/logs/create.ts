@@ -4,10 +4,12 @@ import { CreateLogParams } from "../../interfaces/Logs";
 
 export function createLog(logs: Log[]) {
   return async (log: CreateLogParams): Promise<Log> => {
+    const { details } = log;
+
     const createdLog: Log = {
       id: nanoid(),
-      timestamp: new Date().toISOString(),
       ...log,
+      details: details ? JSON.stringify(details) : undefined,
     };
 
     logs.push(createdLog);

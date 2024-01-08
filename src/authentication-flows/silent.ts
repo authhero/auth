@@ -88,6 +88,8 @@ export async function silentAuth({
     }
   }
 
+  ctx.set("description", "Login required");
+  ctx.set("logType", "fsa");
   return renderAuthIframe(
     controller,
     `${redirectURL.protocol}//${redirectURL.host}`,

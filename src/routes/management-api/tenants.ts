@@ -18,8 +18,7 @@ import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Totals } from "../../types/auth0";
 import { HTTPException } from "hono/http-exception";
-import { Context, Env } from "hono";
-import { Next } from "tsoa-hono/Next";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
 export interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
@@ -44,18 +43,10 @@ function parseSort(sort?: string):
   };
 }
 
-async function customMiddleware(ctx: Context<{ Bindings: Env }>, next: Next) {
-  console.log("customMiddleware");
-
-  // Perform any necessary operations or modifications
-  return next();
-}
-
 @Route("api/v2/tenants")
 @Tags("tenants")
 export class TenantsController extends Controller {
   @Get("")
-  @Middlewares(customMiddleware)
   @Security("oauth2managementApi", [])
   /**
    * This endpoint is not available in the Auth0 Management API as it only handles one tenant per domain.
@@ -122,6 +113,7 @@ export class TenantsController extends Controller {
 
   @Patch("{id}")
   @Security("oauth2managementApi", [""])
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a tenant"))
   public async putTenant(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -144,6 +136,7 @@ export class TenantsController extends Controller {
   @Post("")
   @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Create a tenant"))
   public async postTenant(
     @Request() request: RequestWithContext,
     @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,

@@ -5,10 +5,12 @@ import { CreateLogParams } from "../../interfaces/Logs";
 
 export function createLog(db: Kysely<Database>) {
   return async (params: CreateLogParams): Promise<Log> => {
+    const { details } = params;
+
     const log: Log = {
       id: nanoid(),
-      timestamp: new Date().toISOString(),
       ...params,
+      details: details ? JSON.stringify(details) : undefined,
     };
 
     await db.insertInto("logs").values(log).execute();

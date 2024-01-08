@@ -22,10 +22,10 @@ export function listLogs(db: Kysely<Database>) {
       query = luceneFilter(db, query, params.q, ["user_id"]);
     }
 
-    // if (params.sort && params.sort.sort_by) {
-    //   const { ref } = db.dynamic;
-    //   query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
-    // }
+    if (params.sort && params.sort.sort_by) {
+      const { ref } = db.dynamic;
+      query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
+    }
 
     const filteredQuery = query
       .offset((params.page - 1) * params.per_page)

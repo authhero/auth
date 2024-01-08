@@ -177,7 +177,12 @@ export async function getEnv() {
   });
 
   return {
-    data,
+    data: {
+      ...data,
+      email: {
+        sendLink: async () => {},
+      },
+    },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     ISSUER: "https://example.com/",
     READ_PERMISSION: "auth:read",
