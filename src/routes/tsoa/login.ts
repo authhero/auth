@@ -408,7 +408,7 @@ export class LoginController extends Controller {
       }
 
       await env.data.passwords.create(client.tenant_id, {
-        user_id: loginParams.username,
+        user_id: user.id,
         password: loginParams.password,
       });
 

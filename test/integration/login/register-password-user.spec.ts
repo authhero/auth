@@ -79,8 +79,6 @@ describe("Register password user", () => {
       },
     );
 
-    console.log(await postSignupResponse.text());
-
     expect(postSignupResponse.status).toBe(302);
     const signupLocation: string = postSignupResponse.headers.get("location")!;
     const redirectUrl = new URL(signupLocation);
