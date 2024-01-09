@@ -220,6 +220,19 @@ export class UsersMgmtController extends Controller {
     // verify_email is not persisted
     const { verify_email, ...userFields } = user;
 
+    if (userFields.email) {
+      const existingUser = await env.data.users.getByEmail(
+        tenant_id,
+        userFields.email,
+      );
+
+      if (existingUser.length) {
+        throw new HTTPException(409, {
+          message: "Another user with the same email address already exists.",
+        });
+      }
+    }
+
     const results = await env.data.users.update(tenant_id, user_id, userFields);
 
     return results;
