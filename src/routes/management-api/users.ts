@@ -226,7 +226,8 @@ export class UsersMgmtController extends Controller {
         userFields.email,
       );
 
-      if (existingUser.length) {
+      // If there is an existing user with the same email address, and it is not the same user
+      if (existingUser.length && existingUser.some((u) => u.id !== user_id)) {
         throw new HTTPException(409, {
           message: "Another user with the same email address already exists.",
         });
