@@ -14,3 +14,4 @@ export * from "./Ticket";
 export * from "./Code";
 export * from "./Password";
 export * from "./User";
+export * from "./auth0";

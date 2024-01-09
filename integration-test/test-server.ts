@@ -10,6 +10,7 @@ import {
   AuthorizationResponseType,
 } from "../src/types";
 import { mockOAuth2ClientFactory } from "./mockOauth2Client";
+import { DataAdapters } from "../src/adapters/interfaces";
 
 const data = createAdapter();
 // Add a known certificate
@@ -192,7 +193,7 @@ const server = {
       oauth2ClientFactory: mockOAuth2ClientFactory,
       JWKS_URL: "https://example.com/.well-known/jwks.json",
       ISSUER: "https://example.com/",
-      data,
+      data: data as DataAdapters,
     };
 
     return app.fetch(request, finalEnv, ctx);

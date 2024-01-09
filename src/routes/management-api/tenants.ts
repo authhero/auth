@@ -12,11 +12,13 @@ import {
   Path,
   Patch,
   Delete,
+  Middlewares,
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Totals } from "../../types/auth0";
 import { HTTPException } from "hono/http-exception";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
 export interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
@@ -111,6 +113,7 @@ export class TenantsController extends Controller {
 
   @Patch("{id}")
   @Security("oauth2managementApi", [""])
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a tenant"))
   public async putTenant(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
@@ -133,6 +136,7 @@ export class TenantsController extends Controller {
   @Post("")
   @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Create a tenant"))
   public async postTenant(
     @Request() request: RequestWithContext,
     @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,
