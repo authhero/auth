@@ -30,10 +30,4 @@ export async function passwordGrant(
   //   expires_in: 86400,
   // };
   // const { tenant_id, id } = profile;
-  // await env.data.logs.create({
-  //   category: "login",
-  //   message: "Login with password",
-  //   tenant_id,
-  //   user_id: id,
-  // });
 }

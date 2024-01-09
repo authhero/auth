@@ -13,6 +13,7 @@ import {
   Security,
   Path,
   Body,
+  Middlewares,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import {
@@ -25,6 +26,7 @@ import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
 import { Identity } from "../../types/auth0/Identity";
 import { enrichUser } from "../../utils/enrichUser";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
 export interface LinkWithBodyParams {
   link_with: string;
@@ -155,6 +157,7 @@ export class UsersMgmtController extends Controller {
 
   @Post("")
   @SuccessResponse(201, "Created")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Create a User"))
   /**
    * Create a new user.
    */
@@ -205,6 +208,7 @@ export class UsersMgmtController extends Controller {
   }
 
   @Patch("{user_id}")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a User"))
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenant_id: string,
@@ -213,19 +217,16 @@ export class UsersMgmtController extends Controller {
   ): Promise<boolean> {
     const { env } = request.ctx;
 
-    const results = await env.data.users.update(tenant_id, user_id, user);
+    // verify_email is not persisted
+    const { verify_email, ...userFields } = user;
 
-    await env.data.logs.create({
-      category: "update",
-      message: "User profile",
-      tenant_id,
-      user_id,
-    });
+    const results = await env.data.users.update(tenant_id, user_id, userFields);
 
     return results;
   }
 
   @Post("{user_id}/identities")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Link a User"))
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
@@ -267,6 +268,7 @@ export class UsersMgmtController extends Controller {
 
   // what should happen here?  Where we do we specify the linked user? what should this even do?
   @Delete("{user_id}/identities")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Unlink a User"))
   public async unlinkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,

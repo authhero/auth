@@ -9,9 +9,9 @@ export async function up(db: Kysely<Database>): Promise<void> {
     // .addColumn("client_id", "varchar(255)", (col) =>
     //   col.references("clients.id").onDelete("cascade").notNull(),
     // )
-    .addColumn("timestamp", "varchar(255)", (col) => col.notNull())
+    // .addColumn("timestamp", "varchar(255)", (col) => col.notNull())
     .addColumn("category", "varchar(255)", (col) => col.notNull())
-    .addColumn("message", "varchar(255)", (col) => col.notNull())
+    // .addColumn("message", "varchar(255)", (col) => col.notNull())
     // Added in later migration
     // .addColumn("tenant_id", "varchar(255)", (col) =>
     //   col.references("tenants.id").onDelete("cascade").notNull(),
@@ -28,6 +28,14 @@ export async function up(db: Kysely<Database>): Promise<void> {
       ["id", "tenant_id"],
       (cb) => cb.onDelete("cascade"),
     )
+    .addColumn("ip", "varchar(255)")
+    .addColumn("type", "varchar(255)")
+    .addColumn("date", "varchar(255)")
+    .addColumn("client_id", "varchar(255)")
+    .addColumn("client_name", "varchar(255)")
+    .addColumn("user_agent", "varchar(255)")
+    .addColumn("description", "varchar(255)")
+    .addColumn("details", "varchar(2048)")
     // End added columns
     .execute();
 }

@@ -8,7 +8,7 @@ import {
   Security,
   Tags,
 } from "@tsoa/runtime";
-import { RequestWithContext } from "../../types/RequestWithContext";
+import { RequestWithContext, LogsResponse } from "../../types";
 import { z } from "zod";
 import { ListLogsResponse } from "../../adapters/interfaces/Logs";
 
@@ -21,7 +21,7 @@ export const LogsFilterSchema = z.object({
 @Security("oauth2managementApi", [""])
 export class LogsController extends Controller {
   @Get("")
-  public async getUserLogs(
+  public async getLogs(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
     // Auth0
