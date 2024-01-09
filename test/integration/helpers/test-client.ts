@@ -205,6 +205,10 @@ export async function getEnv() {
     data: {
       ...data,
       email: emailAdapter,
+      templates: {
+        get: async (...inputs: any[]) =>
+          `<div>${JSON.stringify(inputs, null, 2)}</div>`,
+      },
     },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     ISSUER: "https://example.com/",
