@@ -5,7 +5,9 @@ import { testUser } from "../fixtures/user";
 
 describe("silentAuthCookie", () => {
   it("should create a new state object and set a cookie with the id", async () => {
-    const ctx = await contextFixture({});
+    const ctx = await contextFixture({
+      users: [testUser],
+    });
     const controller = controllerFixture();
 
     await setSilentAuthCookies(
