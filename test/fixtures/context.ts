@@ -104,14 +104,9 @@ export async function contextFixture(
     await data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[0]);
     await data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[1]);
     await data.domains.create(TENANT_FIXTURE.id, DOMAINS_FIXTURE[0]);
-    // this needs manually adding in whichever test needs it
-    // data.users.create("tenantId", testUser);
   } else {
-    console.log("seeding client");
     if (tenants) {
-      tenants.forEach((tenant) => {
-        data.tenants.create(tenant);
-      });
+      await Promise.all(tenants.map((tenant) => data.tenants.create(tenant)));
     }
     if (applications) {
       applications.forEach((application) => {
