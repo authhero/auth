@@ -31,7 +31,7 @@ import { CreateDomainParams } from "../../src/adapters/interfaces/Domains";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
-
+import { testUser } from "./user";
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
@@ -156,19 +156,18 @@ export async function contextFixture(
     data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[0]);
     data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[1]);
     data.domains.create(TENANT_FIXTURE.id, DOMAINS_FIXTURE[0]);
+    data.users.create("tenantId", testUser);
   } else {
     if (applications) {
       applications.forEach((application) => {
         data.applications.create(application.tenant_id, application);
       });
     }
-
     if (tenants) {
       tenants.forEach((tenant) => {
         data.tenants.create(tenant);
       });
     }
-
     if (connections) {
       connections.forEach((connection) => {
         data.connections.create(connection.tenant_id, connection);
