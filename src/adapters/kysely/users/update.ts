@@ -1,15 +1,11 @@
 import { Kysely } from "kysely";
-import { BaseUser, Database, SqlUser, User } from "../../../types";
-
-// we have a PostUsersBody so why not a PatchUsersBody?
-// or should this be Partial<User>? but not all the fields can be updated...
-type PatchUser = Partial<BaseUser> & { email_verified?: boolean };
+import { Database, SqlUser, PostUsersBody } from "../../../types";
 
 export function update(db: Kysely<Database>) {
   return async (
     tenant_id: string,
     id: string,
-    user: PatchUser,
+    user: Partial<PostUsersBody>,
   ): Promise<boolean> => {
     const booleans: any = {};
 
