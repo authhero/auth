@@ -1,5 +1,5 @@
-import { Certificate } from "../../src/types";
-import { TokenFactory } from "../../src/services/token-factory";
+import { Certificate } from "../../../src/types";
+import { TokenFactory } from "../../../src/services/token-factory";
 
 export function getCertificate(): Certificate {
   return {

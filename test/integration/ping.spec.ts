@@ -1,5 +1,5 @@
 import { testClient } from "hono/testing";
-import app from "../src/app";
+import app from "../../src/app";
 
 describe("ping", () => {
   it("check that the root responds with a json document", async () => {

@@ -1,5 +1,5 @@
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";

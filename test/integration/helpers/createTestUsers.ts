@@ -1,5 +1,5 @@
 import { testClient } from "hono/testing";
-import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getAdminToken } from "./token";
 import { UserResponse } from "../../../src/types/auth0";
 import { EnvType } from "./test-client";
 import { tsoaApp } from "../../../src/app";

@@ -2,7 +2,7 @@ import { Kysely, SqliteDialect } from "kysely";
 import SQLite from "better-sqlite3";
 import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
-import { getCertificate } from "../../../integration-test/helpers/token";
+import { getCertificate } from "./token";
 import { Database } from "../../../src/types";
 import {
   AuthorizationResponseMode,
@@ -13,7 +13,7 @@ import {
 } from "../../../src/types";
 import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 import type { Email } from "../../../src/types/Email";
-import { mockOAuth2ClientFactory } from "../../../integration-test/mockOauth2Client";
+import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 
 export async function getEnv() {
   const dialect = new SqliteDialect({

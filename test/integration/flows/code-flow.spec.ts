@@ -4,7 +4,7 @@ import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
-import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 
 describe("code-flow", () => {

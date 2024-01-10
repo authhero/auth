@@ -1,5 +1,5 @@
 import { tsoaApp } from "../../../src/app";
-import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 

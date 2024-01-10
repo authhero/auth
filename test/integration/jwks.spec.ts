@@ -1,7 +1,6 @@
 import { OpenIDConfiguration } from "../../src/routes/tsoa/jwks";
 import { Jwks, JwksKeys } from "../../src/types/jwks";
-// let's move this into a common folder?
-import { getAdminToken } from "../../integration-test/helpers/token";
+import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
 import { tsoaApp } from "../../src/app";
 import { testClient } from "hono/testing";
