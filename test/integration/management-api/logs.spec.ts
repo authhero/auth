@@ -1,7 +1,7 @@
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { LogsResponse, UserResponse } from "../../../src/types/auth0";
-import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import exp from "constants";
 

@@ -1,5 +1,5 @@
 import { base64UrlEncode } from "../../src/utils/base64";
-import { getCertificate } from "../../integration-test/helpers/token";
+import { getCertificate } from "../integration/helpers/token";
 import {
   pemToBuffer,
   getKeyFormat,

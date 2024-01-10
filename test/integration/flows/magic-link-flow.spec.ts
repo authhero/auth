@@ -2,7 +2,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import type { Email } from "../../../src/types/Email";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
-import { getAdminToken } from "../../../integration-test/helpers/token";
+import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 

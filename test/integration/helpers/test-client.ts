@@ -2,7 +2,7 @@ import { Kysely, SqliteDialect } from "kysely";
 import SQLite from "better-sqlite3";
 import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
-import { getCertificate } from "../../../integration-test/helpers/token";
+import { getCertificate } from "./token";
 import { Database } from "../../../src/types";
 import {
   AuthorizationResponseMode,
