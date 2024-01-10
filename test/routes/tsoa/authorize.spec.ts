@@ -63,7 +63,7 @@ describe("authorize", () => {
         updated_at: new Date().toISOString(),
       };
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         sessions: [session],
         users: [user],
         headers: {
@@ -159,7 +159,7 @@ describe("authorize", () => {
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         sessions: [session],
         users: [testUser],
         headers: {
@@ -227,7 +227,7 @@ describe("authorize", () => {
     it("should redirect to the login form and pass the nonce an web_response in the state", async () => {
       const controller = new AuthorizeController();
 
-      const ctx = contextFixture({});
+      const ctx = await contextFixture({});
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,
@@ -271,7 +271,7 @@ describe("authorize", () => {
 
       const controller = new AuthorizeController();
 
-      const ctx = contextFixture({});
+      const ctx = await contextFixture({});
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,
@@ -322,7 +322,7 @@ describe("authorize", () => {
     it("should login use the scopes from the client", async () => {
       const controller = new AuthorizeController();
 
-      const ctx = contextFixture({});
+      const ctx = await contextFixture({});
 
       const actual = await controller.authorizeWithParams({
         request: { ctx } as RequestWithContext,
@@ -385,7 +385,7 @@ describe("authorize", () => {
 
       const controller = new AuthorizeController();
 
-      const ctx = contextFixture({});
+      const ctx = await contextFixture({});
 
       await expect(
         controller.authorizeWithParams({
@@ -428,7 +428,7 @@ describe("authorize", () => {
         },
       };
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         tickets: [ticket],
       });
 
@@ -495,7 +495,7 @@ describe("authorize", () => {
         authParams: {},
       };
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         tickets: [ticket],
       });
 
@@ -545,7 +545,7 @@ describe("authorize", () => {
         authParams: {},
       };
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         tickets: [ticket],
       });
 
@@ -604,7 +604,7 @@ describe("authorize", () => {
 
   describe("universalAuth", () => {
     it("should redirect to login using and packing the authParams in the state", async () => {
-      const ctx = contextFixture({});
+      const ctx = await contextFixture({});
       const controller = new AuthorizeController();
 
       const actual = await controller.authorizeWithParams({

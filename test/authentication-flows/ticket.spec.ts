@@ -20,7 +20,7 @@ describe("passwordlessAuth", () => {
   });
 
   it("should redirect with implicit flow as anchor links", async () => {
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       tickets: [
         {
           id: "ticketId",

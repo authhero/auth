@@ -5,7 +5,7 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("passwordGrant", () => {
   it.skip("should pass the audience to the token", async () => {
-    const ctx = contextFixture();
+    const ctx = await contextFixture();
 
     const params: PasswordGrantTypeParams = {
       grant_type: GrantType.Password,

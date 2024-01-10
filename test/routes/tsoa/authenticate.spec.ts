@@ -42,7 +42,7 @@ describe("Authenticated", () => {
         password: "Test!",
       };
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         stateData: {},
         users: [user],
         passwords: [password],
@@ -78,7 +78,7 @@ describe("Authenticated", () => {
 
       const logs: SqlLog[] = [];
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         stateData: {},
         userData: {
           validatePassword: "UnauthenticatedError",
@@ -107,7 +107,7 @@ describe("Authenticated", () => {
 
         const logs: SqlLog[] = [];
 
-        const ctx = contextFixture({
+        const ctx = await contextFixture({
           otps: [
             {
               id: "id",
@@ -155,7 +155,7 @@ describe("Authenticated", () => {
 
         const logs: SqlLog[] = [];
 
-        const ctx = contextFixture({
+        const ctx = await contextFixture({
           logs,
         });
 

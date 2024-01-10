@@ -26,12 +26,11 @@ import {
   CONNECTIONS_FIXTURE,
   DOMAINS_FIXTURE,
 } from "./client";
-// @ts-ignore
-import * as bunSqlite from "bun:sqlite";
-import { BunSqliteDialect } from "kysely-bun-sqlite";
-import { getDb } from "../../src/services/db";
 import { migrateToLatest } from "../../migrate/migrate";
 import { CreateDomainParams } from "../../src/adapters/interfaces/Domains";
+import SQLite from "better-sqlite3";
+import { Kysely, SqliteDialect } from "kysely";
+import { Database } from "../../src/types";
 
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
@@ -70,9 +69,9 @@ export function create(domains: SqlDomain[]) {
   };
 }
 
-export function contextFixture(
+export async function contextFixture(
   params?: ContextFixtureParams,
-): Context<{ Bindings: Env; Variables: Var }> {
+): Promise<Context<{ Bindings: Env; Variables: Var }>> {
   const {
     headers = {},
     logs = [],
@@ -88,10 +87,13 @@ export function contextFixture(
     domains,
   } = params || {};
 
-  const dialect = new BunSqliteDialect({
-    database: new bunSqlite.Database("db.sqlite"),
+  const dialect = new SqliteDialect({
+    database: new SQLite(":memory:"),
   });
-  const db = getDb(dialect);
+
+  const db = new Kysely<Database>({ dialect: dialect });
+  await migrateToLatest(dialect, false, db);
+
   migrateToLatest(dialect);
   const data = {
     ...createAdapters(db),

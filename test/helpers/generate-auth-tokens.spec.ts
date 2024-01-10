@@ -8,7 +8,7 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("generateTokens", () => {
   it("should set the aud param of the token to the audience", async () => {
-    const ctx = contextFixture();
+    const ctx = await contextFixture();
 
     const options: GenerateAuthResponseParamsForToken = {
       env: ctx.env,

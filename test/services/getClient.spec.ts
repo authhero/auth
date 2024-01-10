@@ -62,7 +62,7 @@ const DOMAIN_FIXTURE: SqlDomain = {
 
 describe("getClient", () => {
   it("should get the connection settings from the DefaultSettings", async () => {
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [
@@ -104,7 +104,7 @@ describe("getClient", () => {
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
@@ -139,7 +139,7 @@ describe("getClient", () => {
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
@@ -174,7 +174,7 @@ describe("getClient", () => {
   });
 
   it("should store the support url from the tenant in the client", async () => {
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [
         {
