@@ -14,7 +14,7 @@ import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
 import { Var } from "../../src/types/Var";
-import createAdapters from "../../src/adapters/in-memory";
+import createAdapters from "../../src/adapters/kysely";
 import { getCertificate } from "../integration/helpers/token";
 import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
@@ -26,6 +26,12 @@ import {
   CONNECTIONS_FIXTURE,
   DOMAINS_FIXTURE,
 } from "./client";
+// @ts-ignore
+import * as bunSqlite from "bun:sqlite";
+import { BunSqliteDialect } from "kysely-bun-sqlite";
+import { getDb } from "../../src/services/db";
+import { migrateToLatest } from "../../migrate/migrate";
+import { CreateDomainParams } from "../../src/adapters/interfaces/Domains";
 
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
@@ -47,6 +53,23 @@ export interface ContextFixtureParams {
   domains?: SqlDomain[];
 }
 
+// only data adapter we're still using
+const domains: SqlDomain[] = [];
+export function create(domains: SqlDomain[]) {
+  return async (tenant_id: string, params: CreateDomainParams) => {
+    const domain: SqlDomain = {
+      ...params,
+      tenant_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    domains.push(domain);
+
+    return domain;
+  };
+}
+
 export function contextFixture(
   params?: ContextFixtureParams,
 ): Context<{ Bindings: Env; Variables: Var }> {
@@ -65,7 +88,15 @@ export function contextFixture(
     domains,
   } = params || {};
 
-  const data = createAdapters();
+  const dialect = new BunSqliteDialect({
+    database: new bunSqlite.Database("db.sqlite"),
+  });
+  const db = getDb(dialect);
+  migrateToLatest(dialect);
+  const data = {
+    ...createAdapters(db),
+    domains: { create: create(domains || []) },
+  };
 
   if (tickets) {
     tickets.forEach((ticket) => {
