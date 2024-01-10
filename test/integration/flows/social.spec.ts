@@ -171,16 +171,6 @@ describe("social sign on", () => {
           created_at,
           updated_at,
           last_login,
-          // again, investigate this
-          app_metadata,
-          family_name,
-          given_name,
-          linked_to,
-          locale,
-          nickname,
-          picture,
-          // this is a new one to destructure... might actually be a SQLite issue OR a production issue that we weren't picking up
-          tags,
           ...newSocialUserWithoutDates
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
@@ -277,16 +267,6 @@ describe("social sign on", () => {
           created_at,
           updated_at,
           last_login,
-          //
-          app_metadata,
-          family_name,
-          given_name,
-          linked_to,
-          locale,
-          nickname,
-          picture,
-          //
-          tags,
           ...newSocialUserWithoutDates
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);

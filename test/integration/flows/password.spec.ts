@@ -117,13 +117,6 @@ describe("password-flow", () => {
         iat,
         sid,
         sub,
-        //
-        family_name,
-        given_name,
-        name,
-        nickname,
-        picture,
-        locale,
         ...restOfIdTokenPayload
       } = silentAuthIdTokenPayload;
       expect(sub).toContain("email|");
@@ -261,16 +254,8 @@ describe("password-flow", () => {
           "unique-nonce",
           "clientId",
         );
-      const {
-        exp,
-        iat,
-        sid,
-
-        family_name,
-        given_name,
-        locale,
-        ...restOfIdTokenPayload
-      } = silentAuthIdTokenPayload;
+      const { exp, iat, sid, ...restOfIdTokenPayload } =
+        silentAuthIdTokenPayload;
       expect(restOfIdTokenPayload).toEqual({
         sub: "userId",
         aud: "clientId",

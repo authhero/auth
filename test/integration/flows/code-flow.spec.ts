@@ -145,12 +145,6 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
-      // what have I done here to have these fields? some patched id_token endpoint right?
-      family_name,
-      given_name,
-      nickname,
-      locale,
-      picture,
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
@@ -386,10 +380,6 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
-      //
-      family_name,
-      given_name,
-      locale,
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
