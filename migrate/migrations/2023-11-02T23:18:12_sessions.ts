@@ -66,6 +66,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
     .addColumn("expires_at", "varchar(255)", (col) => col.notNull())
     .addColumn("used_at", "varchar(255)")
+    // another new column that might not be on planetscale... CHECK!
+    .addColumn("audience", "varchar(255)")
     .execute();
 
   await db.schema
