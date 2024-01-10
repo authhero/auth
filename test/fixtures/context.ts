@@ -52,23 +52,6 @@ export interface ContextFixtureParams {
   domains?: SqlDomain[];
 }
 
-// only data adapter we're still using
-const domains: SqlDomain[] = [];
-export function create() {
-  return async (tenant_id: string, params: CreateDomainParams) => {
-    const domain: SqlDomain = {
-      ...params,
-      tenant_id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    domains.push(domain);
-
-    return domain;
-  };
-}
-
 export async function contextFixture(
   params?: ContextFixtureParams,
 ): Promise<Context<{ Bindings: Env; Variables: Var }>> {
@@ -94,10 +77,7 @@ export async function contextFixture(
   const db = new Kysely<Database>({ dialect: dialect });
   await migrateToLatest(dialect, false, db);
 
-  const data = {
-    ...createAdapters(db),
-    domains: { create: create() },
-  };
+  const data = createAdapters(db);
 
   if (tickets) {
     tickets.forEach((ticket) => {
