@@ -54,7 +54,7 @@ export interface ContextFixtureParams {
 
 // only data adapter we're still using
 const domains: SqlDomain[] = [];
-export function create(domains: SqlDomain[]) {
+export function create() {
   return async (tenant_id: string, params: CreateDomainParams) => {
     const domain: SqlDomain = {
       ...params,
@@ -96,7 +96,7 @@ export async function contextFixture(
 
   const data = {
     ...createAdapters(db),
-    domains: { create: create(domains || []) },
+    domains: { create: create() },
   };
 
   if (tickets) {
