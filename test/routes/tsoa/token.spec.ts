@@ -226,12 +226,7 @@ describe("token", () => {
 
     it("should throw an error if the vendorId in the state does not match the vendorId of the client", async () => {
       const ctx = await contextFixture({
-        applications: [
-          {
-            ...application,
-            tenant_id: "vendorId1",
-          },
-        ],
+        applications: [application],
         tenants: [tenant],
         connections: [connection],
       });
