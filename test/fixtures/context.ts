@@ -79,45 +79,15 @@ export async function contextFixture(
 
   const data = createAdapters(db);
 
-  if (tickets) {
-    tickets.forEach((ticket) => {
-      data.tickets.create(ticket);
-    });
-  }
-
-  if (otps) {
-    otps.forEach((otp) => {
-      data.OTP.create(otp);
-    });
-  }
-
-  if (sessions) {
-    sessions.forEach((session) => {
-      data.sessions.create(session);
-    });
-  }
-
-  if (users) {
-    users.forEach((user) => {
-      data.users.create(user.tenant_id, user);
-    });
-  }
-
-  if (passwords) {
-    passwords.forEach((password) => {
-      data.passwords.create("tenantId", password);
-    });
-  }
-
   // seed default settings------------------
-  data.tenants.create({
+  await data.tenants.create({
     id: "DEFAULT_SETTINGS",
     name: "Default Settings",
     sender_email: "foo@sesamy.com",
     sender_name: "Sesamy",
     audience: "https://sesamy.com",
   });
-  data.applications.create("DEFAULT_SETTINGS", {
+  await data.applications.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CLIENT",
     name: "Default Client",
     allowed_web_origins: "https://sesamy.com",
@@ -131,13 +101,15 @@ export async function contextFixture(
   const seedingClient = !!applications || !!tenants || !!connections;
 
   if (!seedingClient) {
-    data.tenants.create(TENANT_FIXTURE);
-    data.applications.create(TENANT_FIXTURE.id, APPLICATION_FIXTURE);
-    data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[0]);
-    data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[1]);
-    data.domains.create(TENANT_FIXTURE.id, DOMAINS_FIXTURE[0]);
-    data.users.create("tenantId", testUser);
+    await data.tenants.create(TENANT_FIXTURE);
+    await data.applications.create(TENANT_FIXTURE.id, APPLICATION_FIXTURE);
+    await data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[0]);
+    await data.connections.create(TENANT_FIXTURE.id, CONNECTIONS_FIXTURE[1]);
+    await data.domains.create(TENANT_FIXTURE.id, DOMAINS_FIXTURE[0]);
+    // this needs manually adding in whichever test needs it
+    // data.users.create("tenantId", testUser);
   } else {
+    console.log("seeding client");
     if (tenants) {
       tenants.forEach((tenant) => {
         data.tenants.create(tenant);
@@ -160,8 +132,38 @@ export async function contextFixture(
     }
   }
 
+  if (users) {
+    users.forEach((user) => {
+      data.users.create(user.tenant_id, user);
+    });
+  }
+
+  if (tickets) {
+    tickets.forEach((ticket) => {
+      data.tickets.create(ticket);
+    });
+  }
+
+  if (otps) {
+    otps.forEach((otp) => {
+      data.OTP.create(otp);
+    });
+  }
+
+  if (sessions) {
+    sessions.forEach(async (session) => {
+      data.sessions.create(session);
+    });
+  }
+
+  if (passwords) {
+    passwords.forEach((password) => {
+      data.passwords.create("tenantId", password);
+    });
+  }
+
   // Add a known certificate
-  data.keys.create(getCertificate());
+  await data.keys.create(getCertificate());
 
   return {
     set: () => {},
