@@ -158,14 +158,14 @@ export async function contextFixture(
     data.domains.create(TENANT_FIXTURE.id, DOMAINS_FIXTURE[0]);
     data.users.create("tenantId", testUser);
   } else {
-    if (applications) {
-      applications.forEach((application) => {
-        data.applications.create(application.tenant_id, application);
-      });
-    }
     if (tenants) {
       tenants.forEach((tenant) => {
         data.tenants.create(tenant);
+      });
+    }
+    if (applications) {
+      applications.forEach((application) => {
+        data.applications.create(application.tenant_id, application);
       });
     }
     if (connections) {
