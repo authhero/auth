@@ -94,7 +94,6 @@ export async function contextFixture(
   const db = new Kysely<Database>({ dialect: dialect });
   await migrateToLatest(dialect, false, db);
 
-  migrateToLatest(dialect);
   const data = {
     ...createAdapters(db),
     domains: { create: create(domains || []) },
