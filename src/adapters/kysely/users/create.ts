@@ -10,15 +10,19 @@ export function create(db: Kysely<Database>) {
       tenant_id: tenantId,
     };
 
-    Object.keys(sqlUser).forEach((key) => {
-      const data = sqlUser as any;
-      if (typeof data[key] === "boolean") {
-        data[key] = data[key] ? 1 : 0;
+    // I think we should change SQLuser to have email_verified and is_social as integers
+    // this is what we are currently writing to planetscale!
+    const sqliteUser = {
+      ...user,
+    } as any;
+
+    Object.keys(sqliteUser).forEach((key) => {
+      if (typeof sqliteUser[key] === "boolean") {
+        sqliteUser[key] = sqliteUser[key] ? 1 : 0;
       }
-      // data.linked_to = null;
     });
 
-    await db.insertInto("users").values(sqlUser).execute();
+    await db.insertInto("users").values(sqliteUser).execute();
 
     return sqlUser;
   };
