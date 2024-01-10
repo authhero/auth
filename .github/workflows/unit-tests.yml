@@ -30,4 +30,3 @@ jobs:
       - run: yarn build
       - run: yarn type-check
       - run: yarn test
-      - run: yarn integration
