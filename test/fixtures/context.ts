@@ -27,11 +27,9 @@ import {
   DOMAINS_FIXTURE,
 } from "./client";
 import { migrateToLatest } from "../../migrate/migrate";
-import { CreateDomainParams } from "../../src/adapters/interfaces/Domains";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
-import { testUser } from "./user";
 export interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
