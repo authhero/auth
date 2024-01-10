@@ -34,6 +34,17 @@ class MockOAuth2Client implements IOAuth2Client {
   }
   async exchangeCodeForTokenResponse(code: string) {
     if (this.params.client_id === "otherSocialClientId") {
+      const otherClientAccesToken = await createTokenExample({
+        // copied from Facebook id_token
+        iss: "https://www.facebook.com",
+        sub: "10451045104510451",
+        aud: "250848680337272",
+        exp: 1616470948,
+        iat: 1616467348,
+        nonce: "abc123",
+        jti: "jti",
+      });
+
       const otherClientIdToken = await createTokenExample({
         // copied from Facebook id_token
         iss: "https://www.facebook.com",
@@ -52,8 +63,9 @@ class MockOAuth2Client implements IOAuth2Client {
         email_verified: true,
         jti: "jti",
       });
+
       return {
-        access_token: "otherClientAccessToken",
+        access_token: otherClientAccesToken,
         id_token: otherClientIdToken,
         token_type: "tokenType",
         expires_in: 1000,
@@ -61,6 +73,17 @@ class MockOAuth2Client implements IOAuth2Client {
       };
     }
     if (this.params.client_id === "socialClientId") {
+      const clientAccessToken = await createTokenExample({
+        iss: "https://accounts.google.com",
+        sub: "123456789012345678901",
+        azp: "195867377305-j00komjaq7etk3ua9oab69klhlli4uk7.apps.googleusercontent.com",
+        aud: "195867377305-j00komjaq7etk3ua9oab69klhlli4uk7.apps.googleusercontent.com",
+        hd: "sesamy.com",
+        exp: 1616470948,
+        iat: 1616467348,
+        nonce: "abc123",
+      });
+
       const clientIdToken = await createTokenExample({
         iss: "https://accounts.google.com",
         sub: "123456789012345678901",
@@ -80,8 +103,9 @@ class MockOAuth2Client implements IOAuth2Client {
         nonce: "abc123",
         email_verified: true,
       });
+
       return {
-        access_token: "accessToken",
+        access_token: clientAccessToken,
         id_token: clientIdToken,
         token_type: "tokenType",
         expires_in: 1000,
