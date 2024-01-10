@@ -2,9 +2,9 @@ import {
   IOAuth2ClientFactory,
   OAuthProviderParams,
   IOAuth2Client,
-} from "../src/services/oauth2-client";
-import { createToken } from "../src/utils/jwt";
-import { getCertificate } from "../test/integration/helpers/token";
+} from "../../src/services/oauth2-client";
+import { createToken } from "../../src/utils/jwt";
+import { getCertificate } from "./helpers/token";
 
 function createTokenExample(payload: {
   [key: string]: string | string[] | number | boolean;
