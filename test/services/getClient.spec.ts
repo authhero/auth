@@ -1,10 +1,8 @@
-import { DefaultSettings } from "../../src/models/DefaultSettings";
 import { getClient } from "../../src/services/clients";
 import { contextFixture } from "../fixtures";
 import {
   AuthorizationResponseType,
   AuthorizationResponseMode,
-  PartialClient,
   Application,
   Tenant,
   SqlConnection,
@@ -58,6 +56,8 @@ const DOMAIN_FIXTURE: SqlDomain = {
   tenant_id: "tenantId",
   created_at: "created_at",
   updated_at: "updated_at",
+  dkim_private_key: "dkimKey",
+  dkim_public_key: "dkimPublicKey",
 };
 
 describe("getClient", () => {
@@ -117,6 +117,7 @@ describe("getClient", () => {
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
+          email_api_key: "apiKey",
         },
         DOMAIN_FIXTURE,
       ],
@@ -129,11 +130,16 @@ describe("getClient", () => {
         email_api_key: "apiKey",
         domain: "example2.com",
         email_service: "mailgun",
+        // is this correct that we now have these fields? they're required else zod explodes...
+        dkim_private_key: "dkimKey",
+        dkim_public_key: "dkimPublicKey",
       },
       {
         domain: "example.com",
         dkim_private_key: "dkimKey",
         email_service: "mailchannels",
+        // same her
+        email_api_key: "apiKey",
       },
     ]);
   });
@@ -152,6 +158,7 @@ describe("getClient", () => {
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
+          email_api_key: "apiKey",
         },
         DOMAIN_FIXTURE,
       ],
@@ -164,11 +171,14 @@ describe("getClient", () => {
         domain: "example2.com",
         email_api_key: "apiKey",
         email_service: "mailgun",
+        dkim_private_key: "dkimKey",
+        dkim_public_key: "dkimPublicKey",
       },
       {
         domain: "example.com",
         dkim_private_key: "dkimKey",
         email_service: "mailchannels",
+        email_api_key: "apiKey",
       },
     ]);
   });
