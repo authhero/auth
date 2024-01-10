@@ -336,9 +336,7 @@ describe("social sign on", () => {
           connection: "email",
           provider: "email",
           user_id: createEmailUser.user_id.split("|")[1],
-          // isSocial: false,
-          // TO INVESTIGATE HERE - same issue as above
-          isSocial: 0,
+          isSocial: false,
         },
       ]);
       // TODO - do we need to be able to set this true from mgmt API? OR should I actually verify it...
