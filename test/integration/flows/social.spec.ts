@@ -128,11 +128,7 @@ describe("social sign on", () => {
         );
         expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
         expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
-        // expect(idTokenPayload.email_verified).toBe(true);
-        // TO INVESTIGATE! this looks some issue... we're storing users with integers here...
-        // but our types are thinking it's a boolean... an issue?
-        // ALSO are deviating from planetscale?
-        expect(idTokenPayload.email_verified).toBe(1);
+        expect(idTokenPayload.email_verified).toBe(true);
 
         // the same that we passed in
         expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
@@ -244,9 +240,7 @@ describe("social sign on", () => {
         );
         expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
         expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
-        // TO INVESTIGATE! same issue here with this being a 1 but should be boolean
-        // expect(idTokenPayload.email_verified).toBe(true);
-        expect(idTokenPayload.email_verified).toBe(1);
+        expect(idTokenPayload.email_verified).toBe(true);
         // the same that we passed in
         expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
         expect(idTokenPayload.iss).toBe("https://example.com/");
