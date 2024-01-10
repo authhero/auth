@@ -7,7 +7,7 @@ describe("logout", () => {
   it("should return a redirect to the returnTo param and clear the session cookie", async () => {
     const stateData = {};
 
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       stateData,
     });
 
@@ -33,7 +33,7 @@ describe("logout", () => {
   it("should return a redirect to the referer header if the returnTo is not specified", async () => {
     const stateData = {};
 
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       stateData,
       headers: {
         referer: "http://localhost:3000",

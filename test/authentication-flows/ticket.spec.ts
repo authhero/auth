@@ -20,12 +20,12 @@ describe("passwordlessAuth", () => {
   });
 
   it("should redirect with implicit flow as anchor links", async () => {
-    const ctx = contextFixture({
+    const ctx = await contextFixture({
       tickets: [
         {
           id: "ticketId",
-          tenant_id: "tenant_id",
-          client_id: "client_id",
+          tenant_id: "tenantId",
+          client_id: "clientId",
           authParams: {
             scope: "openid profile email",
             response_mode: AuthorizationResponseMode.FRAGMENT,
@@ -44,7 +44,7 @@ describe("passwordlessAuth", () => {
 
     const response = await ticketAuth(
       ctx.env,
-      "tenant_id",
+      "tenantId",
       controller,
       "ticketId",
       {

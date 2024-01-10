@@ -70,5 +70,7 @@ export const DOMAINS_FIXTURE: SqlDomain[] = [
     tenant_id: "tenantId",
     created_at: "created_at",
     updated_at: "updated_at",
+    dkim_private_key: "dkimPrivateKey",
+    dkim_public_key: "dkimPublicKey",
   },
 ];
