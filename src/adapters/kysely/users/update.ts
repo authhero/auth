@@ -1,22 +1,23 @@
 import { Kysely } from "kysely";
 import { Database, SqlUser, PostUsersBody } from "../../../types";
 
+function getEmailVerified(user: Partial<PostUsersBody>): number | undefined {
+  if (user.email_verified === undefined) {
+    return undefined;
+  }
+
+  return user.email_verified ? 1 : 0;
+}
+
 export function update(db: Kysely<Database>) {
   return async (
     tenant_id: string,
     id: string,
     user: Partial<PostUsersBody>,
   ): Promise<boolean> => {
-    const booleans: any = {};
-
-    if (user.email_verified !== undefined) {
-      booleans.email_verified = user.email_verified ? 1 : 0;
-    }
-    // do we want another fix for is_social? was this the bug the other day?
-
-    const sqlUser: SqlUser = {
+    const sqlUser: Partial<SqlUser> = {
       ...user,
-      ...booleans,
+      email_verified: getEmailVerified(user),
       updated_at: new Date().toISOString(),
     };
 
