@@ -1,5 +1,5 @@
-import en from "../locales/en.json";
-import sv from "../locales/sv.json";
+import en from "../../public/locales/en/default.json";
+import sv from "../../public/locales/sv/default.json";
 
 type Labels = { [lang: string]: { [key: string]: string } };
 
