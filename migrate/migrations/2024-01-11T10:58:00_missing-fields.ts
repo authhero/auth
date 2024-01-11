@@ -13,4 +13,11 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .execute();
 }
 
-export async function down(db: Kysely<Database>): Promise<void> {}
+export async function down(db: Kysely<Database>): Promise<void> {
+  await db.schema.alterTable("otps").dropColumn("audience").execute();
+
+  await db.schema
+    .alterTable("universal_login_sessions")
+    .dropColumn("nonce")
+    .execute();
+}
