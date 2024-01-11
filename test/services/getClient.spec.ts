@@ -56,8 +56,8 @@ const DOMAIN_FIXTURE: SqlDomain = {
   tenant_id: "tenantId",
   created_at: "created_at",
   updated_at: "updated_at",
-  dkim_private_key: "dkimKey",
-  dkim_public_key: "dkimPublicKey",
+  dkim_private_key: "",
+  dkim_public_key: "",
 };
 
 describe("getClient", () => {
@@ -113,7 +113,7 @@ describe("getClient", () => {
           id: "defaultDomain1",
           tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
-          dkim_private_key: "dkimKey",
+          dkim_private_key: "",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
@@ -131,12 +131,12 @@ describe("getClient", () => {
         domain: "example2.com",
         email_service: "mailgun",
         // is this correct that we now have these fields? they're required else zod explodes...
-        dkim_private_key: "dkimKey",
-        dkim_public_key: "dkimPublicKey",
+        dkim_private_key: "",
+        dkim_public_key: "",
       },
       {
         domain: "example.com",
-        dkim_private_key: "dkimKey",
+        dkim_private_key: "",
         email_service: "mailchannels",
         // same her
         email_api_key: "apiKey",
@@ -154,7 +154,7 @@ describe("getClient", () => {
           id: "defaultDomain1",
           tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
-          dkim_private_key: "dkimKey",
+          dkim_private_key: "",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
@@ -171,12 +171,12 @@ describe("getClient", () => {
         domain: "example2.com",
         email_api_key: "apiKey",
         email_service: "mailgun",
-        dkim_private_key: "dkimKey",
-        dkim_public_key: "dkimPublicKey",
+        dkim_private_key: "",
+        dkim_public_key: "",
       },
       {
         domain: "example.com",
-        dkim_private_key: "dkimKey",
+        dkim_private_key: "",
         email_service: "mailchannels",
         email_api_key: "apiKey",
       },

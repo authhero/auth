@@ -71,6 +71,6 @@ export const DOMAINS_FIXTURE: SqlDomain[] = [
     created_at: "created_at",
     updated_at: "updated_at",
     dkim_private_key: "dkimPrivateKey",
-    dkim_public_key: "dkimPublicKey",
+    dkim_public_key: "",
   },
 ];
