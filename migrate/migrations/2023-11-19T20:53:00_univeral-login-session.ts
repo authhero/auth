@@ -21,8 +21,6 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
     .addColumn("updated_at", "varchar(255)", (col) => col.notNull())
     .addColumn("expires_at", "varchar(255)", (col) => col.notNull())
-    // is this column on planetscale? check! added for SQLite tests
-    .addColumn("nonce", "varchar(255)")
     .execute();
 }
 
