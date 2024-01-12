@@ -22,14 +22,14 @@ import { Migration } from "../../types/sql";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
-@Route("tenants/{tenantId}/migrations")
+@Route("tenants/{tenant_id}/migrations")
 @Tags("migrations")
 export class MigrationsController extends Controller {
   @Get("")
   @Security("oauth2managementApi", [""])
   public async listMigrations(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenant_id: string,
+    @Path() tenant_id: string,
     @Header("range") rangeRequest?: string,
   ): Promise<Migration[]> {
     const { ctx } = request;
@@ -126,7 +126,7 @@ export class MigrationsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postMigrations(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenant_id: string,
+    @Path() tenant_id: string,
     @Body()
     body: Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Migration> {
@@ -155,7 +155,7 @@ export class MigrationsController extends Controller {
   public async putMigration(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenant_id: string,
+    @Path() tenant_id: string,
     @Body()
     body: Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Migration> {
