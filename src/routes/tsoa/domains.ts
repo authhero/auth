@@ -121,7 +121,7 @@ export class DomainsController extends Controller {
     const db = getDbFromEnv(env);
     const domain = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       updated_at: new Date().toISOString(),
     };
 
