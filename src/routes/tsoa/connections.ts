@@ -107,7 +107,7 @@ export class ConnectionsController extends Controller {
     const db = getDbFromEnv(env);
     const connection = {
       ...body,
-      tenantId,
+      tenant_id: tenantId,
       updated_at: new Date().toISOString(),
     };
 
