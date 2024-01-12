@@ -146,9 +146,9 @@ export async function socialAuthCallback({
     });
   }
 
-  const { sub, ...profileData } = userinfo;
+  const { sub, email: emailRaw, ...profileData } = userinfo;
 
-  const email = profileData.email.toLocaleLowerCase();
+  const email = emailRaw.toLocaleLowerCase();
   const strictEmailVerified = !!profileData.email_verified;
 
   const ssoId = `${state.connection}|${sub}`;

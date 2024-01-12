@@ -28,7 +28,6 @@ const EXPECTED_PROFILE_DATA = {
   name: "Örjan Lindström",
   given_name: "Örjan",
   family_name: "Lindström",
-  email: "örjan.lindström@example.com",
   picture:
     "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
   email_verified: true,
