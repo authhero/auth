@@ -65,12 +65,12 @@ export const DOMAINS_FIXTURE: SqlDomain[] = [
   {
     id: "domainId",
     domain: "example2.com",
-    email_api_key: "apiKey",
+    email_api_key: "",
     email_service: "mailgun",
     tenant_id: "tenantId",
     created_at: "created_at",
     updated_at: "updated_at",
     dkim_private_key: "dkimPrivateKey",
-    dkim_public_key: "dkimPublicKey",
+    dkim_public_key: "",
   },
 ];
