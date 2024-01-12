@@ -52,8 +52,9 @@ class MockOAuth2Client implements IOAuth2Client {
         email_verified: true,
         jti: "jti",
       });
+
       return {
-        access_token: "otherClientAccessToken",
+        access_token: "accessToken",
         id_token: otherClientIdToken,
         token_type: "tokenType",
         expires_in: 1000,
@@ -80,6 +81,7 @@ class MockOAuth2Client implements IOAuth2Client {
         nonce: "abc123",
         email_verified: true,
       });
+
       return {
         access_token: "accessToken",
         id_token: clientIdToken,

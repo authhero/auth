@@ -43,6 +43,7 @@ export const ConnectionSchema = z.object({
   scope: z.string(),
   authorization_endpoint: z.string(),
   token_endpoint: z.string(),
+  userinfo_endpoint: z.string().optional(),
   token_exchange_basic_auth: z.boolean().optional(),
   response_type: z.custom<AuthorizationResponseType>().optional(),
   response_mode: z.custom<AuthorizationResponseMode>().optional(),

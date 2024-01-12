@@ -30,6 +30,7 @@ const EXPECTED_PROFILE_DATA = {
   family_name: "Lindström",
   picture:
     "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
+  email_verified: true,
 };
 
 const EXPECTED_NEW_USER = {

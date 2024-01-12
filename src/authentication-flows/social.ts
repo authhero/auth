@@ -17,6 +17,7 @@ import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
+
 export interface SocialAuthState {
   authParams: AuthParams;
   connection: string;
@@ -69,6 +70,25 @@ export interface socialAuthCallbackParams {
   code: string;
 }
 
+function getProfileData(profile: any) {
+  const {
+    iss,
+    azp,
+    aud,
+    at_hash,
+    iat,
+    exp,
+    hd,
+    jti,
+    nonce,
+    auth_time,
+    nonce_supported,
+    ...profileData
+  } = profile;
+
+  return profileData;
+}
+
 export async function socialAuthCallback({
   ctx,
   controller,
@@ -113,28 +133,23 @@ export async function socialAuthCallback({
     connection.token_exchange_basic_auth,
   );
 
-  const idToken = parseJwt(token.id_token!);
+  let userinfo: any;
+  if (connection.userinfo_endpoint) {
+    userinfo = getProfileData(
+      await oauth2Client.getUserProfile(token.access_token),
+    );
+  } else if (token.id_token) {
+    userinfo = getProfileData(parseJwt(token.id_token));
+  } else {
+    throw new HTTPException(500, {
+      message: "No id_token or userinfo endpoint availeble",
+    });
+  }
 
-  const {
-    iss,
-    azp,
-    aud,
-    at_hash,
-    iat,
-    exp,
-    sub,
-    hd,
-    jti,
-    nonce,
-    email: emailRaw,
-    email_verified,
-    auth_time,
-    nonce_supported,
-    ...profileData
-  } = idToken;
+  const { sub, email: emailRaw, ...profileData } = userinfo;
 
   const email = emailRaw.toLocaleLowerCase();
-  const strictEmailVerified = !!email_verified;
+  const strictEmailVerified = !!profileData.email_verified;
 
   const ssoId = `${state.connection}|${sub}`;
   let user = await env.data.users.get(client.tenant_id, ssoId);
