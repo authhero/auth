@@ -12,10 +12,6 @@ import { RequestWithContext, LogsResponse } from "../../types";
 import { z } from "zod";
 import { ListLogsResponse } from "../../adapters/interfaces/Logs";
 
-const LogsFilterSchema = z.object({
-  userId: z.string(),
-});
-
 @Route("api/v2/logs")
 @Tags("logs")
 @Security("oauth2managementApi", [""])

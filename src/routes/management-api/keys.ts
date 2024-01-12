@@ -17,10 +17,6 @@ import { SigningKey } from "../../types";
 import { create } from "../../services/rsa-key";
 import { HTTPException } from "hono/http-exception";
 
-const LogsFilterSchema = z.object({
-  userId: z.string(),
-});
-
 const DAY = 1000 * 60 * 60 * 24;
 
 @Route("api/v2/keys/signing")

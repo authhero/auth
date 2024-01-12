@@ -64,10 +64,7 @@ function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
   return pemCert;
 }
 
-export async function toPrivatePEM(
-  key: CryptoKey,
-  kid: string,
-): Promise<string> {
+async function toPrivatePEM(key: CryptoKey, kid: string): Promise<string> {
   const pkcs8Key = (await crypto.subtle.exportKey("pkcs8", key)) as ArrayBuffer;
 
   return convertBinaryToPem(pkcs8Key, kid);
