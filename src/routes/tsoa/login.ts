@@ -40,7 +40,7 @@ interface LoginParams {
   password: string;
 }
 
-export interface PasswordResetParams {
+interface PasswordResetParams {
   username: string;
 }
 

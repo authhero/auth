@@ -4,7 +4,7 @@ import { Context, Next } from "hono";
 import { Var } from "./types/Var";
 import { HTTPException } from "hono/http-exception";
 
-export enum SecuritySchemeName {
+enum SecuritySchemeName {
   oauth2 = "oauth2",
   oauth2managementApi = "oauth2managementApi",
 }

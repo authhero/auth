@@ -19,13 +19,13 @@ interface ResetPasswordParams {
   email: string;
 }
 
-export interface VerifyEmailParams {
+interface VerifyEmailParams {
   client_id?: string;
   code: string;
   email: string;
 }
 
-export interface RegisterParams {
+interface RegisterParams {
   email: string;
   password: string;
 }

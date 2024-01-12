@@ -4,7 +4,7 @@ import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { TokenFactory } from "../services/token-factory";
 import { stateEncode } from "../utils/stateEncode";
 
-export interface GenerateAuthResponseParamsBase {
+interface GenerateAuthResponseParamsBase {
   env: Env;
   userId: string;
   sid: string;
@@ -24,7 +24,7 @@ export interface GenerateAuthResponseParamsForToken
   responseType: AuthorizationResponseType.TOKEN;
 }
 
-export interface GenerateAuthResponseParamsForIdToken
+interface GenerateAuthResponseParamsForIdToken
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.TOKEN_ID_TOKEN;
   user: User;
