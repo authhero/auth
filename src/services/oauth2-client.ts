@@ -16,7 +16,7 @@ export interface OAuthProviderParams {
   authorization_endpoint: string;
   token_endpoint: string;
   scope: string;
-  profile_endpoint?: string;
+  userinfo_endpoint?: string;
 }
 
 export interface IOAuth2ClientFactory {
@@ -135,11 +135,11 @@ export class OAuth2Client implements IOAuth2Client {
   async getUserProfile(
     accessToken: string,
   ): Promise<{ [key: string]: string }> {
-    if (!this.params.profile_endpoint) {
-      throw new Error("No profile endpoint configured");
+    if (!this.params.userinfo_endpoint) {
+      throw new Error("No userinfo endpoint configured");
     }
 
-    const response = await fetch(this.params.profile_endpoint, {
+    const response = await fetch(this.params.userinfo_endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
