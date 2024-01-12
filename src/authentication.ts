@@ -231,7 +231,7 @@ async function verifyTenantPermissions(
   throw new HTTPException(403, { message: "Unauthorized" });
 }
 
-export interface Security {
+interface Security {
   oauth2: string[];
 }
 

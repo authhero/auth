@@ -2,18 +2,6 @@ import { createToken } from "../utils/jwt";
 
 const DAY_IN_SECONDS = 60 * 60 * 24;
 
-export interface GetTokenParams {
-  privateKeyPEM: string;
-  payload: {
-    iat: number;
-    exp: number;
-  };
-  alg: "RS256";
-  headerAdditions: {
-    kid: string;
-  };
-}
-
 interface AccessTokenPayload {
   aud: string;
   azp?: string;
