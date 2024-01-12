@@ -13,7 +13,7 @@ export type TokenParams =
   | ClientCredentialGrantTypeParams
   | PasswordGrantTypeParams;
 
-export interface RefreshTokenGrantTypeParams {
+interface RefreshTokenGrantTypeParams {
   grant_type: GrantType.RefreshToken;
   refresh_token: string;
   client_id: string;
@@ -39,17 +39,6 @@ export interface ClientCredentialGrantTypeParams {
   scope?: string;
   client_secret: string;
   client_id: string;
-  audience?: string;
-}
-
-export interface PasswordlessGrantTypeParams {
-  grant_type: GrantType.Passwordless;
-  client_id: string;
-  scope?: string;
-  client_secret?: string;
-  username: string;
-  otp: string;
-  realm: "email";
   audience?: string;
 }
 

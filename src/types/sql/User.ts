@@ -1,10 +1,5 @@
 import { BaseUser } from "../User";
 
-export interface UserTag {
-  name: string;
-  category: string;
-}
-
 export interface SqlUser extends BaseUser {
   id: string;
   // the only difference between this and User is that email_verified and is_social are integers

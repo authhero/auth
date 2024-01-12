@@ -1,4 +1,4 @@
-export interface UserMetadata {
+interface UserMetadata {
   type: string;
   description: string;
   defaultValue: {
