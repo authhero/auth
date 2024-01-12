@@ -26,7 +26,7 @@ export class UsersByEmailController extends Controller {
   @Get("")
   public async getUserByEmail(
     @Request() request: RequestWithContext,
-    @Query("email") email: string,
+    @Query() email: string,
     @Header("tenant-id") tenant_id: string,
   ): Promise<UserResponse[]> {
     const { env } = request.ctx;
