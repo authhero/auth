@@ -36,7 +36,7 @@ export interface CreateAccessTokenParams {
   permissions?: string[];
 }
 
-export interface CreateIDTokenParams {
+interface CreateIDTokenParams {
   clientId: string;
   userId: string;
   // Issuer

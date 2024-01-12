@@ -13,7 +13,7 @@ export interface GenerateAuthResponseParamsBase {
   authParams: AuthParams;
 }
 
-export interface GenerateAuthResponseParamsForCode
+interface GenerateAuthResponseParamsForCode
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.CODE;
   user: User;

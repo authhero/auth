@@ -32,7 +32,7 @@ interface LinkWithBodyParams {
   link_with: string;
 }
 
-export interface LinkUserIdBodyParams {
+interface LinkUserIdBodyParams {
   provider: string;
   connection_id?: string;
   user_id: string;

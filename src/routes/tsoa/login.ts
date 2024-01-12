@@ -35,7 +35,7 @@ import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginS
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
-export interface LoginParams {
+interface LoginParams {
   username: string;
   password: string;
 }

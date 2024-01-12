@@ -235,7 +235,7 @@ interface Security {
   oauth2: string[];
 }
 
-export interface ManagementApiSecurity {
+interface ManagementApiSecurity {
   oauth2managementApi: string[];
 }
 

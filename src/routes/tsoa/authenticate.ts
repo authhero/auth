@@ -19,7 +19,7 @@ export interface LoginTicket {
   co_id: string;
 }
 
-export interface AuthenticateParams {
+interface AuthenticateParams {
   client_id: string;
   username: string;
 }

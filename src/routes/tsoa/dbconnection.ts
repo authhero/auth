@@ -13,7 +13,7 @@ import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { getClient } from "../../services/clients";
 
-export interface ResetPasswordParams {
+interface ResetPasswordParams {
   client_id?: string;
   connection: string;
   email: string;
