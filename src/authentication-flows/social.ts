@@ -146,8 +146,6 @@ export async function socialAuthCallback({
     });
   }
 
-  ctx.set("log", JSON.stringify(userinfo));
-
   const { sub, email: emailRaw, ...profileData } = userinfo;
 
   const email = emailRaw.toLocaleLowerCase();
