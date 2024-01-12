@@ -4,7 +4,7 @@ import {
   AuthorizationResponseType,
 } from "./AuthParams";
 
-export const ClientDomainSchema = z.object({
+const ClientDomainSchema = z.object({
   domain: z.string(),
   dkim_private_key: z.string().optional(),
   dkim_public_key: z.string().optional(),
@@ -14,7 +14,7 @@ export const ClientDomainSchema = z.object({
     .optional(),
 });
 
-export const PartialConnectionSchema = z.object({
+const PartialConnectionSchema = z.object({
   id: z.string(),
   name: z.string(),
   // All these properties are optional as they can use the settings from the default settings
@@ -51,7 +51,7 @@ export const ConnectionSchema = z.object({
   updated_at: z.string(),
 });
 
-export const BaseClientSchema = z.object({
+const BaseClientSchema = z.object({
   id: z.string(),
   name: z.string(),
   domains: z.array(ClientDomainSchema),
