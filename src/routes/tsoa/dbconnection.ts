@@ -46,7 +46,7 @@ export class DbConnectionController extends Controller {
   public async registerUser(
     @Body() body: RegisterParams,
     @Request() request: RequestWithContext,
-    @Path("clientId") clientId: string,
+    @Path() clientId: string,
   ): Promise<string> {
     const { ctx } = request;
 
@@ -91,7 +91,7 @@ export class DbConnectionController extends Controller {
   public async resetPassword(
     @Body() body: ResetPasswordParams,
     @Request() request: RequestWithContext,
-    @Path("clientId") clientId: string,
+    @Path() clientId: string,
   ): Promise<string> {
     throw new Error("Not implemented");
   }
@@ -100,7 +100,7 @@ export class DbConnectionController extends Controller {
   public async verifyEmail(
     @Body() body: VerifyEmailParams,
     @Request() request: RequestWithContext,
-    @Path("clientId") clientId: string,
+    @Path() clientId: string,
   ): Promise<string> {
     throw new Error("Not implemented");
   }
