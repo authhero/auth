@@ -141,12 +141,12 @@ export class UsersMgmtController extends Controller {
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
-    @Path("user_id") userId: string,
+    @Path() user_id: string,
     @Header("tenant-id") tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const result = await env.data.users.remove(tenantId, userId);
+    const result = await env.data.users.remove(tenantId, user_id);
 
     if (!result) {
       throw new HTTPException(404);
@@ -212,7 +212,7 @@ export class UsersMgmtController extends Controller {
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenant_id: string,
-    @Path("user_id") user_id: string,
+    @Path() user_id: string,
     @Body() user: Partial<PostUsersBody>,
   ): Promise<boolean> {
     const { env } = request.ctx;
@@ -244,14 +244,14 @@ export class UsersMgmtController extends Controller {
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Path("user_id") userId: string,
+    @Path() user_id: string,
     @Body() body: LinkWithBodyParams | LinkUserIdBodyParams,
   ): Promise<Identity[]> {
     const { env } = request.ctx;
 
     const link_with = "link_with" in body ? body.link_with : body.user_id;
 
-    const user = await env.data.users.get(tenantId, userId);
+    const user = await env.data.users.get(tenantId, user_id);
     if (!user) {
       throw new HTTPException(400, {
         message: "Linking an inexistent identity is not allowed.",
@@ -259,14 +259,14 @@ export class UsersMgmtController extends Controller {
     }
 
     await env.data.users.update(tenantId, link_with, {
-      linked_to: userId,
+      linked_to: user_id,
     });
 
     const linkedusers = await env.data.users.list(tenantId, {
       page: 0,
       per_page: 10,
       include_totals: false,
-      q: `linked_to:${userId}`,
+      q: `linked_to:${user_id}`,
     });
 
     const identities = [user, ...linkedusers.users].map((u) => ({
@@ -286,11 +286,11 @@ export class UsersMgmtController extends Controller {
   public async unlinkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Path("user_id") userId: string,
+    @Path() user_id: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
-    await env.data.users.update(tenantId, userId, {
+    await env.data.users.update(tenantId, user_id, {
       linked_to: undefined,
     });
 

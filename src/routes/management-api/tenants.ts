@@ -97,7 +97,7 @@ export class TenantsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async getTenant(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
 
@@ -116,7 +116,7 @@ export class TenantsController extends Controller {
   @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a tenant"))
   public async putTenant(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
     @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
@@ -154,7 +154,7 @@ export class TenantsController extends Controller {
   @SuccessResponse(200, "Delete")
   public async deleteTenant(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
   ): Promise<string> {
     const { env } = request.ctx;
 

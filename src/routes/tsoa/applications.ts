@@ -28,7 +28,7 @@ export class ApplicationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async listApplications(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path() tenantId: string,
     @Header("range") rangeRequest?: string,
   ): Promise<Application[]> {
     const { ctx } = request;
@@ -51,8 +51,8 @@ export class ApplicationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async getApplication(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() id: string,
+    @Path() tenantId: string,
   ): Promise<Application | string> {
     const { ctx } = request;
 
@@ -76,8 +76,8 @@ export class ApplicationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async deleteApplication(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() id: string,
+    @Path() tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
@@ -96,8 +96,8 @@ export class ApplicationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async patchApplication(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() id: string,
+    @Path() tenantId: string,
     @Body()
     body: Partial<
       Omit<Application, "id" | "tenant_id" | "created_at" | "updated_at">
@@ -127,7 +127,7 @@ export class ApplicationsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postApplications(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path() tenantId: string,
     @Body()
     body: {
       id?: string;
@@ -156,8 +156,8 @@ export class ApplicationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async putApplication(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
-    @Path("id") id: string,
+    @Path() tenantId: string,
+    @Path() id: string,
     @Body()
     body: Omit<Application, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Application> {

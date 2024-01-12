@@ -22,14 +22,14 @@ import { Migration } from "../../types/sql";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
-@Route("tenants/{tenantId}/migrations")
+@Route("tenants/{tenant_id}/migrations")
 @Tags("migrations")
 export class MigrationsController extends Controller {
   @Get("")
   @Security("oauth2managementApi", [""])
   public async listMigrations(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenant_id: string,
+    @Path() tenant_id: string,
     @Header("range") rangeRequest?: string,
   ): Promise<Migration[]> {
     const { ctx } = request;
@@ -52,15 +52,15 @@ export class MigrationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async getMigration(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() id: string,
+    @Path() tenant_id: string,
   ): Promise<Migration | string> {
     const { ctx } = request;
 
     const db = getDbFromEnv(ctx.env);
     const migration = await db
       .selectFrom("migrations")
-      .where("migrations.tenant_id", "=", tenantId)
+      .where("migrations.tenant_id", "=", tenant_id)
       .where("migrations.id", "=", id)
       .selectAll()
       .executeTakeFirst();
@@ -77,15 +77,15 @@ export class MigrationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async deleteMigration(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() id: string,
+    @Path() tenant_id: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
     const db = getDbFromEnv(env);
     await db
       .deleteFrom("migrations")
-      .where("migrations.tenant_id", "=", tenantId)
+      .where("migrations.tenant_id", "=", tenant_id)
       .where("migrations.id", "=", id)
       .execute();
 
@@ -96,8 +96,8 @@ export class MigrationsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async patchMigration(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() id: string,
+    @Path() tenant_id: string,
     @Body()
     body: Partial<
       Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">
@@ -108,7 +108,7 @@ export class MigrationsController extends Controller {
     const db = getDbFromEnv(env);
     const migration = {
       ...body,
-      tenantId,
+      tenant_id,
       updated_at: new Date().toISOString(),
     };
 
@@ -126,7 +126,7 @@ export class MigrationsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postMigrations(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenant_id: string,
+    @Path() tenant_id: string,
     @Body()
     body: Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Migration> {
@@ -154,8 +154,8 @@ export class MigrationsController extends Controller {
   @SuccessResponse(201, "Created")
   public async putMigration(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
-    @Path("tenantId") tenant_id: string,
+    @Path() id: string,
+    @Path() tenant_id: string,
     @Body()
     body: Omit<Migration, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Migration> {
