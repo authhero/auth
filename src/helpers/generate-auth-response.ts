@@ -103,7 +103,7 @@ export async function generateTokens(
   return tokenResponse;
 }
 
-export type GenerateAuthResponseParams =
+type GenerateAuthResponseParams =
   | GenerateAuthResponseParamsForToken
   | GenerateAuthResponseParamsForIdToken
   | GenerateAuthResponseParamsForCode;

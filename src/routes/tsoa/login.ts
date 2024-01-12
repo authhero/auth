@@ -44,12 +44,6 @@ export interface PasswordResetParams {
   username: string;
 }
 
-export interface ResetPasswordState {
-  username: string;
-  code: string;
-  client_id: string;
-}
-
 async function handleLogin(
   env: Env,
   controller: Controller,

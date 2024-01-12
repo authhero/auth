@@ -1,12 +1,6 @@
 import { nanoid } from "nanoid";
 import { Certificate } from "../types";
 
-export interface KeyPair {
-  private_key: string;
-  publicKey: any;
-  created_at: number;
-}
-
 export async function create(): Promise<Certificate> {
   let keyPair = (await crypto.subtle.generateKey(
     {

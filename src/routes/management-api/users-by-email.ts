@@ -13,12 +13,6 @@ import { HTTPException } from "hono/http-exception";
 import { UserResponse } from "../../types/auth0/UserResponse";
 import { enrichUser } from "../../utils/enrichUser";
 
-export interface LinkBodyParams {
-  provider?: string;
-  connection_id?: string;
-  link_with: string;
-}
-
 @Route("api/v2/users-by-email")
 @Tags("management-api")
 @Security("oauth2managementApi", [""])

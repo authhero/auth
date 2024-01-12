@@ -12,7 +12,3 @@ export interface EmailOptions {
     value: string;
   }[];
 }
-
-export interface SendEmail {
-  (emailOptions: EmailOptions): Promise<void>;
-}

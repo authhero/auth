@@ -8,7 +8,7 @@ import { getClient } from "../../services/clients";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
-export interface LoginError {
+interface LoginError {
   error: string;
   error_description: string;
 }

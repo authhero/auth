@@ -19,10 +19,6 @@ async function logError(
   await datadogLogger.err(ctx, err);
 }
 
-export interface Options {
-  version?: string;
-}
-
 export default async function loggerMiddleware(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   next: Next,

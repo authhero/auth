@@ -23,7 +23,7 @@ interface AccessTokenPayload {
   permissions?: string[];
 }
 
-export interface IDTokenPayload {
+interface IDTokenPayload {
   aud: string;
   sub: string;
   sid: string;
