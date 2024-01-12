@@ -22,14 +22,14 @@ import { Member } from "../../types/sql";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
 
-@Route("tenants/{tenantId}/members")
+@Route("tenants/{tenant_id}/members")
 @Tags("members")
 export class MembersController extends Controller {
   @Get("")
   @Security("oauth2managementApi", [""])
   public async listMembers(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path() tenant_id: string,
     @Header("range") rangeRequest?: string,
   ): Promise<Member[]> {
     const { ctx } = request;
@@ -37,7 +37,7 @@ export class MembersController extends Controller {
     const db = getDbFromEnv(ctx.env);
     const query = db
       .selectFrom("members")
-      .where("members.tenant_id", "=", tenantId);
+      .where("members.tenant_id", "=", tenant_id);
 
     const { data, range } = await executeQuery(query, rangeRequest);
 
@@ -53,7 +53,7 @@ export class MembersController extends Controller {
   public async getMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() tenant_id: string,
   ): Promise<Member | string> {
     const { ctx } = request;
 
@@ -61,7 +61,7 @@ export class MembersController extends Controller {
     const member = await db
       .selectFrom("members")
       .where("members.id", "=", id)
-      .where("members.tenant_id", "=", tenantId)
+      .where("members.tenant_id", "=", tenant_id)
       .selectAll()
       .executeTakeFirst();
 
@@ -78,14 +78,14 @@ export class MembersController extends Controller {
   public async deleteMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() tenant_id: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
     const db = getDbFromEnv(env);
     await db
       .deleteFrom("members")
-      .where("members.tenant_id", "=", tenantId)
+      .where("members.tenant_id", "=", tenant_id)
       .where("members.id", "=", id)
       .execute();
 
@@ -97,7 +97,7 @@ export class MembersController extends Controller {
   public async patchMember(
     @Request() request: RequestWithContext,
     @Path("id") id: string,
-    @Path("tenantId") tenantId: string,
+    @Path() tenant_id: string,
     @Body()
     body: Partial<
       Omit<Member, "id" | "tenant_id" | "created_at" | "updated_at">
@@ -108,7 +108,7 @@ export class MembersController extends Controller {
     const db = getDbFromEnv(env);
     const member = {
       ...body,
-      tenantId,
+      tenant_id,
       updated_at: new Date().toISOString(),
     };
 
@@ -126,7 +126,7 @@ export class MembersController extends Controller {
   @SuccessResponse(201, "Created")
   public async postMember(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path() tenant_id: string,
     @Body()
     body: Omit<Member, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Member> {
@@ -137,7 +137,7 @@ export class MembersController extends Controller {
 
     const member: Member = {
       ...body,
-      tenant_id: tenantId,
+      tenant_id: tenant_id,
       id: nanoid(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -154,7 +154,7 @@ export class MembersController extends Controller {
   @SuccessResponse(201, "Created")
   public async putMember(
     @Request() request: RequestWithContext,
-    @Path("tenantId") tenantId: string,
+    @Path() tenant_id: string,
     @Path("id") id: string,
     @Body()
     body: Omit<Member, "id" | "tenant_id" | "created_at" | "updated_at">,
@@ -166,7 +166,7 @@ export class MembersController extends Controller {
 
     const member: Member = {
       ...body,
-      tenant_id: tenantId,
+      tenant_id: tenant_id,
       id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -179,7 +179,7 @@ export class MembersController extends Controller {
         throw err;
       }
 
-      const { id, created_at, tenant_id: tenantId, ...memberUpdate } = member;
+      const { id, created_at, tenant_id: tenant_id, ...memberUpdate } = member;
       await db
         .updateTable("members")
         .set(memberUpdate)
