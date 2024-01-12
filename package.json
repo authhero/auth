@@ -1,6 +1,6 @@
 {
   "name": "auth2",
-  "version": "1.107.0",
+  "version": "1.109.0",
   "description": "",
   "main": "build/src/server.js",
   "scripts": {
@@ -16,7 +16,8 @@
     "test-with-coverage": "jest --config jest.config.js --coverage",
     "semantic-release": "semantic-release",
     "prepare": "husky install",
-    "type-check": "tsc"
+    "type-check": "tsc",
+    "pull-translations": "i18nexus pull -k EWI52U0e8j13AX31kLcS-A && prettier --write ./public/locales/**/*.json"
   },
   "author": "",
   "license": "MIT",
@@ -78,6 +79,7 @@
     "dotenv": "^16.3.1",
     "eslint": "^8.51.0",
     "husky": "^8.0.3",
+    "i18nexus-cli": "^3.3.0",
     "isomorphic-fetch": "^3.0.0",
     "jest": "29.7.0",
     "jest-environment-jsdom": "^29.7.0",

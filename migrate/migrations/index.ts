@@ -17,6 +17,7 @@ import * as n16_userLocale from "./2023-12-21T15:05:00_user-locale";
 import * as n17_signingKeys from "./2023-12-26T10:58:00_signing-keys";
 import * as n18_logsFields from "./2024-01-06T16:23:00_logs-fields";
 import * as n19_connectionsUserinfo from "./2024-01-10T23:19:00_connections-userinfo";
+import * as n20_missingFields from "./2024-01-11T10:58:00_missing-fields";
 
 // These need to be in alphabetic order
 export default {
@@ -39,4 +40,5 @@ export default {
   n17_signingKeys,
   n18_logsFields,
   n19_connectionsUserinfo,
+  n20_missingFields,
 };
