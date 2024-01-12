@@ -83,6 +83,7 @@
     "jest-fetch-mock": "^3.0.3",
     "knip": "^3.13.2",
     "lint-staged": "^14.0.1",
+    "miniflare": "^3.20231218.1",
     "mjml": "^4.14.1",
     "prettier": "^3.0.3",
     "semantic-release": "^21.0.0",
