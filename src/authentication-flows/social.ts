@@ -17,6 +17,7 @@ import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
+import { profile } from "console";
 export interface SocialAuthState {
   authParams: AuthParams;
   connection: string;
@@ -77,7 +78,6 @@ function getProfileData(profile: any) {
     at_hash,
     iat,
     exp,
-    sub,
     hd,
     jti,
     nonce,
@@ -133,20 +133,20 @@ export async function socialAuthCallback({
     connection.token_exchange_basic_auth,
   );
 
-  const { sub } = parseJwt(token.access_token);
-
-  let profileData: any;
+  let userinfo: any;
   if (connection.userinfo_endpoint) {
-    profileData = getProfileData(
+    userinfo = getProfileData(
       await oauth2Client.getUserProfile(token.access_token),
     );
   } else if (token.id_token) {
-    profileData = getProfileData(parseJwt(token.id_token));
+    userinfo = getProfileData(parseJwt(token.id_token));
   } else {
     throw new HTTPException(500, {
       message: "No id_token or userinfo endpoint availeble",
     });
   }
+
+  const { sub, ...profileData } = userinfo;
 
   const email = profileData.email.toLocaleLowerCase();
   const strictEmailVerified = !!profileData.email_verified;
