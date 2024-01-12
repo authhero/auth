@@ -3,7 +3,7 @@ import sv from "../../public/locales/sv/default.json";
 
 type Labels = { [lang: string]: { [key: string]: string } };
 
-export const labels: Labels = {
+const labels: Labels = {
   en,
   sv,
 };

@@ -30,7 +30,7 @@ export interface GenerateAuthResponseParamsForIdToken
   user: User;
 }
 
-export async function generateCode({
+async function generateCode({
   env,
   userId,
   state,

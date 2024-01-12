@@ -100,10 +100,7 @@ const ALLOWED_CALLBACK_URLS = [
 const urlPattern: RegExp =
   /^(?<protocol>[a-z]+:)\/\/(?<host>[^\/:\s]+)(?::(?<port>\d+))?(?<path>\/.*)?$/;
 
-export function matchUrlWithAllowedUrl(
-  allowedUrlStr: string,
-  redirectUrlStr: string,
-) {
+function matchUrlWithAllowedUrl(allowedUrlStr: string, redirectUrlStr: string) {
   const match = urlPattern.exec(
     allowedUrlStr.toLocaleLowerCase(),
   ) as RegExpExecArray & {

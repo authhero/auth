@@ -6,7 +6,7 @@ export function base64UrlDecode(data: string) {
   return atob(data.replace(/-/g, "+").replace(/_/g, "/"));
 }
 
-export function hexToBase64(hexString: string) {
+function hexToBase64(hexString: string) {
   let base64 = "";
   for (let i = 0; i < hexString.length; i++) {
     base64 += !((i - 1) & 1)

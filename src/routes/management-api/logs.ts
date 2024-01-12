@@ -12,7 +12,7 @@ import { RequestWithContext, LogsResponse } from "../../types";
 import { z } from "zod";
 import { ListLogsResponse } from "../../adapters/interfaces/Logs";
 
-export const LogsFilterSchema = z.object({
+const LogsFilterSchema = z.object({
   userId: z.string(),
 });
 

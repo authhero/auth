@@ -50,7 +50,7 @@ export function applyTokenResponseAsQuery(
   return "Redirecting";
 }
 
-export function applyTokenResponseAsFragment(
+function applyTokenResponseAsFragment(
   controller: Controller,
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,

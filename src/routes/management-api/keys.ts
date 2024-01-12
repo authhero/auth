@@ -17,7 +17,7 @@ import { SigningKey } from "../../types";
 import { create } from "../../services/rsa-key";
 import { HTTPException } from "hono/http-exception";
 
-export const LogsFilterSchema = z.object({
+const LogsFilterSchema = z.object({
   userId: z.string(),
 });
 

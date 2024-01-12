@@ -8,7 +8,7 @@ import sv from "../../public/locales/sv/default.json";
 
 const engine = new Liquid();
 
-export async function sendEmailValidation(
+async function sendEmailValidation(
   env: Env,
   client: Client,
   to: string,

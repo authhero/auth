@@ -73,6 +73,6 @@ export async function toPrivatePEM(
   return convertBinaryToPem(pkcs8Key, kid);
 }
 
-export async function toJWKS(key: CryptoKey): Promise<JsonWebKey> {
+async function toJWKS(key: CryptoKey): Promise<JsonWebKey> {
   return (await crypto.subtle.exportKey("jwk", key)) as JsonWebKey;
 }

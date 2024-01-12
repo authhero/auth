@@ -11,7 +11,7 @@ export function oAuth2ClientFactory(
   return new OAuth2ClientFixture(params, redirectUri);
 }
 
-export class OAuth2ClientFixture implements IOAuth2Client {
+class OAuth2ClientFixture implements IOAuth2Client {
   private readonly params: OAuthProviderParams;
   private readonly redirectUri: string;
 

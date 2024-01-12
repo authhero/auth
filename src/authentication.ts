@@ -150,7 +150,7 @@ async function isValidJwtSignature(
   return crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, data);
 }
 
-export async function getUser(
+async function getUser(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   securitySchemeName: SecuritySchemeName,
   bearer: string,
@@ -176,7 +176,7 @@ export async function getUser(
   return token.payload;
 }
 
-export async function verifyTenantPermissions(
+async function verifyTenantPermissions(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
 ) {
   const tenantId = ctx.req.param("tenantId") || ctx.req.header("tenant-id");
