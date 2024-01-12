@@ -17,7 +17,7 @@ import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
-import { profile } from "console";
+
 export interface SocialAuthState {
   authParams: AuthParams;
   connection: string;
