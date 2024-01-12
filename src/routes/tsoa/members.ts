@@ -52,7 +52,7 @@ export class MembersController extends Controller {
   @Security("oauth2managementApi", [""])
   public async getMember(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
     @Path() tenant_id: string,
   ): Promise<Member | string> {
     const { ctx } = request;
@@ -77,7 +77,7 @@ export class MembersController extends Controller {
   @Security("oauth2managementApi", [""])
   public async deleteMember(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
     @Path() tenant_id: string,
   ): Promise<string> {
     const { env } = request.ctx;
@@ -96,7 +96,7 @@ export class MembersController extends Controller {
   @Security("oauth2managementApi", [""])
   public async patchMember(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
     @Path() tenant_id: string,
     @Body()
     body: Partial<
@@ -155,7 +155,7 @@ export class MembersController extends Controller {
   public async putMember(
     @Request() request: RequestWithContext,
     @Path() tenant_id: string,
-    @Path("id") id: string,
+    @Path() id: string,
     @Body()
     body: Omit<Member, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<Member> {
