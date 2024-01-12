@@ -66,7 +66,9 @@ async function addUser(user: User) {
       email_verified:
         (
           identity.profileData.email_verified || user.email_verified
-        ).toString() === "true",
+        ).toString() === "true"
+          ? 1
+          : 0,
       login_count: 0,
       given_name: identity.profileData.given_name || user.given_name || "",
       family_name: identity.profileData.family_name || user.family_name || "",
@@ -76,7 +78,7 @@ async function addUser(user: User) {
       locale: identity.profileData.locale || user.locale || "",
       provider: identity.provider,
       connection: identity.connection,
-      is_social: identity.isSocial,
+      is_social: identity.isSocial ? 1 : 0,
       tenant_id: "59MkuLqTm7xtzwXh-A2FP",
       created_at: user.created_at,
       updated_at: user.updated_at,

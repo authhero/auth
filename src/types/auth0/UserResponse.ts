@@ -8,6 +8,7 @@ export interface PostUsersBody extends BaseUser {
   verify_email?: boolean;
   username?: string;
   connection?: string;
+  email_verified?: boolean;
 }
 
 export interface UserResponse extends BaseUser {
