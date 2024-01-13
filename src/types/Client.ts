@@ -26,6 +26,7 @@ const PartialConnectionSchema = z.object({
   scope: z.string().optional(),
   authorization_endpoint: z.string().optional(),
   token_endpoint: z.string().optional(),
+  userinfo_endpoint: z.string().optional(),
   response_type: z.custom<AuthorizationResponseType>().optional(),
   response_mode: z.custom<AuthorizationResponseMode>().optional(),
   created_at: z.string(),
