@@ -18,7 +18,7 @@ import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
 
-export interface SocialAuthState {
+interface SocialAuthState {
   authParams: AuthParams;
   connection: string;
 }
@@ -63,7 +63,7 @@ export async function socialAuth(
   return `Redirecting to ${connection}`;
 }
 
-export interface socialAuthCallbackParams {
+interface socialAuthCallbackParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
   controller: Controller;
   state: LoginState;

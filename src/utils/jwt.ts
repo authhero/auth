@@ -26,15 +26,9 @@ export function getKeyFormat(pemString: string): "pkcs8" | "spki" | "raw" {
   throw new Error("Unsupported key");
 }
 
-export type JwtAlgorithm =
-  | "RS256"
-  | "RS384"
-  | "RS512"
-  | "ES256"
-  | "ES384"
-  | "ES512";
+type JwtAlgorithm = "RS256" | "RS384" | "RS512" | "ES256" | "ES384" | "ES512";
 
-export interface CreateTokenParams {
+interface CreateTokenParams {
   pemKey: string;
   payload: { [key: string]: string | string[] | number | boolean };
   alg: JwtAlgorithm;

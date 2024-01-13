@@ -4,7 +4,7 @@ import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { TokenFactory } from "../services/token-factory";
 import { stateEncode } from "../utils/stateEncode";
 
-export interface GenerateAuthResponseParamsBase {
+interface GenerateAuthResponseParamsBase {
   env: Env;
   userId: string;
   sid: string;
@@ -13,7 +13,7 @@ export interface GenerateAuthResponseParamsBase {
   authParams: AuthParams;
 }
 
-export interface GenerateAuthResponseParamsForCode
+interface GenerateAuthResponseParamsForCode
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.CODE;
   user: User;
@@ -24,13 +24,13 @@ export interface GenerateAuthResponseParamsForToken
   responseType: AuthorizationResponseType.TOKEN;
 }
 
-export interface GenerateAuthResponseParamsForIdToken
+interface GenerateAuthResponseParamsForIdToken
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.TOKEN_ID_TOKEN;
   user: User;
 }
 
-export async function generateCode({
+async function generateCode({
   env,
   userId,
   state,
@@ -103,7 +103,7 @@ export async function generateTokens(
   return tokenResponse;
 }
 
-export type GenerateAuthResponseParams =
+type GenerateAuthResponseParams =
   | GenerateAuthResponseParamsForToken
   | GenerateAuthResponseParamsForIdToken
   | GenerateAuthResponseParamsForCode;

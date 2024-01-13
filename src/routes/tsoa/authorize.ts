@@ -27,7 +27,7 @@ import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
-export interface AuthorizeParams {
+interface AuthorizeParams {
   request: RequestWithContext;
   client_id: string;
   response_type: AuthorizationResponseType;

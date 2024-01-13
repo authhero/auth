@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import { getClient } from "../services/clients";
 
-export interface UniversalAuthParams {
+interface UniversalAuthParams {
   env: Env;
   controller: Controller;
   authParams: AuthParams;

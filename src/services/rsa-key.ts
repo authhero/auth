@@ -1,12 +1,6 @@
 import { nanoid } from "nanoid";
 import { Certificate } from "../types";
 
-export interface KeyPair {
-  private_key: string;
-  publicKey: any;
-  created_at: number;
-}
-
 export async function create(): Promise<Certificate> {
   let keyPair = (await crypto.subtle.generateKey(
     {
@@ -64,15 +58,12 @@ function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
   return pemCert;
 }
 
-export async function toPrivatePEM(
-  key: CryptoKey,
-  kid: string,
-): Promise<string> {
+async function toPrivatePEM(key: CryptoKey, kid: string): Promise<string> {
   const pkcs8Key = (await crypto.subtle.exportKey("pkcs8", key)) as ArrayBuffer;
 
   return convertBinaryToPem(pkcs8Key, kid);
 }
 
-export async function toJWKS(key: CryptoKey): Promise<JsonWebKey> {
+async function toJWKS(key: CryptoKey): Promise<JsonWebKey> {
   return (await crypto.subtle.exportKey("jwk", key)) as JsonWebKey;
 }

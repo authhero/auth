@@ -1,7 +1,7 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { DataAdapters } from "../adapters/interfaces";
 
-export interface ClientFactory<ClientType> {
+interface ClientFactory<ClientType> {
   getInstanceById: (id: string) => ClientType;
   getInstanceByName: (name: string) => ClientType;
 }

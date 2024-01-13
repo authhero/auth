@@ -35,19 +35,13 @@ import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginS
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
-export interface LoginParams {
+interface LoginParams {
   username: string;
   password: string;
 }
 
-export interface PasswordResetParams {
+interface PasswordResetParams {
   username: string;
-}
-
-export interface ResetPasswordState {
-  username: string;
-  code: string;
-  client_id: string;
 }
 
 async function handleLogin(

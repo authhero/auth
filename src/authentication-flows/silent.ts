@@ -11,7 +11,7 @@ import { headers } from "../constants";
 import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 
-export interface SilentAuthParams {
+interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
   tenant_id: string;
   controller: Controller;

@@ -28,11 +28,11 @@ import { Identity } from "../../types/auth0/Identity";
 import { enrichUser } from "../../utils/enrichUser";
 import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
-export interface LinkWithBodyParams {
+interface LinkWithBodyParams {
   link_with: string;
 }
 
-export interface LinkUserIdBodyParams {
+interface LinkUserIdBodyParams {
   provider: string;
   connection_id?: string;
   user_id: string;

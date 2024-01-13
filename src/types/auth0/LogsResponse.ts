@@ -1,8 +1,8 @@
-export interface GetLogsResponseDetails {
+interface GetLogsResponseDetails {
   [key: string]: any;
 }
 
-export interface GetLogsResponseLocationInfo {
+interface GetLogsResponseLocationInfo {
   country_code?: string;
   country_code3?: string;
   country_name?: string;

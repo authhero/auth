@@ -35,17 +35,6 @@ export interface PasswordlessOptions {
   authParams: Omit<AuthParams, "client_id">;
 }
 
-export interface LoginTicket {
-  login_ticket: string;
-  co_verifier: string;
-  co_id: string;
-}
-
-export interface LoginError {
-  error: string;
-  error_description: string;
-}
-
 function getLocalePath(locale: string) {
   if (locale === "en") return "";
 

@@ -30,7 +30,7 @@ import { migrateToLatest } from "../../migrate/migrate";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
-export interface ContextFixtureParams {
+interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
   tickets?: Ticket[];

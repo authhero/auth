@@ -20,7 +20,7 @@ import { Totals } from "../../types/auth0";
 import { HTTPException } from "hono/http-exception";
 import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
-export interface GetTenantsWithTotals extends Totals {
+interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
 }
 

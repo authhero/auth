@@ -7,7 +7,7 @@ import {
 } from "../types";
 import { headers } from "../constants";
 
-export function applyTokenResponseAsQuery(
+function applyTokenResponseAsQuery(
   controller: Controller,
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
@@ -50,7 +50,7 @@ export function applyTokenResponseAsQuery(
   return "Redirecting";
 }
 
-export function applyTokenResponseAsFragment(
+function applyTokenResponseAsFragment(
   controller: Controller,
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
