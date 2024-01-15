@@ -33,10 +33,10 @@ const server = {
       ctx,
     );
   },
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+  async scheduled() {
     // Rotate keys and trim tables
   },
-  async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext) {
+  async queue() {
     // Not used
   },
 };

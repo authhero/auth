@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Header,
   Path,
   Post,
   Put,
