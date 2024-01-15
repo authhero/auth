@@ -25,7 +25,6 @@ export class KeysController extends Controller {
   @Get("")
   public async list(
     @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
   ): Promise<SigningKey[]> {
     const { ctx } = request;
     const { env } = ctx;
@@ -45,7 +44,6 @@ export class KeysController extends Controller {
   @Get("{kid}")
   public async get(
     @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
     @Path() kid: string,
   ): Promise<SigningKey> {
     const { ctx } = request;
@@ -69,10 +67,7 @@ export class KeysController extends Controller {
 
   @Post("rotate")
   @SuccessResponse(201, "Created")
-  public async rotate(
-    @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-  ): Promise<string> {
+  public async rotate(@Request() request: RequestWithContext): Promise<string> {
     const { ctx } = request;
     const { env } = ctx;
 
@@ -92,7 +87,6 @@ export class KeysController extends Controller {
   @SuccessResponse(201, "Created")
   public async revoke(
     @Request() request: RequestWithContext,
-    @Header() tenant_id: string,
     @Path() kid: string,
   ): Promise<string> {
     const { ctx } = request;
