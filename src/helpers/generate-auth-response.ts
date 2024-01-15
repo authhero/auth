@@ -31,7 +31,6 @@ interface GenerateAuthResponseParamsForIdToken
 }
 
 async function generateCode({
-  env,
   userId,
   state,
   nonce,
