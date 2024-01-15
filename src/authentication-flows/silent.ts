@@ -9,7 +9,6 @@ import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
 import { Var } from "../types/Var";
-import { HTTPException } from "hono/http-exception";
 
 interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;

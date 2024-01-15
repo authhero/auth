@@ -1,12 +1,10 @@
 import { Controller } from "@tsoa/runtime";
-import { nanoid } from "nanoid";
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
-import { User } from "../types/User";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {

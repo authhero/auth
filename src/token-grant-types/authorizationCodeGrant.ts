@@ -1,4 +1,3 @@
-import { base64ToHex } from "../utils/base64";
 import {
   AuthorizationCodeGrantTypeParams,
   ClientCredentialGrantTypeParams,

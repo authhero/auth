@@ -45,10 +45,6 @@ const JwksKeySchema = z.object({
 });
 type JwksKey = z.infer<typeof JwksKeySchema>;
 
-const JwksKeysSchema = z.object({
-  keys: z.array(JwksKeySchema),
-});
-
 /**
  * Parse and decode a JWT.
  * A JWT is three, base64 encoded, strings concatenated with ‘.’:

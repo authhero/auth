@@ -40,7 +40,7 @@ const userSchema = z.object({
 
 type User = z.infer<typeof userSchema>;
 
-const tenantId = "qo0kCHUE8qAvpNPznuoRW";
+// const tenantId = "qo0kCHUE8qAvpNPznuoRW";
 
 const dialect = new PlanetScaleDialect({
   host: process.env.DATABASE_HOST,

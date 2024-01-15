@@ -28,7 +28,7 @@ import { AuthorizationResponseType, Env, User } from "../../types";
 import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
-import { sendLink, sendResetPassword } from "../../controllers/email";
+import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 
