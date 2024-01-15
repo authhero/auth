@@ -15,7 +15,7 @@ export async function create(): Promise<Certificate> {
 
   const kid = nanoid();
 
-  const private_key = await toPrivatePEM(keyPair.privateKey, kid);
+  const private_key = await toPrivatePEM(keyPair.privateKey);
   const publicJWKS = await toJWKS(keyPair.publicKey);
 
   return {
@@ -41,7 +41,7 @@ function arrayBufferToBase64String(arrayBuffer: ArrayBuffer) {
   return btoa(byteString);
 }
 
-function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
+function convertBinaryToPem(binaryData: ArrayBuffer) {
   const base64Cert = arrayBufferToBase64String(binaryData);
   let pemCert = "-----BEGIN PRIVATE KEY-----\r\n";
   let nextIndex = 0;
@@ -58,10 +58,10 @@ function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
   return pemCert;
 }
 
-async function toPrivatePEM(key: CryptoKey, kid: string): Promise<string> {
+async function toPrivatePEM(key: CryptoKey): Promise<string> {
   const pkcs8Key = (await crypto.subtle.exportKey("pkcs8", key)) as ArrayBuffer;
 
-  return convertBinaryToPem(pkcs8Key, kid);
+  return convertBinaryToPem(pkcs8Key);
 }
 
 async function toJWKS(key: CryptoKey): Promise<JsonWebKey> {
