@@ -1,5 +1,4 @@
 import { sendCode, sendLink } from "../../controllers/email";
-import { Env } from "../../types";
 import { DataAdapters } from "../interfaces";
 export default function createEmailAdapter(): Partial<DataAdapters> {
   return {

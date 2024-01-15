@@ -110,6 +110,8 @@ class MockOAuth2Client implements IOAuth2Client {
     }
     */
   }
+
+  //@ts-ignore
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");
   }
