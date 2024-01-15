@@ -1,15 +1,8 @@
 import { tsoaApp } from "../../../src/app";
-import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 
 describe("Register password user", () => {
-  let token;
-
-  beforeEach(async () => {
-    token = await getAdminToken();
-  });
-
   it("should register a new user with password", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);

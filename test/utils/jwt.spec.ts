@@ -59,8 +59,6 @@ describe("payload", () => {
   it("should return a JWT with correct encoding for special characters", async () => {
     const certificate = getCertificate();
 
-    const encoder = new TextEncoder();
-
     const token = await createToken({
       pemKey: certificate.private_key,
       payload: {
