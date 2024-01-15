@@ -22,10 +22,12 @@ class OAuth2ClientFixture implements IOAuth2Client {
     this.redirectUri = redirectUri;
   }
 
+  //@ts-ignore
   async getAuthorizationUrl(state: string): Promise<string> {
     return "https://example.com";
   }
 
+  //@ts-ignore
   async exchangeCodeForTokenResponse(code: string): Promise<TokenResponse> {
     return {
       access_token: "access_token",
@@ -36,6 +38,7 @@ class OAuth2ClientFixture implements IOAuth2Client {
   }
 
   async getUserProfile(
+    //@ts-ignore
     accessToken: string,
   ): Promise<{ [key: string]: string }> {
     return {
