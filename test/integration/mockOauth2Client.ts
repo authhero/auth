@@ -22,6 +22,7 @@ function createTokenExample(payload: {
 
 class MockOAuth2Client implements IOAuth2Client {
   private readonly params: OAuthProviderParams;
+  //@ts-ignore - blahb
   private readonly redirectUri: string;
 
   constructor(params: OAuthProviderParams, redirectUri: string) {
