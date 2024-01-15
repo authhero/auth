@@ -25,7 +25,7 @@ const server = {
         ...env,
         oauth2ClientFactory: { create: oAuth2ClientFactory },
         data: {
-          ...createEmailAdapter(env),
+          ...createEmailAdapter(),
           ...createAdapters(db),
           ...createR2Adapter(env),
         },
