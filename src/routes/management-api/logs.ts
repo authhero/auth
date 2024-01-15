@@ -8,8 +8,7 @@ import {
   Security,
   Tags,
 } from "@tsoa/runtime";
-import { RequestWithContext, LogsResponse } from "../../types";
-import { z } from "zod";
+import { RequestWithContext } from "../../types";
 import { ListLogsResponse } from "../../adapters/interfaces/Logs";
 
 @Route("api/v2/logs")

@@ -140,15 +140,13 @@ describe("social sign on", () => {
         // ---------------------------------------------
         const setCookiesHeader =
           socialCallbackResponse.headers.get("set-cookie")!;
-        const {
-          accessToken: silentAuthAccessTokenPayload,
-          idToken: silentAuthIdTokenPayload,
-        } = await doSilentAuthRequestAndReturnTokens(
-          setCookiesHeader,
-          client,
-          "nonce",
-          "clientId",
-        );
+        const { idToken: silentAuthIdTokenPayload } =
+          await doSilentAuthRequestAndReturnTokens(
+            setCookiesHeader,
+            client,
+            "nonce",
+            "clientId",
+          );
         expect(silentAuthIdTokenPayload).toMatchObject({
           sub: "demo-social-provider|123456789012345678901",
           aud: "clientId",
@@ -250,15 +248,13 @@ describe("social sign on", () => {
         // ---------------------------------------------
         const setCookiesHeader =
           socialCallbackResponse.headers.get("set-cookie")!;
-        const {
-          accessToken: silentAuthAccessTokenPayload,
-          idToken: silentAuthIdTokenPayload,
-        } = await doSilentAuthRequestAndReturnTokens(
-          setCookiesHeader,
-          client,
-          "nonce",
-          "clientId",
-        );
+        const { idToken: silentAuthIdTokenPayload } =
+          await doSilentAuthRequestAndReturnTokens(
+            setCookiesHeader,
+            client,
+            "nonce",
+            "clientId",
+          );
         expect(silentAuthIdTokenPayload).toMatchObject({
           sub: "demo-social-provider|123456789012345678901",
           aud: "clientId",
@@ -436,15 +432,13 @@ describe("social sign on", () => {
       // ---------------------------------------------
       const setCookiesHeader =
         socialCallbackResponse.headers.get("set-cookie")!;
-      const {
-        accessToken: silentAuthAccessTokenPayload,
-        idToken: silentAuthIdTokenPayload,
-      } = await doSilentAuthRequestAndReturnTokens(
-        setCookiesHeader,
-        client,
-        "nonce",
-        "clientId",
-      );
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          setCookiesHeader,
+          client,
+          "nonce",
+          "clientId",
+        );
       expect(silentAuthIdTokenPayload).toMatchObject({
         // testing this means it must be working
         sub: createEmailUser.user_id,

@@ -131,15 +131,13 @@ describe("code-flow", () => {
     // now check silent auth works when logged in with code----------------------------------------
     const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
 
-    const {
-      accessToken: silentAuthAccessTokenPayload,
-      idToken: silentAuthIdTokenPayload,
-    } = await doSilentAuthRequestAndReturnTokens(
-      setCookiesHeader,
-      client,
-      AUTH_PARAMS.nonce,
-      "clientId",
-    );
+    const { idToken: silentAuthIdTokenPayload } =
+      await doSilentAuthRequestAndReturnTokens(
+        setCookiesHeader,
+        client,
+        AUTH_PARAMS.nonce,
+        "clientId",
+      );
 
     const {
       // these are the fields that change on every test run
@@ -169,7 +167,7 @@ describe("code-flow", () => {
     // ----------------------------
     // Now log in (previous flow was signup)
     // ----------------------------
-    const passwordlessLoginStart = await client.passwordless.start.$post(
+    await client.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,

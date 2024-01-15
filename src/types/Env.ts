@@ -1,11 +1,6 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { DataAdapters } from "../adapters/interfaces";
 
-interface ClientFactory<ClientType> {
-  getInstanceById: (id: string) => ClientType;
-  getInstanceByName: (name: string) => ClientType;
-}
-
 export type Env = {
   ISSUER: string;
   DD_API_KEY: string;

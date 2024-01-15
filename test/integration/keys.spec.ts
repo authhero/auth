@@ -16,7 +16,6 @@ describe("keys", () => {
       },
     );
 
-    const body = await response.text();
     expect(response.status).toBe(200);
   });
 });
