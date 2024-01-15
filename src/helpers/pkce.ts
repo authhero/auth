@@ -1,8 +1,7 @@
 import hash from "../utils/hash";
-import { CodeChallengeMethod, Env } from "../types";
+import { CodeChallengeMethod } from "../types";
 
 export async function computeCodeChallenge(
-  env: Env,
   codeVerifier: string,
   method: CodeChallengeMethod,
 ): Promise<string> {
