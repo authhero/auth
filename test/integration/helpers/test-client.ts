@@ -71,7 +71,6 @@ export async function getEnv() {
   });
   data.connections.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CONNECTION",
-    tenant_id: "DEFAULT_SETTINGS",
     name: "demo-social-provider",
     client_id: "socialClientId",
     client_secret: "socialClientSecret",
@@ -85,7 +84,6 @@ export async function getEnv() {
   });
   data.connections.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CONNECTION2",
-    tenant_id: "DEFAULT_SETTINGS",
     name: "other-social-provider",
     client_id: "otherSocialClientId",
     client_secret: "otherSocialClientSecret",
