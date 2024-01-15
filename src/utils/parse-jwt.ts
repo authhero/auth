@@ -7,7 +7,7 @@ export function parseJwt(token: string): any {
   return JSON.parse(jsonPayload);
 }
 
-export function decodeBase64(base64: string): string {
+function decodeBase64(base64: string): string {
   const decodedString = atob(base64);
 
   // Ensure that the decoded string is interpreted as UTF-8
