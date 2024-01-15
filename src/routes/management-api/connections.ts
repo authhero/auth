@@ -132,15 +132,12 @@ export class ConnectionsController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
-    const connection: SqlConnection = {
+    const connection = await env.data.connections.create(tenantId, {
       ...body,
-      tenant_id: tenantId,
       id: nanoid(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
-
-    await env.data.connections.create(tenantId, connection);
+    });
 
     this.setStatus(201);
     return connection;
