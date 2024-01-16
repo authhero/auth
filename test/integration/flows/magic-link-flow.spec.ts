@@ -1,5 +1,4 @@
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import type { Email } from "../../../src/types/Email";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { getAdminToken } from "../helpers/token";
@@ -108,15 +107,13 @@ describe("code-flow", () => {
       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
       // now check silent auth works when logged in with magic link----------------------------------------
-      const {
-        accessToken: silentAuthAccessTokenPayload,
-        idToken: silentAuthIdTokenPayload,
-      } = await doSilentAuthRequestAndReturnTokens(
-        authCookieHeader,
-        client,
-        AUTH_PARAMS.nonce,
-        "clientId",
-      );
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
 
       const {
         // these are the fields that change on every test run
@@ -275,7 +272,6 @@ describe("code-flow", () => {
     });
 
     it("should log in with the same magic link multiple times", async () => {
-      const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -306,7 +302,7 @@ describe("code-flow", () => {
         },
       );
 
-      const [{ to, magicLink }] = await env.data.email.list!();
+      const [{ magicLink }] = await env.data.email.list!();
 
       const link = magicLink!;
 
@@ -338,7 +334,6 @@ describe("code-flow", () => {
     });
 
     it("should not accept any invalid params on the magic link", async () => {
-      const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -402,9 +397,7 @@ describe("code-flow", () => {
       // ----------------
       const magicLinkWithBadEmail = new URL(link!);
       magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
-      const authenticatePath2 = magicLinkWithBadEmail.href.split(
-        "https://example.com",
-      )[1];
+
       const authenticateResponse2 =
         await client.passwordless.verify_redirect.$get({
           query: Object.fromEntries(

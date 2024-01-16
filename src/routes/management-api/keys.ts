@@ -12,7 +12,6 @@ import {
   Tags,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { z } from "zod";
 import { SigningKey } from "../../types";
 import { create } from "../../services/rsa-key";
 import { HTTPException } from "hono/http-exception";

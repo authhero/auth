@@ -18,11 +18,6 @@ import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
 
-interface SocialAuthState {
-  authParams: AuthParams;
-  connection: string;
-}
-
 export async function socialAuth(
   env: Env,
   controller: Controller,

@@ -1,4 +1,3 @@
-import { base64UrlEncode } from "../../src/utils/base64";
 import { getCertificate } from "../integration/helpers/token";
 import {
   pemToBuffer,
@@ -6,7 +5,7 @@ import {
   getAlgorithm,
   createToken,
 } from "../../src/utils/jwt";
-import { decodeBase64, parseJwt } from "../../src/utils/parse-jwt";
+import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("pemToBuffer", () => {
   it("converts PEM string to ArrayBuffer", () => {
@@ -59,8 +58,6 @@ describe("getAlgorithm", () => {
 describe("payload", () => {
   it("should return a JWT with correct encoding for special characters", async () => {
     const certificate = getCertificate();
-
-    const encoder = new TextEncoder();
 
     const token = await createToken({
       pemKey: certificate.private_key,

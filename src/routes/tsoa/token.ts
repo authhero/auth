@@ -7,7 +7,6 @@ import {
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import {
   authorizeCodeGrant,
-  passwordGrant,
   pkceAuthorizeCodeGrant,
   clientCredentialsGrant,
 } from "../../token-grant-types";
@@ -39,7 +38,7 @@ export class TokenRoutes extends Controller {
       case GrantType.ClientCredential:
         return clientCredentialsGrant(ctx.env, body);
       case GrantType.Password:
-        return passwordGrant(ctx.env, body);
+        throw new Error("Not implemented");
     }
   }
 }

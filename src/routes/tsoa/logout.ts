@@ -1,4 +1,4 @@
-import { Env, RequestWithContext } from "../../types";
+import { RequestWithContext } from "../../types";
 import {
   Query,
   Controller,

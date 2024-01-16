@@ -12,7 +12,9 @@ export function oAuth2ClientFactory(
 }
 
 class OAuth2ClientFixture implements IOAuth2Client {
+  //@ts-ignore
   private readonly params: OAuthProviderParams;
+  //@ts-ignore
   private readonly redirectUri: string;
 
   constructor(params: OAuthProviderParams, redirectUri: string) {

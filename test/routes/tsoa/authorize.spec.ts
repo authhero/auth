@@ -5,7 +5,6 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
   CodeChallengeMethod,
-  Tenant,
   User,
 } from "../../../src/types";
 import { parseJwt } from "../../../src/utils/parse-jwt";

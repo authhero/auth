@@ -1,4 +1,4 @@
-import { Database, OTP, SqlOTP } from "../../../types";
+import { Database, OTP } from "../../../types";
 import { Kysely } from "kysely";
 
 export function list(db: Kysely<Database>) {
