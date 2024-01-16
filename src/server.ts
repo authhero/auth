@@ -33,12 +33,6 @@ const server = {
       ctx,
     );
   },
-  async scheduled() {
-    // Rotate keys and trim tables
-  },
-  async queue() {
-    // Not used
-  },
 };
 
 export default server;
