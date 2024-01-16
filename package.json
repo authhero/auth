@@ -17,7 +17,7 @@
     "semantic-release": "semantic-release",
     "prepare": "husky install",
     "type-check": "tsc",
-    "pull-translations": "i18nexus pull -k EWI52U0e8j13AX31kLcS-A && prettier --write ./public/locales/**/*.json",
+    "pull-translations": "i18nexus pull -k EWI52U0e8j13AX31kLcS-A --path ./src/locales && prettier --write ./src/locales/**/*.json",
     "knip": "knip"
   },
   "author": "",
