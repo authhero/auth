@@ -3,8 +3,8 @@ import { translate } from "../utils/i18n";
 import { Client, Env } from "../types";
 import sendEmail from "../services/email";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
-import en from "../../public/locales/en/default.json";
-import sv from "../../public/locales/sv/default.json";
+import en from "../locales/en/default.json";
+import sv from "../locales/sv/default.json";
 
 const engine = new Liquid();
 
