@@ -1,7 +1,6 @@
 import { sendCode, sendLink } from "../../controllers/email";
-import { Env } from "../../types";
 import { DataAdapters } from "../interfaces";
-export default function createEmailAdapter(env: Env): Partial<DataAdapters> {
+export default function createEmailAdapter(): Partial<DataAdapters> {
   return {
     email: {
       sendCode: async (env, client, to, code) => {

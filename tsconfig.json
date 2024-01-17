@@ -26,7 +26,8 @@
     "paths": {
       "*": ["node_modules/*"]
     },
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"]
 }

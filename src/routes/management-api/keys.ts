@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Header,
   Path,
   Post,
   Put,
@@ -10,6 +9,7 @@ import {
   Security,
   SuccessResponse,
   Tags,
+  Header,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { SigningKey } from "../../types";

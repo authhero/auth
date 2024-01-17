@@ -30,9 +30,11 @@ class MockOAuth2Client implements IOAuth2Client {
     this.redirectUri = redirectUri;
   }
 
+  //@ts-ignore
   getAuthorizationUrl(state: string): Promise<string> {
     throw new Error("getAuthorizationUrl method not implemented.");
   }
+  //@ts-ignore
   async exchangeCodeForTokenResponse(code: string) {
     if (this.params.client_id === "otherSocialClientId") {
       const otherClientIdToken = await createTokenExample({
@@ -108,6 +110,8 @@ class MockOAuth2Client implements IOAuth2Client {
     }
     */
   }
+
+  //@ts-ignore
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");
   }

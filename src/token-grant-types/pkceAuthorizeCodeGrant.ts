@@ -45,7 +45,6 @@ export async function pkceAuthorizeCodeGrant(
   }
 
   const challenge = await computeCodeChallenge(
-    env,
     params.code_verifier,
     state.authParams.code_challenge_method,
   );

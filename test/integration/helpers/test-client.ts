@@ -22,6 +22,7 @@ export async function getEnv() {
 
   const emails: Email[] = [];
   const emailAdapter: EmailAdapter = {
+    //@ts-ignore
     sendLink: (env, client, to, code, magicLink) => {
       emails.push({
         to,
@@ -30,6 +31,7 @@ export async function getEnv() {
       });
       return Promise.resolve();
     },
+    //@ts-ignore
     sendCode: (env, client, to, code) => {
       emails.push({
         to,
