@@ -71,7 +71,9 @@ describe("logout", () => {
         "clientId",
       );
     expect(silentAuthAccessTokenPayload).toBeDefined();
-    // Logout
+    // ---------------------------------------------------
+    // Logout so that the session is cleared in the database
+    // ---------------------------------------------------
     const cookies = setCookieHeader.split(";").map((c) => c.trim());
     const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
