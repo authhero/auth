@@ -91,6 +91,9 @@ describe("logout", () => {
 
     expect(logoutResponse.status).toBe(302);
 
+    //--------------------------------------------------------------
+    // Now reuse the previous auth cookie. This should no longer work because the session is cleared
+    //--------------------------------------------------------------
     const result = await doSilentAuthRequest(
       setCookieHeader,
       client,
