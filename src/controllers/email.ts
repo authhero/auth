@@ -5,6 +5,22 @@ import sendEmail from "../services/email";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
+import no from "../locales/no/default.json";
+import it from "../locales/it/default.json";
+
+const SUPPORTED_LOCALES: { [key: string]: object } = {
+  en,
+  sv,
+  no,
+  it,
+};
+
+function getLocale(language: string) {
+  if (SUPPORTED_LOCALES[language]) {
+    return SUPPORTED_LOCALES[language];
+  }
+  return en;
+}
 
 const engine = new Liquid();
 
@@ -77,7 +93,7 @@ export async function sendCode(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
-  const locale = language === "sv" ? sv : en;
+  const locale = getLocale(language);
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -141,7 +157,7 @@ export async function sendLink(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
-  const locale = language === "sv" ? sv : en;
+  const locale = getLocale(language);
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
