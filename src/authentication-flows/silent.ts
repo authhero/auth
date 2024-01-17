@@ -77,6 +77,9 @@ export async function silentAuth({
         });
 
         ctx.set("log", JSON.stringify(tokenResponse));
+        await env.data.sessions.update(tenant_id, tokenState, {
+          used_at: new Date().toISOString(),
+        });
 
         return renderAuthIframe(
           controller,
