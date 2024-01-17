@@ -21,7 +21,7 @@ function getDefaultSilentAuthSearchParams() {
 }
 
 describe("logout", () => {
-  it("should delete the session is a user logs out", async () => {
+  it("should delete the session if a user logs out", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
