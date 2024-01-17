@@ -5,5 +5,6 @@ export interface Session {
   created_at: Date;
   expires_at: Date;
   used_at?: Date;
+  deleted_at?: Date;
   user_id: string;
 }

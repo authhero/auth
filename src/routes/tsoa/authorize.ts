@@ -45,6 +45,8 @@ interface AuthorizeParams {
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
   realm?: string;
+  referer?: string;
+  cookie?: string;
 }
 
 @Route("authorize")
@@ -99,6 +101,7 @@ export class AuthorizeController extends Controller {
     @Query("code_challenge") code_challenge?: string,
     @Query("realm") realm?: string,
     @Header("referer") referer?: string,
+    @Header("cookie") cookie?: string,
   ): Promise<string> {
     const { ctx } = request;
     const { env } = ctx;
@@ -145,7 +148,7 @@ export class AuthorizeController extends Controller {
         ctx,
         tenant_id: client.tenant_id,
         controller: this,
-        cookie_header: request.ctx.req.header("cookie") ?? null,
+        cookie_header: cookie ?? null,
         redirect_uri,
         state,
         response_type,
@@ -194,6 +197,8 @@ export class AuthorizeController extends Controller {
       params.code_challenge_method,
       params.code_challenge,
       params.realm,
+      params.referer,
+      params.cookie,
     );
   }
 }
