@@ -66,9 +66,6 @@ describe("authorize", () => {
       const ctx = await contextFixture({
         sessions: [session],
         users: [user],
-        headers: {
-          cookie: "auth-token=sessionId",
-        },
       });
 
       const actual = await controller.authorizeWithParams({
@@ -85,6 +82,7 @@ describe("authorize", () => {
         // When using PKCE the client generates a random code challenge
         code_challenge: "Aci0drFQuKXZ5KU4uqEfzSOWzNKqIOM2hNfLYA8qfJo",
         prompt: "none",
+        cookie: "auth-token=sessionId",
       });
 
       expect(actual).toContain('"state":"state"');
@@ -165,9 +163,6 @@ describe("authorize", () => {
       const ctx = await contextFixture({
         sessions: [session],
         users: [testUser],
-        headers: {
-          cookie: "auth-token=sessionId",
-        },
       });
 
       const actual = await controller.authorizeWithParams({
@@ -184,6 +179,7 @@ describe("authorize", () => {
         // When using PKCE the client generates a random code challenge
         code_challenge: "Aci0drFQuKXZ5KU4uqEfzSOWzNKqIOM2hNfLYA8qfJo",
         prompt: "none",
+        cookie: "auth-token=sessionId",
       });
 
       expect(actual).toContain('response: {"access_token');

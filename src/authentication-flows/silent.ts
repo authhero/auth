@@ -47,7 +47,7 @@ export async function silentAuth({
   const redirectURL = new URL(redirect_uri);
 
   if (tokenState) {
-    const session = await env.data.sessions.get(tokenState);
+    const session = await env.data.sessions.get(tenant_id, tokenState);
 
     if (session) {
       ctx.set("userId", session.user_id);
