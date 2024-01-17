@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@planetscale/database": "^1.11.0",
-    "@tsoa/runtime": "^5.0.0",
+    "@tsoa/runtime": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^9.2.2",
     "cookie": "^0.5.0",
@@ -60,7 +60,7 @@
     "liquidjs": "^10.9.2",
     "mime": "^3.0.0",
     "nanoid": "^3.3.3",
-    "tsoa": "^5.1.1",
+    "tsoa": "^6.0.1",
     "tsoa-hono": "^1.2.1",
     "zod": "^3.22.2"
   },
