@@ -5,13 +5,13 @@ import sendEmail from "../services/email";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
-import no from "../locales/no/default.json";
+import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
 
 const SUPPORTED_LOCALES: { [key: string]: object } = {
   en,
   sv,
-  no,
+  nb,
   it,
 };
 
