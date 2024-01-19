@@ -1,6 +1,6 @@
 import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
-import no from "../locales/no/default.json";
+import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
 
 type Labels = { [lang: string]: { [key: string]: string } };
@@ -8,7 +8,7 @@ type Labels = { [lang: string]: { [key: string]: string } };
 const labels: Labels = {
   en,
   sv,
-  no,
+  nb,
   it,
 };
 
