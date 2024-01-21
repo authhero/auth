@@ -95,9 +95,9 @@ describe("silent-auth", () => {
       "clientId",
     );
     expect(idToken).toBeDefined();
-
     const session = await env.data.sessions.get("tenantId", idToken.sid);
-    expect(new Date(session!.used_at as string)).toBeGreaterThan(postLoginDate);
+
+    expect(session!.used_at > postLoginDate).toBe(true);
   });
 
   it("should set the used_at property on the session when the token is renewed", async () => {

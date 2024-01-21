@@ -45,6 +45,7 @@ describe("authorize", () => {
         tenant_id: "tenantId",
         client_id: "clientId",
         created_at: new Date(),
+        used_at: new Date(),
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 
@@ -157,6 +158,7 @@ describe("authorize", () => {
         tenant_id: "tenantId",
         client_id: "clientId",
         created_at: new Date(),
+        used_at: new Date(),
         expires_at: new Date(Date.now() + 60 * 1000),
       };
 

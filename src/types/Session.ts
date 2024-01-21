@@ -4,7 +4,7 @@ export interface Session {
   client_id: string;
   created_at: Date;
   expires_at: Date;
-  used_at?: string;
+  used_at: Date;
   deleted_at?: Date;
   user_id: string;
 }
