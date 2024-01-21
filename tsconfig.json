@@ -9,7 +9,7 @@
     // The following three options are set for
     "allowJs": true,
     "checkJs": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -21,16 +21,13 @@
     "types": [
       "@cloudflare/workers-types",
       "@types/jest",
-      "@types/service-worker-mock"
+      "@types/service-worker-mock",
     ],
     "paths": {
-      "*": ["node_modules/*"]
-    }
+      "*": ["node_modules/*"],
+    },
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "integration-test/test-server.ts",
-    "scripts/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"],
 }

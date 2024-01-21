@@ -34,6 +34,8 @@ export function get(db: Kysely<Database>) {
         response_mode,
         redirect_uri,
       },
+      created_at: new Date(ticket.created_at),
+      expires_at: new Date(ticket.expires_at),
     };
   };
 }

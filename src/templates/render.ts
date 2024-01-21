@@ -49,10 +49,9 @@ export async function renderLogin(
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const socialLoginQuery = new URLSearchParams();
-  Object.keys(context.authParams)
-    .filter((key) => context.authParams[key])
-    .forEach((key) => socialLoginQuery.set(key, context.authParams[key]));
+  const socialLoginQuery = new URLSearchParams({
+    ...context.authParams,
+  });
 
   // TODO: pull from client instead
   const connections = [

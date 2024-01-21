@@ -1,11 +1,5 @@
 import { nanoid } from "nanoid";
-import { Certificate } from "../models/Certificate";
-
-export interface KeyPair {
-  privateKey: string;
-  publicKey: any;
-  created_at: number;
-}
+import { Certificate } from "../types";
 
 export async function create(): Promise<Certificate> {
   let keyPair = (await crypto.subtle.generateKey(
@@ -21,20 +15,20 @@ export async function create(): Promise<Certificate> {
 
   const kid = nanoid();
 
-  const privateKey = await toPrivatePEM(keyPair.privateKey, kid);
+  const private_key = await toPrivatePEM(keyPair.privateKey);
   const publicJWKS = await toJWKS(keyPair.publicKey);
 
   return {
-    privateKey,
-    publicKey: {
+    private_key,
+    public_key: JSON.stringify({
       alg: "RS256",
       e: "AQAB",
       kty: "RSA",
       n: publicJWKS.n,
       use: "sig",
-    },
+    }),
     kid,
-    created_at: Date.now(),
+    created_at: new Date().toISOString(),
   };
 }
 
@@ -47,7 +41,7 @@ function arrayBufferToBase64String(arrayBuffer: ArrayBuffer) {
   return btoa(byteString);
 }
 
-function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
+function convertBinaryToPem(binaryData: ArrayBuffer) {
   const base64Cert = arrayBufferToBase64String(binaryData);
   let pemCert = "-----BEGIN PRIVATE KEY-----\r\n";
   let nextIndex = 0;
@@ -64,15 +58,12 @@ function convertBinaryToPem(binaryData: ArrayBuffer, label: string) {
   return pemCert;
 }
 
-export async function toPrivatePEM(
-  key: CryptoKey,
-  kid: string,
-): Promise<string> {
+async function toPrivatePEM(key: CryptoKey): Promise<string> {
   const pkcs8Key = (await crypto.subtle.exportKey("pkcs8", key)) as ArrayBuffer;
 
-  return convertBinaryToPem(pkcs8Key, kid);
+  return convertBinaryToPem(pkcs8Key);
 }
 
-export async function toJWKS(key: CryptoKey): Promise<JsonWebKey> {
+async function toJWKS(key: CryptoKey): Promise<JsonWebKey> {
   return (await crypto.subtle.exportKey("jwk", key)) as JsonWebKey;
 }

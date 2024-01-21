@@ -1,4 +1,3 @@
-import { base64ToHex } from "../utils/base64";
 import {
   AuthorizationCodeGrantTypeParams,
   ClientCredentialGrantTypeParams,
@@ -9,12 +8,12 @@ import {
   TokenResponse,
   User,
 } from "../types";
-import { InvalidClientError } from "../errors";
 import { getClient } from "../services/clients";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import hash from "../utils/hash";
 import { nanoid } from "nanoid";
 import { stateDecode } from "../utils/stateEncode";
+import { HTTPException } from "hono/http-exception";
 
 export async function authorizeCodeGrant(
   env: Env,
@@ -28,15 +27,18 @@ export async function authorizeCodeGrant(
   } = stateDecode(params.code); // this "code" is actually a stringified base64 encoded state object...
 
   if (params.client_id && state.authParams.client_id !== params.client_id) {
-    throw new InvalidClientError();
+    throw new HTTPException(403, { message: "Invalid Client" });
   }
 
   const client = await getClient(env, state.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
 
   // Check the secret if this is a code grant flow
   const secretHash = await hash(params.client_secret);
   if (client.client_secret !== secretHash) {
-    throw new InvalidClientError("Invalid Secret");
+    throw new HTTPException(403, { message: "Invalid Secret" });
   }
 
   return generateAuthResponse({
@@ -51,6 +53,9 @@ export async function clientCredentialsGrant(
   params: ClientCredentialGrantTypeParams,
 ): Promise<TokenResponse | CodeResponse> {
   const client = await getClient(env, params.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
 
   if (client.client_secret !== params.client_secret) {
     throw new Error("Invalid secret");

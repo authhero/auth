@@ -13,6 +13,7 @@ import {
   Security,
   Path,
   Body,
+  Middlewares,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import {
@@ -21,13 +22,20 @@ import {
   GetUserResponseWithTotals,
 } from "../../types/auth0/UserResponse";
 import { HTTPException } from "hono/http-exception";
-import { Identity } from "../../types/auth0/Identity";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
-export interface LinkBodyParams {
-  provider?: string;
-  connection_id?: string;
+import { Identity } from "../../types/auth0/Identity";
+import { enrichUser } from "../../utils/enrichUser";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+
+interface LinkWithBodyParams {
   link_with: string;
+}
+
+interface LinkUserIdBodyParams {
+  provider: string;
+  connection_id?: string;
+  user_id: string;
 }
 
 @Route("api/v2/users")
@@ -52,7 +60,7 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { env } = request.ctx;
 
-    // Filter out linked userss
+    // Filter out linked users
     const query: string[] = ["-_exists_:linked_to"];
     if (q) {
       query.push(q);
@@ -80,6 +88,7 @@ export class UsersMgmtController extends Controller {
             user_id: userIdParse(user.id),
             isSocial: user.is_social,
           },
+          // TODO - need to do the join here with linked accounts
         ],
         // TODO: store this field in sql
         username: user.email,
@@ -123,39 +132,21 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(404);
     }
 
-    const linkedusers = await env.data.users.list(tenant_id, {
-      page: 0,
-      per_page: 10,
-      include_totals: false,
-      q: `linked_to:${user_id}`,
-    });
+    const userResponse: UserResponse = await enrichUser(env, tenant_id, user);
 
-    const identities = [user, ...linkedusers.users].map((u) => ({
-      connection: u.connection,
-      provider: u.provider,
-      user_id: userIdParse(u.id),
-      isSocial: u.is_social,
-    }));
-
-    const { id, ...userWithoutId } = user;
-
-    return {
-      ...userWithoutId,
-      identities,
-      user_id: user.id,
-    };
+    return userResponse;
   }
 
   @Delete("{user_id}")
   @SuccessResponse(200, "Delete")
   public async deleteUser(
     @Request() request: RequestWithContext,
-    @Path("user_id") userId: string,
+    @Path() user_id: string,
     @Header("tenant-id") tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
-    const result = await env.data.users.remove(tenantId, userId);
+    const result = await env.data.users.remove(tenantId, user_id);
 
     if (!result) {
       throw new HTTPException(404);
@@ -166,6 +157,7 @@ export class UsersMgmtController extends Controller {
 
   @Post("")
   @SuccessResponse(201, "Created")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Create a User"))
   /**
    * Create a new user.
    */
@@ -216,56 +208,67 @@ export class UsersMgmtController extends Controller {
   }
 
   @Patch("{user_id}")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a User"))
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenant_id: string,
-    @Path("user_id") user_id: string,
-    @Body()
-    user: PostUsersBody,
+    @Path() user_id: string,
+    @Body() user: Partial<PostUsersBody>,
   ): Promise<boolean> {
     const { env } = request.ctx;
 
-    const results = await env.data.users.update(tenant_id, user_id, user);
+    // verify_email is not persisted
+    const { verify_email, ...userFields } = user;
 
-    await env.data.logs.create({
-      category: "update",
-      message: "User profile",
-      tenant_id,
-      user_id,
-    });
+    if (userFields.email) {
+      const existingUser = await env.data.users.getByEmail(
+        tenant_id,
+        userFields.email,
+      );
+
+      // If there is an existing user with the same email address, and it is not the same user
+      if (existingUser.length && existingUser.some((u) => u.id !== user_id)) {
+        throw new HTTPException(409, {
+          message: "Another user with the same email address already exists.",
+        });
+      }
+    }
+
+    const results = await env.data.users.update(tenant_id, user_id, userFields);
 
     return results;
   }
 
   @Post("{user_id}/identities")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Link a User"))
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Path("user_id") userId: string,
-    @Body() body: LinkBodyParams,
+    @Path() user_id: string,
+    @Body() body: LinkWithBodyParams | LinkUserIdBodyParams,
   ): Promise<Identity[]> {
     const { env } = request.ctx;
 
-    const user = await env.data.users.get(tenantId, body.link_with);
+    const link_with = "link_with" in body ? body.link_with : body.user_id;
+
+    const user = await env.data.users.get(tenantId, user_id);
     if (!user) {
       throw new HTTPException(400, {
-        message: "Linking to an inexistent identity is not allowed.",
+        message: "Linking an inexistent identity is not allowed.",
       });
     }
 
-    await env.data.users.update(tenantId, userId, {
-      linked_to: body.link_with,
+    await env.data.users.update(tenantId, link_with, {
+      linked_to: user_id,
     });
 
     const linkedusers = await env.data.users.list(tenantId, {
       page: 0,
       per_page: 10,
       include_totals: false,
-      q: `linked_to:${body.link_with}`,
+      q: `linked_to:${user_id}`,
     });
 
-    // we're doing this mapping very frequently... once we include profileData
-    // would make sense to have a util function. TBD
     const identities = [user, ...linkedusers.users].map((u) => ({
       connection: u.connection,
       provider: u.provider,
@@ -277,15 +280,17 @@ export class UsersMgmtController extends Controller {
     return identities;
   }
 
+  // what should happen here?  Where we do we specify the linked user? what should this even do?
   @Delete("{user_id}/identities")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Unlink a User"))
   public async unlinkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
-    @Path("user_id") userId: string,
+    @Path() user_id: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
-    await env.data.users.update(tenantId, userId, {
+    await env.data.users.update(tenantId, user_id, {
       linked_to: undefined,
     });
 

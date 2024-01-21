@@ -1,4 +1,3 @@
-import { CertificatesAdapter } from "./Certificates";
 import { ClientsAdapter } from "./Clients";
 import { CodesAdapter } from "./Codes";
 import { EmailAdapter } from "./Email";
@@ -14,10 +13,11 @@ import { ApplicationsAdapter } from "./Applications";
 import { UniversalLoginSessionsAdapter } from "./UniversalLoginSession";
 import { TemplatesAdapter } from "./Templates";
 import { ConnectionsAdapter } from "./Connections";
+import { DomainsAdapter } from "./Domains";
+import { KeysAdapter } from "./Keys";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;
-  certificates: CertificatesAdapter;
   codes: CodesAdapter;
   clients: ClientsAdapter;
   email: EmailAdapter;
@@ -32,4 +32,6 @@ export interface DataAdapters {
   logs: LogsDataAdapter;
   templates: TemplatesAdapter;
   connections: ConnectionsAdapter;
+  domains: DomainsAdapter;
+  keys: KeysAdapter;
 }

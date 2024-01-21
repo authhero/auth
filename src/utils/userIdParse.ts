@@ -4,7 +4,7 @@ export default function userIdParse(userId: string) {
     return userId;
   }
 
-  const [provider, id] = userId.split("|");
+  const [, id] = userId.split("|");
 
   return id;
 }

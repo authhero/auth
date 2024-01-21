@@ -9,14 +9,9 @@ import {
   Security,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { User } from "../../types";
 import { HTTPException } from "hono/http-exception";
-
-export interface LinkBodyParams {
-  provider?: string;
-  connection_id?: string;
-  link_with: string;
-}
+import { UserResponse } from "../../types/auth0/UserResponse";
+import { enrichUser } from "../../utils/enrichUser";
 
 @Route("api/v2/users-by-email")
 @Tags("management-api")
@@ -27,14 +22,26 @@ export class UsersByEmailController extends Controller {
     @Request() request: RequestWithContext,
     @Query("email") email: string,
     @Header("tenant-id") tenant_id: string,
-  ): Promise<User> {
+  ): Promise<UserResponse[]> {
     const { env } = request.ctx;
 
-    const user = await env.data.users.getByEmail(tenant_id, email);
-    if (!user) {
+    const users = await env.data.users.getByEmail(tenant_id, email);
+    if (users.length === 0) {
       throw new HTTPException(404, { message: "User not found" });
     }
 
-    return user;
+    const primarySqlUsers = users.filter((user) => !user.linked_to);
+
+    if (primarySqlUsers.length === 0) {
+      this.setStatus(404);
+      return [];
+    }
+
+    const response: UserResponse[] = await Promise.all(
+      primarySqlUsers.map(async (primarySqlUser) => {
+        return await enrichUser(env, tenant_id, primarySqlUser);
+      }),
+    );
+    return response;
   }
 }

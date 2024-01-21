@@ -7,6 +7,7 @@ import {
   Route,
   Tags,
   SuccessResponse,
+  Middlewares,
 } from "@tsoa/runtime";
 import {
   AuthorizationResponseMode,
@@ -23,8 +24,10 @@ import {
 } from "../../authentication-flows";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
+import { getClient } from "../../services/clients";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
-export interface AuthorizeParams {
+interface AuthorizeParams {
   request: RequestWithContext;
   client_id: string;
   response_type: AuthorizationResponseType;
@@ -42,6 +45,8 @@ export interface AuthorizeParams {
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
   realm?: string;
+  referer?: string;
+  cookie?: string;
 }
 
 @Route("authorize")
@@ -49,6 +54,7 @@ export interface AuthorizeParams {
 export class AuthorizeController extends Controller {
   @Get("")
   @SuccessResponse(302, "Redirect")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION))
   public async authorize(
     @Request() request: RequestWithContext,
     /**
@@ -95,11 +101,14 @@ export class AuthorizeController extends Controller {
     @Query("code_challenge") code_challenge?: string,
     @Query("realm") realm?: string,
     @Header("referer") referer?: string,
+    @Header("cookie") cookie?: string,
   ): Promise<string> {
     const { ctx } = request;
     const { env } = ctx;
 
-    const client = await env.data.clients.get(client_id);
+    ctx.set("client_id", client_id);
+
+    const client = await getClient(env, client_id);
     if (!client) {
       throw new Error("Client not found");
     }
@@ -139,7 +148,7 @@ export class AuthorizeController extends Controller {
         ctx,
         tenant_id: client.tenant_id,
         controller: this,
-        cookie_header: request.ctx.req.header("cookie") ?? null,
+        cookie_header: cookie ?? null,
         redirect_uri,
         state,
         response_type,
@@ -156,7 +165,14 @@ export class AuthorizeController extends Controller {
     if (connection) {
       return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
-      return ticketAuth(env, client.tenant_id, this, loginTicket, authParams);
+      return ticketAuth(
+        env,
+        client.tenant_id,
+        this,
+        loginTicket,
+        authParams,
+        realm!,
+      );
     }
 
     return universalAuth({ env, controller: this, authParams });
@@ -181,6 +197,8 @@ export class AuthorizeController extends Controller {
       params.code_challenge_method,
       params.code_challenge,
       params.realm,
+      params.referer,
+      params.cookie,
     );
   }
 }

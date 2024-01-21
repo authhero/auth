@@ -9,9 +9,8 @@ import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
 import { Var } from "../types/Var";
-import { HTTPException } from "hono/http-exception";
 
-export interface SilentAuthParams {
+interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
   tenant_id: string;
   controller: Controller;
@@ -48,7 +47,7 @@ export async function silentAuth({
   const redirectURL = new URL(redirect_uri);
 
   if (tokenState) {
-    const session = await env.data.sessions.get(tokenState);
+    const session = await env.data.sessions.get(tenant_id, tokenState);
 
     if (session) {
       ctx.set("userId", session.user_id);
@@ -88,6 +87,8 @@ export async function silentAuth({
     }
   }
 
+  ctx.set("description", "Login required");
+  ctx.set("logType", "fsa");
   return renderAuthIframe(
     controller,
     `${redirectURL.protocol}//${redirectURL.host}`,

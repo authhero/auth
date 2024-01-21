@@ -1,4 +1,4 @@
-export interface EmailUser {
+interface EmailUser {
   email: string;
   name: string;
 }
@@ -11,8 +11,4 @@ export interface EmailOptions {
     type: "text/plain" | "text/html";
     value: string;
   }[];
-}
-
-export interface SendEmail {
-  (emailOptions: EmailOptions): Promise<void>;
 }

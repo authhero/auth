@@ -4,7 +4,7 @@ import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { TokenFactory } from "../services/token-factory";
 import { stateEncode } from "../utils/stateEncode";
 
-export interface GenerateAuthResponseParamsBase {
+interface GenerateAuthResponseParamsBase {
   env: Env;
   userId: string;
   sid: string;
@@ -13,7 +13,7 @@ export interface GenerateAuthResponseParamsBase {
   authParams: AuthParams;
 }
 
-export interface GenerateAuthResponseParamsForCode
+interface GenerateAuthResponseParamsForCode
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.CODE;
   user: User;
@@ -24,14 +24,13 @@ export interface GenerateAuthResponseParamsForToken
   responseType: AuthorizationResponseType.TOKEN;
 }
 
-export interface GenerateAuthResponseParamsForIdToken
+interface GenerateAuthResponseParamsForIdToken
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.TOKEN_ID_TOKEN;
   user: User;
 }
 
-export async function generateCode({
-  env,
+async function generateCode({
   userId,
   state,
   nonce,
@@ -56,10 +55,10 @@ export async function generateTokens(
 ) {
   const { env, authParams, userId, state, responseType, sid, nonce } = params;
 
-  const certificates = await env.data.certificates.listCertificates();
+  const certificates = await env.data.keys.list();
   const certificate = certificates[certificates.length - 1];
   const tokenFactory = new TokenFactory(
-    certificate.privateKey,
+    certificate.private_key,
     certificate.kid,
   );
 
@@ -103,7 +102,7 @@ export async function generateTokens(
   return tokenResponse;
 }
 
-export type GenerateAuthResponseParams =
+type GenerateAuthResponseParams =
   | GenerateAuthResponseParamsForToken
   | GenerateAuthResponseParamsForIdToken
   | GenerateAuthResponseParamsForCode;

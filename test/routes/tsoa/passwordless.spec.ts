@@ -47,10 +47,12 @@ describe("Passwordless", () => {
 
       const emails: { to: string; code: string }[] = [];
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         email: {
           sendCode: async (
+            //@ts-ignore
             env: Env,
+            //@ts-ignore
             client: Client,
             to: string,
             code: string,
@@ -70,7 +72,7 @@ describe("Passwordless", () => {
 
   describe("verify_redirect", () => {
     it('should return a token and redirect to "redirect_uri" if code is valid', async () => {
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         otps: [
           {
             id: "id",
@@ -142,7 +144,7 @@ describe("Passwordless", () => {
     // TODO - we need to differentiate invalid code from expired
     // TODO - test for the redirect once confirmed this works
     it.skip("should return a 403 if code is not valid", async () => {
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         stateData: {},
       });
 

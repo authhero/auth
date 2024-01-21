@@ -11,12 +11,16 @@ import {
   Query,
   Path,
   Patch,
+  Delete,
+  Middlewares,
 } from "@tsoa/runtime";
 import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Totals } from "../../types/auth0";
+import { HTTPException } from "hono/http-exception";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
-export interface GetTenantsWithTotals extends Totals {
+interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
 }
 
@@ -93,7 +97,7 @@ export class TenantsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async getTenant(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
 
@@ -109,9 +113,10 @@ export class TenantsController extends Controller {
 
   @Patch("{id}")
   @Security("oauth2managementApi", [""])
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a tenant"))
   public async putTenant(
     @Request() request: RequestWithContext,
-    @Path("id") id: string,
+    @Path() id: string,
     @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
@@ -131,6 +136,7 @@ export class TenantsController extends Controller {
   @Post("")
   @Security("oauth2managementApi", [""])
   @SuccessResponse(201, "Created")
+  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Create a tenant"))
   public async postTenant(
     @Request() request: RequestWithContext,
     @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,
@@ -139,12 +145,25 @@ export class TenantsController extends Controller {
 
     const tenant = await env.data.tenants.create(body);
 
-    // TODO: this should be a middleware
-    if (env.hooks?.tenant?.onCreated) {
-      await env.hooks.tenant.onCreated(env, tenant);
-    }
-
     this.setStatus(201);
     return tenant;
+  }
+
+  @Delete("{id}")
+  @Security("oauth2managementApi", [""])
+  @SuccessResponse(200, "Delete")
+  public async deleteTenant(
+    @Request() request: RequestWithContext,
+    @Path() id: string,
+  ): Promise<string> {
+    const { env } = request.ctx;
+
+    const result = await env.data.tenants.remove(id);
+
+    if (!result) {
+      throw new HTTPException(404);
+    }
+
+    return "OK";
   }
 }

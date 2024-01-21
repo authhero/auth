@@ -1,15 +1,10 @@
 import { z } from "zod";
-import {
-  ExpiredTokenError,
-  InvalidScopesError,
-  InvalidSignatureError,
-  UnauthorizedError,
-} from "./errors";
 import { Env } from "./types/Env";
 import { Context, Next } from "hono";
 import { Var } from "./types/Var";
+import { HTTPException } from "hono/http-exception";
 
-export enum SecuritySchemeName {
+enum SecuritySchemeName {
   oauth2 = "oauth2",
   oauth2managementApi = "oauth2managementApi",
 }
@@ -50,10 +45,6 @@ const JwksKeySchema = z.object({
 });
 type JwksKey = z.infer<typeof JwksKeySchema>;
 
-const JwksKeysSchema = z.object({
-  keys: z.array(JwksKeySchema),
-});
-
 /**
  * Parse and decode a JWT.
  * A JWT is three, base64 encoded, strings concatenated with ‘.’:
@@ -90,9 +81,9 @@ async function getJwks(env: Env, securitySchemeName: SecuritySchemeName) {
   if (!jwksUrls[jwksUrl]) {
     // If we're using the auth service itself for authenticating
     if (jwksUrl.startsWith(env.ISSUER)) {
-      const certificates = await env.data.certificates.listCertificates();
+      const certificates = await env.data.keys.list();
       const keys = certificates.map((cert: any) => {
-        return { kid: cert.kid, ...cert.publicKey };
+        return { kid: cert.kid, ...JSON.parse(cert.public_key) };
       });
 
       jwksUrls[jwksUrl] = keys;
@@ -155,7 +146,7 @@ async function isValidJwtSignature(
   return crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, data);
 }
 
-export async function getUser(
+async function getUser(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   securitySchemeName: SecuritySchemeName,
   bearer: string,
@@ -167,23 +158,21 @@ export async function getUser(
   const expiryDate = new Date(token.payload.exp * 1000);
   const currentDate = new Date(Date.now());
   if (expiryDate < currentDate) {
-    throw new ExpiredTokenError();
+    throw new HTTPException(403, { message: "Token Expired" });
   }
 
   if (!isValidPermissions(token, permissions)) {
-    throw new InvalidScopesError();
+    throw new HTTPException(403, { message: "Invalid Scopes" });
   }
 
   if (!(await isValidJwtSignature(ctx, securitySchemeName, token))) {
-    console.log("failed here");
-
-    throw new InvalidSignatureError();
+    throw new HTTPException(403, { message: "Invalid Signature" });
   }
 
   return token.payload;
 }
 
-export async function verifyTenantPermissions(
+async function verifyTenantPermissions(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
 ) {
   const tenantId = ctx.req.param("tenantId") || ctx.req.header("tenant-id");
@@ -220,7 +209,7 @@ export async function verifyTenantPermissions(
   );
 
   if (!member?.role) {
-    throw new UnauthorizedError();
+    throw new HTTPException(403, { message: "Unauthorized" });
   }
 
   if (["GET", "HEAD"].includes(ctx.req.method)) {
@@ -235,21 +224,22 @@ export async function verifyTenantPermissions(
     }
   }
 
-  throw new UnauthorizedError();
+  throw new HTTPException(403, { message: "Unauthorized" });
 }
 
-export interface Security {
+interface Security {
   oauth2: string[];
 }
 
-export interface ManagementApiSecurity {
+interface ManagementApiSecurity {
   oauth2managementApi: string[];
 }
 
 export function authenticationHandler(
   security: (Security | ManagementApiSecurity)[],
 ) {
-  const authProvider = security[0];
+  // TODO - fix this type dance
+  const authProvider = security[0] as any;
   const securitySchemeName: SecuritySchemeName =
     "oauth2" in authProvider
       ? SecuritySchemeName.oauth2
@@ -262,14 +252,13 @@ export function authenticationHandler(
   ) {
     const authHeader = ctx.req.header("authorization");
     if (!authHeader || !authHeader.toLowerCase().startsWith("bearer")) {
-      return new Response("Forbidden", {
-        status: 403,
-      });
+      throw new HTTPException(403, { message: "Unauthorized" });
     }
     const bearer = authHeader.slice(7);
 
     const permissions =
-      permissionString?.split(" ").filter((permission) => permission) || [];
+      permissionString?.split(" ").filter((permission: string) => permission) ||
+      [];
 
     ctx.set(
       "user",

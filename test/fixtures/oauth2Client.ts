@@ -11,8 +11,10 @@ export function oAuth2ClientFactory(
   return new OAuth2ClientFixture(params, redirectUri);
 }
 
-export class OAuth2ClientFixture implements IOAuth2Client {
+class OAuth2ClientFixture implements IOAuth2Client {
+  //@ts-ignore
   private readonly params: OAuthProviderParams;
+  //@ts-ignore
   private readonly redirectUri: string;
 
   constructor(params: OAuthProviderParams, redirectUri: string) {
@@ -20,10 +22,12 @@ export class OAuth2ClientFixture implements IOAuth2Client {
     this.redirectUri = redirectUri;
   }
 
+  //@ts-ignore
   async getAuthorizationUrl(state: string): Promise<string> {
     return "https://example.com";
   }
 
+  //@ts-ignore
   async exchangeCodeForTokenResponse(code: string): Promise<TokenResponse> {
     return {
       access_token: "access_token",
@@ -34,6 +38,7 @@ export class OAuth2ClientFixture implements IOAuth2Client {
   }
 
   async getUserProfile(
+    //@ts-ignore
     accessToken: string,
   ): Promise<{ [key: string]: string }> {
     return {

@@ -29,7 +29,6 @@ export class CallbackController extends Controller {
     @Query("authuser") authUser?: string,
     @Query("hd") hd?: string,
   ): Promise<string> {
-    const { env } = request.ctx;
     const loginState: LoginState = stateDecode(state);
     if (!loginState) {
       throw new Error("State not found");
@@ -52,8 +51,6 @@ export class CallbackController extends Controller {
     @Request() request: RequestWithContext,
     @Body() body: { state: string; code: string },
   ): Promise<string> {
-    const { env } = request.ctx;
-
     const { code, state } = body;
     const loginState: LoginState = stateDecode(state);
 

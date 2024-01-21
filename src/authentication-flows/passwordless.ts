@@ -1,14 +1,16 @@
 import { HTTPException } from "hono/http-exception";
 import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
-export interface LoginParams {
+import { getClient } from "../services/clients";
+
+interface LoginParams {
   client_id: string;
   email: string;
   verification_code: string;
 }
 
 export async function validateCode(env: Env, params: LoginParams) {
-  const client = await env.data.clients.get(params.client_id);
+  const client = await getClient(env, params.client_id);
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
   }
@@ -20,7 +22,8 @@ export async function validateCode(env: Env, params: LoginParams) {
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
-  let user = await env.data.users.getByEmail(client.tenant_id, params.email);
+  // fix this to get the primary user! filter to !linked_to - could then throw if more than one? hmmmm
+  let [user] = await env.data.users.getByEmail(client.tenant_id, params.email);
   if (!user) {
     user = await env.data.users.create(client.tenant_id, {
       id: `email|${userIdGenerate()}`,

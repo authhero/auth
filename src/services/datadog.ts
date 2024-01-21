@@ -2,15 +2,7 @@ import { Context } from "hono";
 import { Env } from "../types/Env";
 import { Var } from "../types/Var";
 import packageJson from "../../package.json";
-
-function instanceToJson(instance: any): any {
-  return [...instance].reduce((obj, item) => {
-    const prop: any = {};
-    // eslint-disable-next-line prefer-destructuring
-    prop[item[0]] = item[1];
-    return { ...obj, ...prop };
-  }, {});
-}
+import instanceToJson from "../utils/instanceToJson";
 
 async function log(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -20,7 +12,6 @@ async function log(
   const ddApiKey = ctx.env.DD_API_KEY;
 
   if (!ddApiKey?.length) {
-    console.log("No datadog api key available");
     return;
   }
 
@@ -63,6 +54,7 @@ async function log(
       body,
       status_code: response.status,
       response_headers: instanceToJson(response.headers),
+      error: response.status >= 500 ? await ctx.res.text() : undefined,
     },
     useragent_details: {
       ua: req.header("user-agent") || "",

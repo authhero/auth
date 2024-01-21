@@ -1,15 +1,14 @@
-// src/users/usersController.ts
 import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
-import { UnauthenticatedError } from "../../errors";
 import randomString from "../../utils/random-string";
-import { AuthParams, Client, Env, Ticket } from "../../types";
+import { Ticket } from "../../types";
 import { HTTPException } from "hono/http-exception";
+import { getClient } from "../../services/clients";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
-export interface LoginError {
+interface LoginError {
   error: string;
   error_description: string;
 }
@@ -20,7 +19,7 @@ export interface LoginTicket {
   co_id: string;
 }
 
-export interface AuthenticateParams {
+interface AuthenticateParams {
   client_id: string;
   username: string;
 }
@@ -53,7 +52,8 @@ export class AuthenticateController extends Controller {
   ): Promise<LoginTicket | LoginError | string> {
     const { env } = request.ctx;
 
-    const client = await env.data.clients.get(body.client_id);
+    const client = await getClient(env, body.client_id);
+
     if (!client) {
       throw new Error("Client not found");
     }
@@ -91,7 +91,8 @@ export class AuthenticateController extends Controller {
 
       ticket.authParams = otp.authParams;
     } else {
-      const user = await env.data.users.getByEmail(client.tenant_id, email);
+      // TODO - filter this don't just take first
+      const [user] = await env.data.users.getByEmail(client.tenant_id, email);
 
       if (!user) {
         throw new HTTPException(403);
@@ -115,17 +116,5 @@ export class AuthenticateController extends Controller {
       co_verifier: randomString(32),
       co_id: randomString(12),
     };
-    // await env.data.logs.create({
-    //   category: "login",
-    //   message: "Login with code",
-    //   tenant_id,
-    //   user_id: id,
-    // });
-    // await env.data.logs.create({
-    //   category: "login",
-    //   message: "Login with password",
-    //   tenant_id,
-    //   user_id: id,
-    // });
   }
 }

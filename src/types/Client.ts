@@ -4,17 +4,17 @@ import {
   AuthorizationResponseType,
 } from "./AuthParams";
 
-export const ClientDomainSchema = z.object({
+const ClientDomainSchema = z.object({
   domain: z.string(),
   dkim_private_key: z.string().optional(),
   dkim_public_key: z.string().optional(),
-  api_key: z.string().optional(),
+  email_api_key: z.string().optional(),
   email_service: z
     .union([z.literal("mailgun"), z.literal("mailchannels")])
     .optional(),
 });
 
-export const PartialConnectionSchema = z.object({
+const PartialConnectionSchema = z.object({
   id: z.string(),
   name: z.string(),
   // All these properties are optional as they can use the settings from the default settings
@@ -26,6 +26,7 @@ export const PartialConnectionSchema = z.object({
   scope: z.string().optional(),
   authorization_endpoint: z.string().optional(),
   token_endpoint: z.string().optional(),
+  userinfo_endpoint: z.string().optional(),
   response_type: z.custom<AuthorizationResponseType>().optional(),
   response_mode: z.custom<AuthorizationResponseMode>().optional(),
   created_at: z.string(),
@@ -43,13 +44,15 @@ export const ConnectionSchema = z.object({
   scope: z.string(),
   authorization_endpoint: z.string(),
   token_endpoint: z.string(),
+  userinfo_endpoint: z.string().optional(),
+  token_exchange_basic_auth: z.boolean().optional(),
   response_type: z.custom<AuthorizationResponseType>().optional(),
   response_mode: z.custom<AuthorizationResponseMode>().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
 
-export const BaseClientSchema = z.object({
+const BaseClientSchema = z.object({
   id: z.string(),
   name: z.string(),
   domains: z.array(ClientDomainSchema),

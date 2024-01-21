@@ -5,7 +5,7 @@ import {
   CodeAuthenticateParams,
   PasswordAuthenticateParams,
 } from "../../../src/routes/tsoa/authenticate";
-import { PasswordParams, User } from "../../../src/types";
+import { SqlLog, PasswordParams, User } from "../../../src/types";
 
 describe("Authenticated", () => {
   describe("password", () => {
@@ -20,7 +20,7 @@ describe("Authenticated", () => {
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
       };
 
-      const logs = [];
+      const logs: SqlLog[] = [];
 
       const user: User = {
         id: "userId",
@@ -42,7 +42,7 @@ describe("Authenticated", () => {
         password: "Test!",
       };
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         stateData: {},
         users: [user],
         passwords: [password],
@@ -76,9 +76,9 @@ describe("Authenticated", () => {
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
       };
 
-      const logs = [];
+      const logs: SqlLog[] = [];
 
-      const ctx = contextFixture({
+      const ctx = await contextFixture({
         stateData: {},
         userData: {
           validatePassword: "UnauthenticatedError",
@@ -105,9 +105,9 @@ describe("Authenticated", () => {
           username: "test@example.com",
         };
 
-        const logs = [];
+        const logs: SqlLog[] = [];
 
-        const ctx = contextFixture({
+        const ctx = await contextFixture({
           otps: [
             {
               id: "id",
@@ -153,9 +153,9 @@ describe("Authenticated", () => {
           username: "test@example.com",
         };
 
-        const logs = [];
+        const logs: SqlLog[] = [];
 
-        const ctx = contextFixture({
+        const ctx = await contextFixture({
           logs,
         });
 

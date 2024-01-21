@@ -17,7 +17,7 @@ export async function setSilentAuthCookies(
     tenant_id,
     client_id,
     created_at: new Date(),
-    expires_at: new Date(MONTH_IN_SECONDS * 1000),
+    expires_at: new Date(Date.now() + MONTH_IN_SECONDS * 1000),
   };
 
   await env.data.sessions.create(session);
