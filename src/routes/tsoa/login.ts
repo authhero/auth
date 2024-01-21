@@ -447,7 +447,7 @@ export class LoginController extends Controller {
     const { env } = request.ctx;
 
     const session = await env.data.universalLoginSessions.get(state);
-    if (!session?.username) {
+    if (!session) {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
@@ -463,23 +463,30 @@ export class LoginController extends Controller {
     }
 
     // TODO - filter by primary user
-    const [user] = await env.data.users.getByEmail(
-      client.tenant_id,
-      params.username,
-    );
+    const userResponse = await env.data.users.list(session.tenant_id, {
+      page: 0,
+      per_page: 1,
+      include_totals: false,
+      q: `email:${params.username}`,
+    });
+
+    const [user] = userResponse.users;
 
     if (user) {
       const code = generateOTP();
 
-      await env.data.codes.create(client.tenant_id, {
-        id: nanoid(),
-        code,
-        type: "password_reset",
-        email: params.username,
-        user_id: user.id,
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-      });
+      try {
+        await env.data.codes.create(client.tenant_id, {
+          id: nanoid(),
+          code,
+          type: "password_reset",
+          user_id: user.id,
+          created_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+        });
+      } catch (err) {
+        console.log(err);
+      }
 
       request.ctx.set("log", `Code: ${code}`);
 
