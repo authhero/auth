@@ -87,7 +87,7 @@ describe("token", () => {
         sid: "sid",
       };
 
-      const ctx = await contextFixture({
+      const ctx = contextFixture({
         applications: [application],
         tenants: [tenant],
         connections: [connection],
@@ -134,7 +134,7 @@ describe("token", () => {
     });
 
     it("should throw if the code_verfier does not match the hash of the challenge", async () => {
-      const ctx = await contextFixture({
+      const ctx = contextFixture({
         applications: [application],
         tenants: [tenant],
         connections: [connection],
@@ -174,7 +174,7 @@ describe("token", () => {
     });
 
     it("should use the userId from the state to set the silent auth cookie", async () => {
-      const ctx = await contextFixture({
+      const ctx = contextFixture({
         applications: [application],
         tenants: [tenant],
         connections: [connection],
@@ -225,8 +225,13 @@ describe("token", () => {
     });
 
     it("should throw an error if the vendorId in the state does not match the vendorId of the client", async () => {
-      const ctx = await contextFixture({
-        applications: [application],
+      const ctx = contextFixture({
+        applications: [
+          {
+            ...application,
+            tenant_id: "vendorId1",
+          },
+        ],
         tenants: [tenant],
         connections: [connection],
       });
@@ -265,7 +270,7 @@ describe("token", () => {
 
   describe("client credentials", () => {
     it("should return a token for a sesamy api client", async () => {
-      const ctx = await contextFixture();
+      const ctx = contextFixture();
 
       const controller = new TokenRoutes();
 

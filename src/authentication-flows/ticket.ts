@@ -5,6 +5,19 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
+import { User } from "../types/User";
+
+function getProviderFromRealm(realm: string) {
+  if (realm === "Username-Password-Authentication") {
+    return "auth2";
+  }
+
+  if (realm === "email") {
+    return "email";
+  }
+
+  throw new HTTPException(403, { message: "Invalid realm" });
+}
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {

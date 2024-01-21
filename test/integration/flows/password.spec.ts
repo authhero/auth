@@ -104,13 +104,15 @@ describe("password-flow", () => {
       expect(idTokenPayload.aud).toBe("clientId");
       const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
       // now check silent auth works after password login
-      const { idToken: silentAuthIdTokenPayload } =
-        await doSilentAuthRequestAndReturnTokens(
-          authCookieHeader,
-          client,
-          "unique-nonce",
-          "clientId",
-        );
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        authCookieHeader,
+        client,
+        "unique-nonce",
+        "clientId",
+      );
       const {
         // these are the fields that change on every test run
         exp,
@@ -254,13 +256,15 @@ describe("password-flow", () => {
       // ------------------
       // now check silent auth works after password login with existing user
       // ------------------
-      const { idToken: silentAuthIdTokenPayload } =
-        await doSilentAuthRequestAndReturnTokens(
-          authCookieHeader,
-          client,
-          "unique-nonce",
-          "clientId",
-        );
+      const {
+        accessToken: silentAuthAccessTokenPayload,
+        idToken: silentAuthIdTokenPayload,
+      } = await doSilentAuthRequestAndReturnTokens(
+        authCookieHeader,
+        client,
+        "unique-nonce",
+        "clientId",
+      );
       const {
         exp,
         iat,

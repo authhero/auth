@@ -12,6 +12,14 @@ export function create(db: Kysely<Database>) {
       is_social: user.is_social ? 1 : 0,
     };
 
+    Object.keys(sqlUser).forEach((key) => {
+      const data = sqlUser as any;
+      if (typeof data[key] === "boolean") {
+        data[key] = data[key] ? 1 : 0;
+      }
+      // data.linked_to = null;
+    });
+
     await db.insertInto("users").values(sqlUser).execute();
 
     return {

@@ -1,4 +1,4 @@
-import { Database, Ticket } from "../../../types";
+import { Database, Ticket, SqlTicket } from "../../../types";
 import { Kysely } from "kysely";
 
 export function get(db: Kysely<Database>) {

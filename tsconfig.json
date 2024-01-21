@@ -21,13 +21,11 @@
     "types": [
       "@cloudflare/workers-types",
       "@types/jest",
-      "@types/service-worker-mock",
+      "@types/service-worker-mock"
     ],
     "paths": {
-      "*": ["node_modules/*"],
-    },
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+      "*": ["node_modules/*"]
+    }
   },
-  "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"],
+  "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"]
 }

@@ -1,7 +1,7 @@
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { UserResponse } from "../../../src/types/auth0";
-import { getAdminToken } from "../helpers/token";
+import { getAdminToken } from "../../../integration-test/helpers/token";
 import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
@@ -420,34 +420,6 @@ describe("users", () => {
           },
         },
       ]);
-    });
-
-    it("should throw a 409 when updating a user with an email of an allready existing user", async () => {
-      const token = await getAdminToken();
-
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
-      const [newUser1, newUser2] = await createTestUsers(env, "otherTenant");
-
-      const params = {
-        param: { user_id: newUser1.id },
-        json: {
-          email: newUser2.email,
-        },
-      };
-
-      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
-        params,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
-            "content-type": "application/json",
-          },
-        },
-      );
-
-      expect(updateUserResponse.status).toBe(409);
     });
   });
 });

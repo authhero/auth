@@ -20,7 +20,7 @@ import { Totals } from "../../types/auth0";
 import { HTTPException } from "hono/http-exception";
 import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
-interface GetTenantsWithTotals extends Totals {
+export interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];
 }
 
@@ -97,7 +97,7 @@ export class TenantsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async getTenant(
     @Request() request: RequestWithContext,
-    @Path() id: string,
+    @Path("id") id: string,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
 
@@ -116,7 +116,7 @@ export class TenantsController extends Controller {
   @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a tenant"))
   public async putTenant(
     @Request() request: RequestWithContext,
-    @Path() id: string,
+    @Path("id") id: string,
     @Body() body: Omit<Tenant, "id" | "created_at" | "updated_at">,
   ): Promise<Tenant | string> {
     const { env } = request.ctx;
@@ -154,7 +154,7 @@ export class TenantsController extends Controller {
   @SuccessResponse(200, "Delete")
   public async deleteTenant(
     @Request() request: RequestWithContext,
-    @Path() id: string,
+    @Path("id") id: string,
   ): Promise<string> {
     const { env } = request.ctx;
 

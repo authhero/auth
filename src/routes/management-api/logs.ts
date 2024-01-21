@@ -8,8 +8,13 @@ import {
   Security,
   Tags,
 } from "@tsoa/runtime";
-import { RequestWithContext } from "../../types";
+import { RequestWithContext, LogsResponse } from "../../types";
+import { z } from "zod";
 import { ListLogsResponse } from "../../adapters/interfaces/Logs";
+
+export const LogsFilterSchema = z.object({
+  userId: z.string(),
+});
 
 @Route("api/v2/logs")
 @Tags("logs")

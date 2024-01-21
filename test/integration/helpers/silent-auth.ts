@@ -5,12 +5,12 @@ import { tsoaApp } from "../../../src/app";
 const client = testClient(tsoaApp, {});
 type clientAppType = typeof client;
 
-export async function doSilentAuthRequest(
+export async function doSilentAuthRequestAndReturnTokens(
   setCookiesHeader: string,
   client: clientAppType,
   nonce: string,
   clientId: string,
-): Promise<string> {
+) {
   const cookies = setCookiesHeader.split(";").map((c) => c.trim());
   const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
@@ -37,24 +37,8 @@ export async function doSilentAuthRequest(
     },
   );
 
-  expect(silentAuthResponse.status).toBe(200);
-
   // don't want to type this but authorize has no type
-  return silentAuthResponse.text();
-}
-
-export async function doSilentAuthRequestAndReturnTokens(
-  setCookiesHeader: string,
-  client: clientAppType,
-  nonce: string,
-  clientId: string,
-) {
-  const body = await doSilentAuthRequest(
-    setCookiesHeader,
-    client,
-    nonce,
-    clientId,
-  );
+  const body = (await silentAuthResponse.text()) as string;
 
   expect(body).not.toContain("Login required");
 

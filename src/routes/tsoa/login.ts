@@ -28,20 +28,26 @@ import { AuthorizationResponseType, Env, User } from "../../types";
 import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
-import { sendResetPassword } from "../../controllers/email";
+import { sendLink, sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
-interface LoginParams {
+export interface LoginParams {
   username: string;
   password: string;
 }
 
-interface PasswordResetParams {
+export interface PasswordResetParams {
   username: string;
+}
+
+export interface ResetPasswordState {
+  username: string;
+  code: string;
+  client_id: string;
 }
 
 async function handleLogin(
@@ -393,7 +399,7 @@ export class LoginController extends Controller {
       }
 
       await env.data.passwords.create(client.tenant_id, {
-        user_id: user.id,
+        user_id: loginParams.username,
         password: loginParams.password,
       });
 
