@@ -1,7 +1,4 @@
-import { Context } from "hono";
-import { Env } from "../types/Env";
-
-function getSwaggerHtml(env: Env) {
+function getSwaggerHtml() {
   return `<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
 <html lang="en">
@@ -71,8 +68,8 @@ function getSwaggerHtml(env: Env) {
 </html>`;
 }
 
-export default async function swaggerUi(ctx: Context) {
-  return new Response(getSwaggerHtml(ctx.env), {
+export default async function swaggerUi() {
+  return new Response(getSwaggerHtml(), {
     headers: {
       "content-type": "text/html",
     },

@@ -21,7 +21,7 @@ function getDefaultSilentAuthSearchParams() {
 }
 
 describe("logout", () => {
-  it("should delete the session is a user logs out", async () => {
+  it("should delete the session if a user logs out", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
@@ -71,7 +71,9 @@ describe("logout", () => {
         "clientId",
       );
     expect(silentAuthAccessTokenPayload).toBeDefined();
-    // Logout
+    // ---------------------------------------------------
+    // Logout so that the session is cleared in the database
+    // ---------------------------------------------------
     const cookies = setCookieHeader.split(";").map((c) => c.trim());
     const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
@@ -91,6 +93,9 @@ describe("logout", () => {
 
     expect(logoutResponse.status).toBe(302);
 
+    //--------------------------------------------------------------
+    // Now reuse the previous auth cookie. This should no longer work because the session is cleared
+    //--------------------------------------------------------------
     const result = await doSilentAuthRequest(
       setCookieHeader,
       client,

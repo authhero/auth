@@ -50,7 +50,9 @@ describe("Passwordless", () => {
       const ctx = await contextFixture({
         email: {
           sendCode: async (
+            //@ts-ignore
             env: Env,
+            //@ts-ignore
             client: Client,
             to: string,
             code: string,

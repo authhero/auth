@@ -1,0 +1,13 @@
+{
+  "codeEmailEnterCode": "Skriv inn koden på {{vendorName}} for å fullføre påloggingen",
+  "codeEmailTitle": "Velkommen til {{vendorName}} ! {{code}} er påloggingskoden",
+  "codeValid30Mins": "Koden er gyldig i 30 minutter",
+  "contactUs": "Kontakt oss",
+  "copyright": "Copyright © 2023 SESAMY. Alle rettigheter forbeholdt.",
+  "linkEmailClickToLogin": "Klikk på knappen for å logge inn",
+  "linkEmailLogin": "Logg inn",
+  "linkEmailOrEnterCode": "Eller skriv inn koden på {{vendorName}} for å fullføre påloggingen.",
+  "passwordResetTitle": "Endre passord for {{vendorName}} kontoen din",
+  "supportInfo": "Hvis du har spørsmål eller trenger hjelp, kan du kontakte supportteamet vårt",
+  "welcomeToYourAccount": "Velkommen til din brukerkonto hos {{vendorName}} !"
+}
