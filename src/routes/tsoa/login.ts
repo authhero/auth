@@ -475,18 +475,14 @@ export class LoginController extends Controller {
     if (user) {
       const code = generateOTP();
 
-      try {
-        await env.data.codes.create(client.tenant_id, {
-          id: nanoid(),
-          code,
-          type: "password_reset",
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-        });
-      } catch (err) {
-        console.log(err);
-      }
+      await env.data.codes.create(client.tenant_id, {
+        id: nanoid(),
+        code,
+        type: "password_reset",
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+      });
 
       request.ctx.set("log", `Code: ${code}`);
 
