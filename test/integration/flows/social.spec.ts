@@ -616,5 +616,36 @@ describe("social sign on", () => {
     // TO TEST
     // - bad params passed to us? e.g. bad redirect-uri, bad client_id?
     // - should not create a new social user IF WE DID NOT FIRST CALL THEM? e.g. check the nonce?
+
+    test("error callback from SSO", async () => {
+      // e.g. Facebook hit "not now" button
+
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const errorCallbackResponse = await client.callback.$get({
+        query: {
+          error: "access_denied",
+          error_code: "200",
+          error_description: "Permissions error",
+          error_reason: "user_denied",
+          state: SOCIAL_STATE_PARAM,
+        },
+      });
+
+      expect(errorCallbackResponse.status).toBe(302);
+
+      const location = new URL(errorCallbackResponse.headers.get("location")!);
+
+      expect(location.host).toBe("login2.sesamy.dev");
+      expect(location.pathname).toBe("/callback");
+      expect(location.searchParams.get("error")).toBe("access_denied");
+      expect(location.searchParams.get("error_description")).toBe(
+        "Permissions error",
+      );
+      expect(location.searchParams.get("error_code")).toBe("200");
+      expect(location.searchParams.get("error_reason")).toBe("user_denied");
+      expect(location.searchParams.get("state")).toBe(SOCIAL_STATE_PARAM);
+    });
   });
 });
