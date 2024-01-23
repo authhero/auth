@@ -43,6 +43,63 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
+  it("should set the used_at property on the session when the token is renewed", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    const loginResponse = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "Test!",
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+    expect(loginResponse.status).toBe(200);
+    const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+    const query = {
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket,
+      referrer: "https://login.example.com",
+      response_type: "token id_token",
+      redirect_uri: "http://login.example.com",
+      state: "state",
+      realm: "Username-Password-Authentication",
+    };
+    // Trade the ticket for token
+    const tokenResponse = await client.authorize.$get({
+      query,
+    });
+    expect(tokenResponse.status).toBe(302);
+    expect(await tokenResponse.text()).toBe("Redirecting");
+
+    const postLoginDate = new Date();
+
+    const setCookieHeader = tokenResponse.headers.get("set-cookie")!;
+    // -------------------------------------------------------------
+    // now check silent auth works on the same client
+    // -------------------------------------------------------------
+    const { idToken } = await doSilentAuthRequestAndReturnTokens(
+      setCookieHeader,
+      client,
+      "nonce",
+      "clientId",
+    );
+    expect(idToken).toBeDefined();
+    const session = await env.data.sessions.get("tenantId", idToken.sid);
+
+    expect(session!.used_at > postLoginDate).toBe(true);
+  });
+
   it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);

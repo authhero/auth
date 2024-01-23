@@ -20,6 +20,7 @@ export function get(db: Kysely<Database>) {
       client_id: sqlSession.client_id,
       created_at: new Date(sqlSession.created_at),
       expires_at: new Date(sqlSession.expires_at),
+      used_at: new Date(sqlSession.used_at),
     };
 
     return session;
