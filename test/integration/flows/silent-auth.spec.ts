@@ -43,7 +43,7 @@ describe("silent-auth", () => {
     expect(body).toContain("Login required");
   });
 
-  it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
+  it("should set the used_at property on the session when the token is renewed", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
@@ -100,7 +100,7 @@ describe("silent-auth", () => {
     expect(session!.used_at > postLoginDate).toBe(true);
   });
 
-  it("should set the used_at property on the session when the token is renewed", async () => {
+  it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
