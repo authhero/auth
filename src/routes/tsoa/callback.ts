@@ -12,6 +12,7 @@ import {
 import { socialAuthCallback } from "../../authentication-flows";
 import { LoginState, RequestWithContext } from "../../types";
 import { stateDecode } from "../../utils/stateEncode";
+import { headers } from "../../constants";
 @Route("callback")
 @Tags("callback")
 export class CallbackController extends Controller {
@@ -23,23 +24,52 @@ export class CallbackController extends Controller {
   public async getCallback(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
-    @Query("code") code: string,
+    @Query("code") code?: string,
     @Query("scope") scope?: string,
     @Query("prompt") prompt?: string,
     @Query("authuser") authUser?: string,
     @Query("hd") hd?: string,
+    // optional error params
+    @Query("error") error?: string,
+    @Query("error_description") errorDescription?: string,
+    @Query("error_code") errorCode?: string,
+    @Query("error_reason") errorReason?: string,
   ): Promise<string> {
     const loginState: LoginState = stateDecode(state);
     if (!loginState) {
       throw new Error("State not found");
     }
 
-    return socialAuthCallback({
-      ctx: request.ctx,
-      controller: this,
-      state: loginState,
-      code,
-    });
+    if (error) {
+      const { redirect_uri } = loginState.authParams;
+
+      if (!redirect_uri) {
+        throw new Error("Redirect uri not found");
+      }
+
+      const redirectUri = new URL(redirect_uri);
+
+      redirectUri.searchParams.set("error", error);
+      redirectUri.searchParams.set("error_description", errorDescription!);
+      redirectUri.searchParams.set("error_code", errorCode!);
+      redirectUri.searchParams.set("error_reason", errorReason!);
+      redirectUri.searchParams.set("state", state);
+
+      this.setStatus(302);
+      this.setHeader(headers.location, redirectUri.href);
+      return "Redirecting";
+    }
+
+    if (code) {
+      return socialAuthCallback({
+        ctx: request.ctx,
+        controller: this,
+        state: loginState,
+        code,
+      });
+    }
+
+    throw new Error("Invalid request");
   }
 
   /**
