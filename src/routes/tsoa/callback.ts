@@ -43,7 +43,11 @@ export class CallbackController extends Controller {
     if (error) {
       const { redirect_uri } = loginState.authParams;
 
-      const redirectUri = new URL(redirect_uri!);
+      if (!redirect_uri) {
+        throw new Error("Redirect uri not found");
+      }
+
+      const redirectUri = new URL(redirect_uri);
 
       redirectUri.searchParams.set("error", error);
       redirectUri.searchParams.set("error_description", errorDescription!);
