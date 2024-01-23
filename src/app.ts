@@ -79,7 +79,7 @@ app.get("/static/:file{.*}", serve);
 app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   const response = await ctx.env.data.applications.list(
     // This is the tenant id in dev
-    "qo0kCHUE8qAvpNPznuoRW",
+    "VpE9qtb4Gt_iCahTM0FYg",
     {
       per_page: 1,
       page: 1,
