@@ -60,6 +60,9 @@ export class PasswordlessController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
+    ctx.set("tenantId", client.tenant_id);
+    // what should happen here?
+    ctx.set("userId", body.email);
     const email = body.email.toLocaleLowerCase();
 
     const code = generateOTP();
