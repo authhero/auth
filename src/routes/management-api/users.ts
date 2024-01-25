@@ -219,6 +219,7 @@ export class UsersMgmtController extends Controller {
     @Body() user: Partial<PostUsersBody>,
   ): Promise<boolean> {
     const { env } = request.ctx;
+    request.ctx.set("tenantId", tenant_id);
 
     // verify_email is not persisted
     const { verify_email, ...userFields } = user;
