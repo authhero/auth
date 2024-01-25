@@ -15,6 +15,7 @@ import { LoginState, RequestWithContext } from "../../types";
 import { stateDecode } from "../../utils/stateEncode";
 import { headers } from "../../constants";
 import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { getClient } from "../../services/clients";
 
 @Route("callback")
 @Tags("callback")
@@ -44,6 +45,16 @@ export class CallbackController extends Controller {
     if (!loginState) {
       throw new Error("State not found");
     }
+    request.ctx.set("client_id", loginState.authParams.client_id);
+    // here we do not have  tenant_id... should look up the client here?
+    const client = await getClient(
+      request.ctx.env,
+      loginState.authParams.client_id,
+    );
+    if (!client) {
+      throw new Error("Client not found");
+    }
+    request.ctx.set("tenantId", client.tenant_id);
 
     if (error) {
       const { redirect_uri } = loginState.authParams;

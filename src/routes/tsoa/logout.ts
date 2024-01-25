@@ -42,6 +42,9 @@ export class LogoutController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
+    request.ctx.set("client_id", client_id);
+    request.ctx.set("tenantId", client.tenant_id);
+
     const redirectUri = returnTo || request.ctx.req.header("referer");
     if (!redirectUri) {
       throw new Error("No return to url found");
@@ -53,6 +56,7 @@ export class LogoutController extends Controller {
       });
     }
 
+    // can we set the user id here?
     if (cookie) {
       const tokenState = getStateFromCookie(cookie);
 

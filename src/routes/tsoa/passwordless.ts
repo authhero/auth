@@ -142,6 +142,7 @@ export class PasswordlessController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
+    request.ctx.set("tenantId", client.tenant_id);
 
     try {
       const user = await validateCode(env, {
