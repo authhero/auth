@@ -8,6 +8,7 @@ import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import { serve } from "./routes/login";
 import loggerMiddleware from "./middlewares/logger";
+import { loggerMiddleware as loggerMiddlewareTsoa } from "./tsoa-middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
@@ -59,6 +60,8 @@ const app = new Hono<{ Bindings: Env }>()
     }),
   )
   .use(loggerMiddleware)
+  // what is the plan here?
+  // .use(loggerMiddlewareTsoa)
   .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
     const url = new URL(ctx.req.url);
     const tenantId = url.hostname.split(".")[0];

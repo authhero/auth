@@ -43,6 +43,9 @@ export async function silentAuth({
 }: SilentAuthParams) {
   const { env } = ctx;
 
+  // can we do this somewhere automatically? or at the tsoa level? hmmmm
+  ctx.set("tenantId", tenant_id);
+
   const tokenState = getStateFromCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);
 
