@@ -134,8 +134,6 @@ describe("logs", () => {
     expect(typeof log.date).toBe("string");
     expect(log.client_id).toBe("clientId");
     expect(log.user_agent).toBe("ua");
-    // don't assert on this as it means we cannot solo tests in a suite...
-    // expect(log.log_id).toBe("testid-3");
     expect(log.log_id).toContain("testid-");
     expect(log.details?.request.method).toBe("POST");
   });

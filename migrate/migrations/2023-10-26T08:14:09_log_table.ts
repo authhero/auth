@@ -21,15 +21,6 @@ export async function up(db: Kysely<Database>): Promise<void> {
     // )
     .addColumn("tenant_id", "varchar(255)")
     .addColumn("user_id", "varchar(255)")
-    // what is this for? we don't have the user id in many routes...
-    // .addForeignKeyConstraint(
-    //   "user_id_constraint",
-    //   ["user_id", "tenant_id"],
-    //   "users",
-    //   ["id", "tenant_id"],
-    //   (cb) => cb.onDelete("cascade"),
-    // )
-    // surely we just want this? OR some way of user_id being nullable?
     .addForeignKeyConstraint(
       "tenant_id_constraint",
       ["tenant_id"],

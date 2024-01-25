@@ -196,7 +196,6 @@ export async function socialAuthCallback({
     }
   }
 
-  // we're going to miss these...
   ctx.set("tenantId", client.tenant_id);
 
   ctx.set("email", email);

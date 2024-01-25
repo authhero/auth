@@ -33,13 +33,8 @@ export function loggerMiddleware(logType: string, description?: string) {
 
     if (response.ok) {
       try {
-        // should do something silent? as means we're not setting this on the route...
         if (!ctx.var.tenantId) throw new Error("No tenant id");
-        // lots of calls don't have a user id, so don't log them
-        // if (!ctx.var.userId) throw new Error("No user id");
-        // don't really want to crash for logs
         await env.data.logs.create({
-          // ahhhhhh, so how do we set these? if no user_id and no tenant_id then why log anything?
           tenant_id: ctx.var.tenantId,
           user_id: ctx.var.userId,
           description: description || ctx.var.description || "",
