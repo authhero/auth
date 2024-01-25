@@ -34,6 +34,7 @@ export function loggerMiddleware(logType: string, description?: string) {
     if (response.ok) {
       try {
         await env.data.logs.create({
+          // ahhhhhh, so how do we set these? if no user_id and no tenant_id then why log anything?
           tenant_id: "tenantId",
           user_id: "userId",
           description: description || ctx.var.description || "",

@@ -3,6 +3,7 @@ export type Var = {
   startAt: number;
   email: string;
   userId: string;
+  tenantId: string;
   log: string;
   logType: string;
   client_id: string;
