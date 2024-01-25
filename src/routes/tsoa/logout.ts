@@ -8,6 +8,7 @@ import {
   Tags,
   SuccessResponse,
   Header,
+  Middlewares,
 } from "@tsoa/runtime";
 import { getClient } from "../../services/clients";
 import {
@@ -17,6 +18,8 @@ import {
 import { headers } from "../../constants";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+
 @Route("v2/logout")
 @Tags("logout")
 export class LogoutController extends Controller {
@@ -25,6 +28,9 @@ export class LogoutController extends Controller {
    */
   @Get("")
   @SuccessResponse(302)
+  // if we're going to add this everywhere... is there any point with an enum?
+  // I feel like the method name should be enough....
+  @Middlewares(loggerMiddleware(LogTypes.VERIFY_REDIRECT))
   public async logout(
     @Request() request: RequestWithContext,
     @Query() client_id: string,

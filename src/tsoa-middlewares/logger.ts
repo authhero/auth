@@ -7,8 +7,12 @@ import instanceToJson from "../utils/instanceToJson";
 export enum LogTypes {
   API_OPERATION = "sapi",
   CODE_LINK_SENT = "cls",
+  // how can we put this on a route? surely these should be the name of the route...
+  // or can we set these as the route is progressing... we don't know if it's success or failure before calling the route handler!
   FAILED_SILENT_AUTH = "fsa",
   SUCCESSFUL_SIGNUP = "ss",
+  // totally guessing here
+  VERIFY_REDIRECT = "vr",
 }
 
 export function loggerMiddleware(logType: string, description?: string) {
