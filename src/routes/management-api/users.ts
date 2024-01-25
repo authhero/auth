@@ -190,6 +190,9 @@ export class UsersMgmtController extends Controller {
       updated_at: new Date().toISOString(),
     });
 
+    request.ctx.set("tenantId", tenantId);
+    request.ctx.set("userId", data.id);
+
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
