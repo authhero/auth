@@ -6,10 +6,12 @@ import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 
+const LOGIN2_STATE = "client_id=clientId&connection=auth2";
+
 const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
   redirect_uri: "https://login2.sesamy.dev/callback",
   scope: "openid profile email",
-  state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+  state: LOGIN2_STATE,
   client_id: "clientId",
   nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
   response_type: "token id_token",
@@ -118,9 +120,7 @@ describe("social sign on", () => {
         expect(socialCallbackQuery2.get("access_token")).toBeDefined();
         expect(socialCallbackQuery2.get("id_token")).toBeDefined();
         expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
-        expect(socialCallbackQuery2.get("state")).toBe(
-          "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-        );
+        expect(socialCallbackQuery2.get("state")).toBe(LOGIN2_STATE);
         const idToken = socialCallbackQuery2.get("id_token");
         const idTokenPayload = parseJwt(idToken!);
         expect(idTokenPayload.aud).toBe("clientId");
@@ -228,9 +228,7 @@ describe("social sign on", () => {
         expect(socialCallbackQuery2.get("access_token")).toBeDefined();
         expect(socialCallbackQuery2.get("id_token")).toBeDefined();
         expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
-        expect(socialCallbackQuery2.get("state")).toBe(
-          "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-        );
+        expect(socialCallbackQuery2.get("state")).toBe(LOGIN2_STATE);
         const idToken = socialCallbackQuery2.get("id_token");
         const idTokenPayload = parseJwt(idToken!);
         expect(idTokenPayload.aud).toBe("clientId");
@@ -645,7 +643,7 @@ describe("social sign on", () => {
       );
       expect(location.searchParams.get("error_code")).toBe("200");
       expect(location.searchParams.get("error_reason")).toBe("user_denied");
-      expect(location.searchParams.get("state")).toBe(SOCIAL_STATE_PARAM);
+      expect(location.searchParams.get("state")).toBe(LOGIN2_STATE);
     });
   });
 });

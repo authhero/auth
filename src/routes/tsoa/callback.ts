@@ -53,7 +53,9 @@ export class CallbackController extends Controller {
       redirectUri.searchParams.set("error_description", errorDescription!);
       redirectUri.searchParams.set("error_code", errorCode!);
       redirectUri.searchParams.set("error_reason", errorReason!);
-      redirectUri.searchParams.set("state", state);
+      if (loginState.authParams.state) {
+        redirectUri.searchParams.set("state", loginState.authParams.state);
+      }
 
       this.setStatus(302);
       this.setHeader(headers.location, redirectUri.href);
