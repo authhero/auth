@@ -50,9 +50,15 @@ export class CallbackController extends Controller {
       const redirectUri = new URL(redirect_uri);
 
       redirectUri.searchParams.set("error", error);
-      redirectUri.searchParams.set("error_description", errorDescription!);
-      redirectUri.searchParams.set("error_code", errorCode!);
-      redirectUri.searchParams.set("error_reason", errorReason!);
+      if (errorDescription) {
+        redirectUri.searchParams.set("error_description", errorDescription);
+      }
+      if (errorCode) {
+        redirectUri.searchParams.set("error_code", errorCode);
+      }
+      if (errorReason) {
+        redirectUri.searchParams.set("error_reason", errorReason);
+      }
       if (loginState.authParams.state) {
         redirectUri.searchParams.set("state", loginState.authParams.state);
       }
