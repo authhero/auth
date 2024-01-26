@@ -145,6 +145,8 @@ export class TenantsController extends Controller {
 
     const tenant = await env.data.tenants.create(body);
 
+    request.ctx.set("tenantId", tenant.id);
+
     this.setStatus(201);
     return tenant;
   }

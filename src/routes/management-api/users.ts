@@ -190,6 +190,9 @@ export class UsersMgmtController extends Controller {
       updated_at: new Date().toISOString(),
     });
 
+    request.ctx.set("tenantId", tenantId);
+    request.ctx.set("userId", data.id);
+
     this.setStatus(201);
     const userResponse: UserResponse = {
       ...data,
@@ -216,6 +219,7 @@ export class UsersMgmtController extends Controller {
     @Body() user: Partial<PostUsersBody>,
   ): Promise<boolean> {
     const { env } = request.ctx;
+    request.ctx.set("tenantId", tenant_id);
 
     // verify_email is not persisted
     const { verify_email, ...userFields } = user;
@@ -248,6 +252,7 @@ export class UsersMgmtController extends Controller {
     @Body() body: LinkWithBodyParams | LinkUserIdBodyParams,
   ): Promise<Identity[]> {
     const { env } = request.ctx;
+    request.ctx.set("tenantId", tenantId);
 
     const link_with = "link_with" in body ? body.link_with : body.user_id;
 
@@ -289,6 +294,7 @@ export class UsersMgmtController extends Controller {
     @Path() user_id: string,
   ): Promise<string> {
     const { env } = request.ctx;
+    request.ctx.set("tenantId", tenantId);
 
     await env.data.users.update(tenantId, user_id, {
       linked_to: undefined,

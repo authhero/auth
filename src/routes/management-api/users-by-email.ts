@@ -25,6 +25,8 @@ export class UsersByEmailController extends Controller {
   ): Promise<UserResponse[]> {
     const { env } = request.ctx;
 
+    request.ctx.set("tenantId", tenant_id);
+
     const users = await env.data.users.getByEmail(tenant_id, email);
     if (users.length === 0) {
       throw new HTTPException(404, { message: "User not found" });

@@ -43,6 +43,8 @@ export async function silentAuth({
 }: SilentAuthParams) {
   const { env } = ctx;
 
+  ctx.set("tenantId", tenant_id);
+
   const tokenState = getStateFromCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);
 

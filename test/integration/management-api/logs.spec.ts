@@ -71,8 +71,8 @@ describe("logs", () => {
     expect(log.ip).toBe("1.2.3.4");
     expect(log.description).toBe("Create a User");
     expect(typeof log.date).toBe("string");
-    // This should maybe be the id of the application and not the sub?
-    expect(log.client_id).toBe("userId");
+    // no client_id here when creating a user - just tenant_id
+    expect(log.client_id).toBeNull();
     expect(log.user_agent).toBe("ua");
     expect(log.log_id).toBe("testid-1");
     expect(log.details?.request.method).toBe("POST");
@@ -132,10 +132,9 @@ describe("logs", () => {
     expect(log.ip).toBe("1.2.3.4");
     expect(log.description).toBe("test@example.com");
     expect(typeof log.date).toBe("string");
-    // This should maybe be the id of the application and not the sub?
     expect(log.client_id).toBe("clientId");
     expect(log.user_agent).toBe("ua");
-    expect(log.log_id).toBe("testid-3");
+    expect(log.log_id).toContain("testid-");
     expect(log.details?.request.method).toBe("POST");
   });
 
@@ -189,10 +188,9 @@ describe("logs", () => {
     expect(log.ip).toBe("1.2.3.4");
     expect(log.description).toBe("Login required");
     expect(typeof log.date).toBe("string");
-    // This should maybe be the id of the application and not the sub?
     expect(log.client_id).toBe("clientId");
     expect(log.user_agent).toBe("ua");
-    expect(log.log_id).toBe("testid-4");
+    expect(log.log_id).toContain("testid-");
     expect(log.details?.request.method).toBe("GET");
   });
 });

@@ -22,10 +22,10 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("tenant_id", "varchar(255)")
     .addColumn("user_id", "varchar(255)")
     .addForeignKeyConstraint(
-      "user_id_constraint",
-      ["user_id", "tenant_id"],
-      "users",
-      ["id", "tenant_id"],
+      "tenant_id_constraint",
+      ["tenant_id"],
+      "tenants",
+      ["id"],
       (cb) => cb.onDelete("cascade"),
     )
     .addColumn("ip", "varchar(255)")
