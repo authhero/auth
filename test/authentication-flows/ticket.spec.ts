@@ -43,7 +43,7 @@ describe("passwordlessAuth", () => {
     const redirect_uri = "https://example.com";
 
     const response = await ticketAuth(
-      ctx.env,
+      ctx,
       "tenantId",
       controller,
       "ticketId",
