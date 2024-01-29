@@ -16,6 +16,7 @@ import { stateDecode } from "../../utils/stateEncode";
 import { headers } from "../../constants";
 import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 import { getClient } from "../../services/clients";
+import { HTTPException } from "hono/http-exception";
 
 @Route("callback")
 @Tags("callback")
@@ -46,13 +47,12 @@ export class CallbackController extends Controller {
       throw new Error("State not found");
     }
     request.ctx.set("client_id", loginState.authParams.client_id);
-    // here we do not have  tenant_id... should look up the client here?
     const client = await getClient(
       request.ctx.env,
       loginState.authParams.client_id,
     );
     if (!client) {
-      throw new Error("Client not found");
+      throw new HTTPException(400, { message: "Client not found" });
     }
     request.ctx.set("tenantId", client.tenant_id);
 
