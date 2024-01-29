@@ -141,6 +141,7 @@ export class PasswordlessController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
+    request.ctx.set("client_id", client_id);
     request.ctx.set("tenantId", client.tenant_id);
 
     try {
@@ -149,6 +150,9 @@ export class PasswordlessController extends Controller {
         email,
         verification_code,
       });
+
+      request.ctx.set("userId", user.id);
+      request.ctx.set("description", user.email);
 
       if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
         throw new HTTPException(400, {
@@ -238,6 +242,9 @@ export class PasswordlessController extends Controller {
       if (connection2) {
         login2ExpiredCodeUrl.searchParams.set("connection", connection2);
       }
+
+      // TODO - check what type Auth0 gives when we use an expired/invalid code, and use that here
+      // request.ctx.set('logType', LogTypes.ERROR_LOGIN);
 
       this.setHeader(headers.location, login2ExpiredCodeUrl.toString());
 
