@@ -54,7 +54,6 @@ export class LogoutController extends Controller {
       });
     }
 
-    // can we set the user id here?
     if (cookie) {
       const tokenState = getStateFromCookie(cookie);
 
