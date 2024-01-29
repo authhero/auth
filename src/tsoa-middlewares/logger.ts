@@ -8,7 +8,7 @@ export enum LogTypes {
   API_OPERATION = "sapi",
   CODE_LINK_SENT = "cls",
   FAILED_SILENT_AUTH = "fsa",
-  SUCCESSFUL_SIGNUP = "ss",
+  SUCCESS_SIGNUP = "ss",
   // copying these from Auth0
   SUCCESS_LOGIN = "sli",
   SUCCESS_LOGOUT = "slo",
