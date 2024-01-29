@@ -26,8 +26,7 @@ export class CallbackController extends Controller {
    */
   @Get("")
   @SuccessResponse("302", "Redirect")
-  // not really a SUCCESSFUL_SIGNUP
-  @Middlewares(loggerMiddleware(LogTypes.SUCCESSFUL_SIGNUP))
+  @Middlewares(loggerMiddleware(LogTypes.SUCESS_LOGIN))
   public async getCallback(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
@@ -101,8 +100,7 @@ export class CallbackController extends Controller {
    */
   @Post("")
   @SuccessResponse("302", "Redirect")
-  // should be SSO redirect callback? 8-)
-  @Middlewares(loggerMiddleware(LogTypes.SUCCESSFUL_SIGNUP))
+  @Middlewares(loggerMiddleware(LogTypes.SUCESS_LOGIN))
   public async postCallback(
     @Request() request: RequestWithContext,
     @Body() body: { state: string; code: string },
