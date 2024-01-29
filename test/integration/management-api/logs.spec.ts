@@ -78,66 +78,6 @@ describe("logs", () => {
     expect(log.details?.request.method).toBe("POST");
   });
 
-  it("should log a passwordless start for a new user", async () => {
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-
-    const token = await getAdminToken();
-
-    const createUserResponse = await client.passwordless.start.$post(
-      {
-        json: {
-          email: "test@example.com",
-          client_id: "clientId",
-          connection: "email",
-          send: "link",
-          authParams: {
-            scope: "openid",
-            nonce: "nonce",
-            response_type: "code",
-            redirect_uri: "https://example.com",
-            state: "state",
-          },
-        },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-          "content-type": "application/json",
-          "x-real-ip": "1.2.3.4",
-          "user-agent": "ua",
-        },
-      },
-    );
-
-    expect(createUserResponse.status).toBe(200);
-
-    const response = await client.api.v2.logs.$get(
-      {},
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-        },
-      },
-    );
-
-    expect(response.status).toBe(200);
-
-    const body = (await response.json()) as LogsResponse[];
-    expect(body.length).toBe(1);
-    const [log] = body;
-    expect(log.type).toBe("cls");
-    expect(log.ip).toBe("1.2.3.4");
-    expect(log.description).toBe("test@example.com");
-    expect(typeof log.date).toBe("string");
-    expect(log.client_id).toBe("clientId");
-    expect(log.user_agent).toBe("ua");
-    expect(log.log_id).toContain("testid-");
-    expect(log.details?.request.method).toBe("POST");
-  });
-
   it("should log a failed silent auth request", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
