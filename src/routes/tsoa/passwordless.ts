@@ -119,8 +119,6 @@ export class PasswordlessController extends Controller {
     return "OK";
   }
 
-  // TODO - check this... how to test on auth0? we aren't sending out magic links right? Can we renable it for a bit?
-  // DO ON ANOTHER PR!
   @Get("verify_redirect")
   @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
   public async verifyRedirect(
