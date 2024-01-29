@@ -200,7 +200,6 @@ export async function socialAuthCallback({
   }
 
   ctx.set("tenantId", client.tenant_id);
-
   ctx.set("email", email);
   ctx.set("userId", user.id);
 

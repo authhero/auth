@@ -77,6 +77,9 @@ export async function ticketAuth(
     }
   }
 
+  // TODO - pass in ctx instead of env
+  // then login user_id here
+
   const sessionId = await setSilentAuthCookies(
     env,
     controller,

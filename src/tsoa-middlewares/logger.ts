@@ -12,8 +12,8 @@ export enum LogTypes {
   // copying these from Auth0
   SUCCESS_LOGIN = "sli",
   SUCCESS_LOGOUT = "slo",
-  SUCESS_SILENT_AUTH = "ssa",
-  SUCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
+  SUCCESS_SILENT_AUTH = "ssa",
+  SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
 }
 
 export function loggerMiddleware(logType: string, description?: string) {
