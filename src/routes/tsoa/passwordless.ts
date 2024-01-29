@@ -121,8 +121,7 @@ export class PasswordlessController extends Controller {
   }
 
   @Get("verify_redirect")
-  // should I create many more types of logs?
-  @Middlewares(loggerMiddleware(LogTypes.VERIFY_REDIRECT))
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
   public async verifyRedirect(
     @Request() request: RequestWithContext,
     @Query("scope") scope: string,

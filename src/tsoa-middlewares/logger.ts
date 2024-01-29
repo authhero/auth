@@ -10,6 +10,7 @@ export enum LogTypes {
   FAILED_SILENT_AUTH = "fsa",
   SUCCESSFUL_SIGNUP = "ss",
   // copying these from Auth0
+  SUCCESS_LOGIN = "sli",
   SUCCESS_LOGOUT = "slo",
   SUCESS_SILENT_AUTH = "ssa",
   SUCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
