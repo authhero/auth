@@ -5,6 +5,8 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
+import { Context } from "hono";
+import { Var } from "../types/Var";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -19,13 +21,15 @@ function getProviderFromRealm(realm: string) {
 }
 
 export async function ticketAuth(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   tenant_id: string,
   controller: Controller,
   ticketId: string,
   authParams: AuthParams,
   realm: string,
 ) {
+  const { env } = ctx;
+
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
     throw new HTTPException(403, { message: "Ticket not found" });
@@ -77,8 +81,7 @@ export async function ticketAuth(
     }
   }
 
-  // TODO - pass in ctx instead of env
-  // then login user_id here
+  ctx.set("userId", user.id);
 
   const sessionId = await setSilentAuthCookies(
     env,

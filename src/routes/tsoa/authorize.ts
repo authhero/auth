@@ -168,7 +168,7 @@ export class AuthorizeController extends Controller {
       return socialAuth(env, this, client, connection, authParams);
     } else if (loginTicket) {
       return ticketAuth(
-        env,
+        ctx,
         client.tenant_id,
         this,
         loginTicket,
