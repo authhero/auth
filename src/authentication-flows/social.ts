@@ -17,6 +17,7 @@ import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
+import { LogTypes } from "../tsoa-middlewares/logger";
 
 export async function socialAuth(
   env: Env,
@@ -158,8 +159,7 @@ export async function socialAuthCallback({
   }
 
   if (!user) {
-    // TODO - set logger action to SUCCESSFUL_SIGNUP
-    // ctx.set("logType", LogTypes.SUCCESSFUL_SIGNUP);
+    ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
 
     // This should be fixed to get the primary user!
     const [sameEmailUser] = await env.data.users.getByEmail(
