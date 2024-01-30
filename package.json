@@ -1,6 +1,6 @@
 {
   "name": "auth2",
-  "version": "1.115.1",
+  "version": "1.116.0",
   "description": "",
   "main": "build/src/server.js",
   "scripts": {
