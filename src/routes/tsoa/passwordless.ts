@@ -243,8 +243,7 @@ export class PasswordlessController extends Controller {
         login2ExpiredCodeUrl.searchParams.set("connection", connection2);
       }
 
-      // TODO - check what type Auth0 gives when we use an expired/invalid code, and use that here
-      // request.ctx.set('logType', LogTypes.ERROR_LOGIN);
+      request.ctx.set("logType", LogTypes.FAILED_LOGIN_WRONG_PASSWORD);
 
       this.setHeader(headers.location, login2ExpiredCodeUrl.toString());
 
