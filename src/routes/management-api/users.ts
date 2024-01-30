@@ -157,7 +157,9 @@ export class UsersMgmtController extends Controller {
 
   @Post("")
   @SuccessResponse(201, "Created")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Create a User"))
+  @Middlewares(
+    loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Create a User"),
+  )
   /**
    * Create a new user.
    */
@@ -211,7 +213,9 @@ export class UsersMgmtController extends Controller {
   }
 
   @Patch("{user_id}")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a User"))
+  @Middlewares(
+    loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Update a User"),
+  )
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenant_id: string,
@@ -244,7 +248,7 @@ export class UsersMgmtController extends Controller {
   }
 
   @Post("{user_id}/identities")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Link a User"))
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Link a User"))
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
@@ -287,7 +291,9 @@ export class UsersMgmtController extends Controller {
 
   // what should happen here?  Where we do we specify the linked user? what should this even do?
   @Delete("{user_id}/identities")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Unlink a User"))
+  @Middlewares(
+    loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Unlink a User"),
+  )
   public async unlinkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
