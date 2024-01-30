@@ -45,7 +45,6 @@ function getLocalePath(locale: string) {
 @Tags("passwordless")
 export class PasswordlessController extends Controller {
   @Post("start")
-  @Middlewares(loggerMiddleware(LogTypes.CODE_LINK_SENT))
   public async startPasswordless(
     @Body() body: PasswordlessOptions,
     @Request() request: RequestWithContext,

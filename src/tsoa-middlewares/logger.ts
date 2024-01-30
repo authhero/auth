@@ -6,7 +6,6 @@ import instanceToJson from "../utils/instanceToJson";
 
 export enum LogTypes {
   API_OPERATION = "sapi",
-  CODE_LINK_SENT = "cls",
   FAILED_SILENT_AUTH = "fsa",
   SUCCESS_SIGNUP = "ss",
   // copying these from Auth0
