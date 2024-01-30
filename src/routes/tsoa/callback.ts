@@ -7,12 +7,17 @@ import {
   Route,
   Tags,
   SuccessResponse,
+  Middlewares,
   Post,
 } from "@tsoa/runtime";
 import { socialAuthCallback } from "../../authentication-flows";
 import { LoginState, RequestWithContext } from "../../types";
 import { stateDecode } from "../../utils/stateEncode";
 import { headers } from "../../constants";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { getClient } from "../../services/clients";
+import { HTTPException } from "hono/http-exception";
+
 @Route("callback")
 @Tags("callback")
 export class CallbackController extends Controller {
@@ -21,6 +26,7 @@ export class CallbackController extends Controller {
    */
   @Get("")
   @SuccessResponse("302", "Redirect")
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
   public async getCallback(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
@@ -39,6 +45,15 @@ export class CallbackController extends Controller {
     if (!loginState) {
       throw new Error("State not found");
     }
+    request.ctx.set("client_id", loginState.authParams.client_id);
+    const client = await getClient(
+      request.ctx.env,
+      loginState.authParams.client_id,
+    );
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+    request.ctx.set("tenantId", client.tenant_id);
 
     if (error) {
       const { redirect_uri } = loginState.authParams;
@@ -85,6 +100,7 @@ export class CallbackController extends Controller {
    */
   @Post("")
   @SuccessResponse("302", "Redirect")
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
   public async postCallback(
     @Request() request: RequestWithContext,
     @Body() body: { state: string; code: string },

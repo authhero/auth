@@ -9,6 +9,7 @@ import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
 import { Var } from "../types/Var";
+import { LogTypes } from "../tsoa-middlewares/logger";
 
 interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
@@ -43,7 +44,7 @@ export async function silentAuth({
 }: SilentAuthParams) {
   const { env } = ctx;
 
-  ctx.set("tenantId", tenant_id);
+  ctx.set("logType", LogTypes.SUCCESS_SILENT_AUTH);
 
   const tokenState = getStateFromCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);

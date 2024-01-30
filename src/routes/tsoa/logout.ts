@@ -8,6 +8,7 @@ import {
   Tags,
   SuccessResponse,
   Header,
+  Middlewares,
 } from "@tsoa/runtime";
 import { getClient } from "../../services/clients";
 import {
@@ -17,6 +18,8 @@ import {
 import { headers } from "../../constants";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+
 @Route("v2/logout")
 @Tags("logout")
 export class LogoutController extends Controller {
@@ -25,6 +28,7 @@ export class LogoutController extends Controller {
    */
   @Get("")
   @SuccessResponse(302)
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGOUT))
   public async logout(
     @Request() request: RequestWithContext,
     @Query() client_id: string,
@@ -35,6 +39,9 @@ export class LogoutController extends Controller {
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
+
+    request.ctx.set("client_id", client_id);
+    request.ctx.set("tenantId", client.tenant_id);
 
     const redirectUri = returnTo || request.ctx.req.header("referer");
     if (!redirectUri) {
@@ -51,6 +58,15 @@ export class LogoutController extends Controller {
       const tokenState = getStateFromCookie(cookie);
 
       if (tokenState) {
+        const session = await request.ctx.env.data.sessions.get(
+          client.tenant_id,
+          tokenState,
+        );
+
+        if (session) {
+          request.ctx.set("userId", session.user_id);
+        }
+
         await request.ctx.env.data.sessions.remove(
           client.tenant_id,
           tokenState,

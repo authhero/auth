@@ -158,6 +158,9 @@ export async function socialAuthCallback({
   }
 
   if (!user) {
+    // TODO - set logger action to SUCCESSFUL_SIGNUP
+    // ctx.set("logType", LogTypes.SUCCESSFUL_SIGNUP);
+
     // This should be fixed to get the primary user!
     const [sameEmailUser] = await env.data.users.getByEmail(
       client.tenant_id,
@@ -197,7 +200,6 @@ export async function socialAuthCallback({
   }
 
   ctx.set("tenantId", client.tenant_id);
-
   ctx.set("email", email);
   ctx.set("userId", user.id);
 

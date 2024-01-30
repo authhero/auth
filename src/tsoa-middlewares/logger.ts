@@ -9,6 +9,11 @@ export enum LogTypes {
   CODE_LINK_SENT = "cls",
   FAILED_SILENT_AUTH = "fsa",
   SUCCESSFUL_SIGNUP = "ss",
+  // copying these from Auth0
+  SUCCESS_LOGIN = "sli",
+  SUCCESS_LOGOUT = "slo",
+  SUCCESS_SILENT_AUTH = "ssa",
+  SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
 }
 
 export function loggerMiddleware(logType: string, description?: string) {
