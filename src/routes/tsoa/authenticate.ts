@@ -73,7 +73,6 @@ export class AuthenticateController extends Controller {
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
 
-      // TODO - release this and see what happens...
       request.ctx.set("logType", LogTypes.FAILED_LOGIN_WRONG_PASSWORD);
 
       if (!otp) {
