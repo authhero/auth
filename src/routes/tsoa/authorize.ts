@@ -54,7 +54,7 @@ interface AuthorizeParams {
 export class AuthorizeController extends Controller {
   @Get("")
   @SuccessResponse(302, "Redirect")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION))
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_API_OPERATION))
   public async authorize(
     @Request() request: RequestWithContext,
     /**

@@ -82,9 +82,9 @@ export class AuthenticateController extends Controller {
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
 
-      request.ctx.set("logType", LogTypes.FAILED_LOGIN_WRONG_PASSWORD);
-
       if (!otp) {
+        // could be wrong username? Would not get here then...
+        request.ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
         throw new HTTPException(403, {
           res: new Response(
             JSON.stringify({

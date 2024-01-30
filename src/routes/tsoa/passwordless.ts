@@ -242,7 +242,7 @@ export class PasswordlessController extends Controller {
         login2ExpiredCodeUrl.searchParams.set("connection", connection2);
       }
 
-      request.ctx.set("logType", LogTypes.FAILED_LOGIN_WRONG_PASSWORD);
+      request.ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
 
       this.setHeader(headers.location, login2ExpiredCodeUrl.toString());
 
