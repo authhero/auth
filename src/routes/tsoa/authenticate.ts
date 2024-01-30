@@ -5,6 +5,7 @@ import randomString from "../../utils/random-string";
 import { Ticket } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
+import { LogTypes } from "../../tsoa-middlewares/logger";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -71,6 +72,8 @@ export class AuthenticateController extends Controller {
     if ("otp" in body) {
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
+
+      request.ctx.set("logType", LogTypes.FAILED_LOGIN_WRONG_PASSWORD);
 
       if (!otp) {
         throw new HTTPException(403, {

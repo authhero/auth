@@ -14,6 +14,7 @@ export enum LogTypes {
   SUCCESS_LOGOUT = "slo",
   SUCCESS_SILENT_AUTH = "ssa",
   SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
+  FAILED_LOGIN_WRONG_PASSWORD = "flwp",
 }
 
 export function loggerMiddleware(logType: string, description?: string) {
