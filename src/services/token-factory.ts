@@ -136,16 +136,16 @@ export class TokenFactory {
     if (name) {
       payload.name = name;
     }
-    if (email !== undefined) {
+    if (email) {
       payload.email = email;
     }
-    if (nonce !== undefined) {
+    if (nonce) {
       payload.nonce = nonce;
     }
-    if (picture !== undefined) {
+    if (picture) {
       payload.picture = picture;
     }
-    if (locale !== undefined) {
+    if (locale) {
       payload.locale = locale;
     }
     // boolean - typescript says can be undefined but can really be null
