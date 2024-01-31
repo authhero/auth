@@ -67,6 +67,8 @@ export class AuthenticateController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
+    await request.ctx.set("client_id", client.id);
+    await request.ctx.set("tenantId", client.tenant_id);
 
     const email = body.username.toLocaleLowerCase();
     let ticket: Ticket = {
@@ -81,6 +83,8 @@ export class AuthenticateController extends Controller {
     if ("otp" in body) {
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
+
+      otp?.user_id && request.ctx.set("userId", otp.user_id);
 
       if (!otp) {
         // could be wrong username? Would not get here then...
@@ -114,6 +118,8 @@ export class AuthenticateController extends Controller {
         user_id: user.id,
         password: body.password,
       });
+
+      request.ctx.set("userId", user.id);
 
       if (!valid) {
         throw new HTTPException(403);
