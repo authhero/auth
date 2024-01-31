@@ -221,7 +221,7 @@ export class UsersMgmtController extends Controller {
     @Header("tenant-id") tenant_id: string,
     @Path() user_id: string,
     @Body() user: Partial<PostUsersBody>,
-  ): Promise<boolean> {
+  ): Promise<UserResponse> {
     const { env } = request.ctx;
     request.ctx.set("tenantId", tenant_id);
 
@@ -242,9 +242,25 @@ export class UsersMgmtController extends Controller {
       }
     }
 
-    const results = await env.data.users.update(tenant_id, user_id, userFields);
+    const result = await env.data.users.update(tenant_id, user_id, userFields);
 
-    return results;
+    if (!result) {
+      throw new HTTPException(500);
+    }
+
+    const patchedUser = await env.data.users.get(tenant_id, user_id);
+
+    if (!patchedUser) {
+      throw new HTTPException(404);
+    }
+
+    const userResponse: UserResponse = await enrichUser(
+      env,
+      tenant_id,
+      patchedUser,
+    );
+
+    return userResponse;
   }
 
   @Post("{user_id}/identities")
