@@ -14,13 +14,13 @@ export function get(db: Kysely<Database>) {
       return null;
     }
 
-    // loop through all user keys and remove any that are null
-    Object.keys(user).forEach((key) => {
-      const iHateTheseHacks = user as any;
-      if (iHateTheseHacks[key] === null) {
-        delete iHateTheseHacks[key];
-      }
-    });
+    // we could also deal with it in the data adapters...
+    // Object.keys(user).forEach((key) => {
+    //   const iHateTheseHacks = user as any;
+    //   if (iHateTheseHacks[key] === null) {
+    //     delete iHateTheseHacks[key];
+    //   }
+    // });
 
     return {
       ...user,

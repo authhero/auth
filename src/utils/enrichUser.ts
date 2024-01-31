@@ -46,9 +46,19 @@ export async function enrichUser(
 
   const { id, ...userWithoutId } = primaryUser;
 
-  return {
+  const user: UserResponse = {
     ...userWithoutId,
     identities: [primaryUserIdentity, ...linkedUserIdentities],
     user_id: primaryUser.id,
   };
+
+  // loop through all user keys and remove any that are null
+  Object.keys(user).forEach((key) => {
+    const iHateTheseHacks = user as any;
+    if (iHateTheseHacks[key] === null) {
+      delete iHateTheseHacks[key];
+    }
+  });
+
+  return user;
 }
