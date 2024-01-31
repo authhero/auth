@@ -78,10 +78,10 @@ function applyTokenResponseAsFragment(
     if (tokenResponse.id_token) {
       anchorLinks.set("id_token", tokenResponse.id_token);
     }
+    anchorLinks.set("expires_in", tokenResponse.expires_in.toString());
   }
 
   anchorLinks.set("token_type", "Bearer");
-  anchorLinks.set("expires_in", "28800");
 
   if (state) {
     anchorLinks.set("state", state);

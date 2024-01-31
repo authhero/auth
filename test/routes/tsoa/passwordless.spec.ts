@@ -128,7 +128,7 @@ describe("Passwordless", () => {
       const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
 
       expect(searchParams.get("state")).toBe("state");
-      expect(searchParams.get("expires_in")).toBe("28800");
+      expect(searchParams.get("expires_in")).toBe("86400");
 
       const token = parseJwt(searchParams.get("access_token") as string);
       expect(token).toEqual({

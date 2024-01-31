@@ -464,7 +464,7 @@ describe("authorize", () => {
       });
 
       expect(searchParams.get("state")).toBe("state");
-      expect(searchParams.get("expires_in")).toBe("28800");
+      expect(searchParams.get("expires_in")).toBe("86400");
       expect(searchParams.get("id_token")).toBe(null);
       expect(searchParams.get("state")).toBe("state");
 
