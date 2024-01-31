@@ -83,7 +83,6 @@ describe("Login with code on liquidjs template", () => {
     const redirectUrl = new URL(codeLoginRedirectUri);
     expect(redirectUrl.pathname).toBe("/callback");
     const hash = new URLSearchParams(redirectUrl.hash.slice(1));
-
     const accessToken = hash.get("access_token");
     expect(accessToken).toBeTruthy();
     const idToken = hash.get("id_token");

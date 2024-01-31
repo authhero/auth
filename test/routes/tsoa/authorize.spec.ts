@@ -597,7 +597,7 @@ describe("authorize", () => {
         userId: "email|testid-5",
       });
 
-      expect(redirectUrl.searchParams.get("state")).toBe("state");
+      expect(searchParams.get("state")).toBe("state");
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
     });
