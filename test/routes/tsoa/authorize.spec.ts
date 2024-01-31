@@ -450,9 +450,9 @@ describe("authorize", () => {
 
       expect(redirectUrl.searchParams.get("id_token")).toBeNull();
 
-      const accessToken = parseJwt(
-        redirectUrl.searchParams.get("access_token") as string,
-      );
+      const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
+
+      const accessToken = parseJwt(searchParams.get("access_token")!);
 
       expect(accessToken).toEqual({
         aud: "default",
@@ -463,10 +463,10 @@ describe("authorize", () => {
         exp: Math.floor(date.getTime() / 1000) + 86400,
       });
 
-      expect(redirectUrl.searchParams.get("state")).toBe("state");
-      expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
-      expect(redirectUrl.searchParams.get("id_token")).toBe(null);
-      expect(redirectUrl.searchParams.get("state")).toBe("state");
+      expect(searchParams.get("state")).toBe("state");
+      expect(searchParams.get("expires_in")).toBe("28800");
+      expect(searchParams.get("id_token")).toBe(null);
+      expect(searchParams.get("state")).toBe("state");
 
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
@@ -514,10 +514,9 @@ describe("authorize", () => {
 
       const locationHeader = controller.getHeader("location") as string;
       const redirectUrl = new URL(locationHeader);
+      const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
 
-      const idToken = parseJwt(
-        redirectUrl.searchParams.get("id_token") as string,
-      );
+      const idToken = parseJwt(searchParams.get("id_token") as string);
 
       expect(idToken).toEqual({
         aud: "clientId",
@@ -565,10 +564,9 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
 
       expect(redirectUrl.host).toBe("example.com");
+      const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
 
-      const stateObj = JSON.parse(
-        atob(redirectUrl.searchParams.get("code") as string),
-      );
+      const stateObj = JSON.parse(atob(searchParams.get("code") as string));
 
       expect(stateObj).toEqual({
         authParams: {
