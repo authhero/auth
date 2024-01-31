@@ -28,7 +28,7 @@ export function listLogs(db: Kysely<Database>) {
     }
 
     const filteredQuery = query
-      .offset((params.page - 1) * params.per_page)
+      .offset(params.page * params.per_page)
       .limit(params.per_page);
 
     const logs = await filteredQuery.selectAll().execute();
