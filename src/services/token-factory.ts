@@ -54,6 +54,19 @@ interface CreateIDTokenParams {
   locale?: string;
 }
 
+function convertNullsToUndefined(payload: IDTokenPayload) {
+  const typeCoercedPayload = payload as any;
+  for (const key in typeCoercedPayload) {
+    const value = typeCoercedPayload[key];
+    if (value === null) {
+      typeCoercedPayload[key] = undefined;
+    } else {
+      typeCoercedPayload[key] = value;
+    }
+  }
+  return typeCoercedPayload;
+}
+
 export class TokenFactory {
   privateKeyPEM: string;
 
@@ -122,37 +135,17 @@ export class TokenFactory {
       sub: userId,
       iss,
       sid,
+      given_name,
+      family_name,
+      nickname,
+      picture,
+      locale,
+      name,
+      email,
+      nonce,
+      email_verified,
     };
 
-    if (given_name) {
-      payload.given_name = given_name;
-    }
-    if (family_name) {
-      payload.family_name = family_name;
-    }
-    if (nickname) {
-      payload.nickname = nickname;
-    }
-    if (name) {
-      payload.name = name;
-    }
-    if (email) {
-      payload.email = email;
-    }
-    if (nonce) {
-      payload.nonce = nonce;
-    }
-    if (picture) {
-      payload.picture = picture;
-    }
-    if (locale) {
-      payload.locale = locale;
-    }
-    // boolean - typescript says can be undefined but can really be null
-    if (email_verified !== undefined || email_verified !== null) {
-      payload.email_verified = email_verified;
-    }
-
-    return this.getJwt(payload);
+    return this.getJwt(convertNullsToUndefined(payload));
   }
 }
