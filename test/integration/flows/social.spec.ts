@@ -115,7 +115,6 @@ describe("social sign on", () => {
         const location2 = new URL(
           socialCallbackResponse.headers.get("location")!,
         );
-        // OK! have not changed this test hyet. cool. breathe deeply
         expect(location2.host).toBe("login2.sesamy.dev");
 
         const socialCallbackQuery2 = new URLSearchParams(
@@ -224,7 +223,6 @@ describe("social sign on", () => {
         );
         expect(socialCallbackQuery2.get("access_token")).toBeDefined();
         expect(socialCallbackQuery2.get("id_token")).toBeDefined();
-        // why has this changed?
         expect(socialCallbackQuery2.get("expires_in")).toBe("28800");
         expect(socialCallbackQuery2.get("state")).toBe(LOGIN2_STATE);
         const idToken = socialCallbackQuery2.get("id_token");
