@@ -55,6 +55,15 @@ const EXPECTED_NEW_USER = {
   is_social: true,
   profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
   user_id: "demo-social-provider|123456789012345678901",
+  // these fields will be returned as null. What do we want? It's a mgmt-api route so check Auth0
+  app_metadata: null,
+  family_name: null,
+  given_name: null,
+  nickname: null,
+  linked_to: null,
+  locale: null,
+  tags: null,
+  picture: null,
 };
 
 describe("social sign on", () => {
@@ -171,16 +180,6 @@ describe("social sign on", () => {
           created_at,
           updated_at,
           last_login,
-          // again, investigate this
-          app_metadata,
-          family_name,
-          given_name,
-          linked_to,
-          locale,
-          nickname,
-          picture,
-          // this is a new one to destructure... might actually be a SQLite issue OR a production issue that we weren't picking up
-          tags,
           ...newSocialUserWithoutDates
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
@@ -277,16 +276,6 @@ describe("social sign on", () => {
           created_at,
           updated_at,
           last_login,
-          //
-          app_metadata,
-          family_name,
-          given_name,
-          linked_to,
-          locale,
-          nickname,
-          picture,
-          //
-          tags,
           ...newSocialUserWithoutDates
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);

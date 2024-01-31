@@ -120,18 +120,38 @@ export class TokenFactory {
       // The audience for an id token is the client id
       aud: clientId,
       sub: userId,
-      given_name,
-      family_name,
-      nickname,
-      name,
-      email,
-      email_verified,
-      nonce,
       iss,
-      picture,
-      locale,
       sid,
     };
+
+    if (given_name) {
+      payload.given_name = given_name;
+    }
+    if (family_name) {
+      payload.family_name = family_name;
+    }
+    if (nickname) {
+      payload.nickname = nickname;
+    }
+    if (name) {
+      payload.name = name;
+    }
+    if (email) {
+      payload.email = email;
+    }
+    if (nonce) {
+      payload.nonce = nonce;
+    }
+    if (picture) {
+      payload.picture = picture;
+    }
+    if (locale) {
+      payload.locale = locale;
+    }
+    // boolean - typescript says can be undefined but can really be null
+    if (email_verified !== undefined || email_verified !== null) {
+      payload.email_verified = email_verified;
+    }
 
     return this.getJwt(payload);
   }
