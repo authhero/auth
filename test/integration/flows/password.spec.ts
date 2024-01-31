@@ -91,14 +91,17 @@ describe("password-flow", () => {
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
       expect(redirectUri.hostname).toBe("login.example.com");
-      expect(redirectUri.searchParams.get("state")).toBe("state");
-      const accessToken = redirectUri.searchParams.get("access_token");
+      expect(searchParams.get("state")).toBe("state");
+      const accessToken = searchParams.get("access_token");
       const accessTokenPayload = parseJwt(accessToken!);
       expect(accessTokenPayload.aud).toBe("default");
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("");
-      const idToken = redirectUri.searchParams.get("id_token");
+      const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
@@ -229,15 +232,17 @@ describe("password-flow", () => {
 
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
       expect(redirectUri.hostname).toBe("login.example.com");
-      expect(redirectUri.searchParams.get("state")).toBe("state");
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
 
-      const accessToken = redirectUri.searchParams.get("access_token");
+      expect(searchParams.get("state")).toBe("state");
+
+      const accessToken = searchParams.get("access_token");
       const accessTokenPayload = parseJwt(accessToken!);
       expect(accessTokenPayload.aud).toBe("default");
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("");
 
-      const idToken = redirectUri.searchParams.get("id_token");
+      const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
