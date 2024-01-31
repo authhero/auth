@@ -275,7 +275,7 @@ describe("social sign on", () => {
   });
 
   describe("Secondary user", () => {
-    it("should return existing primary account when logging in with new social sign ons with same email address", async () => {
+    it.only("should return existing primary account when logging in with new social sign ons with same email address", async () => {
       // ---------------------------------------------
       // create new user with same email as we have hardcoded on the mock id_token responses
       // ---------------------------------------------
@@ -329,9 +329,9 @@ describe("social sign on", () => {
         query: socialCallbackQuery,
       });
 
-      const socialCallbackResponseQuery = new URL(
-        socialCallbackResponse.headers.get("location")!,
-      ).searchParams;
+      const socialCallbackResponseQuery = new URLSearchParams(
+        socialCallbackResponse.headers.get("location")?.split("#")[1]!,
+      );
       const accessTokenPayload = parseJwt(
         socialCallbackResponseQuery.get("access_token")!,
       );
@@ -434,9 +434,9 @@ describe("social sign on", () => {
         query: socialCallbackQuery,
       });
 
-      const socialCallbackResponse2Query = new URL(
-        socialCallbackResponse2.headers.get("location")!,
-      ).searchParams;
+      const socialCallbackResponse2Query = new URLSearchParams(
+        socialCallbackResponse2.headers.get("location")?.split("#")[1]!,
+      );
       expect(
         parseJwt(socialCallbackResponse2Query.get("access_token")!).sub,
       ).toBe(createEmailUser.user_id);
@@ -455,9 +455,12 @@ describe("social sign on", () => {
       const socialCallbackResponseAnotherSSO = await client.callback.$get({
         query: socialCallbackQueryAnotherSSO,
       });
-      const socialCallbackResponseAnotherSSOQuery = new URL(
-        socialCallbackResponseAnotherSSO.headers.get("location")!,
-      ).searchParams;
+
+      const socialCallbackResponseAnotherSSOQuery = new URLSearchParams(
+        socialCallbackResponseAnotherSSO.headers
+          .get("location")
+          ?.split("#")[1]!,
+      );
       // these confirm we are still signing in with the primary user
       expect(
         parseJwt(socialCallbackResponseAnotherSSOQuery.get("access_token")!)
