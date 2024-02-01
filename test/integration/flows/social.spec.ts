@@ -124,7 +124,9 @@ describe("social sign on", () => {
         expect(socialCallbackQuery2.get("access_token")).toBeDefined();
         expect(socialCallbackQuery2.get("id_token")).toBeDefined();
         expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
-        expect(socialCallbackQuery2.get("state")).toBe(LOGIN2_STATE);
+        expect(socialCallbackQuery2.get("state")).toBe(
+          encodeURIComponent(LOGIN2_STATE),
+        );
         const idToken = socialCallbackQuery2.get("id_token");
         const idTokenPayload = parseJwt(idToken!);
         expect(idTokenPayload.aud).toBe("clientId");
@@ -224,7 +226,9 @@ describe("social sign on", () => {
         expect(socialCallbackQuery2.get("access_token")).toBeDefined();
         expect(socialCallbackQuery2.get("id_token")).toBeDefined();
         expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
-        expect(socialCallbackQuery2.get("state")).toBe(LOGIN2_STATE);
+        expect(socialCallbackQuery2.get("state")).toBe(
+          encodeURIComponent(LOGIN2_STATE),
+        );
         const idToken = socialCallbackQuery2.get("id_token");
         const idTokenPayload = parseJwt(idToken!);
         expect(idTokenPayload.aud).toBe("clientId");

@@ -77,7 +77,7 @@ function applyTokenResponseAsFragment(
   anchorLinks.set("token_type", "Bearer");
 
   if (state) {
-    anchorLinks.set("state", state);
+    anchorLinks.set("state", encodeURIComponent(state));
   }
 
   if (authParams.scope) {
