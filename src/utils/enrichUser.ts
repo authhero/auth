@@ -54,9 +54,9 @@ export async function enrichUser(
 
   // loop through all user keys and remove any that are null
   Object.keys(user).forEach((key) => {
-    const iHateTheseHacks = user as any;
-    if (iHateTheseHacks[key] === null) {
-      delete iHateTheseHacks[key];
+    const unsafeTypeUser = user as any;
+    if (unsafeTypeUser[key] === null) {
+      delete unsafeTypeUser[key];
     }
   });
 

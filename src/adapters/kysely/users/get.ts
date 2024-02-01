@@ -14,14 +14,6 @@ export function get(db: Kysely<Database>) {
       return null;
     }
 
-    // we could also deal with it in the data adapters...
-    // Object.keys(user).forEach((key) => {
-    //   const iHateTheseHacks = user as any;
-    //   if (iHateTheseHacks[key] === null) {
-    //     delete iHateTheseHacks[key];
-    //   }
-    // });
-
     return {
       ...user,
       email_verified: user.email_verified === 1,
