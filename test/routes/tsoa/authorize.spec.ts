@@ -564,9 +564,10 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
 
       expect(redirectUrl.host).toBe("example.com");
-      const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
 
-      const stateObj = JSON.parse(atob(searchParams.get("code") as string));
+      const stateObj = JSON.parse(
+        atob(redirectUrl.searchParams.get("code") as string),
+      );
 
       expect(stateObj).toEqual({
         authParams: {
@@ -597,7 +598,7 @@ describe("authorize", () => {
         userId: "email|testid-5",
       });
 
-      expect(searchParams.get("state")).toBe("state");
+      expect(redirectUrl.searchParams.get("state")).toBe("state");
       expect(actual).toBe("Redirecting");
       expect(controller.getStatus()).toBe(302);
     });
