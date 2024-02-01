@@ -84,7 +84,9 @@ export class AuthenticateController extends Controller {
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
 
-      otp?.user_id && request.ctx.set("userId", otp.user_id);
+      if (otp?.user_id) {
+        request.ctx.set("userId", otp.user_id);
+      }
 
       if (!otp) {
         // could be wrong username? Would not get here then...
