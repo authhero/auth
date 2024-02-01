@@ -55,15 +55,6 @@ const EXPECTED_NEW_USER = {
   is_social: true,
   profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
   user_id: "demo-social-provider|123456789012345678901",
-  // these fields will be returned as null. What do we want? It's a mgmt-api route so check Auth0
-  app_metadata: null,
-  family_name: null,
-  given_name: null,
-  nickname: null,
-  linked_to: null,
-  locale: null,
-  tags: null,
-  picture: null,
 };
 
 describe("social sign on", () => {
