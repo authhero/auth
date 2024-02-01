@@ -19,6 +19,7 @@ import * as n18_logsFields from "./2024-01-06T16:23:00_logs-fields";
 import * as n19_connectionsUserinfo from "./2024-01-10T23:19:00_connections-userinfo";
 import * as n20_missingFields from "./2024-01-11T10:58:00_missing-fields";
 import * as n21_sessionDeletedAt from "./2024-01-17T10:51:00_session-deleted-at";
+import * as n22_dropLogsFields from "./2024-01-31T09:00:00_drop-logs-fields";
 
 // These need to be in alphabetic order
 export default {
@@ -43,4 +44,5 @@ export default {
   n19_connectionsUserinfo,
   n20_missingFields,
   n21_sessionDeletedAt,
+  n22_dropLogsFields,
 };

@@ -3,7 +3,6 @@ import { LogsResponse, SqlLog } from "../../types/";
 import { ListParams } from "./ListParams";
 
 export interface CreateLogParams {
-  category: string;
   type: string;
   description: string;
   tenant_id: string;

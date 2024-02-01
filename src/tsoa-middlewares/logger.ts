@@ -50,7 +50,6 @@ export function loggerMiddleware(logType: string, description?: string) {
           tenant_id: ctx.var.tenantId,
           user_id: ctx.var.userId,
           description: description || ctx.var.description || "",
-          category: logType,
           ip: ctx.req.header("x-real-ip") || "",
           type: ctx.var.logType || logType,
           client_id: ctx.var.client_id,
