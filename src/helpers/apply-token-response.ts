@@ -65,13 +65,6 @@ function applyTokenResponseAsFragment(
 
   const anchorLinks = new URLSearchParams();
 
-  if ("code" in tokenResponse) {
-    anchorLinks.set("code", tokenResponse.code);
-    if (authParams.state) {
-      anchorLinks.set("state", authParams.state);
-    }
-  }
-
   if ("access_token" in tokenResponse) {
     anchorLinks.set("access_token", tokenResponse.access_token);
 
