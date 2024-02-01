@@ -7,10 +7,11 @@ import {
   Route,
   Security,
   Tags,
+  Path,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types";
 import { ListLogsResponse } from "../../adapters/interfaces/Logs";
-
+import { HTTPException } from "hono/http-exception";
 @Route("api/v2/logs")
 @Tags("logs")
 @Security("oauth2managementApi", [""])
@@ -53,5 +54,21 @@ export class LogsController extends Controller {
     return result.logs;
   }
 
-  // TODO - get/[id] exist
+  @Get("{log_id}")
+  public async getLog(
+    @Request() request: RequestWithContext,
+    @Header("tenant-id") tenantId: string,
+    @Path() log_id: string,
+  ) {
+    const { ctx } = request;
+    const { env } = ctx;
+
+    const log = await env.data.logs.get(tenantId, log_id);
+
+    if (!log) {
+      throw new HTTPException(404);
+    }
+
+    return log;
+  }
 }
