@@ -103,6 +103,14 @@ export function applyTokenResponse(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
+  if (authParams.response_type?.includes("token")) {
+    return applyTokenResponseAsFragment(controller, tokenResponse, authParams);
+  }
+
+  if (authParams.response_type?.includes("code")) {
+    return applyTokenResponseAsQuery(controller, tokenResponse, authParams);
+  }
+
   switch (authParams.response_mode) {
     // Auth0 does not allow query if response_type is token
     case AuthorizationResponseMode.QUERY:
