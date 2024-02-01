@@ -52,4 +52,6 @@ export class LogsController extends Controller {
 
     return result.logs;
   }
+
+  // TODO - get/[id] exist
 }
