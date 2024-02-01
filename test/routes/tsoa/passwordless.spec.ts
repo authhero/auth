@@ -125,12 +125,12 @@ describe("Passwordless", () => {
 
       const redirectUrl = new URL(controller.getHeader("location") as string);
 
-      expect(redirectUrl.searchParams.get("state")).toBe("state");
-      expect(redirectUrl.searchParams.get("expires_in")).toBe("86400");
+      const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
 
-      const token = parseJwt(
-        redirectUrl.searchParams.get("access_token") as string,
-      );
+      expect(searchParams.get("state")).toBe("state");
+      expect(searchParams.get("expires_in")).toBe("86400");
+
+      const token = parseJwt(searchParams.get("access_token") as string);
       expect(token).toEqual({
         aud: "https://example.com",
         iat: Math.floor(date.getTime() / 1000),

@@ -116,7 +116,11 @@ describe("social sign on", () => {
           socialCallbackResponse.headers.get("location")!,
         );
         expect(location2.host).toBe("login2.sesamy.dev");
-        const socialCallbackQuery2 = location2.searchParams;
+
+        const socialCallbackQuery2 = new URLSearchParams(
+          location2.hash.slice(1),
+        );
+
         expect(socialCallbackQuery2.get("access_token")).toBeDefined();
         expect(socialCallbackQuery2.get("id_token")).toBeDefined();
         expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
@@ -214,7 +218,9 @@ describe("social sign on", () => {
           socialCallbackResponse.headers.get("location")!,
         );
         expect(location2.host).toBe("login2.sesamy.dev");
-        const socialCallbackQuery2 = location2.searchParams;
+        const socialCallbackQuery2 = new URLSearchParams(
+          location2.hash.slice(1),
+        );
         expect(socialCallbackQuery2.get("access_token")).toBeDefined();
         expect(socialCallbackQuery2.get("id_token")).toBeDefined();
         expect(socialCallbackQuery2.get("expires_in")).toBe("86400");
@@ -329,9 +335,9 @@ describe("social sign on", () => {
         query: socialCallbackQuery,
       });
 
-      const socialCallbackResponseQuery = new URL(
-        socialCallbackResponse.headers.get("location")!,
-      ).searchParams;
+      const socialCallbackResponseQuery = new URLSearchParams(
+        socialCallbackResponse.headers.get("location")?.split("#")[1]!,
+      );
       const accessTokenPayload = parseJwt(
         socialCallbackResponseQuery.get("access_token")!,
       );
@@ -434,9 +440,9 @@ describe("social sign on", () => {
         query: socialCallbackQuery,
       });
 
-      const socialCallbackResponse2Query = new URL(
-        socialCallbackResponse2.headers.get("location")!,
-      ).searchParams;
+      const socialCallbackResponse2Query = new URLSearchParams(
+        socialCallbackResponse2.headers.get("location")?.split("#")[1]!,
+      );
       expect(
         parseJwt(socialCallbackResponse2Query.get("access_token")!).sub,
       ).toBe(createEmailUser.user_id);
@@ -455,9 +461,12 @@ describe("social sign on", () => {
       const socialCallbackResponseAnotherSSO = await client.callback.$get({
         query: socialCallbackQueryAnotherSSO,
       });
-      const socialCallbackResponseAnotherSSOQuery = new URL(
-        socialCallbackResponseAnotherSSO.headers.get("location")!,
-      ).searchParams;
+
+      const socialCallbackResponseAnotherSSOQuery = new URLSearchParams(
+        socialCallbackResponseAnotherSSO.headers
+          .get("location")
+          ?.split("#")[1]!,
+      );
       // these confirm we are still signing in with the primary user
       expect(
         parseJwt(socialCallbackResponseAnotherSSOQuery.get("access_token")!)

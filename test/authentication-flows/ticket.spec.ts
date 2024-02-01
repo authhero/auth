@@ -76,7 +76,7 @@ describe("passwordlessAuth", () => {
     });
     expect(hashParams.get("id_token")).toBe(null);
     expect(hashParams.get("token_type")).toBe("Bearer");
-    expect(hashParams.get("expires_in")).toBe("28800");
+    expect(hashParams.get("expires_in")).toBe("86400");
     expect(hashParams.get("state")).toBe(state);
     expect(hashParams.get("scope")).toBe("openid profile email");
   });
