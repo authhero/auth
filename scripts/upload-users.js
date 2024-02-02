@@ -9,7 +9,6 @@ async function postUser(user) {
     email: user.email,
     nickname: user.nickname,
     picture: user.picture,
-    tags: [],
     given_name: user.given_name,
     family_name: user.family_name,
     id: user.user_id,
