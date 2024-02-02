@@ -54,19 +54,6 @@ interface CreateIDTokenParams {
   locale?: string;
 }
 
-function convertNullsToUndefined(payload: IDTokenPayload) {
-  const typeCoercedPayload = payload as any;
-  for (const key in typeCoercedPayload) {
-    const value = typeCoercedPayload[key];
-    if (value === null) {
-      typeCoercedPayload[key] = undefined;
-    } else {
-      typeCoercedPayload[key] = value;
-    }
-  }
-  return typeCoercedPayload;
-}
-
 export class TokenFactory {
   privateKeyPEM: string;
 
@@ -146,6 +133,6 @@ export class TokenFactory {
       email_verified,
     };
 
-    return this.getJwt(convertNullsToUndefined(payload));
+    return this.getJwt(payload);
   }
 }
