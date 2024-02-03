@@ -92,14 +92,16 @@ describe("code-flow", () => {
       );
       expect(redirectUri.hostname).toBe("login.example.com");
 
-      const accessToken = redirectUri.searchParams.get("access_token");
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
 
       const accessTokenPayload = parseJwt(accessToken!);
       expect(accessTokenPayload.aud).toBe("default");
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
 
-      const idToken = redirectUri.searchParams.get("id_token");
+      const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("new-user@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
@@ -121,12 +123,6 @@ describe("code-flow", () => {
         iat,
         sid,
         sub,
-        //
-        family_name,
-        given_name,
-        nickname,
-        picture,
-        locale,
         ...restOfIdTokenPayload
       } = silentAuthIdTokenPayload;
 
@@ -221,7 +217,9 @@ describe("code-flow", () => {
       );
       expect(redirectUri.hostname).toBe("login.example.com");
 
-      const accessToken = redirectUri.searchParams.get("access_token");
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
 
       const accessTokenPayload = parseJwt(accessToken!);
       expect(accessTokenPayload.aud).toBe("default");
@@ -229,7 +227,7 @@ describe("code-flow", () => {
       expect(accessTokenPayload.scope).toBe("openid profile email");
       expect(accessTokenPayload.sub).toBe("userId");
 
-      const idToken = redirectUri.searchParams.get("id_token");
+      const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
@@ -248,15 +246,8 @@ describe("code-flow", () => {
           "clientId",
         );
 
-      const {
-        exp,
-        iat,
-        sid,
-        family_name,
-        given_name,
-        locale,
-        ...restOfIdTokenPayload
-      } = silentAuthIdTokenPayload;
+      const { exp, iat, sid, ...restOfIdTokenPayload } =
+        silentAuthIdTokenPayload;
 
       expect(restOfIdTokenPayload).toEqual({
         sub: "userId",

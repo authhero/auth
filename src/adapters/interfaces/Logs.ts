@@ -3,7 +3,6 @@ import { LogsResponse, SqlLog } from "../../types/";
 import { ListParams } from "./ListParams";
 
 export interface CreateLogParams {
-  category: string;
   type: string;
   description: string;
   tenant_id: string;
@@ -31,4 +30,5 @@ export interface ListLogsResponse extends Totals {
 export interface LogsDataAdapter {
   create(params: CreateLogParams): Promise<SqlLog>;
   list(tenantId: string, params: ListParams): Promise<ListLogsResponse>;
+  get(tenantId: string, logId: string): Promise<LogsResponse | null>;
 }

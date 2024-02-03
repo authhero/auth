@@ -71,13 +71,13 @@ function applyTokenResponseAsFragment(
     if (tokenResponse.id_token) {
       anchorLinks.set("id_token", tokenResponse.id_token);
     }
+    anchorLinks.set("expires_in", tokenResponse.expires_in.toString());
   }
 
   anchorLinks.set("token_type", "Bearer");
-  anchorLinks.set("expires_in", "28800");
 
   if (state) {
-    anchorLinks.set("state", state);
+    anchorLinks.set("state", encodeURIComponent(state));
   }
 
   if (authParams.scope) {
@@ -96,15 +96,24 @@ export function applyTokenResponse(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
+  if (authParams.response_type?.includes("token")) {
+    return applyTokenResponseAsFragment(controller, tokenResponse, authParams);
+  }
+
+  if (authParams.response_type?.includes("code")) {
+    return applyTokenResponseAsQuery(controller, tokenResponse, authParams);
+  }
+
   switch (authParams.response_mode) {
+    // Auth0 does not allow query if response_type is token
+    case AuthorizationResponseMode.QUERY:
+      return applyTokenResponseAsQuery(controller, tokenResponse, authParams);
     case AuthorizationResponseMode.FRAGMENT:
+    default:
       return applyTokenResponseAsFragment(
         controller,
         tokenResponse,
         authParams,
       );
-    case AuthorizationResponseMode.QUERY:
-    default:
-      return applyTokenResponseAsQuery(controller, tokenResponse, authParams);
   }
 }

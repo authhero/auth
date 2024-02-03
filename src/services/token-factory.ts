@@ -120,17 +120,17 @@ export class TokenFactory {
       // The audience for an id token is the client id
       aud: clientId,
       sub: userId,
+      iss,
+      sid,
       given_name,
       family_name,
       nickname,
-      name,
-      email,
-      email_verified,
-      nonce,
-      iss,
       picture,
       locale,
-      sid,
+      name,
+      email,
+      nonce,
+      email_verified,
     };
 
     return this.getJwt(payload);

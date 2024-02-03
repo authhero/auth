@@ -114,16 +114,19 @@ describe("code-flow", () => {
     const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
     expect(redirectUri.hostname).toBe("login.example.com");
-    expect(redirectUri.searchParams.get("state")).toBe("state");
 
-    const accessToken = redirectUri.searchParams.get("access_token");
+    const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+    expect(searchParams.get("state")).toBe("state");
+
+    const accessToken = searchParams.get("access_token");
 
     const accessTokenPayload = parseJwt(accessToken!);
     expect(accessTokenPayload.aud).toBe("default");
     expect(accessTokenPayload.iss).toBe("https://example.com/");
     expect(accessTokenPayload.scope).toBe("openid profile email");
 
-    const idToken = redirectUri.searchParams.get("id_token");
+    const idToken = searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
@@ -145,12 +148,6 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
-      // what have I done here to have these fields? some patched id_token endpoint right?
-      family_name,
-      given_name,
-      nickname,
-      locale,
-      picture,
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
@@ -330,13 +327,15 @@ describe("code-flow", () => {
     });
 
     const redirectUri = new URL(tokenResponse.headers.get("location")!);
-    const accessToken = redirectUri.searchParams.get("access_token");
+    const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+    const accessToken = searchParams.get("access_token");
     const accessTokenPayload = parseJwt(accessToken!);
 
     // this is the id of the primary account
     expect(accessTokenPayload.sub).toBe("userId");
 
-    const idToken = redirectUri.searchParams.get("id_token");
+    const idToken = searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
 
     expect(idTokenPayload.sub).toBe("userId");
@@ -386,10 +385,6 @@ describe("code-flow", () => {
       iat,
       sid,
       sub,
-      //
-      family_name,
-      given_name,
-      locale,
       ...restOfIdTokenPayload
     } = silentAuthIdTokenPayload;
 
@@ -473,9 +468,9 @@ describe("code-flow", () => {
     });
 
     const accessToken2 = parseJwt(
-      new URL(tokenResponse2.headers.get("location")!).searchParams.get(
-        "access_token",
-      )!,
+      new URLSearchParams(
+        tokenResponse2.headers.get("location")!.split("#")[1]!,
+      ).get("access_token")!,
     );
 
     // this is the id of the primary account

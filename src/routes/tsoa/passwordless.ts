@@ -45,7 +45,6 @@ function getLocalePath(locale: string) {
 @Tags("passwordless")
 export class PasswordlessController extends Controller {
   @Post("start")
-  @Middlewares(loggerMiddleware(LogTypes.CODE_LINK_SENT))
   public async startPasswordless(
     @Body() body: PasswordlessOptions,
     @Request() request: RequestWithContext,
@@ -243,7 +242,7 @@ export class PasswordlessController extends Controller {
         login2ExpiredCodeUrl.searchParams.set("connection", connection2);
       }
 
-      request.ctx.set("logType", LogTypes.FAILED_LOGIN_WRONG_PASSWORD);
+      request.ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
 
       this.setHeader(headers.location, login2ExpiredCodeUrl.toString());
 

@@ -157,7 +157,9 @@ export class UsersMgmtController extends Controller {
 
   @Post("")
   @SuccessResponse(201, "Created")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Create a User"))
+  @Middlewares(
+    loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Create a User"),
+  )
   /**
    * Create a new user.
    */
@@ -211,13 +213,15 @@ export class UsersMgmtController extends Controller {
   }
 
   @Patch("{user_id}")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Update a User"))
+  @Middlewares(
+    loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Update a User"),
+  )
   public async patchUser(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenant_id: string,
     @Path() user_id: string,
     @Body() user: Partial<PostUsersBody>,
-  ): Promise<boolean> {
+  ): Promise<UserResponse> {
     const { env } = request.ctx;
     request.ctx.set("tenantId", tenant_id);
 
@@ -238,13 +242,29 @@ export class UsersMgmtController extends Controller {
       }
     }
 
-    const results = await env.data.users.update(tenant_id, user_id, userFields);
+    const result = await env.data.users.update(tenant_id, user_id, userFields);
 
-    return results;
+    if (!result) {
+      throw new HTTPException(500);
+    }
+
+    const patchedUser = await env.data.users.get(tenant_id, user_id);
+
+    if (!patchedUser) {
+      throw new HTTPException(404);
+    }
+
+    const userResponse: UserResponse = await enrichUser(
+      env,
+      tenant_id,
+      patchedUser,
+    );
+
+    return userResponse;
   }
 
   @Post("{user_id}/identities")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Link a User"))
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Link a User"))
   public async linkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,
@@ -287,7 +307,9 @@ export class UsersMgmtController extends Controller {
 
   // what should happen here?  Where we do we specify the linked user? what should this even do?
   @Delete("{user_id}/identities")
-  @Middlewares(loggerMiddleware(LogTypes.API_OPERATION, "Unlink a User"))
+  @Middlewares(
+    loggerMiddleware(LogTypes.SUCCESS_API_OPERATION, "Unlink a User"),
+  )
   public async unlinkUserAccount(
     @Request() request: RequestWithContext,
     @Header("tenant-id") tenantId: string,

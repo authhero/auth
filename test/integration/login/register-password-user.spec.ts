@@ -76,9 +76,11 @@ describe("Register password user", () => {
     const signupLocation: string = postSignupResponse.headers.get("location")!;
     const redirectUrl = new URL(signupLocation);
     expect(redirectUrl.pathname).toBe("/callback");
-    const accessToken = redirectUrl.searchParams.get("access_token");
+    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+
+    const accessToken = hash.get("access_token");
     expect(accessToken).toBeTruthy();
-    const idToken = redirectUrl.searchParams.get("id_token");
+    const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
   });
 });

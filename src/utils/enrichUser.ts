@@ -46,9 +46,11 @@ export async function enrichUser(
 
   const { id, ...userWithoutId } = primaryUser;
 
-  return {
+  const user: UserResponse = {
     ...userWithoutId,
     identities: [primaryUserIdentity, ...linkedUserIdentities],
     user_id: primaryUser.id,
   };
+
+  return user;
 }

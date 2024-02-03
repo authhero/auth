@@ -5,16 +5,22 @@ import { Var } from "../types/Var";
 import instanceToJson from "../utils/instanceToJson";
 
 export enum LogTypes {
-  API_OPERATION = "sapi",
-  CODE_LINK_SENT = "cls",
-  FAILED_SILENT_AUTH = "fsa",
-  SUCCESS_SIGNUP = "ss",
-  // copying these from Auth0
-  SUCCESS_LOGIN = "sli",
-  SUCCESS_LOGOUT = "slo",
+  SUCCESS_API_OPERATION = "sapi",
+  //
   SUCCESS_SILENT_AUTH = "ssa",
+  FAILED_SILENT_AUTH = "fsa",
+  //
+  SUCCESS_SIGNUP = "ss",
+  FAILED_SIGNUP = "fs",
+  //
+  SUCCESS_LOGIN = "s",
+  FAILED_LOGIN_INCORRECT_PASSWORD = "fp",
+  FAILED_LOGIN_INVALID_EMAIL_USERNAME = "fu",
+  //
+  SUCCESS_LOGOUT = "slo",
+  //
   SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
-  FAILED_LOGIN_WRONG_PASSWORD = "flwp",
+  FAILED_CROSS_ORIGIN_AUTHENTICATION = "fcoa",
 }
 
 export function loggerMiddleware(logType: string, description?: string) {
@@ -43,7 +49,6 @@ export function loggerMiddleware(logType: string, description?: string) {
         tenant_id: ctx.var.tenantId,
         user_id: ctx.var.userId,
         description: description || ctx.var.description || "",
-        category: logType,
         ip: ctx.req.header("x-real-ip") || "",
         type: ctx.var.logType || logType,
         client_id: ctx.var.client_id,

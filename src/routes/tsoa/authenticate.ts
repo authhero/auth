@@ -1,11 +1,19 @@
-import { Body, Controller, Post, Request, Route, Tags } from "@tsoa/runtime";
+import {
+  Body,
+  Controller,
+  Post,
+  Request,
+  Route,
+  Tags,
+  Middlewares,
+} from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { nanoid } from "nanoid";
 import randomString from "../../utils/random-string";
 import { Ticket } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
-import { LogTypes } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -47,6 +55,7 @@ export class AuthenticateController extends Controller {
    * @returns
    */
   @Post("authenticate")
+  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION))
   public async authenticate(
     @Body() body: CodeAuthenticateParams | PasswordAuthenticateParams,
     @Request() request: RequestWithContext,
@@ -58,6 +67,8 @@ export class AuthenticateController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
+    await request.ctx.set("client_id", client.id);
+    await request.ctx.set("tenantId", client.tenant_id);
 
     const email = body.username.toLocaleLowerCase();
     let ticket: Ticket = {
@@ -73,9 +84,13 @@ export class AuthenticateController extends Controller {
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
 
-      request.ctx.set("logType", LogTypes.FAILED_LOGIN_WRONG_PASSWORD);
+      if (otp?.user_id) {
+        request.ctx.set("userId", otp.user_id);
+      }
 
       if (!otp) {
+        // could be wrong username? Would not get here then...
+        request.ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
         throw new HTTPException(403, {
           res: new Response(
             JSON.stringify({
@@ -105,6 +120,8 @@ export class AuthenticateController extends Controller {
         user_id: user.id,
         password: body.password,
       });
+
+      request.ctx.set("userId", user.id);
 
       if (!valid) {
         throw new HTTPException(403);
