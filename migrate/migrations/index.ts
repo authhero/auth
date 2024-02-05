@@ -22,6 +22,7 @@ import * as n21_sessionDeletedAt from "./2024-01-17T10:51:00_session-deleted-at"
 import * as n22_dropLogsFields from "./2024-01-31T09:00:00_drop-logs-fields";
 import * as n23_dropUsersFields from "./2024-02-02T15:55:00_drop-users-fields";
 import * as n24_logsIndexes from "./2024-02-02T16:55:00_logs-indexes";
+import * as n25_logDescMaxLength from "./2024-02-05T18:35:00_log-desc-max-length";
 
 // These need to be in alphabetic order
 export default {
@@ -49,4 +50,5 @@ export default {
   n22_dropLogsFields,
   n23_dropUsersFields,
   n24_logsIndexes,
+  n25_logDescMaxLength,
 };
