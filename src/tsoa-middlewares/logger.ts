@@ -28,48 +28,59 @@ export function loggerMiddleware(logType: string, description?: string) {
     ctx: Context<{ Bindings: Env; Variables: Var }>,
     next: Next,
   ) => {
+    // ah ok. so THIS is ran... but then is it not running the next()?
+    console.log("loggerMiddleware");
     const { env } = ctx;
 
-    const response = await next();
-
-    let body = {};
-
-    // Gracefully handle JSON parsing errors (e.g. when the request body is not JSON but the client is passing a JSON content-type header)
     try {
-      if (ctx.req.header("content-type")?.startsWith("application/json")) {
-        body = await ctx.req.json();
+      const response = await next();
+
+      let body = {};
+
+      // interesting! this is not being run at all... surely it always has to be ran?
+      console.log("hello there");
+
+      // Gracefully handle JSON parsing errors (e.g. when the request body is not JSON but the client is passing a JSON content-type header)
+      try {
+        if (ctx.req.header("content-type")?.startsWith("application/json")) {
+          body = await ctx.req.json();
+        }
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
-    }
 
-    try {
-      await env.data.logs.create({
-        tenant_id: ctx.var.tenantId,
-        // TODO - can we make these nullable to reflect the runtime?
-        user_id: ctx.var.userId || "",
-        description: description || ctx.var.description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        type: ctx.var.logType || logType,
-        client_id: ctx.var.client_id,
-        client_name: "",
-        user_agent: ctx.req.header("user-agent"),
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
+      try {
+        await env.data.logs.create({
+          tenant_id: ctx.var.tenantId,
+          // TODO - can we make these nullable to reflect the runtime?
+          user_id: ctx.var.userId || "",
+          description: description || ctx.var.description || "",
+          ip: ctx.req.header("x-real-ip") || "",
+          type: ctx.var.logType || logType,
+          client_id: ctx.var.client_id,
+          client_name: "",
+          user_agent: ctx.req.header("user-agent"),
+          date: new Date().toISOString(),
+          details: {
+            request: {
+              method: ctx.req.method,
+              path: ctx.req.path,
+              headers: instanceToJson(ctx.req.raw.headers),
+              qs: ctx.req.queries(),
+              body,
+            },
           },
-        },
-      });
-    } catch (e) {
-      console.error(e);
-    }
+        });
+      } catch (e) {
+        console.error(e);
+      }
 
-    // Perform any necessary operations or modifications
-    return response;
+      // Perform any necessary operations or modifications
+      return response;
+    } catch (e) {
+      // how do we get the internals of the hono HTTP exception?
+      console.error(e);
+      throw e;
+    }
   };
 }
