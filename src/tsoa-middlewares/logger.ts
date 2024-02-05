@@ -45,9 +45,13 @@ export function loggerMiddleware(logType: string, description?: string) {
 
     try {
       if (!ctx.var.tenantId) throw new Error("No tenant id");
+      // This is a required field in SQL so without this the log won't write
+      if (!ctx.var.userId) throw new Error("No user id");
+
       await env.data.logs.create({
         tenant_id: ctx.var.tenantId,
-        user_id: ctx.var.userId,
+        // TODO - can we make these nullable to reflect the runtime?
+        user_id: ctx.var.userId || "",
         description: description || ctx.var.description || "",
         ip: ctx.req.header("x-real-ip") || "",
         type: ctx.var.logType || logType,
