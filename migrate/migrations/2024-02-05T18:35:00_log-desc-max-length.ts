@@ -21,7 +21,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .alterTable("logs")
-    .addColumn("details", "varchar(65535)")
+    .addColumn("details", "varchar(16383)")
     .execute();
 }
 
