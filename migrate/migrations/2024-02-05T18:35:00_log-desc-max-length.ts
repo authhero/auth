@@ -21,7 +21,9 @@ export async function up(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .alterTable("logs")
-    .addColumn("details", "varchar(16383)")
+    // too long and exceeds the planetscale max length for the row
+    // .addColumn("details", "varchar(16383)")
+    .addColumn("details", "varchar(8192)")
     .execute();
 }
 
