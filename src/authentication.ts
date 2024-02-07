@@ -187,6 +187,11 @@ async function verifyTenantPermissions(
     return;
   }
 
+  // what is this variable? how is it set?
+  if (!ctx.var.user) {
+    throw new HTTPException(403, { message: "Unauthorized" });
+  }
+
   // Check token permissions first
   const permissions: string[] = ctx.var.user.permissions || [];
 
@@ -204,8 +209,10 @@ async function verifyTenantPermissions(
 
   // Check db permissions
   const { members } = await ctx.env.data.members.list(tenantId);
+
   const member = members.find(
-    (m) => m.sub === ctx.var.user.sub && m.status === "active",
+    // we know ctx.var.user exists from the check above... strange typescript doesn't get this
+    (m) => m.sub === ctx.var.user!.sub && m.status === "active",
   );
 
   if (!member?.role) {

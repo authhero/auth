@@ -45,26 +45,24 @@ export function loggerMiddleware(logType: string, description?: string) {
         console.error(e);
       }
 
-      try {
-        await env.data.logs.create({
-          tenant_id: ctx.var.tenantId,
-          // TODO - can we make these nullable to reflect the runtime?
-          user_id: ctx.var.userId || "",
-          description: ctx.var.description || description || "",
-          ip: ctx.req.header("x-real-ip") || "",
-          type: ctx.var.logType || logType,
-          client_id: ctx.var.client_id,
-          client_name: "",
-          user_agent: ctx.req.header("user-agent"),
-          date: new Date().toISOString(),
-          details: {
-            request: {
-              method: ctx.req.method,
-              path: ctx.req.path,
-              headers: instanceToJson(ctx.req.raw.headers),
-              qs: ctx.req.queries(),
-              body,
-            },
+    try {
+      await env.data.logs.create({
+        tenant_id: ctx.var.tenantId || "",
+        user_id: ctx.var.userId || "",
+        description: ctx.var.description || description || "",
+        ip: ctx.req.header("x-real-ip") || "",
+        type: ctx.var.logType || logType,
+        client_id: ctx.var.client_id || "",
+        client_name: "",
+        user_agent: ctx.req.header("user-agent"),
+        date: new Date().toISOString(),
+        details: {
+          request: {
+            method: ctx.req.method,
+            path: ctx.req.path,
+            headers: instanceToJson(ctx.req.raw.headers),
+            qs: ctx.req.queries(),
+            body,
           },
         });
       } catch (e) {

@@ -12,6 +12,13 @@ export class UserinfoController extends Controller {
     const { ctx } = request;
     const { env } = ctx;
 
+    if (!ctx.var.user) {
+      throw new HTTPException(403, { message: "Unauthorized" });
+    }
+    if (!ctx.var.userId) {
+      throw new HTTPException(403, { message: "Unauthorized" });
+    }
+
     const user = await env.data.users.get(ctx.var.user.azp, ctx.var.userId);
     if (!user) {
       throw new HTTPException(404, { message: "User not found" });
