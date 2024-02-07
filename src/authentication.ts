@@ -187,7 +187,6 @@ async function verifyTenantPermissions(
     return;
   }
 
-  // what is this variable? how is it set?
   if (!ctx.var.user) {
     throw new HTTPException(403, { message: "Unauthorized" });
   }
