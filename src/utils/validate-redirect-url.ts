@@ -39,6 +39,9 @@ function matchHostnameWithWildcards(
 const ALLOWED_CALLBACK_URLS = [
   // localhost
   "http://localhost:3000",
+  "http://localhost:3000/callback",
+  "http://localhost:3000/link",
+  "http://localhost:3000/breakit-user-not-found",
   // login2 dev
   "https://login2.sesamy.dev/",
   "https://login2.sesamy.dev/enter-code",
