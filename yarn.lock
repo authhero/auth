@@ -1735,10 +1735,10 @@
     "@types/mime" "*"
     "@types/node" "*"
 
-"@types/service-worker-mock@^2.0.2":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@types/service-worker-mock/-/service-worker-mock-2.0.3.tgz#df729cfce4eeaa63fa75b282464d903c5971e3eb"
-  integrity sha512-eLVZIuYyASo/NVidC1t4YrkWCqFBK6VCF/wGUuzuiVUhVuq7pK8WCWNBjWfjTsdoRIxd+Zq7c+Dy8lXN+KTDbw==
+"@types/service-worker-mock@^2.0.3":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@types/service-worker-mock/-/service-worker-mock-2.0.4.tgz#9a8e292f71558cf0c20ad56642cff5f37355287c"
+  integrity sha512-MEBT2eiqYfhxjqYm/oAf2AvKLbPTPwJJAYrMdheKnGyz1yG9XBRfxCzi93h27qpSvI7jOYfXqFLVMLBXFDqo4A==
 
 "@types/stack-utils@^2.0.0":
   version "2.0.2"
