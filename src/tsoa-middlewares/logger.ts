@@ -46,15 +46,15 @@ export function loggerMiddleware(logType: string, description?: string) {
       }
 
     try {
-      await env.data.logs.create({
-        tenant_id: ctx.var.tenantId || "",
+      await env.data.logs.create(ctx.var.tenantId || "", {
         user_id: ctx.var.userId || "",
         description: ctx.var.description || description || "",
         ip: ctx.req.header("x-real-ip") || "",
         type: ctx.var.logType || logType,
-        client_id: ctx.var.client_id || "",
+        client_id: ctx.var.client_id,
         client_name: "",
-        user_agent: ctx.req.header("user-agent"),
+        // oops! bring this back. easy win
+        // user_agent: ctx.req.header("user-agent"),
         date: new Date().toISOString(),
         details: {
           request: {

@@ -1,7 +1,3 @@
-interface GetLogsResponseDetails {
-  [key: string]: any;
-}
-
 export interface LogsResponse {
   date?: string;
   type?: string;
@@ -12,6 +8,13 @@ export interface LogsResponse {
   user_id?: string;
   user_name?: string;
   log_id: string;
-  details?: GetLogsResponseDetails;
-  user_agent?: string;
+  details?: {
+    request: {
+      method: string;
+      path: string;
+      headers: Record<string, string>;
+      qs: Record<string, string[]>;
+      body: Record<string, string>;
+    };
+  };
 }

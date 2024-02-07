@@ -1,14 +1,14 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { Database, SqlLog } from "../../../types";
-import { CreateLogParams } from "../../interfaces/Logs";
+import { Database, SqlLog, LogsResponse } from "../../../types";
 
 export function createLog(db: Kysely<Database>) {
-  return async (params: CreateLogParams): Promise<SqlLog> => {
+  return async (tenant_id: string, params: LogsResponse): Promise<SqlLog> => {
     const { details } = params;
 
     const log: SqlLog = {
       id: nanoid(),
+      tenant_id,
       ...params,
       details: details ? JSON.stringify(details) : undefined,
     };
