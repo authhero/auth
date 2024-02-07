@@ -1,6 +1,6 @@
 import { SqlConnection } from "../../types";
 
-export type CreateConnectionParams = SqlConnection;
+export type CreateConnectionParams = Omit<SqlConnection, "tenant_id">;
 
 export interface ConnectionsAdapter {
   create(

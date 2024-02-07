@@ -8,6 +8,7 @@ export function create(db: Kysely<Database>) {
     params: CreateDomainParams,
   ): Promise<SqlDomain> => {
     const domain: SqlDomain = {
+      tenant_id,
       ...params,
     };
 

@@ -11,7 +11,7 @@ export function create(db: Kysely<Database>) {
       // inconsistency - some adapters add these fields, others already receive them...
       //   created_at: new Date().toISOString(),
       //   updated_at: new Date().toISOString(),
-      //   tenant_id,
+      tenant_id,
       ...params,
     };
 
