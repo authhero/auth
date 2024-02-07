@@ -104,6 +104,7 @@ export class AuthenticateController extends Controller {
               },
             },
           ),
+          message: "Wrong email or verification code.",
         });
       }
 
