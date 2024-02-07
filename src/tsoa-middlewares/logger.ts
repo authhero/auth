@@ -53,8 +53,7 @@ export function loggerMiddleware(logType: string, description?: string) {
         type: ctx.var.logType || logType,
         client_id: ctx.var.client_id,
         client_name: "",
-        // oops! bring this back. easy win
-        // user_agent: ctx.req.header("user-agent"),
+        user_agent: ctx.req.header("user-agent"),
         date: new Date().toISOString(),
         details: {
           request: {

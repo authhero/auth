@@ -17,4 +17,6 @@ export interface LogsResponse {
       body: Record<string, string>;
     };
   };
+  // nullable in DB but we're always setting it
+  user_agent?: string;
 }
