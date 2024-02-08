@@ -17,7 +17,7 @@ import {
 } from "../../../types";
 import { Kysely } from "kysely";
 
-function getLogResponseBase(log: SqlLog): LogsResponseBase {
+function getLogResponseBase(log: SqlLog): LogsResponseBaseBase {
   switch (log.type) {
     case "sapi": {
       const successApiOperation: SuccessApiOperation = {
@@ -203,18 +203,12 @@ export function getLog(db: Kysely<Database>) {
       return null;
     }
 
-    // const logResponse: LogsResponse = {
-    //   ...log,
-    //   details: log.details ? JSON.parse(log.details) : undefined,
-    //   log_id: log.id,
-    // };
-
-    const logResponseBase = getLogResponseBase(log);
+    const logResponseBaseBase = getLogResponseBase(log);
 
     const logResponse: LogsResponse = {
-      ...logResponseBase,
-      log_id: logResponseBase.id,
-      _id: logResponseBase.id,
+      ...logResponseBaseBase,
+      log_id: log.id,
+      _id: log.id,
     };
 
     return logResponse;
