@@ -1,3 +1,23 @@
+export enum LogTypes {
+  SUCCESS_API_OPERATION = "sapi",
+  //
+  SUCCESS_SILENT_AUTH = "ssa",
+  FAILED_SILENT_AUTH = "fsa",
+  //
+  SUCCESS_SIGNUP = "ss",
+  FAILED_SIGNUP = "fs",
+  //
+  SUCCESS_LOGIN = "s",
+  FAILED_LOGIN_INCORRECT_PASSWORD = "fp",
+  FAILED_LOGIN_INVALID_EMAIL_USERNAME = "fu",
+  //
+  SUCCESS_LOGOUT = "slo",
+  //
+  SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
+  FAILED_CROSS_ORIGIN_AUTHENTICATION = "fcoa",
+}
+type LogType = `${LogTypes}`;
+
 export interface LogsResponse {
   date?: string;
   type?: string;

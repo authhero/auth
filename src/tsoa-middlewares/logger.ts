@@ -5,25 +5,6 @@ import { Var } from "../types/Var";
 import instanceToJson from "../utils/instanceToJson";
 import { HTTPException } from "hono/http-exception";
 
-export enum LogTypes {
-  SUCCESS_API_OPERATION = "sapi",
-  //
-  SUCCESS_SILENT_AUTH = "ssa",
-  FAILED_SILENT_AUTH = "fsa",
-  //
-  SUCCESS_SIGNUP = "ss",
-  FAILED_SIGNUP = "fs",
-  //
-  SUCCESS_LOGIN = "s",
-  FAILED_LOGIN_INCORRECT_PASSWORD = "fp",
-  FAILED_LOGIN_INVALID_EMAIL_USERNAME = "fu",
-  //
-  SUCCESS_LOGOUT = "slo",
-  //
-  SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
-  FAILED_CROSS_ORIGIN_AUTHENTICATION = "fcoa",
-}
-
 export function loggerMiddleware(logType: string, description?: string) {
   return async (
     ctx: Context<{ Bindings: Env; Variables: Var }>,

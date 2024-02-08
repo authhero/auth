@@ -18,13 +18,13 @@ import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
 import generateOTP from "../../utils/otp";
-
-const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
-
 import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getClient } from "../../services/clients";
-import { LogTypes, loggerMiddleware } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware } from "../../tsoa-middlewares/logger";
+import { LogTypes } from "../../types";
+
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 export interface PasswordlessOptions {
   client_id: string;

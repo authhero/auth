@@ -13,7 +13,8 @@ import randomString from "../../utils/random-string";
 import { Ticket } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
-import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware } from "../../tsoa-middlewares/logger";
+import { LogTypes } from "../../types";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 

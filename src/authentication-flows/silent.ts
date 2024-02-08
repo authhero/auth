@@ -9,7 +9,7 @@ import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { headers } from "../constants";
 import { Var } from "../types/Var";
-import { LogTypes } from "../tsoa-middlewares/logger";
+import { LogTypes } from "../types";
 
 interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;

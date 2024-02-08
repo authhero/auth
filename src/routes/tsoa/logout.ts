@@ -18,7 +18,8 @@ import {
 import { headers } from "../../constants";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
-import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware } from "../../tsoa-middlewares/logger";
+import { LogTypes } from "../../types";
 
 @Route("v2/logout")
 @Tags("logout")

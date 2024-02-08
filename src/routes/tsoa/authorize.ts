@@ -25,7 +25,8 @@ import {
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
-import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware } from "../../tsoa-middlewares/logger";
+import { LogTypes } from "../../types";
 
 interface AuthorizeParams {
   request: RequestWithContext;
