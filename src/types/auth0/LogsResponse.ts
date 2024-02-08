@@ -4,8 +4,7 @@ export enum LogTypes {
   SUCCESS_SILENT_AUTH = "ssa",
   FAILED_SILENT_AUTH = "fsa",
   //
-  // we don't have this in the logs yet
-  // SUCCESS_SIGNUP = "ss",
+  SUCCESS_SIGNUP = "ss",
   // we don't have this in the logs yet
   // FAILED_SIGNUP = "fs",
   //
@@ -18,7 +17,7 @@ export enum LogTypes {
   //
   SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
   FAILED_CROSS_ORIGIN_AUTHENTICATION = "fcoa",
-  // not implemented
+  // TODO - not implemented - just for completion as we do get this in our latest auth0 logs
   NOT_IMPLEMENTED_1 = "seccft",
   NOT_IMPLEMENTED_2 = "cls",
 }
@@ -122,6 +121,13 @@ export interface SuccessSilentAuth extends LogsResponseBase {
   user_name: string;
 }
 
+export interface SuccessSignup extends BrowserLogsResponseBase {
+  type: "ss";
+  hostname: string;
+  strategy: string;
+  strategy_type: string;
+}
+
 // lol the naming here... essentially want all fields except the id
 export type LogsResponseBaseBase =
   | SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
@@ -133,7 +139,8 @@ export type LogsResponseBaseBase =
   | FailedSilentAuth
   | SuccessLogout
   | SuccessLogin
-  | SuccessSilentAuth;
+  | SuccessSilentAuth
+  | SuccessSignup;
 
 export type LogsResponse = LogsResponseBaseBase & {
   log_id: string;
@@ -585,6 +592,57 @@ const logs: LogsResponse[] = [
     },
     log_id: "90020240208103322189208000000000000001223372070383009959",
     _id: "90020240208103322189208000000000000001223372070383009959",
+    isMobile: false,
+  },
+  {
+    date: "2024-02-08T14:25:00.373Z",
+    type: "ss",
+    connection: "google-oauth2",
+    connection_id: "con_GLOKecZVpyI66e4M",
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+    client_name: "Sesamy",
+    ip: "90.167.242.11",
+    user_agent: "Firefox 122.0.0 / Ubuntu 0.0.0",
+    details: {
+      prompts: [
+        {
+          name: "federated-authenticate",
+          initiatedAt: 1707402292685,
+          completedAt: 1707402299293,
+          connection: "google-oauth2",
+          connection_id: "con_GLOKecZVpyI66e4M",
+          strategy: "google-oauth2",
+          identity: "111947161799535355098",
+          stats: {
+            loginsCount: 1,
+          },
+          elapsedTime: 6608,
+        },
+        {
+          name: "login",
+          flow: "universal-login",
+          initiatedAt: 1707402292680,
+          completedAt: 1707402299317,
+          user_id: "google-oauth2|111947161799535355098",
+          user_name: "danentitledto@gmail.com",
+          timers: {
+            rules: 665,
+          },
+          elapsedTime: 6637,
+        },
+      ],
+      initiatedAt: 1707402292664,
+      completedAt: 1707402300369,
+      elapsedTime: 7705,
+      session_id: "Jr8KL-6Y-efRGiQn5llhvtP2TbaJiVyV",
+    },
+    hostname: "auth.sesamy.dev",
+    user_id: "google-oauth2|111947161799535355098",
+    user_name: "danentitledto@gmail.com",
+    strategy: "google-oauth2",
+    strategy_type: "social",
+    log_id: "90020240208142500406499000000000000001223372070409333376",
+    _id: "90020240208142500406499000000000000001223372070409333376",
     isMobile: false,
   },
 ];
