@@ -26,7 +26,6 @@ function createTypeLog(
 ): LogsResponseBaseBase {
   switch (logType) {
     case "sapi":
-    default: // temp types dance
       const successApiOperation: SuccessApiOperation = {
         type: "sapi",
         description: ctx.var.description || description || "",
@@ -243,6 +242,8 @@ function createTypeLog(
         user_name: "",
       };
       return successSilentAuth;
+    default:
+      throw new Error("Invalid log type");
   }
 }
 
