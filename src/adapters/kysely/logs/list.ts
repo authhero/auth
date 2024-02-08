@@ -3,14 +3,17 @@ import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { luceneFilter } from "../helpers/filter";
+import { getLogResponseBase } from "../../../utils/logs";
 
 function mapLog(log: SqlLog): LogsResponse {
-  const { id, details, ...rest } = log;
+  const { id } = log;
+
+  const logResponseBaseBase = getLogResponseBase(log);
 
   return {
+    ...logResponseBaseBase,
     log_id: id,
-    details: details ? JSON.parse(details) : undefined,
-    ...rest,
+    _id: id,
   };
 }
 
