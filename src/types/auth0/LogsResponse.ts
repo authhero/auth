@@ -67,6 +67,12 @@ export interface SuccessCrossOriginAuthentication
   type: "scoa";
   hostname: string;
 }
+// interesting this doesn't extend the browser one... auth0 seems a bit random with what fields it provides
+export interface FailedCrossOriginAuthentication extends LogsResponseBase {
+  type: "fcoa";
+  hostname: string;
+  connection_id: string;
+}
 
 export interface SuccessApiOperation extends LogsResponseBase {
   type: "sapi";
@@ -78,13 +84,6 @@ export interface FailedLoginIncorrectPassword extends BrowserLogsResponseBase {
   type: "fp";
   strategy: string;
   strategy_type: string;
-}
-
-// interesting this doesn't extend the browser one... auth0 seems a bit random with what fields it provides
-export interface FailedCrossOriginAuthentication extends LogsResponseBase {
-  type: "fcoa";
-  hostname: string;
-  connection_id: string;
 }
 
 export interface CodeLinkSent extends BrowserLogsResponseBase {
