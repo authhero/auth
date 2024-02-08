@@ -37,8 +37,6 @@ interface LogsResponseBase {
     version: string;
     env?: object;
   };
-  log_id: string;
-  _id: string;
   isMobile?: boolean;
 }
 
@@ -53,7 +51,7 @@ interface BrowserLogsResponseBase extends LogsResponseBase {
   client_name: string;
 }
 
-interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
+export interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
   extends BrowserLogsResponseBase {
   type: "seccft";
   audience?: string;
@@ -64,37 +62,38 @@ interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
   hostname: string;
 }
 
-interface SuccessCrossOriginAuthentication extends BrowserLogsResponseBase {
+export interface SuccessCrossOriginAuthentication
+  extends BrowserLogsResponseBase {
   type: "scoa";
   hostname: string;
 }
 
-interface SuccessApiOperation extends LogsResponseBase {
+export interface SuccessApiOperation extends LogsResponseBase {
   type: "sapi";
   client_id: string;
   client_name: string;
 }
 
-interface FailedLoginIncorrectPassword extends BrowserLogsResponseBase {
+export interface FailedLoginIncorrectPassword extends BrowserLogsResponseBase {
   type: "fp";
   strategy: string;
   strategy_type: string;
 }
 
 // interesting this doesn't extend the browser one... auth0 seems a bit random with what fields it provides
-interface FailedCrossOriginAuthentication extends LogsResponseBase {
+export interface FailedCrossOriginAuthentication extends LogsResponseBase {
   type: "fcoa";
   hostname: string;
   connection_id: string;
 }
 
-interface CodeLinkSent extends BrowserLogsResponseBase {
+export interface CodeLinkSent extends BrowserLogsResponseBase {
   type: "cls";
   strategy: string;
   strategy_type: string;
 }
 
-interface FailedSilentAuth extends LogsResponseBase {
+export interface FailedSilentAuth extends LogsResponseBase {
   type: "fsa";
   hostname: string;
   audience: string;
@@ -103,19 +102,19 @@ interface FailedSilentAuth extends LogsResponseBase {
   client_name: string;
 }
 
-interface SuccessLogout extends BrowserLogsResponseBase {
+export interface SuccessLogout extends BrowserLogsResponseBase {
   type: "slo";
   hostname: string;
 }
 
-interface SuccessLogin extends BrowserLogsResponseBase {
+export interface SuccessLogin extends BrowserLogsResponseBase {
   type: "s";
   strategy: string;
   strategy_type: string;
   hostname: string;
 }
 
-interface SuccessSilentAuth extends LogsResponseBase {
+export interface SuccessSilentAuth extends LogsResponseBase {
   type: "ssa";
   hostname: string;
   client_id: string;
@@ -125,7 +124,8 @@ interface SuccessSilentAuth extends LogsResponseBase {
   user_name: string;
 }
 
-export type LogsResponse =
+// lol the naming here... essentially want all fields except the id
+export type LogsResponseBaseBase =
   | SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
   | SuccessCrossOriginAuthentication
   | SuccessApiOperation
@@ -136,6 +136,11 @@ export type LogsResponse =
   | SuccessLogout
   | SuccessLogin
   | SuccessSilentAuth;
+
+export type LogsResponse = LogsResponseBaseBase & {
+  log_id: string;
+  _id: string;
+};
 
 const logs: LogsResponse[] = [
   {
