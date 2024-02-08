@@ -36,7 +36,29 @@ export interface LogsResponse {
       qs: Record<string, string[]>;
       body: Record<string, string>;
     };
+    // new fields so TS builds. adding nullable
+    allowed_logout_url?: string[];
+    session_id?: string;
+    return_to?: string;
+    prompts: any[];
   };
   // nullable in DB but we're always setting it
   user_agent?: string;
+  // new fields so typescript builds - some will be required across all types... others not so much
+  connection_id?: string;
+  hostname?: string;
+  audience?: string;
+  scope?: string[];
+  auth0_client?: {
+    name: string;
+    version: string;
+    env?: object;
+  };
+  isMobile?: boolean;
+  strategy?: string;
+  strategy_type?: string;
+  connection?: string;
+  _id: string;
 }
+
+const logs: LogsResponse[] = [];
