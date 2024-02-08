@@ -309,8 +309,9 @@ export function loggerMiddleware(
           description,
         );
         await env.data.logs.create(ctx.var.tenantId || "", log);
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
+        console.log(e.message);
       }
 
       // Perform any necessary operations or modifications
