@@ -4,12 +4,15 @@ export enum LogTypes {
   SUCCESS_SILENT_AUTH = "ssa",
   FAILED_SILENT_AUTH = "fsa",
   //
-  SUCCESS_SIGNUP = "ss",
-  FAILED_SIGNUP = "fs",
+  // we don't have this in the logs yet
+  // SUCCESS_SIGNUP = "ss",
+  // we don't have this in the logs yet
+  // FAILED_SIGNUP = "fs",
   //
   SUCCESS_LOGIN = "s",
   FAILED_LOGIN_INCORRECT_PASSWORD = "fp",
-  FAILED_LOGIN_INVALID_EMAIL_USERNAME = "fu",
+  // we don't have this in the logs yet
+  // FAILED_LOGIN_INVALID_EMAIL_USERNAME = "fu",
   //
   SUCCESS_LOGOUT = "slo",
   //
@@ -112,6 +115,16 @@ interface SuccessLogin extends BrowserLogsResponseBase {
   hostname: string;
 }
 
+interface SuccessSilentAuth extends LogsResponseBase {
+  type: "ssa";
+  hostname: string;
+  client_id: string;
+  client_name: string;
+  session_connection: string;
+  user_id: string;
+  user_name: string;
+}
+
 export type LogsResponse =
   | SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
   | SuccessCrossOriginAuthentication
@@ -121,7 +134,8 @@ export type LogsResponse =
   | CodeLinkSent
   | FailedSilentAuth
   | SuccessLogout
-  | SuccessLogin;
+  | SuccessLogin
+  | SuccessSilentAuth;
 
 const logs: LogsResponse[] = [
   {
@@ -544,6 +558,30 @@ const logs: LogsResponse[] = [
     strategy_type: "social",
     log_id: "90020240208112750439547000000000000001223372070389262628",
     _id: "90020240208112750439547000000000000001223372070389262628",
+    isMobile: false,
+  },
+  {
+    date: "2024-02-08T10:33:22.122Z",
+    type: "ssa",
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+    client_name: "Sesamy",
+    ip: "90.160.207.97",
+    user_agent: "Chrome 121.0.0 / Linux 0.0.0",
+    details: {
+      prompts: [],
+      completedAt: 1707388402115,
+      elapsedTime: null,
+    },
+    hostname: "auth.sesamy.dev",
+    session_connection: "email",
+    user_id: "auth0|65b7cd3139029699d18a5e41",
+    user_name: "dan+456@sesamy.com",
+    auth0_client: {
+      name: "auth0.js",
+      version: "9.24.1",
+    },
+    log_id: "90020240208103322189208000000000000001223372070383009959",
+    _id: "90020240208103322189208000000000000001223372070383009959",
     isMobile: false,
   },
 ];
