@@ -10,6 +10,7 @@ import {
   SuccessLogin,
   SuccessSilentAuth,
   SqlLog,
+  SuccessSignup,
 } from "../types";
 
 export function getLogResponseBase(log: SqlLog): LogsResponseBaseBase {
@@ -175,6 +176,27 @@ export function getLogResponseBase(log: SqlLog): LogsResponseBaseBase {
         details: log.details ? JSON.parse(log.details) : undefined,
       };
       return successSilentAuth;
+    }
+
+    case "ss": {
+      const successSignup: SuccessSignup = {
+        ...log,
+        type: "ss",
+        client_id: log.client_id || "",
+        client_name: "",
+        auth0_client: log.auth0_client
+          ? JSON.parse(log.auth0_client)
+          : undefined,
+        hostname: log.hostname || "",
+        user_id: log.user_id || "",
+        user_name: log.user_name || "",
+        strategy: log.strategy || "",
+        strategy_type: log.strategy_type || "",
+        connection: log.connection || "",
+        connection_id: log.connection_id || "",
+        details: log.details ? JSON.parse(log.details) : undefined,
+      };
+      return successSignup;
     }
 
     default:

@@ -16,6 +16,7 @@ import {
   FailedSilentAuth,
   SuccessLogin,
   SuccessSilentAuth,
+  SuccessSignup,
 } from "../types";
 
 function createTypeLog(
@@ -242,6 +243,33 @@ function createTypeLog(
         user_name: "",
       };
       return successSilentAuth;
+    case "ss":
+      const successSignup: SuccessSignup = {
+        type: "ss",
+        description: ctx.var.description || description || "",
+        ip: ctx.req.header("x-real-ip") || "",
+        client_id: ctx.var.client_id || "",
+        client_name: "",
+        user_agent: ctx.req.header("user-agent") || "",
+        date: new Date().toISOString(),
+        details: {
+          request: {
+            method: ctx.req.method,
+            path: ctx.req.path,
+            headers: instanceToJson(ctx.req.raw.headers),
+            qs: ctx.req.queries(),
+            body,
+          },
+        },
+        user_id: ctx.var.userId || "",
+        user_name: "",
+        connection_id: "",
+        strategy: "",
+        strategy_type: "",
+        hostname: ctx.req.header("host") || "",
+      };
+      return successSignup;
+
     default:
       throw new Error("Invalid log type");
   }
