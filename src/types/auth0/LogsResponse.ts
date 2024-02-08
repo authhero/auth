@@ -40,7 +40,7 @@ interface LogsResponseBase {
 }
 
 // i'm thinking there might be another base type... for when from the browser vs mgmt api!
-interface LogsResponseBaseFromBrowser extends LogsResponseBase {
+interface BrowserLogsResponseBase extends LogsResponseBase {
   user_id: string;
   user_name: string;
   // do not have this field yet in SQL
@@ -51,7 +51,7 @@ interface LogsResponseBaseFromBrowser extends LogsResponseBase {
 }
 
 interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
-  extends LogsResponseBaseFromBrowser {
+  extends BrowserLogsResponseBase {
   type: "seccft";
   audience?: string;
   // notice how this can be both in auth0! interesting
@@ -61,7 +61,7 @@ interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
   hostname: string;
 }
 
-interface SuccessCrossOriginAuthentication extends LogsResponseBaseFromBrowser {
+interface SuccessCrossOriginAuthentication extends BrowserLogsResponseBase {
   type: "scoa";
   hostname: string;
 }
@@ -72,7 +72,7 @@ interface SuccessApiOperation extends LogsResponseBase {
   client_name: string;
 }
 
-interface FailedLoginIncorrectPassword extends LogsResponseBaseFromBrowser {
+interface FailedLoginIncorrectPassword extends BrowserLogsResponseBase {
   type: "fp";
   strategy: string;
   strategy_type: string;
@@ -85,10 +85,31 @@ interface FailedCrossOriginAuthentication extends LogsResponseBase {
   connection_id: string;
 }
 
-interface CodeLinkSent extends LogsResponseBaseFromBrowser {
+interface CodeLinkSent extends BrowserLogsResponseBase {
   type: "cls";
   strategy: string;
   strategy_type: string;
+}
+
+interface FailedSilentAuth extends LogsResponseBase {
+  type: "fsa";
+  hostname: string;
+  audience: string;
+  scope: string[];
+  client_id: string;
+  client_name: string;
+}
+
+interface SuccessLogout extends BrowserLogsResponseBase {
+  type: "slo";
+  hostname: string;
+}
+
+interface SuccessLogin extends BrowserLogsResponseBase {
+  type: "s";
+  strategy: string;
+  strategy_type: string;
+  hostname: string;
 }
 
 export type LogsResponse =
@@ -97,7 +118,10 @@ export type LogsResponse =
   | SuccessApiOperation
   | FailedLoginIncorrectPassword
   | FailedCrossOriginAuthentication
-  | CodeLinkSent;
+  | CodeLinkSent
+  | FailedSilentAuth
+  | SuccessLogout
+  | SuccessLogin;
 
 const logs: LogsResponse[] = [
   {
@@ -347,179 +371,179 @@ const logs: LogsResponse[] = [
     _id: "90020240208113602649078000000000000001223372070390185731",
     isMobile: false,
   },
-  // {
-  //   date: "2024-02-08T11:35:58.561Z",
-  //   type: "fsa",
-  //   description: "Login required",
-  //   client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //   client_name: "Sesamy",
-  //   ip: "139.47.117.198",
-  //   user_agent: "Chrome 120.0.0 / Linux 0.0.0",
-  //   details: {
-  //     body: {},
-  //     qs: {
-  //       client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //       response_type: "token id_token",
-  //       redirect_uri: "https://login2.sesamy.dev/callback",
-  //       scope: "openid profile email",
-  //       state: "~w~FTBMH.xbCTNg4DZYtDmY2op6JLfLT",
-  //       nonce: "ZQHSeIf3IsyZ7-hVvoKukaT6q1x6lrP1",
-  //       response_mode: "web_message",
-  //       prompt: "none",
-  //       auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yNC4xIn0=",
-  //     },
-  //     connection: null,
-  //     error: {
-  //       message: "Login required",
-  //       oauthError: "login_required",
-  //       type: "oauth-authorization",
-  //     },
-  //     riskAssessment: null,
-  //   },
-  //   hostname: "auth.sesamy.dev",
-  //   audience: "https://sesamy.com",
-  //   scope: ["openid", "profile", "email"],
-  //   auth0_client: {
-  //     name: "auth0.js",
-  //     version: "9.24.1",
-  //   },
-  //   log_id: "90020240208113558588328000000000000001223372070390177973",
-  //   _id: "90020240208113558588328000000000000001223372070390177973",
-  //   isMobile: false,
-  // },
-  // {
-  //   date: "2024-02-08T11:35:57.394Z",
-  //   type: "slo",
-  //   connection: "email",
-  //   connection_id: "con_TI7p6dEHf551Q9t6",
-  //   client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //   client_name: "Sesamy",
-  //   ip: "139.47.117.198",
-  //   user_agent: "Chrome 120.0.0 / Linux 0.0.0",
-  //   details: {
-  //     return_to:
-  //       "https://token.sesamy.dev/logout-callback?redirect_uri=https%3A%2F%2Faccount.sesamy.dev&client_id=sesamy",
-  //     allowed_logout_url: [
-  //       "http://localhost:8080",
-  //       "http://localhost:8000",
-  //       "http://localhost:8080/close",
-  //       "http://localhost:3000",
-  //       "http://localhost:3000/close",
-  //       "http://localhost:3001",
-  //       "http://localhost:3001/close",
-  //       "https://myvault.vercel.app",
-  //       "https://myvault.vercel.app/close",
-  //       "https://checkout-sesamy.vercel.app",
-  //       "https://checkout.sesamy.dev",
-  //       "https://checkout.sesamy.dev/close",
-  //       "https://checkout.dev.sesamy.cloud",
-  //       "https://checkout.dev.sesamy.cloud/close",
-  //       "https://checkout-*-sesamy.vercel.app",
-  //       "https://sesamy-checkout-*-sesamy.vercel.app",
-  //       "https://*.sesamy.dev",
-  //       "https://commerce-*-sesamy.vercel.app",
-  //       "https://dev-admin-dashboard-*-sesamy.vercel.app",
-  //       "https://admin-dashboard-*-sesamy.vercel.app",
-  //       "https://dev-admin-dashboard-sesamy.vercel.app",
-  //       "https://*.vercel.sesamy.dev",
-  //       "http://localhost:3000/da",
-  //       "http://localhost:3000/sv",
-  //       "https://*.vercel.sesamy.dev/da",
-  //       "https://*.vercel.sesamy.dev/sv",
-  //       "https://*.vercel.sesamy.dev/se",
-  //       "https://*.vercel.sesamy.dev/dk",
-  //       "https://commerce.sesamy.dev/da",
-  //       "https://commerce.sesamy.dev/sv",
-  //       "https://ngrok.dev.sesamy.cloud",
-  //       "https://ngrok.dev.sesamy.cloud/close",
-  //       "https://commerce.dev.sesamy.cloud",
-  //       "https://commerce.dev.sesamy.cloud/da",
-  //       "https://commerce.dev.sesamy.cloud/sv",
-  //       "https://login.sesamy.dev/sv",
-  //       "https://login.sesamy.dev/en",
-  //       "https://login.sesamy.dev/da",
-  //       "https://token.sesamy.dev/logout-callback",
-  //       "http://localhost:8787/logout-callback",
-  //       "https://checkout.dev.sesamy/*",
-  //       "http://localhost:3000/api/signup",
-  //       "https://127.0.0.1:3000",
-  //       "http://local.sesamy.com:3000",
-  //       "http://local.sesamy.com:3000/api/auth/callback",
-  //       "https://local.sesamy.dev:3000",
-  //       "https://local.sesamy.dev:3000/api/auth/callback",
-  //       "https://host.docker.internal:3000/",
-  //       "https://host.docker.internal:3000/api/auth/callback",
-  //       "https://portal.sesamy.dev",
-  //       "https://login2.sesamy.dev/link",
-  //       "https://login2.sesamy.dev/sv/link",
-  //       "https://login2.sesamy.dev/",
-  //       "https://login2.sesamy.dev/sv/",
-  //       "https://*.vercel.sesamy.dev/link",
-  //       "https://*.vercel.sesamy.dev/sv/link",
-  //       "http://localhost:3000/link",
-  //       "http://localhost:3000/sv/link",
-  //       "https://*.ngrok-free.app",
-  //     ],
-  //   },
-  //   hostname: "auth.sesamy.dev",
-  //   user_id: "email|65c4b9ffb6c3ddf42426a179",
-  //   user_name: "ewa+999@sesamy.com",
-  //   log_id: "90020240208113557443430000000000000001223372070390175898",
-  //   _id: "90020240208113557443430000000000000001223372070390175898",
-  //   isMobile: false,
-  // },
-  // {
-  //   date: "2024-02-08T11:27:50.387Z",
-  //   type: "s",
-  //   connection: "google-oauth2",
-  //   connection_id: "con_GLOKecZVpyI66e4M",
-  //   client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //   client_name: "Sesamy",
-  //   ip: "79.117.180.97",
-  //   user_agent: "Chrome 121.0.0 / Mac OS X 10.15.7",
-  //   details: {
-  //     prompts: [
-  //       {
-  //         name: "federated-authenticate",
-  //         initiatedAt: 1707391668372,
-  //         completedAt: 1707391669356,
-  //         connection: "google-oauth2",
-  //         connection_id: "con_GLOKecZVpyI66e4M",
-  //         strategy: "google-oauth2",
-  //         identity: "116939795296624035719",
-  //         stats: {
-  //           loginsCount: 12,
-  //         },
-  //         elapsedTime: 984,
-  //       },
-  //       {
-  //         name: "login",
-  //         flow: "universal-login",
-  //         initiatedAt: 1707391668360,
-  //         completedAt: 1707391669379,
-  //         user_id: "google-oauth2|116939795296624035719",
-  //         user_name: "guillermo@sesamy.com",
-  //         timers: {
-  //           rules: 826,
-  //         },
-  //         elapsedTime: 1019,
-  //       },
-  //     ],
-  //     initiatedAt: 1707391668345,
-  //     completedAt: 1707391670385,
-  //     elapsedTime: 2040,
-  //     session_id: "x_Z4L-2lhG0aLWRj8hjnEyRXjKoIiTp6",
-  //     stats: {
-  //       loginsCount: 12,
-  //     },
-  //   },
-  //   hostname: "auth.sesamy.dev",
-  //   user_id: "google-oauth2|116939795296624035719",
-  //   user_name: "guillermo@sesamy.com",
-  //   strategy: "google-oauth2",
-  //   strategy_type: "social",
-  //   log_id: "90020240208112750439547000000000000001223372070389262628",
-  //   _id: "90020240208112750439547000000000000001223372070389262628",
-  //   isMobile: false,
-  // },
+  {
+    date: "2024-02-08T11:35:58.561Z",
+    type: "fsa",
+    description: "Login required",
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+    client_name: "Sesamy",
+    ip: "139.47.117.198",
+    user_agent: "Chrome 120.0.0 / Linux 0.0.0",
+    details: {
+      body: {},
+      qs: {
+        client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        response_type: "token id_token",
+        redirect_uri: "https://login2.sesamy.dev/callback",
+        scope: "openid profile email",
+        state: "~w~FTBMH.xbCTNg4DZYtDmY2op6JLfLT",
+        nonce: "ZQHSeIf3IsyZ7-hVvoKukaT6q1x6lrP1",
+        response_mode: "web_message",
+        prompt: "none",
+        auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yNC4xIn0=",
+      },
+      connection: null,
+      error: {
+        message: "Login required",
+        oauthError: "login_required",
+        type: "oauth-authorization",
+      },
+      riskAssessment: null,
+    },
+    hostname: "auth.sesamy.dev",
+    audience: "https://sesamy.com",
+    scope: ["openid", "profile", "email"],
+    auth0_client: {
+      name: "auth0.js",
+      version: "9.24.1",
+    },
+    log_id: "90020240208113558588328000000000000001223372070390177973",
+    _id: "90020240208113558588328000000000000001223372070390177973",
+    isMobile: false,
+  },
+  {
+    date: "2024-02-08T11:35:57.394Z",
+    type: "slo",
+    connection: "email",
+    connection_id: "con_TI7p6dEHf551Q9t6",
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+    client_name: "Sesamy",
+    ip: "139.47.117.198",
+    user_agent: "Chrome 120.0.0 / Linux 0.0.0",
+    details: {
+      return_to:
+        "https://token.sesamy.dev/logout-callback?redirect_uri=https%3A%2F%2Faccount.sesamy.dev&client_id=sesamy",
+      allowed_logout_url: [
+        "http://localhost:8080",
+        "http://localhost:8000",
+        "http://localhost:8080/close",
+        "http://localhost:3000",
+        "http://localhost:3000/close",
+        "http://localhost:3001",
+        "http://localhost:3001/close",
+        "https://myvault.vercel.app",
+        "https://myvault.vercel.app/close",
+        "https://checkout-sesamy.vercel.app",
+        "https://checkout.sesamy.dev",
+        "https://checkout.sesamy.dev/close",
+        "https://checkout.dev.sesamy.cloud",
+        "https://checkout.dev.sesamy.cloud/close",
+        "https://checkout-*-sesamy.vercel.app",
+        "https://sesamy-checkout-*-sesamy.vercel.app",
+        "https://*.sesamy.dev",
+        "https://commerce-*-sesamy.vercel.app",
+        "https://dev-admin-dashboard-*-sesamy.vercel.app",
+        "https://admin-dashboard-*-sesamy.vercel.app",
+        "https://dev-admin-dashboard-sesamy.vercel.app",
+        "https://*.vercel.sesamy.dev",
+        "http://localhost:3000/da",
+        "http://localhost:3000/sv",
+        "https://*.vercel.sesamy.dev/da",
+        "https://*.vercel.sesamy.dev/sv",
+        "https://*.vercel.sesamy.dev/se",
+        "https://*.vercel.sesamy.dev/dk",
+        "https://commerce.sesamy.dev/da",
+        "https://commerce.sesamy.dev/sv",
+        "https://ngrok.dev.sesamy.cloud",
+        "https://ngrok.dev.sesamy.cloud/close",
+        "https://commerce.dev.sesamy.cloud",
+        "https://commerce.dev.sesamy.cloud/da",
+        "https://commerce.dev.sesamy.cloud/sv",
+        "https://login.sesamy.dev/sv",
+        "https://login.sesamy.dev/en",
+        "https://login.sesamy.dev/da",
+        "https://token.sesamy.dev/logout-callback",
+        "http://localhost:8787/logout-callback",
+        "https://checkout.dev.sesamy/*",
+        "http://localhost:3000/api/signup",
+        "https://127.0.0.1:3000",
+        "http://local.sesamy.com:3000",
+        "http://local.sesamy.com:3000/api/auth/callback",
+        "https://local.sesamy.dev:3000",
+        "https://local.sesamy.dev:3000/api/auth/callback",
+        "https://host.docker.internal:3000/",
+        "https://host.docker.internal:3000/api/auth/callback",
+        "https://portal.sesamy.dev",
+        "https://login2.sesamy.dev/link",
+        "https://login2.sesamy.dev/sv/link",
+        "https://login2.sesamy.dev/",
+        "https://login2.sesamy.dev/sv/",
+        "https://*.vercel.sesamy.dev/link",
+        "https://*.vercel.sesamy.dev/sv/link",
+        "http://localhost:3000/link",
+        "http://localhost:3000/sv/link",
+        "https://*.ngrok-free.app",
+      ],
+    },
+    hostname: "auth.sesamy.dev",
+    user_id: "email|65c4b9ffb6c3ddf42426a179",
+    user_name: "ewa+999@sesamy.com",
+    log_id: "90020240208113557443430000000000000001223372070390175898",
+    _id: "90020240208113557443430000000000000001223372070390175898",
+    isMobile: false,
+  },
+  {
+    date: "2024-02-08T11:27:50.387Z",
+    type: "s",
+    connection: "google-oauth2",
+    connection_id: "con_GLOKecZVpyI66e4M",
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+    client_name: "Sesamy",
+    ip: "79.117.180.97",
+    user_agent: "Chrome 121.0.0 / Mac OS X 10.15.7",
+    details: {
+      prompts: [
+        {
+          name: "federated-authenticate",
+          initiatedAt: 1707391668372,
+          completedAt: 1707391669356,
+          connection: "google-oauth2",
+          connection_id: "con_GLOKecZVpyI66e4M",
+          strategy: "google-oauth2",
+          identity: "116939795296624035719",
+          stats: {
+            loginsCount: 12,
+          },
+          elapsedTime: 984,
+        },
+        {
+          name: "login",
+          flow: "universal-login",
+          initiatedAt: 1707391668360,
+          completedAt: 1707391669379,
+          user_id: "google-oauth2|116939795296624035719",
+          user_name: "guillermo@sesamy.com",
+          timers: {
+            rules: 826,
+          },
+          elapsedTime: 1019,
+        },
+      ],
+      initiatedAt: 1707391668345,
+      completedAt: 1707391670385,
+      elapsedTime: 2040,
+      session_id: "x_Z4L-2lhG0aLWRj8hjnEyRXjKoIiTp6",
+      stats: {
+        loginsCount: 12,
+      },
+    },
+    hostname: "auth.sesamy.dev",
+    user_id: "google-oauth2|116939795296624035719",
+    user_name: "guillermo@sesamy.com",
+    strategy: "google-oauth2",
+    strategy_type: "social",
+    log_id: "90020240208112750439547000000000000001223372070389262628",
+    _id: "90020240208112750439547000000000000001223372070389262628",
+    isMobile: false,
+  },
 ];
