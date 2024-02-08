@@ -1,12 +1,11 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { Database, SqlLog } from "../../../types";
-import { CreateLogParams } from "../../interfaces/Logs";
+import { Database, SqlLog, LogsResponseBaseBase } from "../../../types";
 
 export function createLog(db: Kysely<Database>) {
   return async (
     tenant_id: string,
-    params: CreateLogParams,
+    params: LogsResponseBaseBase,
   ): Promise<SqlLog> => {
     const { details } = params;
 

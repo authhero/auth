@@ -30,8 +30,7 @@ interface LogsResponseBase {
   description?: string;
   ip: string;
   user_agent: string;
-  // matches auth0 type
-  details?: unknown;
+  details?: any;
   auth0_client?: {
     name: string;
     version: string;

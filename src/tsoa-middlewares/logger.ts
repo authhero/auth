@@ -268,25 +268,13 @@ export function loggerMiddleware(logType: LogType, description?: string) {
       }
 
       try {
-        await env.data.logs.create(ctx.var.tenantId || "", {
-          user_id: ctx.var.userId || "",
-          description: ctx.var.description || description || "",
-          ip: ctx.req.header("x-real-ip") || "",
-          type: ctx.var.logType || logType,
-          client_id: ctx.var.client_id || "",
-          client_name: "",
-          user_agent: ctx.req.header("user-agent") || "",
-          date: new Date().toISOString(),
-          details: {
-            request: {
-              method: ctx.req.method,
-              path: ctx.req.path,
-              headers: instanceToJson(ctx.req.raw.headers),
-              qs: ctx.req.queries(),
-              body,
-            },
-          },
-        });
+        const log: LogsResponseBaseBase = createTypeLog(
+          logType,
+          ctx,
+          body,
+          description,
+        );
+        await env.data.logs.create(ctx.var.tenantId || "", log);
       } catch (e) {
         console.error(e);
       }
@@ -307,25 +295,13 @@ export function loggerMiddleware(logType: LogType, description?: string) {
 
       if (e instanceof HTTPException) {
         try {
-          await env.data.logs.create(ctx.var.tenantId || "", {
-            user_id: ctx.var.userId || "",
-            description: e.message || ctx.var.description || description || "",
-            ip: ctx.req.header("x-real-ip") || "",
-            type: ctx.var.logType || logType,
-            client_id: ctx.var.client_id,
-            client_name: "",
-            user_agent: ctx.req.header("user-agent"),
-            date: new Date().toISOString(),
-            details: {
-              request: {
-                method: ctx.req.method,
-                path: ctx.req.path,
-                headers: instanceToJson(ctx.req.raw.headers),
-                qs: ctx.req.queries(),
-                body,
-              },
-            },
-          });
+          const log: LogsResponseBaseBase = createTypeLog(
+            logType,
+            ctx,
+            body,
+            e.message || description,
+          );
+          await env.data.logs.create(ctx.var.tenantId || "", log);
         } catch (e) {
           console.error(e);
         }
