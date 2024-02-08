@@ -12,20 +12,35 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .alterTable("logs")
     .addColumn("auth0_client", "varchar(255)")
     .execute();
-  await db.schema.alterTable("logs").addColumn("isMobile", "boolean").execute;
-  await db.schema.alterTable("logs").addColumn("connection", "varchar(255)")
-    .execute;
-  await db.schema.alterTable("logs").addColumn("connection_id", "varchar(255)")
-    .execute;
-  await db.schema.alterTable("logs").addColumn("audience", "varchar(255)")
-    .execute;
-  await db.schema.alterTable("logs").addColumn("scope", "varchar(255)").execute;
-  await db.schema.alterTable("logs").addColumn("strategy", "varchar(255)")
-    .execute;
-  await db.schema.alterTable("logs").addColumn("strategy_type", "varchar(255)")
-    .execute;
-  await db.schema.alterTable("logs").addColumn("hostname", "varchar(255)")
-    .execute;
+  await db.schema.alterTable("logs").addColumn("isMobile", "boolean").execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("connection", "varchar(255)")
+    .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("connection_id", "varchar(255)")
+    .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("audience", "varchar(255)")
+    .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("scope", "varchar(255)")
+    .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("strategy", "varchar(255)")
+    .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("strategy_type", "varchar(255)")
+    .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("hostname", "varchar(255)")
+    .execute();
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {
