@@ -1,14 +1,14 @@
 export type Var = {
-  vendorId: string;
+  vendorId?: string;
   startAt: number;
-  email: string;
-  userId: string;
-  tenantId: string;
+  email?: string;
+  userId?: string;
+  tenantId?: string;
   log: string;
   logType: string;
-  client_id: string;
-  description: string;
-  user: {
+  client_id?: string;
+  description?: string;
+  user?: {
     sub: string;
     azp: string;
     permissions: string[];

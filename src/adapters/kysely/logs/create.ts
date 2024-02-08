@@ -4,11 +4,15 @@ import { Database, SqlLog } from "../../../types";
 import { CreateLogParams } from "../../interfaces/Logs";
 
 export function createLog(db: Kysely<Database>) {
-  return async (params: CreateLogParams): Promise<SqlLog> => {
+  return async (
+    tenant_id: string,
+    params: CreateLogParams,
+  ): Promise<SqlLog> => {
     const { details } = params;
 
     const log: SqlLog = {
       id: nanoid(),
+      tenant_id,
       ...params,
       details: details ? JSON.stringify(details) : undefined,
     };

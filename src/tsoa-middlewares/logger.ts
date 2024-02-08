@@ -46,9 +46,7 @@ export function loggerMiddleware(logType: string, description?: string) {
       }
 
       try {
-        await env.data.logs.create({
-          tenant_id: ctx.var.tenantId,
-          // TODO - can we make these nullable to reflect the runtime?
+        await env.data.logs.create(ctx.var.tenantId || "", {
           user_id: ctx.var.userId || "",
           description: ctx.var.description || description || "",
           ip: ctx.req.header("x-real-ip") || "",
@@ -87,8 +85,7 @@ export function loggerMiddleware(logType: string, description?: string) {
 
       if (e instanceof HTTPException) {
         try {
-          await env.data.logs.create({
-            tenant_id: ctx.var.tenantId,
+          await env.data.logs.create(ctx.var.tenantId || "", {
             user_id: ctx.var.userId || "",
             description: e.message || ctx.var.description || description || "",
             ip: ctx.req.header("x-real-ip") || "",
