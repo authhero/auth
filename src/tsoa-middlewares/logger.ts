@@ -275,7 +275,10 @@ function createTypeLog(
   }
 }
 
-export function loggerMiddleware(logType: LogType, description?: string) {
+export function loggerMiddleware(
+  logTypeInitial: LogType,
+  description?: string,
+) {
   return async (
     ctx: Context<{ Bindings: Env; Variables: Var }>,
     next: Next,
@@ -284,6 +287,8 @@ export function loggerMiddleware(logType: LogType, description?: string) {
 
     try {
       const response = await next();
+
+      const logType = ctx.var.logType || logTypeInitial;
 
       let body = {};
 
@@ -324,6 +329,8 @@ export function loggerMiddleware(logType: LogType, description?: string) {
 
       if (e instanceof HTTPException) {
         try {
+          const logType = ctx.var.logType || logTypeInitial;
+
           const log: LogsResponseBaseBase = createTypeLog(
             logType,
             ctx,
