@@ -7,6 +7,7 @@ import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
+import { LogTypes } from "../tsoa-middlewares/logger";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -29,6 +30,8 @@ export async function ticketAuth(
   realm: string,
 ) {
   const { env } = ctx;
+
+  ctx.set("logType", LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION);
 
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
@@ -75,6 +78,8 @@ export async function ticketAuth(
       updated_at: new Date().toISOString(),
       linked_to: linkedTo,
     });
+
+    // TODO - set logging identity provider here
 
     if (primaryUser) {
       user = primaryUser;
