@@ -11,7 +11,7 @@ export interface SqlLog {
   user_agent: string;
   details?: string;
   auth0_client?: string;
-  isMobile?: boolean;
+  isMobile?: number;
   user_id?: string;
   user_name?: string;
   connection?: string;
