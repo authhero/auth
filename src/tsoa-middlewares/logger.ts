@@ -12,6 +12,10 @@ import {
   FailedLoginIncorrectPassword,
   FailedCrossOriginAuthentication,
   CodeLinkSent,
+  SuccessLogout,
+  FailedSilentAuth,
+  SuccessLogin,
+  SuccessSilentAuth,
 } from "../types";
 
 function createTypeLog(
@@ -140,6 +144,105 @@ function createTypeLog(
         strategy_type: "",
       };
       return codeLinkSent;
+    case "fsa":
+      const failedSilentAuth: FailedSilentAuth = {
+        type: "fsa",
+        description: ctx.var.description || description || "",
+        ip: ctx.req.header("x-real-ip") || "",
+        client_id: ctx.var.client_id || "",
+        client_name: "",
+        user_agent: ctx.req.header("user-agent") || "",
+        date: new Date().toISOString(),
+        details: {
+          request: {
+            method: ctx.req.method,
+            path: ctx.req.path,
+            headers: instanceToJson(ctx.req.raw.headers),
+            qs: ctx.req.queries(),
+            body,
+          },
+        },
+        hostname: ctx.req.header("host") || "",
+        // where can we get this from?
+        audience: "",
+        // where can we get this from?
+        scope: [],
+      };
+      return failedSilentAuth;
+    case "slo":
+      const successLogout: SuccessLogout = {
+        type: "slo",
+        description: ctx.var.description || description || "",
+        ip: ctx.req.header("x-real-ip") || "",
+        client_id: ctx.var.client_id || "",
+        client_name: "",
+        user_agent: ctx.req.header("user-agent") || "",
+        date: new Date().toISOString(),
+        details: {
+          request: {
+            method: ctx.req.method,
+            path: ctx.req.path,
+            headers: instanceToJson(ctx.req.raw.headers),
+            qs: ctx.req.queries(),
+            body,
+          },
+        },
+        user_id: ctx.var.userId || "",
+        user_name: "",
+        connection_id: "",
+        hostname: ctx.req.header("host") || "",
+      };
+      return successLogout;
+    case "s":
+      const successLogin: SuccessLogin = {
+        type: "s",
+        description: ctx.var.description || description || "",
+        ip: ctx.req.header("x-real-ip") || "",
+        client_id: ctx.var.client_id || "",
+        client_name: "",
+        user_agent: ctx.req.header("user-agent") || "",
+        date: new Date().toISOString(),
+        details: {
+          request: {
+            method: ctx.req.method,
+            path: ctx.req.path,
+            headers: instanceToJson(ctx.req.raw.headers),
+            qs: ctx.req.queries(),
+            body,
+          },
+        },
+        user_id: ctx.var.userId || "",
+        user_name: "",
+        connection_id: "",
+        hostname: ctx.req.header("host") || "",
+        strategy: "",
+        strategy_type: "",
+      };
+      return successLogin;
+    case "ssa":
+      const successSilentAuth: SuccessSilentAuth = {
+        type: "ssa",
+        description: ctx.var.description || description || "",
+        ip: ctx.req.header("x-real-ip") || "",
+        client_id: ctx.var.client_id || "",
+        client_name: "",
+        user_agent: ctx.req.header("user-agent") || "",
+        date: new Date().toISOString(),
+        details: {
+          request: {
+            method: ctx.req.method,
+            path: ctx.req.path,
+            headers: instanceToJson(ctx.req.raw.headers),
+            qs: ctx.req.queries(),
+            body,
+          },
+        },
+        hostname: ctx.req.header("host") || "",
+        session_connection: "",
+        user_id: ctx.var.userId || "",
+        user_name: "",
+      };
+      return successSilentAuth;
   }
 }
 
