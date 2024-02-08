@@ -1,3 +1,5 @@
+import { LogType } from "./auth0";
+
 export type Var = {
   vendorId?: string;
   startAt: number;
@@ -5,7 +7,7 @@ export type Var = {
   userId?: string;
   tenantId?: string;
   log: string;
-  logType: string;
+  logType: LogType;
   client_id?: string;
   description?: string;
   user?: {

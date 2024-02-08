@@ -4,8 +4,9 @@ import { Next } from "tsoa-hono/Next";
 import { Var } from "../types/Var";
 import instanceToJson from "../utils/instanceToJson";
 import { HTTPException } from "hono/http-exception";
+import { LogType } from "../types";
 
-export function loggerMiddleware(logType: string, description?: string) {
+export function loggerMiddleware(logType: LogType, description?: string) {
   return async (
     ctx: Context<{ Bindings: Env; Variables: Var }>,
     next: Next,
@@ -32,9 +33,9 @@ export function loggerMiddleware(logType: string, description?: string) {
           description: ctx.var.description || description || "",
           ip: ctx.req.header("x-real-ip") || "",
           type: ctx.var.logType || logType,
-          client_id: ctx.var.client_id,
+          client_id: ctx.var.client_id || "",
           client_name: "",
-          user_agent: ctx.req.header("user-agent"),
+          user_agent: ctx.req.header("user-agent") || "",
           date: new Date().toISOString(),
           details: {
             request: {

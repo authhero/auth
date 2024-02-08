@@ -19,22 +19,16 @@ export enum LogTypes {
   NOT_IMPLEMENTED_1 = "seccft",
   NOT_IMPLEMENTED_2 = "cls",
 }
-type LogType = `${LogTypes}`;
+export type LogType = `${LogTypes}`;
 
 interface LogsResponseBase {
   type: LogType;
   date: string;
   description?: string;
-  connection_id: string;
-  client_id: string;
-  client_name: string;
   ip: string;
   user_agent: string;
   // matches auth0 type
   details?: unknown;
-  hostname: string;
-  user_id: string;
-  user_name: string;
   auth0_client?: {
     name: string;
     version: string;
@@ -45,24 +39,65 @@ interface LogsResponseBase {
   isMobile?: boolean;
 }
 
+// i'm thinking there might be another base type... for when from the browser vs mgmt api!
+interface LogsResponseBaseFromBrowser extends LogsResponseBase {
+  user_id: string;
+  user_name: string;
+  // do not have this field yet in SQL
+  connection?: string;
+  connection_id: string;
+  client_id: string;
+  client_name: string;
+}
+
 interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
-  extends LogsResponseBase {
+  extends LogsResponseBaseFromBrowser {
   type: "seccft";
   audience?: string;
   // notice how this can be both in auth0! interesting
   scope?: string[] | string;
   strategy?: string;
   strategy_type?: string;
+  hostname: string;
 }
 
-interface SuccessCrossOriginAuthentication extends LogsResponseBase {
+interface SuccessCrossOriginAuthentication extends LogsResponseBaseFromBrowser {
   type: "scoa";
-  connection: string;
+  hostname: string;
+}
+
+interface SuccessApiOperation extends LogsResponseBase {
+  type: "sapi";
+  client_id: string;
+  client_name: string;
+}
+
+interface FailedLoginIncorrectPassword extends LogsResponseBaseFromBrowser {
+  type: "fp";
+  strategy: string;
+  strategy_type: string;
+}
+
+// interesting this doesn't extend the browser one... auth0 seems a bit random with what fields it provides
+interface FailedCrossOriginAuthentication extends LogsResponseBase {
+  type: "fcoa";
+  hostname: string;
+  connection_id: string;
+}
+
+interface CodeLinkSent extends LogsResponseBaseFromBrowser {
+  type: "cls";
+  strategy: string;
+  strategy_type: string;
 }
 
 export type LogsResponse =
   | SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
-  | SuccessCrossOriginAuthentication;
+  | SuccessCrossOriginAuthentication
+  | SuccessApiOperation
+  | FailedLoginIncorrectPassword
+  | FailedCrossOriginAuthentication
+  | CodeLinkSent;
 
 const logs: LogsResponse[] = [
   {
@@ -132,186 +167,186 @@ const logs: LogsResponse[] = [
     _id: "90020240208113703292362000000000000001223372070390295308",
     isMobile: false,
   },
-  // {
-  //   date: "2024-02-08T11:37:03.010Z",
-  //   type: "sapi",
-  //   description: "Update a User",
-  //   client_id: "zfhj4l8TXfzsSipBWbYsEGMB3hpFRq7t",
-  //   client_name: "",
-  //   ip: "52.57.230.214",
-  //   user_agent: "Other 0.0.0 / Other 0.0.0",
-  //   details: {
-  //     request: {
-  //       method: "patch",
-  //       path: "/api/v2/users/email%7C65c4bca2b6c3ddf424cef5d5",
-  //       query: {},
-  //       userAgent: "node-superagent/1.8.5",
-  //       body: {
-  //         app_metadata: {
-  //           geo: {
-  //             country_code: "ES",
-  //             country_code3: "ESP",
-  //             country_name: "Spain",
-  //             city_name: "Barcelona",
-  //             latitude: 41.4231,
-  //             longitude: 2.188,
-  //             time_zone: "Europe/Madrid",
-  //             continent_code: "EU",
-  //             subdivision_code: "CT",
-  //             subdivision_name: "Catalonia",
-  //           },
-  //         },
-  //       },
-  //       channel: "api",
-  //       ip: "52.57.230.214",
-  //       auth: {
-  //         user: {},
-  //         strategy: "jwt",
-  //         credentials: {
-  //           scopes: ["read:users", "update:users"],
-  //         },
-  //       },
-  //     },
-  //     response: {
-  //       statusCode: 200,
-  //       body: {
-  //         created_at: "2024-02-08T11:37:02.337Z",
-  //         email: "ewa+888@sesamy.com",
-  //         email_verified: true,
-  //         identities: [
-  //           {
-  //             user_id: "65c4bca2b6c3ddf424cef5d5",
-  //             provider: "email",
-  //             connection: "email",
-  //             isSocial: false,
-  //           },
-  //         ],
-  //         name: "ewa+888@sesamy.com",
-  //         nickname: "ewa+888",
-  //         picture:
-  //           "https://s.gravatar.com/avatar/d59126709a562c1b882551c8099079e9?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Few.png",
-  //         updated_at: "2024-02-08T11:37:02.999Z",
-  //         user_id: "email|65c4bca2b6c3ddf424cef5d5",
-  //         app_metadata: {
-  //           geo: {
-  //             country_code: "ES",
-  //             country_code3: "ESP",
-  //             country_name: "Spain",
-  //             city_name: "Barcelona",
-  //             latitude: 41.4231,
-  //             longitude: 2.188,
-  //             time_zone: "Europe/Madrid",
-  //             continent_code: "EU",
-  //             subdivision_code: "CT",
-  //             subdivision_name: "Catalonia",
-  //           },
-  //         },
-  //         last_ip: "139.47.117.198",
-  //         last_login: "2024-02-08T11:37:02.330Z",
-  //         logins_count: 1,
-  //       },
-  //     },
-  //   },
-  //   log_id: "90020240208113703067870000000000000001223372070390294887",
-  //   _id: "90020240208113703067870000000000000001223372070390294887",
-  //   isMobile: false,
-  // },
-  // {
-  //   date: "2024-02-08T11:36:27.687Z",
-  //   type: "fp",
-  //   description: "Wrong email or verification code.",
-  //   connection: "email",
-  //   connection_id: "con_TI7p6dEHf551Q9t6",
-  //   client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //   client_name: "Sesamy",
-  //   ip: "139.47.117.198",
-  //   user_agent: "Chrome 120.0.0 / Linux 0.0.0",
-  //   details: {
-  //     error: {
-  //       message: "Wrong email or verification code.",
-  //     },
-  //     authentication_methods: ["email"],
-  //   },
-  //   user_id: "email|65c4bca2b6c3ddf424cef5d5",
-  //   user_name: "ewa+888@sesamy.com",
-  //   strategy: "email",
-  //   strategy_type: "passwordless",
-  //   log_id: "90020240208113627759377000000000000001223372070390231232",
-  //   _id: "90020240208113627759377000000000000001223372070390231232",
-  //   isMobile: false,
-  // },
-  // {
-  //   date: "2024-02-08T11:36:27.691Z",
-  //   type: "fcoa",
-  //   description: "Wrong email or verification code.",
-  //   connection_id: "",
-  //   ip: "139.47.117.198",
-  //   user_agent: "Chrome 120.0.0 / Linux 0.0.0",
-  //   details: {
-  //     body: {
-  //       client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //       username: "ewa+888@sesamy.com",
-  //       otp: "835416",
-  //       realm: "email",
-  //       credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-  //     },
-  //     qs: {},
-  //     connection: "email",
-  //     error: {
-  //       message: "Wrong email or verification code.",
-  //       oauthError: "Wrong email or verification code.",
-  //       type: "access_denied",
-  //       uri: null,
-  //     },
-  //   },
-  //   hostname: "auth.sesamy.dev",
-  //   auth0_client: {
-  //     name: "auth0.js",
-  //     version: "9.24.1",
-  //   },
-  //   log_id: "90020240208113627712533000000000000001223372070390231155",
-  //   _id: "90020240208113627712533000000000000001223372070390231155",
-  //   isMobile: false,
-  // },
-  // {
-  //   date: "2024-02-08T11:36:02.586Z",
-  //   type: "cls",
-  //   description: "ewa+888@sesamy.com",
-  //   connection: "email",
-  //   connection_id: "con_TI7p6dEHf551Q9t6",
-  //   client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //   client_name: "Sesamy",
-  //   ip: "139.47.117.198",
-  //   user_agent: "Chrome 120.0.0 / Linux 0.0.0",
-  //   details: {
-  //     link: "https://auth.sesamy.dev/passwordless/verify_redirect?scope=openid%20profile%20email&response_type=token%20id_token&redirect_uri=https%3A%2F%2Flogin2.sesamy.dev%2Fcallback&state=redirect_uri%3Dhttps%253A%252F%252Ftoken.sesamy.dev%252Fcallback%26client_id%3Dsesamy%26state%3DeyJjbGllbnRfaWQiOiJzZXNhbXkiLCJzdGF0ZSI6IlgzaFBSRlpmWXkxVFltOHlTMjVVVFZWTmZsZ3dXazlIYlZacGFYWm9RVWx6TmxOSWQwNHdPV3gzU1E9PSIsInJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vYWNjb3VudC5zZXNhbXkuZGV2LyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJub25jZSI6IlJ6ZFpOMGxKUldkVWNITkdVeTFzVUhSdGJqaDFhSGhzV0c5UU1FVjRjMnRGWDFSc1FUQkVlblIzY1E9PSIsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwicmVzcG9uc2VfbW9kZSI6InF1ZXJ5IiwiY29kZV9jaGFsbGVuZ2VfbWV0aG9kIjoiUzI1NiIsImNvZGVfY2hhbGxlbmdlIjoiMFpGZm5WWXowR2JTWVVQcFVSYUFuanJLY3ZHTTl0R190Nkw4QzZjc0VKayIsInZlbmRvcklkIjoic2VzYW15In0&nonce=.64CB2yaaB9iKuz_Y0y4kJ~rDgBncx9N&verification_code=******&connection=email&client_id=0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW&email=ewa%2B888%40sesamy.com",
-  //     body: {
-  //       client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-  //       connection: "email",
-  //       send: "code",
-  //       email: "ewa+888@sesamy.com",
-  //       authParams: {
-  //         response_type: "token id_token",
-  //         redirect_uri: "https://login2.sesamy.dev/callback",
-  //         scope: "openid profile email",
-  //         state:
-  //           "redirect_uri=https%3A%2F%2Ftoken.sesamy.dev%2Fcallback&client_id=sesamy&state=eyJjbGllbnRfaWQiOiJzZXNhbXkiLCJzdGF0ZSI6IlgzaFBSRlpmWXkxVFltOHlTMjVVVFZWTmZsZ3dXazlIYlZacGFYWm9RVWx6TmxOSWQwNHdPV3gzU1E9PSIsInJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vYWNjb3VudC5zZXNhbXkuZGV2LyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJub25jZSI6IlJ6ZFpOMGxKUldkVWNITkdVeTFzVUhSdGJqaDFhSGhzV0c5UU1FVjRjMnRGWDFSc1FUQkVlblIzY1E9PSIsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwicmVzcG9uc2VfbW9kZSI6InF1ZXJ5IiwiY29kZV9jaGFsbGVuZ2VfbWV0aG9kIjoiUzI1NiIsImNvZGVfY2hhbGxlbmdlIjoiMFpGZm5WWXowR2JTWVVQcFVSYUFuanJLY3ZHTTl0R190Nkw4QzZjc0VKayIsInZlbmRvcklkIjoic2VzYW15In0",
-  //         nonce: ".64CB2yaaB9iKuz_Y0y4kJ~rDgBncx9N",
-  //       },
-  //       is_signup: true,
-  //       tenant: "sesamy-dev",
-  //       request_language: "en-GB,en-US;q=0.9,en;q=0.8",
-  //     },
-  //     authentication_methods: ["email"],
-  //   },
-  //   user_id: "",
-  //   user_name: "ewa+888@sesamy.com",
-  //   strategy: "email",
-  //   strategy_type: "passwordless",
-  //   log_id: "90020240208113602649078000000000000001223372070390185731",
-  //   _id: "90020240208113602649078000000000000001223372070390185731",
-  //   isMobile: false,
-  // },
+  {
+    date: "2024-02-08T11:37:03.010Z",
+    type: "sapi",
+    description: "Update a User",
+    client_id: "zfhj4l8TXfzsSipBWbYsEGMB3hpFRq7t",
+    client_name: "",
+    ip: "52.57.230.214",
+    user_agent: "Other 0.0.0 / Other 0.0.0",
+    details: {
+      request: {
+        method: "patch",
+        path: "/api/v2/users/email%7C65c4bca2b6c3ddf424cef5d5",
+        query: {},
+        userAgent: "node-superagent/1.8.5",
+        body: {
+          app_metadata: {
+            geo: {
+              country_code: "ES",
+              country_code3: "ESP",
+              country_name: "Spain",
+              city_name: "Barcelona",
+              latitude: 41.4231,
+              longitude: 2.188,
+              time_zone: "Europe/Madrid",
+              continent_code: "EU",
+              subdivision_code: "CT",
+              subdivision_name: "Catalonia",
+            },
+          },
+        },
+        channel: "api",
+        ip: "52.57.230.214",
+        auth: {
+          user: {},
+          strategy: "jwt",
+          credentials: {
+            scopes: ["read:users", "update:users"],
+          },
+        },
+      },
+      response: {
+        statusCode: 200,
+        body: {
+          created_at: "2024-02-08T11:37:02.337Z",
+          email: "ewa+888@sesamy.com",
+          email_verified: true,
+          identities: [
+            {
+              user_id: "65c4bca2b6c3ddf424cef5d5",
+              provider: "email",
+              connection: "email",
+              isSocial: false,
+            },
+          ],
+          name: "ewa+888@sesamy.com",
+          nickname: "ewa+888",
+          picture:
+            "https://s.gravatar.com/avatar/d59126709a562c1b882551c8099079e9?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Few.png",
+          updated_at: "2024-02-08T11:37:02.999Z",
+          user_id: "email|65c4bca2b6c3ddf424cef5d5",
+          app_metadata: {
+            geo: {
+              country_code: "ES",
+              country_code3: "ESP",
+              country_name: "Spain",
+              city_name: "Barcelona",
+              latitude: 41.4231,
+              longitude: 2.188,
+              time_zone: "Europe/Madrid",
+              continent_code: "EU",
+              subdivision_code: "CT",
+              subdivision_name: "Catalonia",
+            },
+          },
+          last_ip: "139.47.117.198",
+          last_login: "2024-02-08T11:37:02.330Z",
+          logins_count: 1,
+        },
+      },
+    },
+    log_id: "90020240208113703067870000000000000001223372070390294887",
+    _id: "90020240208113703067870000000000000001223372070390294887",
+    isMobile: false,
+  },
+  {
+    date: "2024-02-08T11:36:27.687Z",
+    type: "fp",
+    description: "Wrong email or verification code.",
+    connection: "email",
+    connection_id: "con_TI7p6dEHf551Q9t6",
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+    client_name: "Sesamy",
+    ip: "139.47.117.198",
+    user_agent: "Chrome 120.0.0 / Linux 0.0.0",
+    details: {
+      error: {
+        message: "Wrong email or verification code.",
+      },
+      authentication_methods: ["email"],
+    },
+    user_id: "email|65c4bca2b6c3ddf424cef5d5",
+    user_name: "ewa+888@sesamy.com",
+    strategy: "email",
+    strategy_type: "passwordless",
+    log_id: "90020240208113627759377000000000000001223372070390231232",
+    _id: "90020240208113627759377000000000000001223372070390231232",
+    isMobile: false,
+  },
+  {
+    date: "2024-02-08T11:36:27.691Z",
+    type: "fcoa",
+    description: "Wrong email or verification code.",
+    connection_id: "",
+    ip: "139.47.117.198",
+    user_agent: "Chrome 120.0.0 / Linux 0.0.0",
+    details: {
+      body: {
+        client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        username: "ewa+888@sesamy.com",
+        otp: "835416",
+        realm: "email",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+      },
+      qs: {},
+      connection: "email",
+      error: {
+        message: "Wrong email or verification code.",
+        oauthError: "Wrong email or verification code.",
+        type: "access_denied",
+        uri: null,
+      },
+    },
+    hostname: "auth.sesamy.dev",
+    auth0_client: {
+      name: "auth0.js",
+      version: "9.24.1",
+    },
+    log_id: "90020240208113627712533000000000000001223372070390231155",
+    _id: "90020240208113627712533000000000000001223372070390231155",
+    isMobile: false,
+  },
+  {
+    date: "2024-02-08T11:36:02.586Z",
+    type: "cls",
+    description: "ewa+888@sesamy.com",
+    connection: "email",
+    connection_id: "con_TI7p6dEHf551Q9t6",
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+    client_name: "Sesamy",
+    ip: "139.47.117.198",
+    user_agent: "Chrome 120.0.0 / Linux 0.0.0",
+    details: {
+      link: "https://auth.sesamy.dev/passwordless/verify_redirect?scope=openid%20profile%20email&response_type=token%20id_token&redirect_uri=https%3A%2F%2Flogin2.sesamy.dev%2Fcallback&state=redirect_uri%3Dhttps%253A%252F%252Ftoken.sesamy.dev%252Fcallback%26client_id%3Dsesamy%26state%3DeyJjbGllbnRfaWQiOiJzZXNhbXkiLCJzdGF0ZSI6IlgzaFBSRlpmWXkxVFltOHlTMjVVVFZWTmZsZ3dXazlIYlZacGFYWm9RVWx6TmxOSWQwNHdPV3gzU1E9PSIsInJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vYWNjb3VudC5zZXNhbXkuZGV2LyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJub25jZSI6IlJ6ZFpOMGxKUldkVWNITkdVeTFzVUhSdGJqaDFhSGhzV0c5UU1FVjRjMnRGWDFSc1FUQkVlblIzY1E9PSIsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwicmVzcG9uc2VfbW9kZSI6InF1ZXJ5IiwiY29kZV9jaGFsbGVuZ2VfbWV0aG9kIjoiUzI1NiIsImNvZGVfY2hhbGxlbmdlIjoiMFpGZm5WWXowR2JTWVVQcFVSYUFuanJLY3ZHTTl0R190Nkw4QzZjc0VKayIsInZlbmRvcklkIjoic2VzYW15In0&nonce=.64CB2yaaB9iKuz_Y0y4kJ~rDgBncx9N&verification_code=******&connection=email&client_id=0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW&email=ewa%2B888%40sesamy.com",
+      body: {
+        client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        connection: "email",
+        send: "code",
+        email: "ewa+888@sesamy.com",
+        authParams: {
+          response_type: "token id_token",
+          redirect_uri: "https://login2.sesamy.dev/callback",
+          scope: "openid profile email",
+          state:
+            "redirect_uri=https%3A%2F%2Ftoken.sesamy.dev%2Fcallback&client_id=sesamy&state=eyJjbGllbnRfaWQiOiJzZXNhbXkiLCJzdGF0ZSI6IlgzaFBSRlpmWXkxVFltOHlTMjVVVFZWTmZsZ3dXazlIYlZacGFYWm9RVWx6TmxOSWQwNHdPV3gzU1E9PSIsInJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vYWNjb3VudC5zZXNhbXkuZGV2LyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJub25jZSI6IlJ6ZFpOMGxKUldkVWNITkdVeTFzVUhSdGJqaDFhSGhzV0c5UU1FVjRjMnRGWDFSc1FUQkVlblIzY1E9PSIsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwicmVzcG9uc2VfbW9kZSI6InF1ZXJ5IiwiY29kZV9jaGFsbGVuZ2VfbWV0aG9kIjoiUzI1NiIsImNvZGVfY2hhbGxlbmdlIjoiMFpGZm5WWXowR2JTWVVQcFVSYUFuanJLY3ZHTTl0R190Nkw4QzZjc0VKayIsInZlbmRvcklkIjoic2VzYW15In0",
+          nonce: ".64CB2yaaB9iKuz_Y0y4kJ~rDgBncx9N",
+        },
+        is_signup: true,
+        tenant: "sesamy-dev",
+        request_language: "en-GB,en-US;q=0.9,en;q=0.8",
+      },
+      authentication_methods: ["email"],
+    },
+    user_id: "",
+    user_name: "ewa+888@sesamy.com",
+    strategy: "email",
+    strategy_type: "passwordless",
+    log_id: "90020240208113602649078000000000000001223372070390185731",
+    _id: "90020240208113602649078000000000000001223372070390185731",
+    isMobile: false,
+  },
   // {
   //   date: "2024-02-08T11:35:58.561Z",
   //   type: "fsa",
