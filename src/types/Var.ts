@@ -19,11 +19,12 @@ export type Var = {
   //   connectionId?: string;
   //   strategy?: string;
   //   strategyType?: string;
-  //   hostname?: string;
   //   sessionConnection?: string;
   //   connection?: string;
   //   audience?: string;
   //   scope?: string;
+  // can we get this from user agent?
   //   isMobile?: boolean;
+  // is this a header? what other project am I reading this on... login2!
   //   auth0Client?: string;
 };
