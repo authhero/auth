@@ -35,7 +35,7 @@ export function createLog(db: Kysely<Database>) {
   ): Promise<SqlLog> => {
     const { details } = params;
 
-    const sqlLog: SqlLog = {
+    const log: SqlLog = {
       id: nanoid(),
       tenant_id,
       ...params,
@@ -43,7 +43,7 @@ export function createLog(db: Kysely<Database>) {
       details: stringifyIfTruthy(details),
       scope: getScopeValue(params),
     };
-    await db.insertInto("logs").values(sqlLog).execute();
-    return sqlLog;
+    await db.insertInto("logs").values(log).execute();
+    return log;
   };
 }
