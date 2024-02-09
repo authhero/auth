@@ -19,6 +19,30 @@ import {
   SuccessSignup,
 } from "../types";
 
+function createCommonLogFields(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  body: unknown,
+  description?: string,
+) {
+  return {
+    description: ctx.var.description || description || "",
+    ip: ctx.req.header("x-real-ip") || "",
+    client_id: ctx.var.client_id || "",
+    client_name: "",
+    user_agent: ctx.req.header("user-agent") || "",
+    date: new Date().toISOString(),
+    details: {
+      request: {
+        method: ctx.req.method,
+        path: ctx.req.path,
+        headers: instanceToJson(ctx.req.raw.headers),
+        qs: ctx.req.queries(),
+        body,
+      },
+    },
+  };
+}
+
 function createTypeLog(
   logType: LogType,
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -29,42 +53,14 @@ function createTypeLog(
     case "sapi":
       const successApiOperation: SuccessApiOperation = {
         type: "sapi",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
       };
       return successApiOperation;
     case "scoa":
       const successCrossOriginAuthentication: SuccessCrossOriginAuthentication =
         {
           type: "scoa",
-          description: ctx.var.description || description || "",
-          ip: ctx.req.header("x-real-ip") || "",
-          client_id: ctx.var.client_id || "",
-          client_name: "",
-          user_agent: ctx.req.header("user-agent") || "",
-          date: new Date().toISOString(),
-          details: {
-            request: {
-              method: ctx.req.method,
-              path: ctx.req.path,
-              headers: instanceToJson(ctx.req.raw.headers),
-              qs: ctx.req.queries(),
-              body,
-            },
-          },
+          ...createCommonLogFields(ctx, body, description),
           user_id: ctx.var.userId || "",
           hostname: ctx.req.header("host") || "",
           // TODO - implement ctx.var.userName
@@ -76,19 +72,7 @@ function createTypeLog(
     case "fcoa":
       const failedCrossOriginAuthentication: FailedCrossOriginAuthentication = {
         type: "fcoa",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         connection_id: "",
         hostname: ctx.req.header("host") || "",
       };
@@ -96,21 +80,7 @@ function createTypeLog(
     case "fp":
       const failedLoginIncorrectPassword: FailedLoginIncorrectPassword = {
         type: "fp",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         // TODO - what are these?
         strategy: "",
         strategy_type: "",
@@ -122,21 +92,7 @@ function createTypeLog(
     case "cls":
       const codeLinkSent: CodeLinkSent = {
         type: "cls",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: "",
         connection_id: "",
@@ -147,21 +103,7 @@ function createTypeLog(
     case "fsa":
       const failedSilentAuth: FailedSilentAuth = {
         type: "fsa",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         hostname: ctx.req.header("host") || "",
         // where can we get this from?
         audience: "",
@@ -172,21 +114,7 @@ function createTypeLog(
     case "slo":
       const successLogout: SuccessLogout = {
         type: "slo",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: "",
         connection_id: "",
@@ -196,21 +124,7 @@ function createTypeLog(
     case "s":
       const successLogin: SuccessLogin = {
         type: "s",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: "",
         connection_id: "",
@@ -222,21 +136,7 @@ function createTypeLog(
     case "ssa":
       const successSilentAuth: SuccessSilentAuth = {
         type: "ssa",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         hostname: ctx.req.header("host") || "",
         session_connection: "",
         user_id: ctx.var.userId || "",
@@ -246,21 +146,7 @@ function createTypeLog(
     case "ss":
       const successSignup: SuccessSignup = {
         type: "ss",
-        description: ctx.var.description || description || "",
-        ip: ctx.req.header("x-real-ip") || "",
-        client_id: ctx.var.client_id || "",
-        client_name: "",
-        user_agent: ctx.req.header("user-agent") || "",
-        date: new Date().toISOString(),
-        details: {
-          request: {
-            method: ctx.req.method,
-            path: ctx.req.path,
-            headers: instanceToJson(ctx.req.raw.headers),
-            qs: ctx.req.queries(),
-            body,
-          },
-        },
+        ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: "",
         connection_id: "",
