@@ -15,4 +15,16 @@ export type Var = {
     azp: string;
     permissions: string[];
   };
+  // TODO - enable these, populate, and use
+  //   userName?: string;
+  //   connectionId?: string;
+  //   strategy?: string;
+  //   strategyType?: string;
+  //   hostname?: string;
+  //   sessionConnection?: string;
+  //   connection?: string;
+  //   audience?: string;
+  //   scope?: string;
+  //   isMobile?: boolean;
+  //   auth0Client?: string;
 };
