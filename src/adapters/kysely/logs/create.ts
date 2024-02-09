@@ -16,6 +16,18 @@ function flattenScopesIfArray(
   return value;
 }
 
+function getScopeValue(log: LogsResponseBaseBase): string | undefined {
+  if (log.type === "fsa") {
+    return log.scope.join(",");
+  }
+
+  if (log.type === "seccft") {
+    return flattenScopesIfArray(log.scope);
+  }
+
+  return undefined;
+}
+
 export function createLog(db: Kysely<Database>) {
   return async (
     tenant_id: string,
@@ -23,133 +35,15 @@ export function createLog(db: Kysely<Database>) {
   ): Promise<SqlLog> => {
     const { details } = params;
 
-    switch (params.type) {
-      case "sapi": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-      case "scoa": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-      case "fcoa": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      case "fp": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      case "cls": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      case "fsa": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-          scope: flattenScopesIfArray(params.scope),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      case "slo": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      case "s": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      case "ssa": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      case "ss": {
-        const log: SqlLog = {
-          id: nanoid(),
-          tenant_id,
-          ...params,
-          auth0_client: stringifyIfTruthy(params.auth0_client),
-          details: stringifyIfTruthy(details),
-        };
-        await db.insertInto("logs").values(log).execute();
-        return log;
-      }
-
-      // TODO - dedupe all these case statements!
-
-      default:
-        throw new Error("Invalid log type");
-    }
-
-    // need to conditionally check types of logs...
-    // scope: flattenScopesIfArray(params.scope),
+    const sqlLog: SqlLog = {
+      id: nanoid(),
+      tenant_id,
+      ...params,
+      auth0_client: stringifyIfTruthy(params.auth0_client),
+      details: stringifyIfTruthy(details),
+      scope: getScopeValue(params),
+    };
+    await db.insertInto("logs").values(sqlLog).execute();
+    return sqlLog;
   };
 }
