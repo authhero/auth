@@ -16,7 +16,7 @@ import {
 function getCommonFields(log: SqlLog) {
   return {
     ...log,
-    client_id: log.client_id || "",
+    client_id: log.client_id,
     client_name: "",
     auth0_client: log.auth0_client ? JSON.parse(log.auth0_client) : undefined,
     details: log.details ? JSON.parse(log.details) : undefined,

@@ -27,7 +27,7 @@ function createCommonLogFields(
   return {
     description: ctx.var.description || description || "",
     ip: ctx.req.header("x-real-ip") || "",
-    client_id: ctx.var.client_id || "",
+    client_id: ctx.var.client_id,
     client_name: "",
     user_agent: ctx.req.header("user-agent") || "",
     date: new Date().toISOString(),

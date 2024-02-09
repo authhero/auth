@@ -6,8 +6,6 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .alterTable("logs")
     .addColumn("user_name", "varchar(255)")
     .execute();
-
-  // I do not think this will be long enough
   await db.schema
     .alterTable("logs")
     .addColumn("auth0_client", "varchar(255)")

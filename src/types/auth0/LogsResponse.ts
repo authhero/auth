@@ -45,7 +45,7 @@ interface BrowserLogsResponseBase extends LogsResponseBase {
   // do not have this field yet in SQL
   connection?: string;
   connection_id: string;
-  client_id: string;
+  client_id?: string;
   client_name: string;
 }
 
@@ -74,7 +74,7 @@ export interface FailedCrossOriginAuthentication extends LogsResponseBase {
 
 export interface SuccessApiOperation extends LogsResponseBase {
   type: "sapi";
-  client_id: string;
+  client_id?: string;
   client_name: string;
 }
 
@@ -95,7 +95,7 @@ export interface FailedSilentAuth extends LogsResponseBase {
   hostname: string;
   audience: string;
   scope: string[];
-  client_id: string;
+  client_id?: string;
   client_name: string;
 }
 
@@ -114,7 +114,7 @@ export interface SuccessLogin extends BrowserLogsResponseBase {
 export interface SuccessSilentAuth extends LogsResponseBase {
   type: "ssa";
   hostname: string;
-  client_id: string;
+  client_id?: string;
   client_name: string;
   session_connection: string;
   user_id: string;
