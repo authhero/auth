@@ -1,6 +1,6 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { Database, SqlLog, LogsResponseBaseBase } from "../../../types";
+import { Database, SqlLog, Log } from "../../../types";
 
 function stringifyIfTruthy<T>(value: T | undefined): string | undefined {
   return value ? JSON.stringify(value) : undefined;
@@ -16,7 +16,7 @@ function flattenScopesIfArray(
   return value;
 }
 
-function getScopeValue(log: LogsResponseBaseBase): string | undefined {
+function getScopeValue(log: Log): string | undefined {
   if (log.type === "fsa") {
     return log.scope.join(",");
   }
@@ -29,10 +29,7 @@ function getScopeValue(log: LogsResponseBaseBase): string | undefined {
 }
 
 export function createLog(db: Kysely<Database>) {
-  return async (
-    tenant_id: string,
-    params: LogsResponseBaseBase,
-  ): Promise<SqlLog> => {
+  return async (tenant_id: string, params: Log): Promise<SqlLog> => {
     const { details } = params;
 
     const log: SqlLog = {

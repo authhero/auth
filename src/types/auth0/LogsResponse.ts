@@ -23,7 +23,7 @@ export enum LogTypes {
 }
 export type LogType = `${LogTypes}`;
 
-export interface LogsResponseBase {
+interface LogCommonFields {
   type: LogType;
   date: string;
   description?: string;
@@ -38,8 +38,7 @@ export interface LogsResponseBase {
   isMobile?: boolean;
 }
 
-// i'm thinking there might be another base type... for when from the browser vs mgmt api!
-interface BrowserLogsResponseBase extends LogsResponseBase {
+interface BrowserLogCommonFields extends LogCommonFields {
   user_id: string;
   user_name: string;
   // do not have this field yet in SQL
@@ -50,7 +49,7 @@ interface BrowserLogsResponseBase extends LogsResponseBase {
 }
 
 export interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
-  extends BrowserLogsResponseBase {
+  extends BrowserLogCommonFields {
   type: "seccft";
   audience?: string;
   // notice how this can be both in auth0! interesting
@@ -61,36 +60,36 @@ export interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
 }
 
 export interface SuccessCrossOriginAuthentication
-  extends BrowserLogsResponseBase {
+  extends BrowserLogCommonFields {
   type: "scoa";
   hostname: string;
 }
 // interesting this doesn't extend the browser one... auth0 seems a bit random with what fields it provides
-export interface FailedCrossOriginAuthentication extends LogsResponseBase {
+export interface FailedCrossOriginAuthentication extends LogCommonFields {
   type: "fcoa";
   hostname: string;
   connection_id: string;
 }
 
-export interface SuccessApiOperation extends LogsResponseBase {
+export interface SuccessApiOperation extends LogCommonFields {
   type: "sapi";
   client_id?: string;
   client_name: string;
 }
 
-export interface FailedLoginIncorrectPassword extends BrowserLogsResponseBase {
+export interface FailedLoginIncorrectPassword extends BrowserLogCommonFields {
   type: "fp";
   strategy: string;
   strategy_type: string;
 }
 
-export interface CodeLinkSent extends BrowserLogsResponseBase {
+export interface CodeLinkSent extends BrowserLogCommonFields {
   type: "cls";
   strategy: string;
   strategy_type: string;
 }
 
-export interface FailedSilentAuth extends LogsResponseBase {
+export interface FailedSilentAuth extends LogCommonFields {
   type: "fsa";
   hostname: string;
   audience: string;
@@ -99,19 +98,19 @@ export interface FailedSilentAuth extends LogsResponseBase {
   client_name: string;
 }
 
-export interface SuccessLogout extends BrowserLogsResponseBase {
+export interface SuccessLogout extends BrowserLogCommonFields {
   type: "slo";
   hostname: string;
 }
 
-export interface SuccessLogin extends BrowserLogsResponseBase {
+export interface SuccessLogin extends BrowserLogCommonFields {
   type: "s";
   strategy: string;
   strategy_type: string;
   hostname: string;
 }
 
-export interface SuccessSilentAuth extends LogsResponseBase {
+export interface SuccessSilentAuth extends LogCommonFields {
   type: "ssa";
   hostname: string;
   client_id?: string;
@@ -121,15 +120,14 @@ export interface SuccessSilentAuth extends LogsResponseBase {
   user_name: string;
 }
 
-export interface SuccessSignup extends BrowserLogsResponseBase {
+export interface SuccessSignup extends BrowserLogCommonFields {
   type: "ss";
   hostname: string;
   strategy: string;
   strategy_type: string;
 }
 
-// lol the naming here... essentially want all fields except the id
-export type LogsResponseBaseBase =
+export type Log =
   | SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
   | SuccessCrossOriginAuthentication
   | SuccessApiOperation
@@ -142,7 +140,7 @@ export type LogsResponseBaseBase =
   | SuccessSilentAuth
   | SuccessSignup;
 
-export type LogsResponse = LogsResponseBaseBase & {
+export type LogsResponse = Log & {
   log_id: string;
   _id: string;
 };

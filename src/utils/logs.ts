@@ -1,5 +1,4 @@
 import {
-  LogsResponseBaseBase,
   SuccessApiOperation,
   SuccessCrossOriginAuthentication,
   FailedLoginIncorrectPassword,
@@ -11,6 +10,7 @@ import {
   SuccessSilentAuth,
   SqlLog,
   SuccessSignup,
+  Log,
 } from "../types";
 
 function getCommonFields(log: SqlLog) {
@@ -24,7 +24,7 @@ function getCommonFields(log: SqlLog) {
   };
 }
 
-export function getLogResponseBase(log: SqlLog): LogsResponseBaseBase {
+export function getLogResponseBase(log: SqlLog): Log {
   switch (log.type) {
     case "sapi": {
       const successApiOperation: SuccessApiOperation = {
