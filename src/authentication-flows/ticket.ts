@@ -7,7 +7,7 @@ import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
-import { LogTypes } from "../tsoa-middlewares/logger";
+import { LogTypes } from "../types/auth0";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
