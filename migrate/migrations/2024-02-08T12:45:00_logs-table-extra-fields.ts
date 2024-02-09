@@ -44,8 +44,14 @@ export async function up(db: Kysely<Database>): Promise<void> {
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {
-  await db.schema.alterTable("logs").dropColumn("details").execute();
-
-  await db.schema.alterTable("logs").dropColumn("user_name");
-  // TODO - add these here too!
+  await db.schema.alterTable("logs").dropColumn("user_name").execute();
+  await db.schema.alterTable("logs").dropColumn("auth0_client").execute();
+  await db.schema.alterTable("logs").dropColumn("isMobile").execute();
+  await db.schema.alterTable("logs").dropColumn("connection").execute();
+  await db.schema.alterTable("logs").dropColumn("connection_id").execute();
+  await db.schema.alterTable("logs").dropColumn("audience").execute();
+  await db.schema.alterTable("logs").dropColumn("scope").execute();
+  await db.schema.alterTable("logs").dropColumn("strategy").execute();
+  await db.schema.alterTable("logs").dropColumn("strategy_type").execute();
+  await db.schema.alterTable("logs").dropColumn("hostname").execute();
 }
