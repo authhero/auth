@@ -1,6 +1,6 @@
 import { Database, LogsResponse } from "../../../types";
 import { Kysely } from "kysely";
-import { getLogResponseBase } from "../../../utils/logs";
+import { getLogResponse } from "../../../utils/logs";
 
 export function getLogs(db: Kysely<Database>) {
   return async (
@@ -18,7 +18,7 @@ export function getLogs(db: Kysely<Database>) {
       return null;
     }
 
-    const logResponseBaseBase = getLogResponseBase(log);
+    const logResponseBaseBase = getLogResponse(log);
 
     const logResponse: LogsResponse = {
       ...logResponseBaseBase,

@@ -11,6 +11,7 @@ import {
   SqlLog,
   SuccessSignup,
   Log,
+  LogsResponse,
 } from "../types";
 
 function getCommonFields(log: SqlLog) {
@@ -24,7 +25,7 @@ function getCommonFields(log: SqlLog) {
   };
 }
 
-export function getLogResponseBase(log: SqlLog): Log {
+function getLog(log: SqlLog): Log {
   switch (log.type) {
     case "sapi": {
       const successApiOperation: SuccessApiOperation = {
@@ -154,4 +155,13 @@ export function getLogResponseBase(log: SqlLog): Log {
     default:
       throw new Error("Invalid log type");
   }
+}
+
+export function getLogResponse(log: SqlLog): LogsResponse {
+  const logResponse: LogsResponse = {
+    ...getLog(log),
+    log_id: log.id,
+    _id: log.id,
+  };
+  return logResponse;
 }
