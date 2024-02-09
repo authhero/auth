@@ -18,13 +18,7 @@ export function getLogs(db: Kysely<Database>) {
       return null;
     }
 
-    const logResponseBaseBase = getLogResponse(log);
-
-    const logResponse: LogsResponse = {
-      ...logResponseBaseBase,
-      log_id: log.id,
-      _id: log.id,
-    };
+    const logResponse = getLogResponse(log);
 
     return logResponse;
   };
