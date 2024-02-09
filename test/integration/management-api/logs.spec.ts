@@ -67,7 +67,9 @@ describe("logs", () => {
     const body = (await response.json()) as LogsResponse[];
     expect(body.length).toBe(1);
     const [log] = body;
-    expect(log.type).toBe("sapi");
+    if (log.type !== "sapi") {
+      throw new Error("Expected log to be of type fsa");
+    }
     expect(log.ip).toBe("1.2.3.4");
     expect(log.description).toBe("Create a User");
     expect(typeof log.date).toBe("string");
@@ -124,6 +126,9 @@ describe("logs", () => {
     const body = (await response.json()) as LogsResponse[];
     expect(body.length).toBe(1);
     const [log] = body;
+    if (log.type !== "fsa") {
+      throw new Error("Expected log to be of type fsa");
+    }
     expect(log.type).toBe("fsa");
     expect(log.ip).toBe("1.2.3.4");
     expect(log.description).toBe("Login required");
