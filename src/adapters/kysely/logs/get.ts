@@ -2,7 +2,7 @@ import { Database, LogsResponse } from "../../../types";
 import { Kysely } from "kysely";
 import { getLogResponseBase } from "../../../utils/logs";
 
-export function getLog(db: Kysely<Database>) {
+export function getLogs(db: Kysely<Database>) {
   return async (
     tenantId: string,
     logId: string,
