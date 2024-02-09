@@ -15,9 +15,9 @@ export type Var = {
     azp: string;
     permissions: string[];
   };
+  userName?: string;
+  connectionId?: string;
   // TODO - enable these, populate, and use
-  //   userName?: string;
-  //   connectionId?: string;
   //   strategy?: string;
   //   strategyType?: string;
   //   hostname?: string;

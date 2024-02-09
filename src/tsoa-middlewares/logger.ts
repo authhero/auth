@@ -63,10 +63,8 @@ function createTypeLog(
           ...createCommonLogFields(ctx, body, description),
           user_id: ctx.var.userId || "",
           hostname: ctx.req.header("host") || "",
-          // TODO - implement ctx.var.userName
-          user_name: "",
-          // TODO - implement ctx.var.connectionId
-          connection_id: "",
+          user_name: ctx.var.userName || "",
+          connection_id: ctx.var.connectionId || "",
         };
       return successCrossOriginAuthentication;
     case "fcoa":
@@ -85,8 +83,8 @@ function createTypeLog(
         strategy: "",
         strategy_type: "",
         user_id: ctx.var.userId || "",
-        user_name: "",
-        connection_id: "",
+        user_name: ctx.var.userName || "",
+        connection_id: ctx.var.connectionId || "",
       };
       return failedLoginIncorrectPassword;
     case "cls":
@@ -94,8 +92,8 @@ function createTypeLog(
         type: "cls",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
-        connection_id: "",
+        user_name: ctx.var.userName || "",
+        connection_id: ctx.var.connectionId || "",
         strategy: "",
         strategy_type: "",
       };
@@ -116,8 +114,8 @@ function createTypeLog(
         type: "slo",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
-        connection_id: "",
+        user_name: ctx.var.userName || "",
+        connection_id: ctx.var.connectionId || "",
         hostname: ctx.req.header("host") || "",
       };
       return successLogout;
@@ -126,8 +124,8 @@ function createTypeLog(
         type: "s",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
-        connection_id: "",
+        user_name: ctx.var.userName || "",
+        connection_id: ctx.var.connectionId || "",
         hostname: ctx.req.header("host") || "",
         strategy: "",
         strategy_type: "",
@@ -148,8 +146,8 @@ function createTypeLog(
         type: "ss",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
-        connection_id: "",
+        user_name: ctx.var.userName || "",
+        connection_id: ctx.var.connectionId || "",
         strategy: "",
         strategy_type: "",
         hostname: ctx.req.header("host") || "",
