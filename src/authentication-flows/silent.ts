@@ -61,6 +61,7 @@ export async function silentAuth({
       });
 
       const user = await env.data.users.get(tenant_id, session.user_id);
+      ctx.set("userName", user?.email);
       if (user) {
         const tokenResponse = await generateAuthResponse({
           env,

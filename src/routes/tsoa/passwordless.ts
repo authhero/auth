@@ -53,6 +53,7 @@ export class PasswordlessController extends Controller {
     const { env } = ctx;
     ctx.set("client_id", body.client_id);
     ctx.set("description", body.email);
+    ctx.set("userName", body.email);
 
     const client = await getClient(env, body.client_id);
 
@@ -135,6 +136,7 @@ export class PasswordlessController extends Controller {
     @Query("audience") audience?: string,
   ): Promise<string> {
     const { env } = request.ctx;
+    request.ctx.set("userName", email);
 
     const client = await getClient(env, client_id);
     if (!client) {
