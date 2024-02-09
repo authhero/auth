@@ -18,7 +18,8 @@ import { Tenant } from "../../types/sql";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { Totals } from "../../types/auth0";
 import { HTTPException } from "hono/http-exception";
-import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware } from "../../tsoa-middlewares/logger";
+import { LogTypes } from "../../types/auth0";
 
 interface GetTenantsWithTotals extends Totals {
   tenants: Tenant[];

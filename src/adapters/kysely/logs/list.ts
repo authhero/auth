@@ -3,16 +3,7 @@ import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { luceneFilter } from "../helpers/filter";
-
-function mapLog(log: SqlLog): LogsResponse {
-  const { id, details, ...rest } = log;
-
-  return {
-    log_id: id,
-    details: details ? JSON.parse(details) : undefined,
-    ...rest,
-  };
-}
+import { getLogResponse } from "../../../utils/logs";
 
 export function listLogs(db: Kysely<Database>) {
   return async (tenantId: string, params: ListParams) => {
@@ -44,7 +35,7 @@ export function listLogs(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      logs: logs.map(mapLog),
+      logs: logs.map(getLogResponse),
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,

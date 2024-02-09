@@ -14,9 +14,10 @@ import { socialAuthCallback } from "../../authentication-flows";
 import { LoginState, RequestWithContext } from "../../types";
 import { stateDecode } from "../../utils/stateEncode";
 import { headers } from "../../constants";
-import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
+import { LogTypes } from "../../types";
 
 @Route("callback")
 @Tags("callback")

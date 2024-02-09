@@ -26,7 +26,8 @@ import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
 import { Identity } from "../../types/auth0/Identity";
 import { enrichUser } from "../../utils/enrichUser";
-import { loggerMiddleware, LogTypes } from "../../tsoa-middlewares/logger";
+import { loggerMiddleware } from "../../tsoa-middlewares/logger";
+import { LogTypes } from "../../types";
 
 interface LinkWithBodyParams {
   link_with: string;

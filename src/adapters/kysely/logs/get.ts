@@ -1,5 +1,6 @@
 import { Database, LogsResponse } from "../../../types";
 import { Kysely } from "kysely";
+import { getLogResponse } from "../../../utils/logs";
 
 export function getLogs(db: Kysely<Database>) {
   return async (
@@ -17,11 +18,7 @@ export function getLogs(db: Kysely<Database>) {
       return null;
     }
 
-    const logResponse: LogsResponse = {
-      ...log,
-      details: log.details ? JSON.parse(log.details) : undefined,
-      log_id: log.id,
-    };
+    const logResponse = getLogResponse(log);
 
     return logResponse;
   };

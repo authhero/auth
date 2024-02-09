@@ -17,7 +17,7 @@ import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
-import { LogTypes } from "../tsoa-middlewares/logger";
+import { LogTypes } from "../types";
 
 export async function socialAuth(
   env: Env,
