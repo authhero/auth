@@ -199,7 +199,7 @@ export async function socialAuthCallback({
   }
 
   ctx.set("tenantId", client.tenant_id);
-  ctx.set("email", email);
+  ctx.set("userName", email);
   ctx.set("userId", user.id);
 
   const sessionId = await setSilentAuthCookies(
