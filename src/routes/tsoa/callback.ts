@@ -57,6 +57,8 @@ export class CallbackController extends Controller {
     request.ctx.set("tenantId", client.tenant_id);
 
     if (error) {
+      // TODO - what should this be? do something similar on auth0? e.g. hit facebook SSO and then _go back_ - do we even get info? can we not log here?
+      request.ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
       const { redirect_uri } = loginState.authParams;
 
       if (!redirect_uri) {

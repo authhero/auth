@@ -64,7 +64,7 @@ function createTypeLog(
           user_id: ctx.var.userId || "",
           hostname: ctx.req.header("host") || "",
           user_name: ctx.var.userName || "",
-          connection_id: ctx.var.connectionId || "",
+          connection_id: "",
         };
       return successCrossOriginAuthentication;
     case "fcoa":
@@ -84,7 +84,7 @@ function createTypeLog(
         strategy_type: "",
         user_id: ctx.var.userId || "",
         user_name: ctx.var.userName || "",
-        connection_id: ctx.var.connectionId || "",
+        connection_id: "",
       };
       return failedLoginIncorrectPassword;
     case "cls":
@@ -93,7 +93,7 @@ function createTypeLog(
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: ctx.var.userName || "",
-        connection_id: ctx.var.connectionId || "",
+        connection_id: "",
         strategy: "",
         strategy_type: "",
       };
@@ -115,7 +115,7 @@ function createTypeLog(
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: ctx.var.userName || "",
-        connection_id: ctx.var.connectionId || "",
+        connection_id: "",
         hostname: ctx.req.header("host") || "",
       };
       return successLogout;
@@ -125,7 +125,7 @@ function createTypeLog(
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: ctx.var.userName || "",
-        connection_id: ctx.var.connectionId || "",
+        connection_id: "",
         hostname: ctx.req.header("host") || "",
         strategy: "",
         strategy_type: "",
@@ -138,7 +138,7 @@ function createTypeLog(
         hostname: ctx.req.header("host") || "",
         session_connection: "",
         user_id: ctx.var.userId || "",
-        user_name: "",
+        user_name: ctx.var.userName || "",
       };
       return successSilentAuth;
     case "ss":
@@ -147,7 +147,7 @@ function createTypeLog(
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
         user_name: ctx.var.userName || "",
-        connection_id: ctx.var.connectionId || "",
+        connection_id: "",
         strategy: "",
         strategy_type: "",
         hostname: ctx.req.header("host") || "",
