@@ -20,6 +20,7 @@ function getCommonFields(log: SqlLog) {
     client_name: "",
     auth0_client: log.auth0_client ? JSON.parse(log.auth0_client) : undefined,
     details: log.details ? JSON.parse(log.details) : undefined,
+    isMobile: !!log.isMobile,
   };
 }
 

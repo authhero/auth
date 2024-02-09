@@ -42,6 +42,7 @@ export function createLog(db: Kysely<Database>) {
       auth0_client: stringifyIfTruthy(params.auth0_client),
       details: stringifyIfTruthy(details),
       scope: getScopeValue(params),
+      isMobile: params.isMobile ? 1 : 0,
     };
     await db.insertInto("logs").values(log).execute();
     return log;
