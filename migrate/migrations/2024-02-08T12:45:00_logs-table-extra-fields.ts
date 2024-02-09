@@ -39,6 +39,10 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .alterTable("logs")
     .addColumn("hostname", "varchar(255)")
     .execute();
+  await db.schema
+    .alterTable("logs")
+    .addColumn("session_connection", "varchar(255)")
+    .execute();
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {
@@ -52,4 +56,5 @@ export async function down(db: Kysely<Database>): Promise<void> {
   await db.schema.alterTable("logs").dropColumn("strategy").execute();
   await db.schema.alterTable("logs").dropColumn("strategy_type").execute();
   await db.schema.alterTable("logs").dropColumn("hostname").execute();
+  await db.schema.alterTable("logs").dropColumn("session_connection").execute();
 }

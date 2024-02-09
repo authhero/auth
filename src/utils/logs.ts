@@ -129,8 +129,7 @@ export function getLogResponseBase(log: SqlLog): Log {
         ...getCommonFields(log),
         type: "ssa",
         hostname: log.hostname || "",
-        // ooooo. this needs a new field
-        session_connection: "",
+        session_connection: log.session_connection || "",
         user_id: log.user_id || "",
         user_name: log.user_name || "",
       };

@@ -22,4 +22,5 @@ export interface SqlLog {
   strategy?: string;
   strategy_type?: string;
   hostname?: string;
+  session_connection?: string;
 }
