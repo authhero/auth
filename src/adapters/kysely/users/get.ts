@@ -1,5 +1,6 @@
-import { Database, User } from "../../../types";
+import { Database, SqlUser } from "../../../types";
 import { Kysely } from "kysely";
+import { parseBooleans } from "./booleans";
 
 export function get(db: Kysely<Database>) {
   return async (tenantId: string, id: string): Promise<User | null> => {

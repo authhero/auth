@@ -1,8 +1,9 @@
-import { Database, User } from "../../../types";
+import { Database, SqlUser } from "../../../types";
 import { Kysely } from "kysely";
+import { parseBooleans } from "./booleans";
 
 export function getByEmail(db: Kysely<Database>) {
-  return async (tenantId: string, email: string): Promise<User[]> => {
+  return async (tenantId: string, email: string): Promise<SqlUser[]> => {
     const users = await db
       .selectFrom("users")
       .where("users.tenant_id", "=", tenantId)
@@ -10,10 +11,6 @@ export function getByEmail(db: Kysely<Database>) {
       .selectAll()
       .execute();
 
-    return users.map((u) => ({
-      ...u,
-      email_verified: u.email_verified === 1,
-      is_social: u.is_social === 1,
-    }));
+    return users.map(parseBooleans);
   };
 }

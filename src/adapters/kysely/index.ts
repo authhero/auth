@@ -14,7 +14,6 @@ import { createConnectionsAdapter } from "./connections";
 import { Kysely } from "kysely";
 import { createClientsAdapter } from "./clients";
 import { createKeysAdapter } from "./keys";
-import { createDomainsAdapter } from "./domains";
 
 export default function createAdapters(db: Kysely<Database>) {
   return {
@@ -32,6 +31,5 @@ export default function createAdapters(db: Kysely<Database>) {
     passwords: createPasswordAdapter(db),
     codes: createCodesAdapter(db),
     connections: createConnectionsAdapter(db),
-    domains: createDomainsAdapter(db),
   };
 }

@@ -9,7 +9,8 @@ import {
   Tags,
   Path,
 } from "@tsoa/runtime";
-import { RequestWithContext } from "../../types";
+import { RequestWithContext, LogsResponse } from "../../types";
+import { z } from "zod";
 import { ListLogsResponse } from "../../adapters/interfaces/Logs";
 import { HTTPException } from "hono/http-exception";
 @Route("api/v2/logs")

@@ -2,7 +2,7 @@ import { Kysely, SqliteDialect } from "kysely";
 import SQLite from "better-sqlite3";
 import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
-import { getCertificate } from "./token";
+import { getCertificate } from "../../../integration-test/helpers/token";
 import { Database } from "../../../src/types";
 import {
   AuthorizationResponseMode,
@@ -13,7 +13,6 @@ import {
 } from "../../../src/types";
 import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 import type { Email } from "../../../src/types/Email";
-import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 
 export async function getEnv() {
   const dialect = new SqliteDialect({
@@ -22,7 +21,6 @@ export async function getEnv() {
 
   const emails: Email[] = [];
   const emailAdapter: EmailAdapter = {
-    //@ts-ignore
     sendLink: (env, client, to, code, magicLink) => {
       emails.push({
         to,
@@ -31,7 +29,6 @@ export async function getEnv() {
       });
       return Promise.resolve();
     },
-    //@ts-ignore
     sendCode: (env, client, to, code) => {
       emails.push({
         to,
@@ -206,10 +203,6 @@ export async function getEnv() {
     data: {
       ...data,
       email: emailAdapter,
-      templates: {
-        get: async (...inputs: any[]) =>
-          `<div>${JSON.stringify(inputs, null, 2)}</div>`,
-      },
     },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     ISSUER: "https://example.com/",
@@ -217,7 +210,6 @@ export async function getEnv() {
     WRITE_PERMISSION: "auth:write",
     LOGIN2_URL: "https://login2.sesamy.dev",
     db,
-    oauth2ClientFactory: mockOAuth2ClientFactory,
   };
 }
 

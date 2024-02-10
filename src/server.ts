@@ -25,13 +25,19 @@ const server = {
         ...env,
         oauth2ClientFactory: { create: oAuth2ClientFactory },
         data: {
-          ...createEmailAdapter(),
+          ...createEmailAdapter(env),
           ...createAdapters(db),
           ...createR2Adapter(env),
         },
       },
       ctx,
     );
+  },
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    // Rotate keys and trim tables
+  },
+  async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext) {
+    // Not used
   },
 };
 

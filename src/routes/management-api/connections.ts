@@ -28,7 +28,7 @@ export class ConnectionsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async listConnections(
     @Request() request: RequestWithContext,
-    @Path() tenantId: string,
+    @Path("tenantId") tenantId: string,
     @Header("range") rangeRequest?: string,
   ): Promise<SqlConnection[]> {
     const { ctx } = request;
@@ -51,8 +51,8 @@ export class ConnectionsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async getConnection(
     @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
+    @Path("id") id: string,
+    @Path("tenantId") tenantId: string,
   ): Promise<SqlConnection | string> {
     const { ctx } = request;
 
@@ -76,8 +76,8 @@ export class ConnectionsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async deleteConnection(
     @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
+    @Path("id") id: string,
+    @Path("tenantId") tenantId: string,
   ): Promise<string> {
     const { env } = request.ctx;
 
@@ -95,8 +95,8 @@ export class ConnectionsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async patchConnection(
     @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
+    @Path("id") id: string,
+    @Path("tenantId") tenantId: string,
     @Body()
     body: Partial<
       Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "updated_at">
@@ -107,7 +107,7 @@ export class ConnectionsController extends Controller {
     const db = getDbFromEnv(env);
     const connection = {
       ...body,
-      tenant_id: tenantId,
+      tenantId,
       updated_at: new Date().toISOString(),
     };
 
@@ -125,7 +125,7 @@ export class ConnectionsController extends Controller {
   @SuccessResponse(201, "Created")
   public async postConnections(
     @Request() request: RequestWithContext,
-    @Path() tenantId: string,
+    @Path("tenantId") tenant_id: string,
     @Body()
     body: Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<SqlConnection> {
@@ -147,8 +147,8 @@ export class ConnectionsController extends Controller {
   @Security("oauth2managementApi", [""])
   public async putConnection(
     @Request() request: RequestWithContext,
-    @Path() tenantId: string,
-    @Path() id: string,
+    @Path("tenantId") tenant_id: string,
+    @Path("id") id: string,
     @Body()
     body: Omit<SqlConnection, "id" | "tenant_id" | "created_at" | "updated_at">,
   ): Promise<SqlConnection> {
@@ -159,7 +159,7 @@ export class ConnectionsController extends Controller {
 
     const connection: SqlConnection = {
       ...body,
-      tenant_id: tenantId,
+      tenant_id,
       id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

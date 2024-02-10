@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Header,
   Path,
   Post,
   Put,
@@ -9,12 +10,16 @@ import {
   Security,
   SuccessResponse,
   Tags,
-  Header,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
+import { z } from "zod";
 import { SigningKey } from "../../types";
 import { create } from "../../services/rsa-key";
 import { HTTPException } from "hono/http-exception";
+
+export const LogsFilterSchema = z.object({
+  userId: z.string(),
+});
 
 const DAY = 1000 * 60 * 60 * 24;
 

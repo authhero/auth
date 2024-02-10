@@ -13,12 +13,11 @@
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
     "test": "jest --config jest.config.js --verbose",
+    "integration": "jest --config jest-integration.config.js --verbose",
     "test-with-coverage": "jest --config jest.config.js --coverage",
     "semantic-release": "semantic-release",
     "prepare": "husky install",
-    "type-check": "tsc",
-    "pull-translations": "i18nexus pull -k EWI52U0e8j13AX31kLcS-A --path ./src/locales && prettier --write ./src/locales/**/*.json",
-    "knip": "knip"
+    "type-check": "tsc"
   },
   "author": "",
   "license": "MIT",
@@ -49,7 +48,7 @@
   },
   "dependencies": {
     "@planetscale/database": "^1.11.0",
-    "@tsoa/runtime": "^6.0.0",
+    "@tsoa/runtime": "^5.0.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^9.2.2",
     "cookie": "^0.6.0",
@@ -60,12 +59,12 @@
     "liquidjs": "^10.9.2",
     "mime": "^3.0.0",
     "nanoid": "^3.3.3",
-    "tsoa": "^6.0.1",
+    "tsoa": "^5.1.1",
     "tsoa-hono": "^1.2.1",
     "zod": "^3.22.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240117.0",
+    "@cloudflare/workers-types": "^4.20231016.0",
     "@semantic-release/git": "^10.0.1",
     "@types/bcryptjs": "^2.4.5",
     "@types/better-sqlite3": "^7.6.8",
@@ -85,11 +84,12 @@
     "lint-staged": "^15.2.2",
     "miniflare": "^3.20231218.2",
     "mjml": "^4.14.1",
-    "prettier": "^3.2.4",
+    "papaparse": "^5.4.1",
+    "prettier": "^3.0.3",
     "semantic-release": "^21.0.0",
     "ts-jest": "29.1.2",
     "typescript": "^5.2.2",
-    "wrangler": "^3.22.5"
+    "wrangler": "^3.14.0"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [

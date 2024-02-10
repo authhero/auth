@@ -1,6 +1,6 @@
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../src/app";
-import { getAdminToken } from "./helpers/token";
+import { getAdminToken } from "../../integration-test/helpers/token";
 import { getEnv } from "./helpers/test-client";
 
 describe("keys", () => {
@@ -16,6 +16,7 @@ describe("keys", () => {
       },
     );
 
+    const body = await response.text();
     expect(response.status).toBe(200);
   });
 });

@@ -2,8 +2,8 @@ import {
   IOAuth2ClientFactory,
   OAuthProviderParams,
   IOAuth2Client,
-} from "../../src/services/oauth2-client";
-import { createToken } from "../../src/utils/jwt";
+} from "../src/services/oauth2-client";
+import { createToken } from "../src/utils/jwt";
 import { getCertificate } from "./helpers/token";
 
 function createTokenExample(payload: {
@@ -22,7 +22,6 @@ function createTokenExample(payload: {
 
 class MockOAuth2Client implements IOAuth2Client {
   private readonly params: OAuthProviderParams;
-  //@ts-ignore
   private readonly redirectUri: string;
 
   constructor(params: OAuthProviderParams, redirectUri: string) {
@@ -30,11 +29,9 @@ class MockOAuth2Client implements IOAuth2Client {
     this.redirectUri = redirectUri;
   }
 
-  //@ts-ignore
   getAuthorizationUrl(state: string): Promise<string> {
     throw new Error("getAuthorizationUrl method not implemented.");
   }
-  //@ts-ignore
   async exchangeCodeForTokenResponse(code: string) {
     if (this.params.client_id === "otherSocialClientId") {
       const otherClientIdToken = await createTokenExample({
@@ -55,9 +52,8 @@ class MockOAuth2Client implements IOAuth2Client {
         email_verified: true,
         jti: "jti",
       });
-
       return {
-        access_token: "accessToken",
+        access_token: "otherClientAccessToken",
         id_token: otherClientIdToken,
         token_type: "tokenType",
         expires_in: 1000,
@@ -84,7 +80,6 @@ class MockOAuth2Client implements IOAuth2Client {
         nonce: "abc123",
         email_verified: true,
       });
-
       return {
         access_token: "accessToken",
         id_token: clientIdToken,
@@ -110,8 +105,6 @@ class MockOAuth2Client implements IOAuth2Client {
     }
     */
   }
-
-  //@ts-ignore
   getUserProfile(accessToken: string): Promise<any> {
     throw new Error("getUserProfile method not implemented.");
   }

@@ -1,4 +1,4 @@
-import { RequestWithContext } from "../../types";
+import { Env, RequestWithContext } from "../../types";
 import {
   Query,
   Controller,
@@ -11,10 +11,7 @@ import {
   Middlewares,
 } from "@tsoa/runtime";
 import { getClient } from "../../services/clients";
-import {
-  getStateFromCookie,
-  serializeClearCookie,
-} from "../../services/cookies";
+import { serializeClearCookie } from "../../services/cookies";
 import { headers } from "../../constants";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
@@ -32,11 +29,10 @@ export class LogoutController extends Controller {
   @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGOUT))
   public async logout(
     @Request() request: RequestWithContext,
-    @Query() client_id: string,
-    @Query() returnTo?: string,
-    @Header() cookie?: string,
+    @Query("client_id") clientId: string,
+    @Query("returnTo") returnTo?: string,
   ) {
-    const client = await getClient(request.ctx.env, client_id);
+    const client = await getClient(request.ctx.env, clientId);
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }

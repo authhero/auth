@@ -3,6 +3,7 @@ import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
+import { parseBooleans } from "./booleans";
 import { luceneFilter } from "../helpers/filter";
 
 export function listUsers(db: Kysely<Database>) {
@@ -33,11 +34,7 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      users: users.map((u) => ({
-        ...u,
-        email_verified: u.email_verified === 1,
-        is_social: u.is_social === 1,
-      })),
+      users: users.map(parseBooleans),
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,

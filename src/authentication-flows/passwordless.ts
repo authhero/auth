@@ -3,7 +3,7 @@ import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
 
-interface LoginParams {
+export interface LoginParams {
   client_id: string;
   email: string;
   verification_code: string;

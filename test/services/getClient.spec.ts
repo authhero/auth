@@ -1,8 +1,10 @@
+import { DefaultSettings } from "../../src/models/DefaultSettings";
 import { getClient } from "../../src/services/clients";
 import { contextFixture } from "../fixtures";
 import {
   AuthorizationResponseType,
   AuthorizationResponseMode,
+  PartialClient,
   Application,
   Tenant,
   SqlConnection,
@@ -51,18 +53,16 @@ const CONNECTION_FIXTURE: SqlConnection = {
 const DOMAIN_FIXTURE: SqlDomain = {
   id: "domainId",
   domain: "example2.com",
-  email_api_key: "",
+  email_api_key: "apiKey",
   email_service: "mailgun",
   tenant_id: "tenantId",
   created_at: "created_at",
   updated_at: "updated_at",
-  dkim_private_key: "",
-  dkim_public_key: "",
 };
 
 describe("getClient", () => {
   it("should get the connection settings from the DefaultSettings", async () => {
-    const ctx = await contextFixture({
+    const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [
@@ -104,7 +104,7 @@ describe("getClient", () => {
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const ctx = await contextFixture({
+    const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
@@ -113,11 +113,10 @@ describe("getClient", () => {
           id: "defaultDomain1",
           tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
-          dkim_private_key: "",
+          dkim_private_key: "dkimKey",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
-          email_api_key: "",
         },
         DOMAIN_FIXTURE,
       ],
@@ -127,23 +126,20 @@ describe("getClient", () => {
 
     expect(client!.domains).toEqual([
       {
-        email_api_key: "",
+        email_api_key: "apiKey",
         domain: "example2.com",
         email_service: "mailgun",
-        dkim_private_key: "",
-        dkim_public_key: "",
       },
       {
         domain: "example.com",
-        dkim_private_key: "",
+        dkim_private_key: "dkimKey",
         email_service: "mailchannels",
-        email_api_key: "",
       },
     ]);
   });
 
   it("should add a domain from the envDefaultSettings to the client domains", async () => {
-    const ctx = await contextFixture({
+    const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [TENANT_FIXTURE],
       connections: [CONNECTION_FIXTURE],
@@ -152,11 +148,10 @@ describe("getClient", () => {
           id: "defaultDomain1",
           tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
-          dkim_private_key: "",
+          dkim_private_key: "dkimKey",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
-          email_api_key: "",
         },
         DOMAIN_FIXTURE,
       ],
@@ -167,22 +162,19 @@ describe("getClient", () => {
     expect(client!.domains).toEqual([
       {
         domain: "example2.com",
-        email_api_key: "",
+        email_api_key: "apiKey",
         email_service: "mailgun",
-        dkim_private_key: "",
-        dkim_public_key: "",
       },
       {
         domain: "example.com",
-        dkim_private_key: "",
+        dkim_private_key: "dkimKey",
         email_service: "mailchannels",
-        email_api_key: "",
       },
     ]);
   });
 
   it("should store the support url from the tenant in the client", async () => {
-    const ctx = await contextFixture({
+    const ctx = contextFixture({
       applications: [APPLICATION_FIXTURE],
       tenants: [
         {

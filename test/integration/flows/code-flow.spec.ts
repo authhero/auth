@@ -4,7 +4,7 @@ import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
-import { getAdminToken } from "../helpers/token";
+import { getAdminToken } from "../../../integration-test/helpers/token";
 import { getEnv } from "../helpers/test-client";
 
 describe("code-flow", () => {
@@ -134,13 +134,15 @@ describe("code-flow", () => {
     // now check silent auth works when logged in with code----------------------------------------
     const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
 
-    const { idToken: silentAuthIdTokenPayload } =
-      await doSilentAuthRequestAndReturnTokens(
-        setCookiesHeader,
-        client,
-        AUTH_PARAMS.nonce,
-        "clientId",
-      );
+    const {
+      accessToken: silentAuthAccessTokenPayload,
+      idToken: silentAuthIdTokenPayload,
+    } = await doSilentAuthRequestAndReturnTokens(
+      setCookiesHeader,
+      client,
+      AUTH_PARAMS.nonce,
+      "clientId",
+    );
 
     const {
       // these are the fields that change on every test run
@@ -164,7 +166,7 @@ describe("code-flow", () => {
     // ----------------------------
     // Now log in (previous flow was signup)
     // ----------------------------
-    await client.passwordless.start.$post(
+    const passwordlessLoginStart = await client.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,

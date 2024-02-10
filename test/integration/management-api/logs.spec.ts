@@ -1,8 +1,9 @@
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { LogsResponse, UserResponse } from "../../../src/types/auth0";
-import { getAdminToken } from "../helpers/token";
+import { getAdminToken } from "../../../integration-test/helpers/token";
 import { getEnv } from "../helpers/test-client";
+import exp from "constants";
 
 describe("logs", () => {
   it("should return an empty list of logs for a tenant", async () => {
