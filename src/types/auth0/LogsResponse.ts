@@ -33,7 +33,9 @@ interface LogCommonFields {
   auth0_client?: {
     name: string;
     version: string;
-    env?: object;
+    env?: {
+      node: string;
+    };
   };
   isMobile?: boolean;
 }
