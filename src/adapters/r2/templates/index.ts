@@ -6,7 +6,7 @@ export function createTemplatesAdapter(env: Env) {
       const template = await env.AUTH_TEMPLATES.get(`templates/${file}.liquid`);
 
       if (!template) {
-        return null;
+        return;
       }
 
       return template.text();
