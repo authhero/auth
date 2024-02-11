@@ -188,7 +188,6 @@ export async function getEnv() {
     name: "Åkesson Þorsteinsson",
     nickname: "Åkesson Þorsteinsson",
     picture: "https://example.com/foo.png",
-    tenant_id: "tenantId",
     login_count: 0,
     provider: "auth2",
     connection: "Username-Password-Authentication",

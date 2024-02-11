@@ -23,3 +23,5 @@ export const contentTypes = {
 };
 
 export const UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24; // 1 day
+
+export const CLIENT_ID = process.env.CLIENT_ID || "default";

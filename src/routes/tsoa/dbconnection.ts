@@ -58,7 +58,6 @@ export class DbConnectionController extends Controller {
       user = await ctx.env.data.users.create(client.tenant_id, {
         id: `email|${userIdGenerate()}`,
         email: body.email,
-        tenant_id: client.tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         email_verified: false,

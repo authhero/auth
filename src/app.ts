@@ -74,7 +74,7 @@ app.get("/spec", async () => {
 
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
-app.get("/static/:file{.*}", serve);
+// app.get("/static/:file{.*}", serve);
 
 app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
   const response = await ctx.env.data.applications.list(

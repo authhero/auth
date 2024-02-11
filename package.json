@@ -5,7 +5,7 @@
   "main": "build/src/server.js",
   "scripts": {
     "build": "node tsoa.mjs",
-    "dev:bun": "bun tsoa.mjs && bun run src/bun.ts --watch",
+    "dev": "bun tsoa.mjs && bun run src/bun.ts --watch",
     "dev:wrangler": "node tsoa.mjs && wrangler dev --remote",
     "dev:https": "node tsoa.mjs && wrangler dev --remote --local-protocol=https",
     "mf": "node tsoa.mjs && tsc & miniflare",
@@ -62,7 +62,7 @@
     "nanoid": "^3.3.3",
     "tsoa": "^6.0.1",
     "tsoa-hono": "^1.2.1",
-    "zod": "^3.22.2"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240117.0",

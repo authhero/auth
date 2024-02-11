@@ -49,17 +49,24 @@ const DefaultSettingsSchema = z.object({
 
 export type DefaultSettings = z.infer<typeof DefaultSettingsSchema>;
 
-export async function getDefaultSettings(env: Env) {
-  const defaultSetttingsClient = await env.data.clients.get("DEFAULT_CLIENT");
-
-  if (!defaultSetttingsClient) {
-    throw new Error("Failed to load default settings tenant");
-  }
-
+export async function getDefaultSettings(env: Env): Promise<DefaultSettings> {
   try {
+    const defaultSetttingsClient = await env.data.clients.get("DEFAULT_CLIENT");
     return DefaultSettingsSchema.parse(defaultSetttingsClient);
   } catch (err: any) {
-    console.log("Failed to load default settings: " + err.message);
-    throw err;
+    return {
+      allowed_logout_urls: [],
+      allowed_web_origins: [],
+      allowed_callback_urls: [],
+      connections: [],
+      domains: [],
+      tenant: {
+        logo: "",
+        primary_color: "",
+        secondary_color: "",
+        sender_email: "",
+        sender_name: "",
+      },
+    };
   }
 }

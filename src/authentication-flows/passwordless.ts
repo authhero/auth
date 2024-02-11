@@ -29,7 +29,6 @@ export async function validateCode(env: Env, params: LoginParams) {
       id: `email|${userIdGenerate()}`,
       email: params.email,
       name: params.email,
-      tenant_id: client.tenant_id,
       provider: "email",
       connection: "email",
       email_verified: true,
