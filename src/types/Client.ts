@@ -69,7 +69,6 @@ const BaseClientSchema = z.object({
   tenant: z.object({
     audience: z.string().optional(),
     logo: z.string().optional(),
-    parent_tenant: z.string().optional(),
     primary_color: z.string().optional(),
     secondary_color: z.string().optional(),
     sender_email: z.string(),
