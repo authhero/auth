@@ -1,3 +1,3 @@
 export interface TemplatesAdapter {
-  get(id: string): Promise<string | null>;
+  get(tenant_id: string, id: string): Promise<string | undefined>;
 }

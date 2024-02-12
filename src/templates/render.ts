@@ -2,17 +2,19 @@ import { Controller } from "tsoa";
 import { Liquid } from "liquidjs";
 import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import { Env } from "../types";
+import {
+  layout,
+  forgotPassword,
+  login,
+  emailValidation,
+  code,
+  enterCode,
+  signup,
+  message,
+  resetPassword,
+} from "./universal";
 
 const engine = new Liquid();
-
-async function getTemplate(env: Env, templateName: string) {
-  let templateString = await env.data.templates.get(templateName);
-  if (!templateString) {
-    throw new Error(`Template ${templateName} not found`);
-  }
-
-  return engine.parse(templateString);
-}
 
 export async function renderForgotPassword(
   env: Env,
@@ -20,9 +22,9 @@ export async function renderForgotPassword(
   context: UniversalLoginSession,
   state: string,
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "forgot-password");
+  const template = engine.parse(forgotPassword);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -42,9 +44,9 @@ export async function renderLogin(
   state: string,
   errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "login");
+  const template = engine.parse(login);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -93,9 +95,9 @@ export async function renderLoginWithCode(
   controller: Controller,
   context: UniversalLoginSession,
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "code");
+  const template = engine.parse(code);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -114,9 +116,9 @@ export async function renderEnterCode(
   context: UniversalLoginSession,
   errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "enter-code");
+  const template = engine.parse(enterCode);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -138,9 +140,9 @@ export async function renderEmailValidation(
   context: UniversalLoginSession,
   errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "email-validation");
+  const template = engine.parse(emailValidation);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -160,9 +162,9 @@ export async function renderSignup(
   state: string,
   errorMessage?: string,
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "signup");
+  const template = engine.parse(signup);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -180,9 +182,9 @@ export async function renderMessage(
   controller: Controller,
   context: UniversalLoginSession | { page_title: string; message: string },
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "message");
+  const template = engine.parse(message);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
@@ -199,9 +201,9 @@ export async function renderResetPassword(
   controller: Controller,
   context: UniversalLoginSession,
 ) {
-  const layoutTemplate = await getTemplate(env, "layout");
+  const layoutTemplate = engine.parse(layout);
 
-  const template = await getTemplate(env, "reset-password");
+  const template = engine.parse(resetPassword);
 
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);

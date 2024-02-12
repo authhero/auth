@@ -66,7 +66,6 @@ export async function ticketAuth(
       id: `email|${userIdGenerate()}`,
       email: ticket.email,
       name: ticket.email,
-      tenant_id,
       provider: "email",
       connection: "email",
       email_verified: true,

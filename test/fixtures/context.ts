@@ -127,7 +127,7 @@ export async function contextFixture(
 
   if (users) {
     users.forEach((user) => {
-      data.users.create(user.tenant_id, user);
+      data.users.create("tenantId", user);
     });
   }
 

@@ -20,7 +20,6 @@ export interface User extends BaseUser {
   provider: string;
   connection: string;
   is_social: boolean;
-  tenant_id: string;
   created_at: string;
   updated_at: string;
 }

@@ -52,7 +52,6 @@ describe("authorize", () => {
       const user: User = {
         id: "userId",
         email: "",
-        tenant_id: "tenantId",
         last_ip: "1.1.1.1",
         login_count: 0,
         last_login: new Date().toISOString(),

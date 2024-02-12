@@ -171,7 +171,6 @@ export async function socialAuthCallback({
     const newSocialUser = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
       email,
-      tenant_id: client.tenant_id,
       name: email,
       provider: state.connection,
       connection: state.connection,

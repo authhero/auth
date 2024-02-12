@@ -1,3 +1,5 @@
+import { CLIENT_ID } from "../constants";
+
 function getSwaggerHtml() {
   return `<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
@@ -58,7 +60,7 @@ function getSwaggerHtml() {
 
 
         if (ui.hasOwnProperty("initOAuth")) {
-          ui.initOAuth({"clientId":"auth-admin","appName":"sesamy"})
+          ui.initOAuth({"clientId":"${CLIENT_ID}","appName":"sesamy"})
         }
 
         window.ui = ui;
