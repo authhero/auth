@@ -21,7 +21,7 @@ export const forgotPassword = `<div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-
     </div>
     <div class="text-center flex-col-m p-t-20">
         <span class="txt1 p-b-17">
-            Want so login instead?
+            Want to login instead?
         </span>
         <a href="/u/login?state={{state}}" class="txt2">
             Login

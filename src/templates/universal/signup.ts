@@ -29,7 +29,7 @@ export const signup = `<div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
     </div>
     <div class="text-center flex-col-m p-t-20">
         <span class="txt1 p-b-17">
-            Allready have an account?
+            Already have an account?
         </span>
         <a href="/u/login?state={{state}}" class="txt2">
             Login
