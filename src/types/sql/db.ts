@@ -14,7 +14,6 @@ import {
   SqlPassword,
   SqlUniversalLoginSession,
   SqlLog,
-  SqlTemplate,
 } from "../";
 
 // Keys of this interface are table names.
@@ -30,7 +29,6 @@ export interface Database {
   otps: SqlOTP;
   passwords: SqlPassword;
   sessions: SqlSession;
-  templates: SqlTemplate;
   tenants: Tenant;
   tickets: SqlTicket;
   universal_login_sessions: SqlUniversalLoginSession;

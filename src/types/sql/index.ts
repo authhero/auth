@@ -13,4 +13,3 @@ export * from "./Log";
 export * from "./UniversalLoginSession";
 export * from "./db";
 export * from "./Session";
-export * from "./Template";
