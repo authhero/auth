@@ -6,7 +6,7 @@ export type Var = {
   userId?: string;
   tenantId?: string;
   log: string;
-  logType: LogType;
+  logType?: LogType;
   client_id?: string;
   description?: string;
   user?: {
