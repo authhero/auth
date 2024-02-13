@@ -114,6 +114,16 @@ export class CallbackController extends Controller {
       throw new Error("State not found");
     }
 
+    request.ctx.set("client_id", loginState.authParams.client_id);
+    const client = await getClient(
+      request.ctx.env,
+      loginState.authParams.client_id,
+    );
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+    request.ctx.set("tenantId", client.tenant_id);
+
     return socialAuthCallback({
       ctx: request.ctx,
       controller: this,
