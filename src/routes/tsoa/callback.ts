@@ -57,7 +57,6 @@ export class CallbackController extends Controller {
     request.ctx.set("tenantId", client.tenant_id);
 
     if (error) {
-      // TODO - recreate this on Auth0 and see what error we get
       request.ctx.set("logType", LogTypes.FAILED_LOGIN);
       const { redirect_uri } = loginState.authParams;
 

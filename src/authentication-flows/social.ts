@@ -105,13 +105,13 @@ export async function socialAuthCallback({
   );
 
   if (!connection) {
-    // This is a very unexpected flow though (as this is the callback from the SSO provider)
-    // So it's more typescript safety
+    // same here. unsure
     ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
+    // same here. unsure
     ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
