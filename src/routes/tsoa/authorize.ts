@@ -115,8 +115,11 @@ export class AuthorizeController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
-    request.ctx.set("client_id", client.id);
     request.ctx.set("tenantId", client.tenant_id);
+    if (auth0Client) {
+      const auth0ClientObj = JSON.parse(auth0Client);
+      ctx.set("auth0_client", auth0ClientObj);
+    }
 
     const authParams: AuthParams = {
       redirect_uri,
