@@ -24,6 +24,7 @@ import * as n23_dropUsersFields from "./2024-02-02T15:55:00_drop-users-fields";
 import * as n24_logsIndexes from "./2024-02-02T16:55:00_logs-indexes";
 import * as n25_logDescMaxLength from "./2024-02-05T18:35:00_log-desc-max-length";
 import * as n26_logsTableExtraFields from "./2024-02-08T12:45:00_logs-table-extra-fields";
+import * as n27_usersTableNameIndex from "./2024-02-13T11:25:00_users-table-name-index";
 
 // These need to be in alphabetic order
 export default {
@@ -53,4 +54,5 @@ export default {
   n24_logsIndexes,
   n25_logDescMaxLength,
   n26_logsTableExtraFields,
+  n27_usersTableNameIndex,
 };
