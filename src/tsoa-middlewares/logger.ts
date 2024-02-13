@@ -62,8 +62,8 @@ function createTypeLog(
       //   throw new Error("userId is required for scoa log type");
       // if (!ctx.var.userName)
       //   throw new Error("userName is required for scoa log type");
-      // if(!ctx.var.connectionId) throw new Error("connectionId is required for scoa log type");
-      // if(!ctx.var.connection) throw new Error("connection is required for scoa log type");
+      // if (!ctx.var.connection)
+      //   throw new Error("connection is required for scoa log type");
 
       const successCrossOriginAuthentication: SuccessCrossOriginAuthentication =
         {
@@ -72,7 +72,7 @@ function createTypeLog(
           user_id: ctx.var.userId || "",
           hostname: ctx.req.header("host") || "",
           user_name: ctx.var.userName || "",
-          connection_id: ctx.var.connectionId || "",
+          connection_id: "",
           connection: ctx.var.connection || "",
         };
       return successCrossOriginAuthentication;
@@ -192,6 +192,9 @@ export function loggerMiddleware(
       const response = await next();
 
       const logType = ctx.var.logType || logTypeInitial;
+
+      if (DEBUG_LOG_TYPES && !ctx.var.tenantId)
+        throw new Error("tenantId is required for logging");
 
       let body = {};
 
