@@ -10,7 +10,7 @@ export function listLogs(db: Kysely<Database>) {
     let query = db.selectFrom("logs").where("logs.tenant_id", "=", tenantId);
 
     if (params.q) {
-      query = luceneFilter(db, query, params.q, ["user_id"]);
+      query = luceneFilter(db, query, params.q, ["user_id", "ip"]);
     }
 
     // TEMP FIX - hardcoded date desc for now
