@@ -58,6 +58,13 @@ function createTypeLog(
       };
       return successApiOperation;
     case "scoa":
+      // if (!ctx.var.userId)
+      //   throw new Error("userId is required for scoa log type");
+      // if (!ctx.var.userName)
+      //   throw new Error("userName is required for scoa log type");
+      // if(!ctx.var.connectionId) throw new Error("connectionId is required for scoa log type");
+      // if(!ctx.var.connection) throw new Error("connection is required for scoa log type");
+
       const successCrossOriginAuthentication: SuccessCrossOriginAuthentication =
         {
           type: "scoa",
@@ -65,7 +72,8 @@ function createTypeLog(
           user_id: ctx.var.userId || "",
           hostname: ctx.req.header("host") || "",
           user_name: ctx.var.userName || "",
-          connection_id: "",
+          connection_id: ctx.var.connectionId || "",
+          connection: ctx.var.connection || "",
         };
       return successCrossOriginAuthentication;
     case "fcoa":
@@ -167,6 +175,9 @@ function createTypeLog(
   }
 }
 
+// const DEBUG_LOG_TYPES = true;
+const DEBUG_LOG_TYPES = false;
+
 export function loggerMiddleware(
   logTypeInitial: LogType,
   description?: string,
@@ -199,6 +210,9 @@ export function loggerMiddleware(
       } catch (e: any) {
         console.error(e);
         console.log(e.message);
+        if (DEBUG_LOG_TYPES) {
+          throw e;
+        }
       }
 
       // Perform any necessary operations or modifications
@@ -213,6 +227,9 @@ export function loggerMiddleware(
         }
       } catch (e) {
         console.error(e);
+        if (DEBUG_LOG_TYPES) {
+          throw e;
+        }
       }
 
       if (e instanceof HTTPException) {
@@ -228,6 +245,9 @@ export function loggerMiddleware(
           await env.data.logs.create(ctx.var.tenantId || "", log);
         } catch (e) {
           console.error(e);
+          if (DEBUG_LOG_TYPES) {
+            throw e;
+          }
         }
 
         return e.getResponse();
