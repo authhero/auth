@@ -92,8 +92,7 @@ export class AuthenticateController extends Controller {
       }
 
       if (!otp) {
-        // could be wrong username? Would not get here then...
-        request.ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
+        request.ctx.set("logType", LogTypes.FAILED_CROSS_ORIGIN_AUTHENTICATION);
         throw new HTTPException(403, {
           res: new Response(
             JSON.stringify({
@@ -117,6 +116,7 @@ export class AuthenticateController extends Controller {
       const [user] = await env.data.users.getByEmail(client.tenant_id, email);
 
       if (!user) {
+        request.ctx.set("logType", LogTypes.FAILED_CROSS_ORIGIN_AUTHENTICATION);
         throw new HTTPException(403);
       }
 
