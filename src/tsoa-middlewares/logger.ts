@@ -63,9 +63,7 @@ function createTypeLog(
           ...createCommonLogFields(ctx, body, description),
           user_id: ctx.var.userId || "",
           hostname: ctx.req.header("host") || "",
-          // TODO - implement ctx.var.userName
-          user_name: "",
-          // TODO - implement ctx.var.connectionId
+          user_name: ctx.var.userName || "",
           connection_id: "",
         };
       return successCrossOriginAuthentication;
@@ -85,7 +83,7 @@ function createTypeLog(
         strategy: "",
         strategy_type: "",
         user_id: ctx.var.userId || "",
-        user_name: "",
+        user_name: ctx.var.userName || "",
         connection_id: "",
       };
       return failedLoginIncorrectPassword;
@@ -94,7 +92,7 @@ function createTypeLog(
         type: "cls",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
+        user_name: ctx.var.userName || "",
         connection_id: "",
         strategy: "",
         strategy_type: "",
@@ -116,7 +114,7 @@ function createTypeLog(
         type: "slo",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
+        user_name: ctx.var.userName || "",
         connection_id: "",
         hostname: ctx.req.header("host") || "",
       };
@@ -126,7 +124,7 @@ function createTypeLog(
         type: "s",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
+        user_name: ctx.var.userName || "",
         connection_id: "",
         hostname: ctx.req.header("host") || "",
         strategy: "",
@@ -140,7 +138,7 @@ function createTypeLog(
         hostname: ctx.req.header("host") || "",
         session_connection: "",
         user_id: ctx.var.userId || "",
-        user_name: "",
+        user_name: ctx.var.userName || "",
       };
       return successSilentAuth;
     case "ss":
@@ -148,7 +146,7 @@ function createTypeLog(
         type: "ss",
         ...createCommonLogFields(ctx, body, description),
         user_id: ctx.var.userId || "",
-        user_name: "",
+        user_name: ctx.var.userName || "",
         connection_id: "",
         strategy: "",
         strategy_type: "",

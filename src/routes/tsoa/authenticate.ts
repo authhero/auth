@@ -72,6 +72,8 @@ export class AuthenticateController extends Controller {
     await request.ctx.set("tenantId", client.tenant_id);
 
     const email = body.username.toLocaleLowerCase();
+    request.ctx.set("userName", email);
+
     let ticket: Ticket = {
       id: nanoid(),
       tenant_id: client.tenant_id,

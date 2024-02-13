@@ -3,7 +3,6 @@ import { LogType } from "./auth0";
 export type Var = {
   vendorId?: string;
   startAt: number;
-  email?: string;
   userId?: string;
   tenantId?: string;
   log: string;
@@ -15,4 +14,17 @@ export type Var = {
     azp: string;
     permissions: string[];
   };
+  userName?: string;
+  // TODO - enable these, populate, and use
+  //   connectionId?: string;
+  //   strategy?: string;
+  //   strategyType?: string;
+  //   sessionConnection?: string;
+  //   connection?: string;
+  //   audience?: string;
+  //   scope?: string;
+  // can we get this from user agent?
+  //   isMobile?: boolean;
+  // is this a header? what other project am I reading this on... login2!
+  //   auth0Client?: string;
 };
