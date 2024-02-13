@@ -24,7 +24,7 @@ export enum LogTypes {
 }
 export type LogType = `${LogTypes}`;
 
-type auth0Client = {
+export type auth0Client = {
   name: string;
   version: string;
   env?: {
