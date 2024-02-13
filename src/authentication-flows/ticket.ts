@@ -86,6 +86,7 @@ export async function ticketAuth(
   }
 
   ctx.set("userId", user.id);
+  ctx.set("userName", user.name || user.email);
 
   const sessionId = await setSilentAuthCookies(
     env,
