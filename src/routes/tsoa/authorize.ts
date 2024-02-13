@@ -117,8 +117,12 @@ export class AuthorizeController extends Controller {
     }
     request.ctx.set("tenantId", client.tenant_id);
     if (auth0Client) {
-      const auth0ClientObj = JSON.parse(auth0Client);
-      ctx.set("auth0_client", auth0ClientObj);
+      try {
+        const auth0ClientObj = JSON.parse(auth0Client);
+        ctx.set("auth0_client", auth0ClientObj);
+      } catch (e) {
+        console.log("failed to parse auth0Client", e);
+      }
     }
 
     const authParams: AuthParams = {
