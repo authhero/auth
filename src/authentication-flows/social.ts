@@ -30,7 +30,6 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
-    // cannot actually set a different log type here...
     throw new HTTPException(403, { message: "Connection Not Found" });
   }
 
