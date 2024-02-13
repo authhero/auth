@@ -46,6 +46,7 @@ interface AuthorizeParams {
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
   realm?: string;
+  auth0Client?: string;
   referer?: string;
   cookie?: string;
 }
@@ -101,7 +102,7 @@ export class AuthorizeController extends Controller {
     @Query("code_challenge_method") code_challenge_method?: CodeChallengeMethod,
     @Query("code_challenge") code_challenge?: string,
     @Query("realm") realm?: string,
-    // @Query("auth0Client") auth0Client?: string,
+    @Query("auth0Client") auth0Client?: string,
     @Header("referer") referer?: string,
     @Header("cookie") cookie?: string,
   ): Promise<string> {
@@ -201,7 +202,6 @@ export class AuthorizeController extends Controller {
       params.code_challenge_method,
       params.code_challenge,
       params.realm,
-      // Other routes don't have this non-tsoa duplicated function... why this?
       params.auth0Client,
       params.referer,
       params.cookie,
