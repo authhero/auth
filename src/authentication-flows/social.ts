@@ -20,7 +20,7 @@ import { getClient } from "../services/clients";
 import { LogTypes } from "../types";
 
 export async function socialAuth(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   controller: Controller,
   client: Client,
   connection: string,
@@ -30,7 +30,7 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
-    // cannot actually set a different log type here... as we do not have the request object...
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection Not Found" });
   }
 
@@ -41,7 +41,7 @@ export async function socialAuth(
     oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
   oauthLoginUrl.searchParams.set("state", state);
-  oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
+  oauthLoginUrl.searchParams.set("redirect_uri", `${ctx.env.ISSUER}callback`);
   oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id);
   if (connectionInstance.response_type) {
     oauthLoginUrl.searchParams.set(
