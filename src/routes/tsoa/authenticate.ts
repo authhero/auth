@@ -56,7 +56,7 @@ export class AuthenticateController extends Controller {
    * @returns
    */
   @Post("authenticate")
-  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION))
+  @Middlewares(loggerMiddleware())
   public async authenticate(
     @Body() body: CodeAuthenticateParams | PasswordAuthenticateParams,
     @Request() request: RequestWithContext,
@@ -118,7 +118,6 @@ export class AuthenticateController extends Controller {
       const [user] = await env.data.users.getByEmail(client.tenant_id, email);
 
       if (!user) {
-        request.ctx.set("logType", LogTypes.FAILED_CROSS_ORIGIN_AUTHENTICATION);
         throw new HTTPException(403);
       }
 
