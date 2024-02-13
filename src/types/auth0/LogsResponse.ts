@@ -9,6 +9,7 @@ export enum LogTypes {
   // FAILED_SIGNUP = "fs",
   //
   SUCCESS_LOGIN = "s",
+  FAILED_LOGIN = "f",
   FAILED_LOGIN_INCORRECT_PASSWORD = "fp",
   // we don't have this in the logs yet
   // FAILED_LOGIN_INVALID_EMAIL_USERNAME = "fu",
@@ -79,6 +80,11 @@ export interface SuccessApiOperation extends LogCommonFields {
   client_name: string;
 }
 
+// TODO - reverse engineer this - do not have actual Auth0 example...
+export interface FailedLogin extends LogCommonFields {
+  type: "f";
+}
+
 export interface FailedLoginIncorrectPassword extends BrowserLogCommonFields {
   type: "fp";
   strategy: string;
@@ -140,7 +146,8 @@ export type Log =
   | SuccessLogout
   | SuccessLogin
   | SuccessSilentAuth
-  | SuccessSignup;
+  | SuccessSignup
+  | FailedLogin;
 
 export type LogsResponse = Log & {
   log_id: string;

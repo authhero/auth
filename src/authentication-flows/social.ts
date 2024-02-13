@@ -94,7 +94,10 @@ export async function socialAuthCallback({
 }: socialAuthCallbackParams) {
   const { env } = ctx;
   const client = await getClient(env, state.authParams.client_id);
+
   if (!client) {
+    // I'm not sure if these are correct as need to reverse engineer what Auth0 does
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Client not found" });
   }
   const connection = client.connections.find(
@@ -102,10 +105,14 @@ export async function socialAuthCallback({
   );
 
   if (!connection) {
+    // This is a very unexpected flow though (as this is the callback from the SSO provider)
+    // So it's more typescript safety
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
 
