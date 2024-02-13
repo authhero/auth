@@ -16,6 +16,24 @@ function flattenScopesIfArray(
   return value;
 }
 
+function getAuth0ClientValue(log: Log): string | undefined {
+  // seems very arbitrary... but it's what auth0 does
+  const AUTH0_CLIENT_LOG_TYPES = ["seccft", "scoa", "fcoa", "fsa", "ssa"];
+  if (
+    // typescript cannot handle this syntax
+    // AUTH0_CLIENT_LOG_TYPES.includes(log.type) &&
+    log.type === "seccft" ||
+    log.type === "scoa" ||
+    log.type === "fcoa" ||
+    log.type === "fsa" ||
+    log.type === "ssa"
+  ) {
+    return stringifyIfTruthy(log.auth0_client);
+  }
+
+  return undefined;
+}
+
 function getScopeValue(log: Log): string | undefined {
   if (log.type === "fsa") {
     return log.scope.join(",");
@@ -36,7 +54,7 @@ export function createLog(db: Kysely<Database>) {
       id: nanoid(),
       tenant_id,
       ...params,
-      auth0_client: stringifyIfTruthy(params.auth0_client),
+      auth0_client: stringifyIfTruthy(getAuth0ClientValue(params)),
       details: stringifyIfTruthy(details),
       scope: getScopeValue(params),
       isMobile: params.isMobile ? 1 : 0,

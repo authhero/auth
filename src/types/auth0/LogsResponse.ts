@@ -24,21 +24,14 @@ export enum LogTypes {
 }
 export type LogType = `${LogTypes}`;
 
-interface LogCommonFields {
+export interface LogCommonFields {
   type: LogType;
   date: string;
   description?: string;
   ip: string;
   user_agent: string;
   details?: any;
-  auth0_client?: {
-    name: string;
-    version: string;
-    env?: {
-      node?: string;
-    };
-  };
-  isMobile?: boolean;
+  isMobile: boolean;
 }
 
 interface BrowserLogCommonFields extends LogCommonFields {
@@ -60,18 +53,39 @@ export interface SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant
   strategy?: string;
   strategy_type?: string;
   hostname: string;
+  auth0_client: {
+    name: string;
+    version: string;
+    env?: {
+      node?: string;
+    };
+  };
 }
 
 export interface SuccessCrossOriginAuthentication
   extends BrowserLogCommonFields {
   type: "scoa";
   hostname: string;
+  auth0_client: {
+    name: string;
+    version: string;
+    env?: {
+      node?: string;
+    };
+  };
 }
 // interesting this doesn't extend the browser one... auth0 seems a bit random with what fields it provides
 export interface FailedCrossOriginAuthentication extends LogCommonFields {
   type: "fcoa";
   hostname: string;
   connection_id: string;
+  auth0_client: {
+    name: string;
+    version: string;
+    env?: {
+      node?: string;
+    };
+  };
 }
 
 export interface SuccessApiOperation extends LogCommonFields {
@@ -104,6 +118,13 @@ export interface FailedSilentAuth extends LogCommonFields {
   scope: string[];
   client_id?: string;
   client_name: string;
+  auth0_client: {
+    name: string;
+    version: string;
+    env?: {
+      node?: string;
+    };
+  };
 }
 
 export interface SuccessLogout extends BrowserLogCommonFields {
@@ -126,6 +147,13 @@ export interface SuccessSilentAuth extends LogCommonFields {
   session_connection: string;
   user_id: string;
   user_name: string;
+  auth0_client: {
+    name: string;
+    version: string;
+    env?: {
+      node?: string;
+    };
+  };
 }
 
 export interface SuccessSignup extends BrowserLogCommonFields {
