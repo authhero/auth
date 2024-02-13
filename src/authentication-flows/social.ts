@@ -30,6 +30,7 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
+    // cannot actually set a different log type here... as we do not have the request object...
     throw new HTTPException(403, { message: "Connection Not Found" });
   }
 
@@ -93,7 +94,10 @@ export async function socialAuthCallback({
 }: socialAuthCallbackParams) {
   const { env } = ctx;
   const client = await getClient(env, state.authParams.client_id);
+
   if (!client) {
+    // I'm not sure if these are correct as need to reverse engineer what Auth0 does
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Client not found" });
   }
   const connection = client.connections.find(
@@ -101,10 +105,14 @@ export async function socialAuthCallback({
   );
 
   if (!connection) {
+    // same here. unsure
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
+    // same here. unsure
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
 

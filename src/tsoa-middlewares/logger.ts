@@ -17,6 +17,7 @@ import {
   SuccessLogin,
   SuccessSilentAuth,
   SuccessSignup,
+  FailedLogin,
 } from "../types";
 
 function createCommonLogFields(
@@ -153,6 +154,13 @@ function createTypeLog(
         hostname: ctx.req.header("host") || "",
       };
       return successSignup;
+
+    case "f":
+      const failedLogin: FailedLogin = {
+        type: "f",
+        ...createCommonLogFields(ctx, body, description),
+      };
+      return failedLogin;
 
     default:
       throw new Error("Invalid log type");
