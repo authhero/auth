@@ -24,7 +24,7 @@ export enum LogTypes {
 }
 export type LogType = `${LogTypes}`;
 
-interface LogCommonFields {
+export interface LogCommonFields {
   type: LogType;
   date: string;
   description?: string;
