@@ -84,6 +84,7 @@ export class AuthenticateController extends Controller {
     };
 
     if ("otp" in body) {
+      request.ctx.set("connection", "email");
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
 
@@ -112,6 +113,7 @@ export class AuthenticateController extends Controller {
 
       ticket.authParams = otp.authParams;
     } else {
+      request.ctx.set("connection", "Username-Password-Authentication");
       // TODO - filter this don't just take first
       const [user] = await env.data.users.getByEmail(client.tenant_id, email);
 
