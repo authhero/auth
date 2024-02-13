@@ -15,12 +15,13 @@ export type Var = {
     permissions: string[];
   };
   userName?: string;
+  // I'm not sure what connection_id actually means here...  In Auth0 we get con_TI7p6dEHf551Q9t6
+  // connectionId?: string;
+  connection?: string;
   // TODO - enable these, populate, and use
-  //   connectionId?: string;
   //   strategy?: string;
   //   strategyType?: string;
   //   sessionConnection?: string;
-  //   connection?: string;
   //   audience?: string;
   //   scope?: string;
   // can we get this from user agent?

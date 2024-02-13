@@ -32,6 +32,7 @@ export async function ticketAuth(
   const { env } = ctx;
 
   ctx.set("logType", LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION);
+  ctx.set("connection", realm);
 
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
@@ -86,6 +87,7 @@ export async function ticketAuth(
   }
 
   ctx.set("userId", user.id);
+  ctx.set("userName", user.name || user.email);
 
   const sessionId = await setSilentAuthCookies(
     env,

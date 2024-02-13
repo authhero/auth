@@ -84,6 +84,7 @@ export class AuthenticateController extends Controller {
     };
 
     if ("otp" in body) {
+      request.ctx.set("connection", "email");
       const otps = await env.data.OTP.list(client.tenant_id, email);
       const otp = otps.find((otp) => otp.code === body.otp);
 
@@ -92,8 +93,7 @@ export class AuthenticateController extends Controller {
       }
 
       if (!otp) {
-        // could be wrong username? Would not get here then...
-        request.ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
+        request.ctx.set("logType", LogTypes.FAILED_CROSS_ORIGIN_AUTHENTICATION);
         throw new HTTPException(403, {
           res: new Response(
             JSON.stringify({
@@ -113,10 +113,12 @@ export class AuthenticateController extends Controller {
 
       ticket.authParams = otp.authParams;
     } else {
+      request.ctx.set("connection", "Username-Password-Authentication");
       // TODO - filter this don't just take first
       const [user] = await env.data.users.getByEmail(client.tenant_id, email);
 
       if (!user) {
+        request.ctx.set("logType", LogTypes.FAILED_CROSS_ORIGIN_AUTHENTICATION);
         throw new HTTPException(403);
       }
 
