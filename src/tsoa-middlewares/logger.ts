@@ -41,12 +41,20 @@ function createCommonLogFields(
         body,
       },
     },
-    // how to get both of these? in request headers?
-    // auth0_client: "",
-    // isMobile: 0,
+    // how to get this? user agent sniffing?
+    isMobile: false,
   };
   return logCommonFields;
 }
+
+// this should never be reached...
+const DEFAULT_AUTH0_CLIENT = {
+  name: "error",
+  version: "error",
+  env: {
+    node: "error",
+  },
+};
 
 function createTypeLog(
   logType: LogType,
@@ -75,6 +83,7 @@ function createTypeLog(
           connection: ctx.var.connection || "",
           client_id: ctx.var.client_id,
           client_name: "",
+          auth0_client: ctx.var.auth0_client || DEFAULT_AUTH0_CLIENT,
         };
       return successCrossOriginAuthentication;
     case "fcoa":
@@ -84,6 +93,7 @@ function createTypeLog(
         // why does this have connection_id and not connection?
         connection_id: "",
         hostname: ctx.req.header("host") || "",
+        auth0_client: ctx.var.auth0_client || DEFAULT_AUTH0_CLIENT,
       };
       return failedCrossOriginAuthentication;
     case "fp":
@@ -124,6 +134,7 @@ function createTypeLog(
         audience: "",
         // where can we get this from?
         scope: [],
+        auth0_client: ctx.var.auth0_client || DEFAULT_AUTH0_CLIENT,
       };
       return failedSilentAuth;
     case "slo":
@@ -162,6 +173,7 @@ function createTypeLog(
         session_connection: "",
         user_id: ctx.var.userId || "",
         user_name: ctx.var.userName || "",
+        auth0_client: ctx.var.auth0_client || DEFAULT_AUTH0_CLIENT,
       };
       return successSilentAuth;
     case "ss":
