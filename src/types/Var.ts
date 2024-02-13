@@ -15,12 +15,12 @@ export type Var = {
     permissions: string[];
   };
   userName?: string;
+  connectionId?: string;
+  connection?: string;
   // TODO - enable these, populate, and use
-  //   connectionId?: string;
   //   strategy?: string;
   //   strategyType?: string;
   //   sessionConnection?: string;
-  //   connection?: string;
   //   audience?: string;
   //   scope?: string;
   // can we get this from user agent?
