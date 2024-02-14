@@ -46,6 +46,7 @@ interface AuthorizeParams {
   code_challenge_method?: CodeChallengeMethod;
   code_challenge?: string;
   realm?: string;
+  auth0Client?: string;
   referer?: string;
   cookie?: string;
 }
@@ -101,6 +102,7 @@ export class AuthorizeController extends Controller {
     @Query("code_challenge_method") code_challenge_method?: CodeChallengeMethod,
     @Query("code_challenge") code_challenge?: string,
     @Query("realm") realm?: string,
+    @Query("auth0Client") auth0Client?: string,
     @Header("referer") referer?: string,
     @Header("cookie") cookie?: string,
   ): Promise<string> {
@@ -113,8 +115,15 @@ export class AuthorizeController extends Controller {
     if (!client) {
       throw new Error("Client not found");
     }
-    request.ctx.set("client_id", client.id);
     request.ctx.set("tenantId", client.tenant_id);
+    if (auth0Client) {
+      try {
+        const auth0ClientObj = JSON.parse(atob(auth0Client));
+        ctx.set("auth0_client", auth0ClientObj);
+      } catch (e) {
+        console.log("failed to parse auth0Client", e);
+      }
+    }
 
     const authParams: AuthParams = {
       redirect_uri,
@@ -200,6 +209,7 @@ export class AuthorizeController extends Controller {
       params.code_challenge_method,
       params.code_challenge,
       params.realm,
+      params.auth0Client,
       params.referer,
       params.cookie,
     );

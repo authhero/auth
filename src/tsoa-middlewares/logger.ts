@@ -268,6 +268,7 @@ export function loggerMiddleware(
       if (e instanceof HTTPException) {
         try {
           const logType = ctx.var.logType || logTypeInitial;
+          if (!logType) return e.getResponse();
 
           const log: Log = createTypeLog(
             logType,
