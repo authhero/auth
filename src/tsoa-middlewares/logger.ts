@@ -207,7 +207,7 @@ function createTypeLog(
 const DEBUG_LOG_TYPES = false;
 
 export function loggerMiddleware(
-  logTypeInitial: LogType,
+  logTypeInitial?: LogType,
   description?: string,
 ) {
   return async (
@@ -220,6 +220,8 @@ export function loggerMiddleware(
       const response = await next();
 
       const logType = ctx.var.logType || logTypeInitial;
+      // ir no logtype set then do not log
+      if (!logType) return response;
 
       if (DEBUG_LOG_TYPES && !ctx.var.tenantId)
         throw new Error("tenantId is required for logging");
