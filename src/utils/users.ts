@@ -33,7 +33,7 @@ export async function getUserByEmailAndConnection({
     page: 0,
     per_page: 1,
     include_totals: false,
-    q: `email:${email} AND connection:${connection}`,
+    q: `email:${email} connection:${connection}`,
   });
 
   const [user] = users;
