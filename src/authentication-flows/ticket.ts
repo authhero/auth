@@ -7,7 +7,7 @@ import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
-import { LogTypes } from "../types/auth0";
+import { LogTypes } from "../types";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -32,6 +32,7 @@ export async function ticketAuth(
   const { env } = ctx;
 
   ctx.set("logType", LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION);
+  ctx.set("connection", realm);
 
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
@@ -86,6 +87,7 @@ export async function ticketAuth(
   }
 
   ctx.set("userId", user.id);
+  ctx.set("userName", user.name || user.email);
 
   const sessionId = await setSilentAuthCookies(
     env,

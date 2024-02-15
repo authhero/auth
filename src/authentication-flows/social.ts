@@ -20,7 +20,7 @@ import { getClient } from "../services/clients";
 import { LogTypes } from "../types";
 
 export async function socialAuth(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   controller: Controller,
   client: Client,
   connection: string,
@@ -30,6 +30,7 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection Not Found" });
   }
 
@@ -40,7 +41,7 @@ export async function socialAuth(
     oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
   oauthLoginUrl.searchParams.set("state", state);
-  oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
+  oauthLoginUrl.searchParams.set("redirect_uri", `${ctx.env.ISSUER}callback`);
   oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id);
   if (connectionInstance.response_type) {
     oauthLoginUrl.searchParams.set(
@@ -93,7 +94,10 @@ export async function socialAuthCallback({
 }: socialAuthCallbackParams) {
   const { env } = ctx;
   const client = await getClient(env, state.authParams.client_id);
+
   if (!client) {
+    // I'm not sure if these are correct as need to reverse engineer what Auth0 does
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Client not found" });
   }
   const connection = client.connections.find(
@@ -101,10 +105,14 @@ export async function socialAuthCallback({
   );
 
   if (!connection) {
+    // same here. unsure
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
+    // same here. unsure
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
 
@@ -199,7 +207,7 @@ export async function socialAuthCallback({
   }
 
   ctx.set("tenantId", client.tenant_id);
-  ctx.set("email", email);
+  ctx.set("userName", email);
   ctx.set("userId", user.id);
 
   const sessionId = await setSilentAuthCookies(

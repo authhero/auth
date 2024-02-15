@@ -66,8 +66,14 @@ export class LogoutController extends Controller {
 
         if (session) {
           request.ctx.set("userId", session.user_id);
+          const user = await request.ctx.env.data.users.get(
+            client.tenant_id,
+            session.user_id,
+          );
+          if (user) {
+            request.ctx.set("userName", user.email);
+          }
         }
-
         await request.ctx.env.data.sessions.remove(
           client.tenant_id,
           tokenState,
