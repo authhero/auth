@@ -136,6 +136,7 @@ describe("code-flow", () => {
         iss: "https://example.com/",
       });
     });
+
     it("is an existing user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
@@ -150,13 +151,27 @@ describe("code-flow", () => {
       };
 
       // -----------------
-      // User should already exist in default fixture
+      // Create the user to log in with the magic link
       // -----------------
+      env.data.users.create("tenantId", {
+        id: "userId2",
+        email: "bar@example.com",
+        email_verified: true,
+        name: "",
+        nickname: "",
+        picture: "https://example.com/foo.png",
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       const resInitialQuery = await client.api.v2["users-by-email"].$get(
         {
           query: {
-            email: "foo@example.com",
+            email: "bar@example.com",
           },
         },
         {
@@ -178,7 +193,7 @@ describe("code-flow", () => {
             authParams: AUTH_PARAMS,
             client_id: "clientId",
             connection: "email",
-            email: "foo@example.com",
+            email: "bar@example.com",
             send: "link",
           },
         },
@@ -191,7 +206,7 @@ describe("code-flow", () => {
 
       const [{ to, magicLink }] = await env.data.email.list!();
 
-      expect(to).toBe("foo@example.com");
+      expect(to).toBe("bar@example.com");
 
       const link = magicLink!;
 
@@ -225,13 +240,13 @@ describe("code-flow", () => {
       expect(accessTokenPayload.aud).toBe("default");
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
-      expect(accessTokenPayload.sub).toBe("userId");
+      expect(accessTokenPayload.sub).toBe("userId2");
 
       const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
-      expect(idTokenPayload.email).toBe("foo@example.com");
+      expect(idTokenPayload.email).toBe("bar@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
-      expect(idTokenPayload.sub).toBe("userId");
+      expect(idTokenPayload.sub).toBe("userId2");
 
       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
@@ -250,12 +265,12 @@ describe("code-flow", () => {
         silentAuthIdTokenPayload;
 
       expect(restOfIdTokenPayload).toEqual({
-        sub: "userId",
+        sub: "userId2",
         aud: "clientId",
-        name: "Åkesson Þorsteinsson",
-        nickname: "Åkesson Þorsteinsson",
+        name: "",
+        nickname: "",
         picture: "https://example.com/foo.png",
-        email: "foo@example.com",
+        email: "bar@example.com",
         email_verified: true,
         nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
         iss: "https://example.com/",

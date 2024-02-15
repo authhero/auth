@@ -31,7 +31,10 @@ import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
-import { getUsersByEmail } from "../../utils/users";
+import {
+  getUserByEmailAndConnection,
+  getUsersByEmail,
+} from "../../utils/users";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -463,12 +466,12 @@ export class LoginController extends Controller {
       await env.data.universalLoginSessions.update(session.id, session);
     }
 
-    // TODO - filter by primary user
-    const [user] = await getUsersByEmail(
-      env.data.users,
-      client.tenant_id,
-      params.username,
-    );
+    const user = await getUserByEmailAndConnection({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: params.username,
+      connection: "Username-Password-Authentication",
+    });
 
     if (user) {
       const code = generateOTP();
