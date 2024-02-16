@@ -45,11 +45,7 @@ export async function validateCode(
         emailUser.linked_to,
       );
 
-      if (!primaryUser) {
-        throw new HTTPException(400, { message: "Primary user not found" });
-      }
-
-      return primaryUser;
+      return primaryUser!;
     }
     return emailUser;
   }
