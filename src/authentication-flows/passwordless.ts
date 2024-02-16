@@ -72,5 +72,5 @@ export async function validateCode(
     linked_to: primaryUser?.id,
   });
 
-  return newUser;
+  return primaryUser || newUser;
 }

@@ -51,15 +51,15 @@ export async function getPrimaryUserByEmail({
   userAdapter,
   tenant_id,
   email,
-}: GetPrimaryUserByEmailParams): Promise<User | null> {
+}: GetPrimaryUserByEmailParams): Promise<User | undefined> {
   const { users } = await userAdapter.list(tenant_id, {
     page: 0,
     per_page: 1,
     include_totals: false,
-    q: `email:${email} linked_to:not null`,
+    q: `email:${email}`,
   });
 
-  return users[0] || null;
+  return users.find((user) => !user.linked_to);
 }
 
 export async function getPrimaryUserByEmailAndProvider({
