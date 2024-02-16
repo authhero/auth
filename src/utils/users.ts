@@ -16,24 +16,24 @@ export async function getUsersByEmail(
   return response.users;
 }
 
-interface GetPrimaryUserByEmailAndConnectionParams {
+interface GetPrimaryUserByEmailAndProviderParams {
   userAdapter: UserDataAdapter;
   tenant_id: string;
   email: string;
-  connection: string;
+  provider: string;
 }
 
-export async function getUserByEmailAndConnection({
+export async function getUserByEmailAndProvider({
   userAdapter,
   tenant_id,
   email,
-  connection,
-}: GetPrimaryUserByEmailAndConnectionParams): Promise<User | null> {
+  provider,
+}: GetPrimaryUserByEmailAndProviderParams): Promise<User | null> {
   const { users } = await userAdapter.list(tenant_id, {
     page: 0,
     per_page: 1,
     include_totals: false,
-    q: `email:${email} connection:${connection}`,
+    q: `email:${email} provider:${provider}`,
   });
 
   const [user] = users;
@@ -41,17 +41,17 @@ export async function getUserByEmailAndConnection({
   return user || null;
 }
 
-export async function getPrimaryUserByEmailAndConnection({
+export async function getPrimaryUserByEmailAndProvider({
   userAdapter,
   tenant_id,
   email,
-  connection,
-}: GetPrimaryUserByEmailAndConnectionParams): Promise<User | null> {
-  const user = await getUserByEmailAndConnection({
+  provider,
+}: GetPrimaryUserByEmailAndProviderParams): Promise<User | null> {
+  const user = await getUserByEmailAndProvider({
     userAdapter,
     tenant_id,
     email,
-    connection,
+    provider,
   });
 
   if (!user) {
