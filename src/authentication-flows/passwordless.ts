@@ -30,7 +30,6 @@ export async function validateCode(
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
-  // I don't think the code following on from here should be part of a function called validateCode... The side-effects are huge
   const emailUser = await getUserByEmailAndProvider({
     userAdapter: env.data.users,
     tenant_id: client.tenant_id,
