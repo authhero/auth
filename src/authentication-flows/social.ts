@@ -18,6 +18,7 @@ import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
 import { LogTypes } from "../types";
+import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -155,16 +156,12 @@ export async function socialAuthCallback({
   const email = emailRaw.toLocaleLowerCase();
   const strictEmailVerified = !!profileData.email_verified;
 
-  const ssoId = `${state.connection}|${sub}`;
-  let user = await env.data.users.get(client.tenant_id, ssoId);
-
-  if (!state.connection) {
-    throw new HTTPException(403, { message: "Connection not found" });
-  }
-
-  if (user?.linked_to) {
-    user = await env.data.users.get(client.tenant_id, user.linked_to);
-  }
+  let user = await getPrimaryUserByEmailAndProvider({
+    userAdapter: env.data.users,
+    tenant_id: client.tenant_id,
+    email,
+    provider: connection.name,
+  });
 
   if (!user) {
     ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
@@ -180,8 +177,8 @@ export async function socialAuthCallback({
       id: `${state.connection}|${sub}`,
       email,
       name: email,
-      provider: state.connection,
-      connection: state.connection,
+      provider: connection.name,
+      connection: connection.name,
       email_verified: strictEmailVerified,
       last_ip: "",
       login_count: 0,
