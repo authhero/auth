@@ -306,7 +306,7 @@ describe("code-flow", () => {
         is_social: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        linked_to: "userId1",
+        linked_to: "userId",
       });
 
       const resInitialQuery = await client.api.v2["users-by-email"].$get(
@@ -382,13 +382,13 @@ describe("code-flow", () => {
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
       // this should we are fetching the primary user
-      expect(accessTokenPayload.sub).toBe("userId1");
+      expect(accessTokenPayload.sub).toBe("userId");
 
       const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
-      expect(idTokenPayload.sub).toBe("userId1");
+      expect(idTokenPayload.sub).toBe("userId");
 
       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
@@ -407,12 +407,12 @@ describe("code-flow", () => {
         silentAuthIdTokenPayload;
 
       expect(restOfIdTokenPayload).toEqual({
-        sub: "userId1",
+        sub: "userId",
         aud: "clientId",
-        name: "",
-        nickname: "",
+        name: "Åkesson Þorsteinsson",
+        nickname: "Åkesson Þorsteinsson",
         picture: "https://example.com/foo.png",
-        email: "bar@example.com",
+        email: "foo@example.com",
         email_verified: true,
         nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
         iss: "https://example.com/",
