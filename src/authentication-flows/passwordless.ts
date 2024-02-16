@@ -2,7 +2,7 @@ import { HTTPException } from "hono/http-exception";
 import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
-import { getPrimaryUserByEmailAndConnection } from "../utils/users";
+import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 
 interface LoginParams {
   client_id: string;
@@ -23,11 +23,11 @@ export async function validateCode(env: Env, params: LoginParams) {
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
-  let user = await getPrimaryUserByEmailAndConnection({
+  let user = await getPrimaryUserByEmailAndProvider({
     userAdapter: env.data.users,
     tenant_id: client.tenant_id,
     email: params.email,
-    connection: "email",
+    provider: "email",
   });
 
   if (!user) {
