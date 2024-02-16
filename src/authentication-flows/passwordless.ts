@@ -2,7 +2,10 @@ import { HTTPException } from "hono/http-exception";
 import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
-import { getUsersByEmail } from "../utils/users";
+import {
+  getUserByEmailAndProvider,
+  getPrimaryUserByEmail,
+} from "../utils/users";
 import { User } from "../types";
 
 interface LoginParams {
@@ -27,15 +30,13 @@ export async function validateCode(
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
-  const usersWithSameEmailAddress = await getUsersByEmail(
-    env.data.users,
-    client.tenant_id,
-    params.email,
-  );
-
-  const emailUser = usersWithSameEmailAddress.find(
-    (user) => user.provider === "email",
-  );
+  // I don't think the code following on from here should be part of a function called validateCode... The side-effects are huge
+  const emailUser = await getUserByEmailAndProvider({
+    userAdapter: env.data.users,
+    tenant_id: client.tenant_id,
+    email: params.email,
+    provider: "email",
+  });
 
   if (emailUser) {
     if (!!emailUser.linked_to) {
@@ -53,27 +54,11 @@ export async function validateCode(
     return emailUser;
   }
 
-  const primaryUser = usersWithSameEmailAddress.find((u) => !u.linked_to);
-
-  if (primaryUser) {
-    await env.data.users.create(client.tenant_id, {
-      id: `email|${userIdGenerate()}`,
-      email: params.email,
-      name: params.email,
-      provider: "email",
-      connection: "email",
-      email_verified: true,
-      last_ip: "",
-      login_count: 1,
-      last_login: new Date().toISOString(),
-      is_social: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      linked_to: primaryUser.id,
-    });
-
-    return primaryUser;
-  }
+  const primaryUser = await getPrimaryUserByEmail({
+    userAdapter: env.data.users,
+    tenant_id: client.tenant_id,
+    email: params.email,
+  });
 
   const newUser = await env.data.users.create(client.tenant_id, {
     id: `email|${userIdGenerate()}`,
@@ -88,6 +73,7 @@ export async function validateCode(
     is_social: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    linked_to: primaryUser?.id,
   });
 
   return newUser;
