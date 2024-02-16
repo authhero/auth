@@ -137,7 +137,7 @@ describe("code-flow", () => {
       });
     });
 
-    it("is an existing user", async () => {
+    it("is an existing primary user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -266,6 +266,148 @@ describe("code-flow", () => {
 
       expect(restOfIdTokenPayload).toEqual({
         sub: "userId2",
+        aud: "clientId",
+        name: "",
+        nickname: "",
+        picture: "https://example.com/foo.png",
+        email: "bar@example.com",
+        email_verified: true,
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        iss: "https://example.com/",
+      });
+    });
+
+    it("is an existing linked user", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const AUTH_PARAMS = {
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        redirect_uri: "https://login.example.com/sv/callback",
+        response_type: "token id_token",
+        scope: "openid profile email",
+        state: "state",
+      };
+
+      // -----------------
+      // Create the linked user to log in with the magic link
+      // -----------------
+      env.data.users.create("tenantId", {
+        id: "userId2",
+        email: "foo@example.com",
+        email_verified: true,
+        name: "",
+        nickname: "",
+        picture: "https://example.com/foo.png",
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        linked_to: "userId1",
+      });
+
+      const resInitialQuery = await client.api.v2["users-by-email"].$get(
+        {
+          query: {
+            email: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      expect(resInitialQuery.status).toBe(200);
+
+      // -----------------
+      // Now get magic link emailed
+      // -----------------
+
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "foo@example.com",
+            send: "link",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const [{ to, magicLink }] = await env.data.email.list!();
+
+      expect(to).toBe("foo@example.com");
+
+      const link = magicLink!;
+
+      const authenticatePath = link?.split("https://example.com")[1];
+
+      expect(authenticatePath).toContain("/passwordless/verify_redirect");
+
+      const querySearchParams = new URLSearchParams(
+        authenticatePath.split("?")[1],
+      );
+      const query = Object.fromEntries(querySearchParams.entries());
+
+      // -----------------
+      // Authenticate using the magic link for the existing user
+      // -----------------
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
+
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login.example.com");
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
+
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("openid profile email");
+      // this should we are fetching the primary user
+      expect(accessTokenPayload.sub).toBe("userId1");
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("foo@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+      expect(idTokenPayload.sub).toBe("userId1");
+
+      const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+
+      // ----------------------------------------
+      // now check silent auth works when logged in with magic link for existing user
+      // ----------------------------------------
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
+
+      const { exp, iat, sid, ...restOfIdTokenPayload } =
+        silentAuthIdTokenPayload;
+
+      expect(restOfIdTokenPayload).toEqual({
+        sub: "userId1",
         aud: "clientId",
         name: "",
         nickname: "",
