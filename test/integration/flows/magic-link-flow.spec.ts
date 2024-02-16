@@ -381,7 +381,7 @@ describe("code-flow", () => {
       expect(accessTokenPayload.aud).toBe("default");
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
-      // this should we are fetching the primary user
+      // this id shows we are fetching the primary user
       expect(accessTokenPayload.sub).toBe("userId");
 
       const idToken = searchParams.get("id_token");
