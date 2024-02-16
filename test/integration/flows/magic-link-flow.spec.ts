@@ -5,8 +5,8 @@ import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 
-describe("should log in using the sent magic link, when", () => {
-  describe("code-flow", () => {
+describe("code-flow", () => {
+  describe("should log in using the sent magic link, when", () => {  
     it("is a new sign up", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
