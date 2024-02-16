@@ -38,7 +38,7 @@ export async function validateCode(
   });
 
   if (emailUser) {
-    if (!!emailUser.linked_to) {
+    if (emailUser.linked_to) {
       const primaryUser = await env.data.users.get(
         client.tenant_id,
         emailUser.linked_to,
