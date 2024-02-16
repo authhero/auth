@@ -6,7 +6,7 @@ import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 
 describe("code-flow", () => {
-  describe("should log in using the sent magic link, when", () => {  
+  describe("should log in using the sent magic link, when", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
