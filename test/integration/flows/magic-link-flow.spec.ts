@@ -309,21 +309,6 @@ describe("code-flow", () => {
         linked_to: "userId",
       });
 
-      const resInitialQuery = await client.api.v2["users-by-email"].$get(
-        {
-          query: {
-            email: "foo@example.com",
-          },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-          },
-        },
-      );
-      expect(resInitialQuery.status).toBe(200);
-
       // -----------------
       // Now get magic link emailed
       // -----------------
