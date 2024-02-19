@@ -4,6 +4,7 @@ import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
 import {
   getUserByEmailAndProvider,
+  getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
 import { User } from "../types";
@@ -30,7 +31,7 @@ export async function validateCode(
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
-  const emailUser = await getUserByEmailAndProvider({
+  const emailUser = await getPrimaryUserByEmailAndProvider({
     userAdapter: env.data.users,
     tenant_id: client.tenant_id,
     email: params.email,
@@ -38,14 +39,6 @@ export async function validateCode(
   });
 
   if (emailUser) {
-    if (emailUser.linked_to) {
-      const primaryUser = await env.data.users.get(
-        client.tenant_id,
-        emailUser.linked_to,
-      );
-
-      return primaryUser!;
-    }
     return emailUser;
   }
 
