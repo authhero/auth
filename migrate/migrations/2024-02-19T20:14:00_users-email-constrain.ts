@@ -5,7 +5,11 @@ export async function up(db: Kysely<Database>): Promise<void> {
   // Sqlite does not support altering tables to add unique constraints
   // await db.schema
   //   .alterTable("users")
-  //   .addUniqueConstraint("unique_email_provider", ["email", "provider", '"tenant_id"])
+  //   .addUniqueConstraint("unique_email_provider", [
+  //     "email",
+  //     "provider",
+  //     "tenant_id",
+  //   ])
   //   .execute();
 }
 
