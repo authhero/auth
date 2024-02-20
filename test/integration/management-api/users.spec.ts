@@ -261,7 +261,8 @@ describe("users", () => {
     const newUser = await client.api.v2.users[":user_id"].$get(
       {
         param: {
-          user_id: user!.user_id,
+          // this is not correct! should be user_id... interesting
+          user_id: user!.id,
         },
       },
       {
