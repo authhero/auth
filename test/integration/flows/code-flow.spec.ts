@@ -6,9 +6,10 @@ import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
+import createTestUsers from "../helpers/createTestUsers";
 
 describe("code-flow", () => {
-  it("should run a passwordless flow with code", async () => {
+  it("should create a new user when logging in with the code for the first time", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -253,6 +254,7 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
+
   it("should return existing primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
@@ -612,6 +614,120 @@ describe("code-flow", () => {
     expect(authRes.status).toBe(403);
   });
 
+  it("should be case insensitive with email address", async () => {
+    const token = await getAdminToken();
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    // -------------------------
+    // Create new email user - all lower case email
+    // -------------------------
+    const createUserResponse1 = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "john-doe@example.com",
+          connection: "email",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    expect(createUserResponse1.status).toBe(201);
+    const newUser1 = (await createUserResponse1.json()) as UserResponse;
+    expect(newUser1.email).toBe("john-doe@example.com");
+
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    // -----------------
+    // Sign in with same user passwordless
+    // -----------------
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          // do we want two tests? one for the username uppercase one for the domain?
+          email: "JOHN-DOE@example.com",
+          send: "code",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const [{ code: otp }] = await env.data.email.list!();
+
+    // Authenticate using the code
+    const authenticateResponse = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          // what does this mean here?
+          username: "JOHN-DOE@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+
+    const query = {
+      ...AUTH_PARAMS,
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket,
+      referrer: "https://login.example.com",
+      realm: "email",
+    };
+
+    // Trade the ticket for token
+    const tokenResponse = await client.authorize.$get({
+      query,
+    });
+
+    const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+    expect(redirectUri.hostname).toBe("login.example.com");
+
+    const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+    expect(searchParams.get("state")).toBe("state");
+
+    const accessToken = searchParams.get("access_token");
+
+    const accessTokenPayload = parseJwt(accessToken!);
+    expect(accessTokenPayload.sub).toBe(newUser1.id);
+
+    const idToken = searchParams.get("id_token");
+    const idTokenPayload = parseJwt(idToken!);
+    expect(idTokenPayload.email).toBe("john-doe@example.com");
+  });
+
   // TO TEST
   // - using expired codes? how can we fast-forward time with wrangler...
+  // - log in with existing primary user
+  // - more linked accounts
 });
