@@ -57,6 +57,11 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("email_verified", "boolean")
     .addColumn("is_social", "boolean")
     .addColumn("app_metadata", "varchar(8092)")
+    .addUniqueConstraint("unique_email_provider", [
+      "email",
+      "provider",
+      "tenant_id",
+    ])
     // End added columns
     .execute();
 

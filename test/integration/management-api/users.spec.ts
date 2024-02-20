@@ -25,7 +25,6 @@ describe("users", () => {
 
     const body = (await response.json()) as UserResponse[];
     expect(body.length).toBe(0);
-    console.log("done");
   });
 
   // this is different to Auth0 where user_id OR email is required
@@ -110,6 +109,49 @@ describe("users", () => {
         isSocial: false,
       },
     ]);
+  });
+
+  it("should throw an error if you create the same passwordless email user twice", async () => {
+    const token = await getAdminToken();
+
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    const createUserResponse1 = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "test@example.com",
+          connection: "email",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "otherTenant",
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    expect(createUserResponse1.status).toBe(201);
+
+    const createUserResponse2 = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "test@example.com",
+          connection: "email",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "otherTenant",
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    expect(createUserResponse2.status).toBe(409);
   });
 
   it("should update a user", async () => {
