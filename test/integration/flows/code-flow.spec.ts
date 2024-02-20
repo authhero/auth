@@ -726,6 +726,90 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("john-doe@example.com");
   });
 
+  it("should store new user email in lowercase", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    const AUTH_PARAMS = {
+      nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+      redirect_uri: "https://login.example.com/sv/callback",
+      response_type: "token id_token",
+      scope: "openid profile email",
+      state: "state",
+    };
+
+    // -----------------
+    // New passwordless sign up all uppercase - login2 would stop this... What does auth0.js do? CHECK!
+    // -----------------
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "JOHN-DOE@EXAMPLE.COM",
+          send: "code",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const [{ code: otp }] = await env.data.email.list!();
+
+    // Authenticate using the code
+    const authenticateResponse = await client.co.authenticate.$post(
+      {
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          // use lowercase here... TBD
+          username: "john-doe@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+
+    const query = {
+      ...AUTH_PARAMS,
+      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      client_id: "clientId",
+      login_ticket,
+      referrer: "https://login.example.com",
+      realm: "email",
+    };
+
+    // Trade the ticket for token
+    const tokenResponse = await client.authorize.$get({
+      query,
+    });
+    const redirectUri = new URL(tokenResponse.headers.get("location")!);
+    const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+    const accessToken = searchParams.get("access_token");
+
+    const sub = parseJwt(accessToken!).sub;
+
+    // this means we have created the user
+    expect(tokenResponse.status).toBe(302);
+
+    // Now check in database we are storing in lower case
+
+    const newLowercaseUser = await env.data.users.get("tenantId", sub);
+
+    expect(newLowercaseUser!.email).toBe("john-doe@example.com");
+  });
+
   // TO TEST
   // - using expired codes? how can we fast-forward time with wrangler...
   // - log in with existing primary user
