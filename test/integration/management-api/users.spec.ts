@@ -6,6 +6,26 @@ import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
 describe("users", () => {
+  it("should return CORS headers", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    const token = await getAdminToken();
+    const response = await client.api.v2.users.$get(
+      {},
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "otherTenant",
+        },
+      },
+    );
+
+    expect(response.status).toBe(200);
+
+    console.log(response.headers);
+  });
+
   it("should return an empty list of users for a tenant", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);

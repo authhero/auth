@@ -11,7 +11,7 @@ export const signup = `<div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
     </div>
     <div class="wrap-input100 validate-input" data-validate="Password is required">
         <span class="label-input100">Password</span>
-        <input class="input100" type="password" name="password" placeholder="Type your password" required />
+        <input class="input100" type="text" name="password" placeholder="Type your password" required />
         <span class="focus-input100" data-symbol=""></span>
     </div>
     <div>
