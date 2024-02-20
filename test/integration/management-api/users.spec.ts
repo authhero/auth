@@ -221,6 +221,62 @@ describe("users", () => {
     expect(body[0].email_verified).toBe(true);
   });
 
+  it("should lowercase email when creating a  user", async () => {
+    const token = await getAdminToken();
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    // ----------------------
+    // Create user with uppercase email and check response is lower case
+    // ----------------------
+    const createUserResponse = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "FOOZ@BAR.COM",
+          connection: "email",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "otherTenant",
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    expect(createUserResponse.status).toBe(201);
+    const createdUser = (await createUserResponse.json()) as UserResponse;
+    expect(createdUser.email).toBe("fooz@bar.com");
+
+    // ----------------------
+    // Check directly in the database that the email is lower case
+    // ----------------------
+    const user = await env.data.users.get("otherTenant", createdUser.user_id);
+    expect(user!.email).toBe("fooz@bar.com");
+
+    // ----------------------
+    // Fetch user through mgmt API get and check email is lower case
+    // ----------------------
+    const newUser = await client.api.v2.users[":user_id"].$get(
+      {
+        param: {
+          user_id: user!.user_id,
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "otherTenant",
+        },
+      },
+    );
+
+    expect(newUser.status).toBe(200);
+    const fetchedUser = (await newUser.json()) as UserResponse;
+    expect(fetchedUser.email).toBe("fooz@bar.com");
+  });
+
   describe("search for user", () => {
     it("should search for a user with wildcard search", async () => {
       const token = await getAdminToken();
