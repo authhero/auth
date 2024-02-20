@@ -171,11 +171,13 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const { email } = user;
+    const { email: emailRaw } = user;
 
-    if (!email) {
+    if (!emailRaw) {
       throw new HTTPException(400, { message: "Email is required" });
     }
+
+    const email = emailRaw.toLowerCase();
 
     const data = await env.data.users.create(tenantId, {
       email,
