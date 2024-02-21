@@ -9,7 +9,7 @@ import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
 describe("code-flow", () => {
-  it("should create a new user when logging in with the code for the first time", async () => {
+  it("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
