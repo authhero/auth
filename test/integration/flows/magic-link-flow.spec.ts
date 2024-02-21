@@ -617,3 +617,5 @@ describe("code-flow", () => {
     });
   });
 });
+// TO TEST
+// - should we do silent auth after each of these calls?
