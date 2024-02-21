@@ -91,7 +91,7 @@ describe("logs", () => {
         query: {
           client_id: "clientId",
           response_type: "token id_token",
-          redirect_uri: "https://login.example.com/sv/callback",
+          redirect_uri: "https://login.example.com/callback",
           scope: "openid profile email",
           state: "j~JrnZZLuAUfJQcKE5ZGSGZUG4hC99DZ",
           nonce: "S3RuDcoL67u5ATcK87sgUOxMRql.dyfE",

@@ -64,7 +64,7 @@ export async function getEnv() {
     id: "DEFAULT_CLIENT",
     name: "Default Client",
     allowed_web_origins: "https://sesamy.com",
-    allowed_callback_urls: "https://login.example.com/sv/callback",
+    allowed_callback_urls: "https://login.example.com/callback",
     allowed_logout_urls: "https://sesamy.com",
     email_validation: "enabled",
     client_secret: "secret",
