@@ -5,20 +5,20 @@ import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 
+const AUTH_PARAMS = {
+  nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+  redirect_uri: "https://login.example.com/sv/callback",
+  response_type: "token id_token",
+  scope: "openid profile email",
+  state: "state",
+};
+
 describe("code-flow", () => {
   describe("should log in using the sent magic link, when", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-
-      const AUTH_PARAMS = {
-        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
 
       // -----------------
       // Doing a new signup here, so expect this email not to exist
@@ -141,14 +141,6 @@ describe("code-flow", () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-
-      const AUTH_PARAMS = {
-        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
 
       // -----------------
       // Create the user to log in with the magic link
@@ -278,17 +270,8 @@ describe("code-flow", () => {
     });
 
     it("is an existing linked user", async () => {
-      const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-
-      const AUTH_PARAMS = {
-        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
 
       // -----------------
       // Create the linked user to log in with the magic link
@@ -409,14 +392,6 @@ describe("code-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const AUTH_PARAMS = {
-        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
-
       // -----------------
       // Now get magic link emailed
       // -----------------
@@ -515,13 +490,6 @@ describe("code-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const AUTH_PARAMS = {
-        nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
       // -----------
       // get code to log in
       // -----------
@@ -577,13 +545,6 @@ describe("code-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const AUTH_PARAMS = {
-        nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
       // -----------
       // get code to log in
       // -----------
