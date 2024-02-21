@@ -589,7 +589,7 @@ describe("code-flow", () => {
         authenticateResponse.headers.get("location")!,
       );
       expect(redirectUri.hostname).toBe("login2.sesamy.dev");
-      expect(redirectUri.pathname).toBe("/sv/expired-code");
+      expect(redirectUri.pathname).toBe("/expired-code");
       expect(redirectUri.searchParams.get("email")).toBe(
         encodeURIComponent("test@example.com"),
       );
@@ -610,10 +610,11 @@ describe("code-flow", () => {
         authenticateResponse2.headers.get("location")!,
       );
       expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
-      expect(redirectUri2.pathname).toBe("/sv/expired-code");
+      expect(redirectUri2.pathname).toBe("/expired-code");
       expect(redirectUri2.searchParams.get("email")).toBe(
         encodeURIComponent("another@email.com"),
       );
+      expect(redirectUri2.searchParams.get("lang")).toBe("sv");
     });
   });
 });
