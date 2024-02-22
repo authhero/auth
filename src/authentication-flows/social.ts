@@ -18,7 +18,10 @@ import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
 import { LogTypes } from "../types";
-import { getPrimaryUserByEmailAndProvider } from "../utils/users";
+import {
+  getPrimaryUserByEmailAndProvider,
+  getPrimaryUserByEmail,
+} from "../utils/users";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -166,12 +169,11 @@ export async function socialAuthCallback({
   if (!user) {
     ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
 
-    // This should be fixed to get the primary user!
-    const [sameEmailUser] = await env.data.users.getByEmail(
-      client.tenant_id,
-      // TODO - this needs to ONLY fetch primary users e.g. where linked_to is null
-      email,
-    );
+    const primaryUser = await getPrimaryUserByEmail({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: email,
+    });
 
     const newSocialUser = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
@@ -190,12 +192,12 @@ export async function socialAuthCallback({
     });
 
     // this means we have a primary account
-    if (sameEmailUser) {
-      user = sameEmailUser;
+    if (primaryUser) {
+      user = primaryUser;
 
       // link user with existing user
       await env.data.users.update(client.tenant_id, newSocialUser.id, {
-        linked_to: sameEmailUser.id,
+        linked_to: primaryUser.id,
       });
     } else {
       // here we are using the new user as the primary ccount
