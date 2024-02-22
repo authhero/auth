@@ -10,7 +10,7 @@ import createTestUsers from "../helpers/createTestUsers";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-  redirect_uri: "https://login.example.com/sv/callback",
+  redirect_uri: "https://login.example.com/callback",
   response_type: "token id_token",
   scope: "openid profile email",
   state: "state",
@@ -491,7 +491,7 @@ describe("code-flow", () => {
     const client = testClient(tsoaApp, env);
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
-    const redirect_uri = "https://login.example.com/sv/callback";
+    const redirect_uri = "https://login.example.com/callback";
     const response_type = "token id_token";
     const scope = "openid profile email";
     const state = "state";
@@ -726,7 +726,7 @@ describe("code-flow", () => {
   it("should accept the same code multiple times", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-      redirect_uri: "https://login.example.com/sv/callback",
+      redirect_uri: "https://login.example.com/callback",
       response_type: "token id_token",
       scope: "openid profile email",
       state: "state",
@@ -796,7 +796,7 @@ describe("code-flow", () => {
   it("should not accept an invalid code", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-      redirect_uri: "https://login.example.com/sv/callback",
+      redirect_uri: "https://login.example.com/callback",
       response_type: "token id_token",
       scope: "openid profile email",
       state: "state",
@@ -874,7 +874,7 @@ describe("code-flow", () => {
 
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-      redirect_uri: "https://login.example.com/sv/callback",
+      redirect_uri: "https://login.example.com/callback",
       response_type: "token id_token",
       scope: "openid profile email",
       state: "state",
@@ -962,7 +962,7 @@ describe("code-flow", () => {
 
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-      redirect_uri: "https://login.example.com/sv/callback",
+      redirect_uri: "https://login.example.com/callback",
       response_type: "token id_token",
       scope: "openid profile email",
       state: "state",

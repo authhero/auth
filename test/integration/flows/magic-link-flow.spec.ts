@@ -7,7 +7,7 @@ import { tsoaApp } from "../../../src/app";
 
 const AUTH_PARAMS = {
   nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-  redirect_uri: "https://login.example.com/sv/callback",
+  redirect_uri: "https://login.example.com/callback",
   response_type: "token id_token",
   scope: "openid profile email",
   state: "state",
