@@ -35,12 +35,6 @@ export interface PasswordlessOptions {
   authParams: Omit<AuthParams, "client_id">;
 }
 
-function getLocalePath(locale: string) {
-  if (locale === "en") return "";
-
-  return `/${locale}`;
-}
-
 @Route("passwordless")
 @Tags("passwordless")
 export class PasswordlessController extends Controller {
@@ -193,15 +187,15 @@ export class PasswordlessController extends Controller {
       // Ideally here only catch AuthenticationCodeExpiredError
       // redirect here always to login2.sesamy.dev/expired-code
 
-      const localePath = getLocalePath(client.tenant.language || "sv");
+      const locale = client.tenant.language || "sv";
 
-      const login2ExpiredCodeUrl = new URL(
-        `${env.LOGIN2_URL}${localePath}/expired-code`,
-      );
+      const login2ExpiredCodeUrl = new URL(`${env.LOGIN2_URL}/expired-code`);
 
       const stateDecoded = new URLSearchParams(state);
 
       login2ExpiredCodeUrl.searchParams.set("email", encodeURIComponent(email));
+
+      login2ExpiredCodeUrl.searchParams.set("lang", locale);
 
       const redirectUri = stateDecoded.get("redirect_uri");
       if (redirectUri) {
