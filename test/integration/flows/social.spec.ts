@@ -586,6 +586,27 @@ describe("social sign on", () => {
       );
 
       // ---------------------------------------------
+      // fetch this linked user to sanity check rest of test
+      // ---------------------------------------------
+      const linkedUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: { user_id: "other-social-provider|123456789012345678901" },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const linkedUser = (await linkedUserRes.json()) as UserResponse;
+      // This is not true... should it be? TODO
+      // expect(linkedUser.user_id).toBe("email|7575757575757");
+      // We can assert this at least...
+      expect(linkedUser.linked_to).toBe("email|7575757575757");
+
+      // ---------------------------------------------
       // now do social sign on with same email - new user registered
       // ---------------------------------------------
       const socialCallbackQuery = {
