@@ -285,7 +285,7 @@ describe("social sign on", () => {
   });
 
   describe("Secondary user", () => {
-    it("should return existing primary account when logging in with new social sign ons with same email address", async () => {
+    it("should return existing primary account when logging in with new social sign on with same email address", async () => {
       // ---------------------------------------------
       // create new user with same email as we have hardcoded on the mock id_token responses
       // ---------------------------------------------
@@ -534,6 +534,80 @@ describe("social sign on", () => {
           },
         },
       ]);
+    });
+    // TO TEST
+    // ii. existing secondary linked user + primary user NOT for this social sign on AND can get the unlinked user first in the response?  we want to trigger an error
+    // where the get is returning the secondary user...
+    it.only("should return existing primary account when logging in with new social sign on with same email address AND there is already another linked social account", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // What I want here is for the linked social account to be returned FIRST!
+      // so this is a bit synthetic by manually writing the users...
+      await env.data.users.create("tenantId", {
+        name: "örjan.lindström@example.com",
+        provider: "other-social-provider",
+        connection: "other-social-provider",
+        email: "örjan.lindström@example.com",
+        email_verified: true,
+        last_ip: "",
+        login_count: 0,
+        is_social: true,
+        profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
+        id: "other-social-provider|123456789012345678901",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      await env.data.users.create("tenantId", {
+        name: "örjan.lindström@example.com",
+        provider: "email",
+        connection: "email",
+        email: "örjan.lindström@example.com",
+        email_verified: true,
+        last_ip: "",
+        login_count: 0,
+        is_social: true,
+        id: "email|7575757575757",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      // ---------------------------------------------
+      // now link first social account to this email account
+      // ---------------------------------------------
+
+      await env.data.users.update(
+        "tenantId",
+        "demo-social-provider|123456789012345678901",
+        {
+          linked_to: "email|7575757575757",
+        },
+      );
+
+      // ---------------------------------------------
+      // now do social sign on with same email - new user registered
+      // ---------------------------------------------
+      const socialCallbackQuery = {
+        state: SOCIAL_STATE_PARAM,
+        code: "code",
+      };
+
+      const socialCallbackResponse = await client.callback.$get({
+        query: socialCallbackQuery,
+      });
+
+      const socialCallbackResponseQuery = new URLSearchParams(
+        socialCallbackResponse.headers.get("location")?.split("#")[1]!,
+      );
+
+      const accessTokenPayload = parseJwt(
+        socialCallbackResponseQuery.get("access_token")!,
+      );
+
+      // on main this is returning the wrong user! Nice
+      expect(accessTokenPayload.sub).toBe("email|7575757575757");
     });
   });
 
