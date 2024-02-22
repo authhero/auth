@@ -535,10 +535,7 @@ describe("social sign on", () => {
         },
       ]);
     });
-    // TO TEST
-    // ii. existing secondary linked user + primary user NOT for this social sign on AND can get the unlinked user first in the response?  we want to trigger an error
-    // where the get is returning the secondary user...
-    it.only("should return existing primary account when logging in with new social sign on with same email address AND there is already another linked social account", async () => {
+    it("should return existing primary account when logging in with new social sign on with same email address AND there is already another linked social account", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -575,6 +572,24 @@ describe("social sign on", () => {
       });
 
       // ---------------------------------------------
+      // fetch this email user to sanity check test
+      // ---------------------------------------------
+      const emailUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: { user_id: "email|7575757575757" },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const emailUser = (await emailUserRes.json()) as UserResponse;
+      expect(emailUser.user_id).toBe("email|7575757575757");
+
+      // ---------------------------------------------
       // now link first social account to this email account
       // ---------------------------------------------
       await env.data.users.update(
@@ -607,6 +622,17 @@ describe("social sign on", () => {
       expect(linkedUser.linked_to).toBe("email|7575757575757");
 
       // ---------------------------------------------
+      // sanity check that users are entered in database in correct order
+      // ---------------------------------------------
+      const users = await env.data.users.list("tenantId", {
+        page: 0,
+        per_page: 10,
+        include_totals: false,
+      });
+      expect(users.length).toBe(3);
+      expect(users.users[2].id).toBe("email|7575757575757");
+
+      // ---------------------------------------------
       // now do social sign on with same email - new user registered
       // ---------------------------------------------
       const socialCallbackQuery = {
@@ -626,7 +652,7 @@ describe("social sign on", () => {
         socialCallbackResponseQuery.get("access_token")!,
       );
 
-      // on main this is returning the wrong user! Nice
+      // Currently on the main branch this is returning the wrong user!
       expect(accessTokenPayload.sub).toBe("email|7575757575757");
     });
   });
