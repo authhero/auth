@@ -577,10 +577,9 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now link first social account to this email account
       // ---------------------------------------------
-
       await env.data.users.update(
         "tenantId",
-        "demo-social-provider|123456789012345678901",
+        "other-social-provider|123456789012345678901",
         {
           linked_to: "email|7575757575757",
         },
