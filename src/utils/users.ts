@@ -31,7 +31,7 @@ export async function getUserByEmailAndProvider({
 }: GetPrimaryUserByEmailAndProviderParams): Promise<User | null> {
   const { users } = await userAdapter.list(tenant_id, {
     page: 0,
-    per_page: 1,
+    per_page: 10,
     include_totals: false,
     q: `email:${email} provider:${provider}`,
   });
@@ -54,11 +54,12 @@ export async function getPrimaryUserByEmail({
 }: GetPrimaryUserByEmailParams): Promise<User | undefined> {
   const { users } = await userAdapter.list(tenant_id, {
     page: 0,
-    per_page: 1,
+    per_page: 10,
     include_totals: false,
     q: `email:${email}`,
   });
 
+  // we should do this in SQL so we don't get issues with pagination!
   return users.find((user) => !user.linked_to);
 }
 
