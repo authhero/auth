@@ -7,33 +7,37 @@ export function luceneFilter<TB extends keyof Database>(
   query: string,
   searchableColumns: string[],
 ) {
-  const filters = query.split(/\s+/).map((filter) => {
-    let isNegation = filter.startsWith("-");
-    let key, value, isExistsQuery;
+  const filters = query
+    .split(/\s+/)
+    // TODO - no .replaceAll? is this our typing rather than reality? Is this hack safe?
+    .map((q) => q.replace("=", ":"))
+    .map((filter) => {
+      let isNegation = filter.startsWith("-");
+      let key, value, isExistsQuery;
 
-    if (filter.startsWith("-_exists_:")) {
-      key = filter.substring(10); // Remove '-_exists_:' part
-      isExistsQuery = true;
-      isNegation = true;
-    } else if (filter.startsWith("_exists_:")) {
-      key = filter.substring(9); // Remove '_exists_:' part
-      isExistsQuery = true;
-      isNegation = false;
-    } else if (filter.includes(":")) {
-      isNegation = filter.startsWith("-");
-      [key, value] = isNegation
-        ? filter.substring(1).split(":")
-        : filter.split(":");
-      isExistsQuery = false;
-    } else {
-      // Single word search case
-      key = null;
-      value = filter;
-      isExistsQuery = false;
-    }
+      if (filter.startsWith("-_exists_:")) {
+        key = filter.substring(10); // Remove '-_exists_:' part
+        isExistsQuery = true;
+        isNegation = true;
+      } else if (filter.startsWith("_exists_:")) {
+        key = filter.substring(9); // Remove '_exists_:' part
+        isExistsQuery = true;
+        isNegation = false;
+      } else if (filter.includes(":")) {
+        isNegation = filter.startsWith("-");
+        [key, value] = isNegation
+          ? filter.substring(1).split(":")
+          : filter.split(":");
+        isExistsQuery = false;
+      } else {
+        // Single word search case
+        key = null;
+        value = filter;
+        isExistsQuery = false;
+      }
 
-    return { key, value, isNegation, isExistsQuery };
-  });
+      return { key, value, isNegation, isExistsQuery };
+    });
 
   // Apply filters to the query builder
   filters.forEach(({ key, value, isNegation, isExistsQuery }) => {

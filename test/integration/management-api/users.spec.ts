@@ -411,7 +411,6 @@ describe("users", () => {
         expect(body[0].email).toBe("test@example.com");
       });
     });
-    // TO TEST - same but with equal as separator! this is the latest bug
   });
 
   describe("link user", () => {
