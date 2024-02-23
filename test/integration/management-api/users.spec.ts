@@ -371,6 +371,45 @@ describe("users", () => {
         expect(body.length).toBe(1);
         expect(body[0].email).toBe("test@example.com");
       });
+      it("should search for a user by email when lucene query uses equal char as separator", async () => {
+        const token = await getAdminToken();
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+        const createUserResponse = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "test@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "otherTenant",
+              "content-type": "application/json",
+            },
+          },
+        );
+        expect(createUserResponse.status).toBe(201);
+        const usersResponse = await client.api.v2.users.$get(
+          {
+            query: {
+              per_page: 2,
+              q: "email=test@example.com",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "otherTenant",
+            },
+          },
+        );
+        expect(usersResponse.status).toBe(200);
+        const body = (await usersResponse.json()) as UserResponse[];
+        expect(body.length).toBe(1);
+        expect(body[0].email).toBe("test@example.com");
+      });
     });
     // TO TEST - same but with equal as separator! this is the latest bug
   });
