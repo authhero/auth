@@ -6,7 +6,8 @@ import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
 describe("users", () => {
-  // TO TEST - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
+  // TO TEST
+  //  - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
   it("should return an empty list of users for a tenant", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -17,7 +18,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
         },
       },
     );
@@ -53,7 +54,7 @@ describe("users", () => {
     expect(createUserResponse.status).toBe(400);
   });
 
-  it("should create a new user for a tenant", async () => {
+  it("should create a new user for an empty tenant", async () => {
     const token = await getAdminToken();
 
     const env = await getEnv();
@@ -69,7 +70,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
           "content-type": "application/json",
         },
       },
@@ -91,7 +92,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
+          "tenant-id": "otherTenant",
         },
       },
     );
@@ -218,8 +219,8 @@ describe("users", () => {
     );
 
     const body = (await usersResponse.json()) as UserResponse[];
-    expect(body.length).toBe(1);
-    expect(body[0].email_verified).toBe(true);
+    expect(body.length).toBe(2);
+    expect(body[1].email_verified).toBe(true);
   });
 
   it("should lowercase email when creating a  user", async () => {
@@ -280,7 +281,7 @@ describe("users", () => {
   });
 
   describe("search for user", () => {
-    it("should search for a user with wildcard search", async () => {
+    it("should search for a user with wildcard search on email", async () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
@@ -308,7 +309,7 @@ describe("users", () => {
         {
           query: {
             per_page: 2,
-            q: "example",
+            q: "test",
           },
         },
         {
@@ -455,8 +456,8 @@ describe("users", () => {
       expect(listUsersResponse.status).toBe(200);
 
       const usersList = (await listUsersResponse.json()) as UserResponse[];
-      expect(usersList.length).toBe(1);
-      expect(usersList[0].user_id).toBe(newUser2.user_id);
+      expect(usersList.length).toBe(2);
+      expect(usersList[1].user_id).toBe(newUser2.user_id);
 
       // Fetch a single users
       const userResponse = await client.api.v2.users[":user_id"].$get(
