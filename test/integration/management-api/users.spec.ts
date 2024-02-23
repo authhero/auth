@@ -6,26 +6,7 @@ import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
 describe("users", () => {
-  it("should return CORS headers", async () => {
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-
-    const token = await getAdminToken();
-    const response = await client.api.v2.users.$get(
-      {},
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
-        },
-      },
-    );
-
-    expect(response.status).toBe(200);
-
-    console.log(response.headers);
-  });
-
+  // TO TEST - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
   it("should return an empty list of users for a tenant", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -342,6 +323,93 @@ describe("users", () => {
 
       const body = (await usersResponse.json()) as UserResponse[];
       expect(body.length).toBe(1);
+    });
+    describe("lucene queries", () => {
+      /*
+       
+       we need to be careful that we're not returning all the users here, and because we only have one user, we get false positives...
+       probably worth adding several test users, with similarish emails...
+       and we want to make sure we're seraching for the field we specify...
+
+      */
+      it("should search for a user by email when lucene query uses colon as separator", async () => {
+        const token = await getAdminToken();
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+        const createUserResponse = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "test@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "otherTenant",
+              "content-type": "application/json",
+            },
+          },
+        );
+        expect(createUserResponse.status).toBe(201);
+        const usersResponse = await client.api.v2.users.$get(
+          {
+            query: {
+              per_page: 2,
+              q: "email:test@example.com",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "otherTenant",
+            },
+          },
+        );
+        expect(usersResponse.status).toBe(200);
+        const body = (await usersResponse.json()) as UserResponse[];
+        expect(body.length).toBe(1);
+        expect(body[0].email).toBe("test@example.com");
+      });
+      it("should search for a user by email when lucene query uses equal char as separator", async () => {
+        const token = await getAdminToken();
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+        const createUserResponse = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "test@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "otherTenant",
+              "content-type": "application/json",
+            },
+          },
+        );
+        expect(createUserResponse.status).toBe(201);
+        const usersResponse = await client.api.v2.users.$get(
+          {
+            query: {
+              per_page: 2,
+              q: "email=test@example.com",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "otherTenant",
+            },
+          },
+        );
+        expect(usersResponse.status).toBe(200);
+        const body = (await usersResponse.json()) as UserResponse[];
+        expect(body.length).toBe(1);
+        expect(body[0].email).toBe("test@example.com");
+      });
     });
   });
 
