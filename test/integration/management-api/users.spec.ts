@@ -411,6 +411,48 @@ describe("users", () => {
         expect(body.length).toBe(1);
         expect(body[0].email).toBe("test@example.com");
       });
+      it("should search for a user by email and provider when lucene query uses equal char as separator", async () => {
+        const token = await getAdminToken();
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+        const createUserResponse = await client.api.v2.users.$post(
+          {
+            json: {
+              // we already have a username-password user in our fixtures
+              email: "foo@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+              "content-type": "application/json",
+            },
+          },
+        );
+        expect(createUserResponse.status).toBe(201);
+
+        const usersResponse = await client.api.v2.users.$get(
+          {
+            query: {
+              per_page: 2,
+              q: "provider=email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+            },
+          },
+        );
+        expect(usersResponse.status).toBe(200);
+        const body = (await usersResponse.json()) as UserResponse[];
+        expect(body.length).toBe(1);
+        expect(body[0].email).toBe("foo@example.com");
+        expect(body[0].provider).toBe("email");
+      });
     });
   });
 
