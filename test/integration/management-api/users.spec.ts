@@ -6,7 +6,8 @@ import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
 describe("users", () => {
-  // TO TEST - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
+  // TO TEST
+  //  - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
   it("should return an empty list of users for a tenant", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -44,7 +45,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -53,7 +54,7 @@ describe("users", () => {
     expect(createUserResponse.status).toBe(400);
   });
 
-  it("should create a new user for a tenant", async () => {
+  it("should create a new user for an empty tenant", async () => {
     const token = await getAdminToken();
 
     const env = await getEnv();
@@ -128,7 +129,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -146,7 +147,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -170,7 +171,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -196,7 +197,7 @@ describe("users", () => {
         headers: {
           authorization: `Bearer ${token}`,
           "content-type": "application/json",
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
         },
       },
     );
@@ -212,14 +213,14 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
         },
       },
     );
 
     const body = (await usersResponse.json()) as UserResponse[];
-    expect(body.length).toBe(1);
-    expect(body[0].email_verified).toBe(true);
+    expect(body.length).toBe(2);
+    expect(body[1].email_verified).toBe(true);
   });
 
   it("should lowercase email when creating a  user", async () => {
@@ -240,7 +241,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -253,7 +254,7 @@ describe("users", () => {
     // ----------------------
     // Check directly in the database that the email is lower case
     // ----------------------
-    const user = await env.data.users.get("otherTenant", createdUser.user_id);
+    const user = await env.data.users.get("tenantId", createdUser.user_id);
     expect(user!.email).toBe("fooz@bar.com");
 
     // ----------------------
@@ -269,7 +270,7 @@ describe("users", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
         },
       },
     );
@@ -280,7 +281,7 @@ describe("users", () => {
   });
 
   describe("search for user", () => {
-    it("should search for a user with wildcard search", async () => {
+    it("should search for a user with wildcard search on email", async () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
@@ -296,7 +297,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -308,13 +309,13 @@ describe("users", () => {
         {
           query: {
             per_page: 2,
-            q: "example",
+            q: "test",
           },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
           },
         },
       );
@@ -346,7 +347,7 @@ describe("users", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "otherTenant",
+              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -362,7 +363,7 @@ describe("users", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "otherTenant",
+              "tenant-id": "tenantId",
             },
           },
         );
@@ -385,7 +386,7 @@ describe("users", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "otherTenant",
+              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -401,7 +402,7 @@ describe("users", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "otherTenant",
+              "tenant-id": "tenantId",
             },
           },
         );
@@ -419,7 +420,7 @@ describe("users", () => {
 
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const [newUser1, newUser2] = await createTestUsers(env, "otherTenant");
+      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
       const params = {
         param: {
@@ -434,7 +435,7 @@ describe("users", () => {
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       });
@@ -447,7 +448,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
           },
         },
       );
@@ -455,8 +456,8 @@ describe("users", () => {
       expect(listUsersResponse.status).toBe(200);
 
       const usersList = (await listUsersResponse.json()) as UserResponse[];
-      expect(usersList.length).toBe(1);
-      expect(usersList[0].user_id).toBe(newUser2.user_id);
+      expect(usersList.length).toBe(2);
+      expect(usersList[1].user_id).toBe(newUser2.user_id);
 
       // Fetch a single users
       const userResponse = await client.api.v2.users[":user_id"].$get(
@@ -467,7 +468,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
           },
         },
       );
@@ -506,7 +507,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
           },
         },
       );
@@ -519,7 +520,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
           },
         },
       );
@@ -543,7 +544,7 @@ describe("users", () => {
 
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const [newUser1, newUser2] = await createTestUsers(env, "otherTenant");
+      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
       const [provider] = newUser2.id.split("|");
       const params = {
@@ -559,7 +560,7 @@ describe("users", () => {
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       });
@@ -577,7 +578,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
           },
         },
       );
@@ -614,7 +615,7 @@ describe("users", () => {
 
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const [newUser1, newUser2] = await createTestUsers(env, "otherTenant");
+      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
       const params = {
         param: { user_id: newUser1.id },
@@ -628,7 +629,7 @@ describe("users", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
+            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
