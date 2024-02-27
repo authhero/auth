@@ -188,7 +188,7 @@ export class UsersMgmtController extends Controller {
     const data = await env.data.users.create(tenantId, {
       email,
       id: `email|${userIdGenerate()}`,
-      name: user.name,
+      name: email,
       provider: "email",
       connection: "email",
       email_verified: false,
