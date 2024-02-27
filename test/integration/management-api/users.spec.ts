@@ -309,6 +309,9 @@ describe("users", () => {
     });
 
     expect(usersNowDeleted.length).toBe(1);
+
+    expect(usersNowDeleted[0].id).not.toBe(newUser1.id);
+    expect(usersNowDeleted[0].id).not.toBe(newUser2.id);
   });
 
   it("should lowercase email when creating a  user", async () => {
