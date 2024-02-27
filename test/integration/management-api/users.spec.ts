@@ -223,6 +223,94 @@ describe("users", () => {
     expect(body[1].email_verified).toBe(true);
   });
 
+  it("should delete secondary account if delete primary account", async () => {
+    const token = await getAdminToken();
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    const headers = {
+      authorization: `Bearer ${token}`,
+      "tenant-id": "tenantId",
+      "content-type": "application/json",
+    };
+
+    const createUserResponse1 = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "test1@example.com",
+          connection: "email",
+        },
+      },
+      {
+        headers,
+      },
+    );
+
+    const newUser1 = (await createUserResponse1.json()) as UserResponse;
+
+    const createUserResponse2 = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "test2@example.com",
+          connection: "email",
+        },
+      },
+      {
+        headers,
+      },
+    );
+
+    const newUser2 = (await createUserResponse2.json()) as UserResponse;
+
+    const typeCoercion = {
+      param: {
+        user_id: newUser2.id,
+      },
+      json: {
+        link_with: newUser1.id,
+      },
+    };
+    const linkUserResponse = await client.api.v2.users[
+      ":user_id"
+    ].identities.$post(typeCoercion, {
+      headers,
+    });
+
+    // inspect the db directly because the GET endpoints don't return linked users
+    const { users } = await env.data.users.list("tenantId", {
+      page: 0,
+      per_page: 10,
+      include_totals: true,
+      q: "",
+    });
+    expect(users.length).toBe(3);
+
+    // check we have linked user1 to user2
+    const user1 = users.find((u) => u.id === newUser1.id);
+    expect(user1?.linked_to).toBe(newUser2.id);
+
+    // --------------------------------------------------
+    // now delete the primary account - newUser2
+    // --------------------------------------------------
+
+    await client.api.v2.users[":user_id"].$delete(
+      { param: { user_id: newUser2.id } },
+      {
+        headers,
+      },
+    );
+
+    // user1 and user2 are deleted - cascading delete in SQL works (at least in SQLite)
+    const { users: usersNowDeleted } = await env.data.users.list("tenantId", {
+      page: 0,
+      per_page: 10,
+      include_totals: true,
+      q: "",
+    });
+
+    expect(usersNowDeleted.length).toBe(1);
+  });
+
   it("should lowercase email when creating a  user", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
