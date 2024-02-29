@@ -406,6 +406,89 @@ describe("users management API endpoint", () => {
       expect(body.length).toBe(0);
     });
 
+    it.only("should return linked users as identities in primary user, and not in list of results", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const token = await getAdminToken();
+
+      const createSecondaryUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            // use a different email here to make sure our implementation is not taking shortcuts
+            email: "secondary-user@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createSecondaryUserResponse.status).toBe(201);
+      const secondaryUser =
+        (await createSecondaryUserResponse.json()) as UserResponse;
+
+      // link the accounts
+      const params = {
+        param: {
+          user_id: "userId",
+        },
+        json: {
+          link_with: secondaryUser.user_id,
+        },
+      };
+      const linkUserResponse = await client.api.v2.users[
+        ":user_id"
+      ].identities.$post(params, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
+      });
+
+      expect(linkUserResponse.status).toBe(201);
+
+      // Now we should only get one result from the get endpoint but with nested identities
+      const response = await client.api.v2.users.$get(
+        {},
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const body = (await response.json()) as UserResponse[];
+      expect(body.length).toBe(1);
+
+      expect(body[0].identities).toEqual([
+        {
+          connection: "Username-Password-Authentication",
+          user_id: "userId",
+          provider: "auth2",
+          isSocial: false,
+        },
+        {
+          connection: "email",
+          user_id: secondaryUser.user_id.split("|")[1],
+          provider: "email",
+          isSocial: false,
+          profileData: {
+            email: "secondary-user@example.com",
+          },
+        },
+      ]);
+    });
+
     describe("search for user", () => {
       it("should search for a user with wildcard search on email", async () => {
         const token = await getAdminToken();
