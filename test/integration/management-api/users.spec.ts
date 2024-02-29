@@ -647,9 +647,9 @@ describe("users", () => {
 
       expect(unlinkUserResponse.status).toBe(200);
 
-      // now fetch user 1 again to check doesn't have user2 as identity
-      const userResponse1 = await client.api.v2.users[":user_id"].$get(
-        { param: { user_id: newUser1.user_id } },
+      // now fetch user 2 again to check doesn't have user2 as identity
+      const userResponse2 = await client.api.v2.users[":user_id"].$get(
+        { param: { user_id: newUser2.user_id } },
         {
           headers: {
             authorization: `Bearer ${token}`,
@@ -658,12 +658,12 @@ describe("users", () => {
         },
       );
 
-      expect(userResponse1.status).toBe(200);
-      const user1 = (await userResponse1.json()) as UserResponse;
+      expect(userResponse2.status).toBe(200);
+      const user1 = (await userResponse2.json()) as UserResponse;
       expect(user1.identities).toEqual([
         {
           connection: "email",
-          user_id: newUser1.user_id.split("|")[1],
+          user_id: newUser2.user_id.split("|")[1],
           provider: "email",
           isSocial: false,
         },
