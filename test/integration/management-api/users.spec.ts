@@ -6,31 +6,6 @@ import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
 describe("users management API endpoint", () => {
-  describe("GET", () => {
-    // TO TEST
-    //  - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
-    it("should return an empty list of users for a tenant", async () => {
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
-
-      const token = await getAdminToken();
-      const response = await client.api.v2.users.$get(
-        {},
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
-          },
-        },
-      );
-
-      expect(response.status).toBe(200);
-
-      const body = (await response.json()) as UserResponse[];
-      expect(body.length).toBe(0);
-    });
-  });
-
   describe("POST", () => {
     // this is different to Auth0 where user_id OR email is required
     it("should return a 400 if try and create a new user for a tenant without an email", async () => {
@@ -407,183 +382,208 @@ describe("users management API endpoint", () => {
     });
   });
 
-  describe("search for user", () => {
-    it("should search for a user with wildcard search on email", async () => {
-      const token = await getAdminToken();
-
+  describe("GET", () => {
+    // TO TEST
+    //  - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
+    it("should return an empty list of users for a tenant", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const createUserResponse = await client.api.v2.users.$post(
-        {
-          json: {
-            email: "test@example.com",
-            connection: "email",
-          },
-        },
+      const token = await getAdminToken();
+      const response = await client.api.v2.users.$get(
+        {},
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-            "content-type": "application/json",
+            "tenant-id": "otherTenant",
           },
         },
       );
 
-      expect(createUserResponse.status).toBe(201);
+      expect(response.status).toBe(200);
 
-      const usersResponse = await client.api.v2.users.$get(
-        {
-          query: {
-            per_page: 2,
-            q: "test",
-          },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-          },
-        },
-      );
-
-      expect(usersResponse.status).toBe(200);
-
-      const body = (await usersResponse.json()) as UserResponse[];
-      expect(body.length).toBe(1);
+      const body = (await response.json()) as UserResponse[];
+      expect(body.length).toBe(0);
     });
-    describe("lucene queries", () => {
-      /*
+
+    describe("search for user", () => {
+      it("should search for a user with wildcard search on email", async () => {
+        const token = await getAdminToken();
+
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+
+        const createUserResponse = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "test@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+              "content-type": "application/json",
+            },
+          },
+        );
+
+        expect(createUserResponse.status).toBe(201);
+
+        const usersResponse = await client.api.v2.users.$get(
+          {
+            query: {
+              per_page: 2,
+              q: "test",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+            },
+          },
+        );
+
+        expect(usersResponse.status).toBe(200);
+
+        const body = (await usersResponse.json()) as UserResponse[];
+        expect(body.length).toBe(1);
+      });
+      describe("lucene queries", () => {
+        /*
        
        we need to be careful that we're not returning all the users here, and because we only have one user, we get false positives...
        probably worth adding several test users, with similarish emails...
        and we want to make sure we're seraching for the field we specify...
 
       */
-      it("should search for a user by email when lucene query uses colon as separator", async () => {
-        const token = await getAdminToken();
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
-        const createUserResponse = await client.api.v2.users.$post(
-          {
-            json: {
-              email: "test@example.com",
-              connection: "email",
+        it("should search for a user by email when lucene query uses colon as separator", async () => {
+          const token = await getAdminToken();
+          const env = await getEnv();
+          const client = testClient(tsoaApp, env);
+          const createUserResponse = await client.api.v2.users.$post(
+            {
+              json: {
+                email: "test@example.com",
+                connection: "email",
+              },
             },
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
-              "content-type": "application/json",
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+                "tenant-id": "tenantId",
+                "content-type": "application/json",
+              },
             },
-          },
-        );
-        expect(createUserResponse.status).toBe(201);
-        const usersResponse = await client.api.v2.users.$get(
-          {
-            query: {
-              per_page: 2,
-              q: "email:test@example.com",
+          );
+          expect(createUserResponse.status).toBe(201);
+          const usersResponse = await client.api.v2.users.$get(
+            {
+              query: {
+                per_page: 2,
+                q: "email:test@example.com",
+              },
             },
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+                "tenant-id": "tenantId",
+              },
             },
-          },
-        );
-        expect(usersResponse.status).toBe(200);
-        const body = (await usersResponse.json()) as UserResponse[];
-        expect(body.length).toBe(1);
-        expect(body[0].email).toBe("test@example.com");
-      });
-      it("should search for a user by email when lucene query uses equal char as separator", async () => {
-        const token = await getAdminToken();
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
-        const createUserResponse = await client.api.v2.users.$post(
-          {
-            json: {
-              email: "test@example.com",
-              connection: "email",
+          );
+          expect(usersResponse.status).toBe(200);
+          const body = (await usersResponse.json()) as UserResponse[];
+          expect(body.length).toBe(1);
+          expect(body[0].email).toBe("test@example.com");
+        });
+        it("should search for a user by email when lucene query uses equal char as separator", async () => {
+          const token = await getAdminToken();
+          const env = await getEnv();
+          const client = testClient(tsoaApp, env);
+          const createUserResponse = await client.api.v2.users.$post(
+            {
+              json: {
+                email: "test@example.com",
+                connection: "email",
+              },
             },
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
-              "content-type": "application/json",
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+                "tenant-id": "tenantId",
+                "content-type": "application/json",
+              },
             },
-          },
-        );
-        expect(createUserResponse.status).toBe(201);
-        const usersResponse = await client.api.v2.users.$get(
-          {
-            query: {
-              per_page: 2,
-              q: "email=test@example.com",
+          );
+          expect(createUserResponse.status).toBe(201);
+          const usersResponse = await client.api.v2.users.$get(
+            {
+              query: {
+                per_page: 2,
+                q: "email=test@example.com",
+              },
             },
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+                "tenant-id": "tenantId",
+              },
             },
-          },
-        );
-        expect(usersResponse.status).toBe(200);
-        const body = (await usersResponse.json()) as UserResponse[];
-        expect(body.length).toBe(1);
-        expect(body[0].email).toBe("test@example.com");
-      });
-      it("should search for a user by email and provider when lucene query uses equal char as separator", async () => {
-        const token = await getAdminToken();
-        const env = await getEnv();
-        const client = testClient(tsoaApp, env);
-        const createUserResponse = await client.api.v2.users.$post(
-          {
-            json: {
-              // we already have a username-password user in our fixtures
-              email: "foo@example.com",
-              connection: "email",
+          );
+          expect(usersResponse.status).toBe(200);
+          const body = (await usersResponse.json()) as UserResponse[];
+          expect(body.length).toBe(1);
+          expect(body[0].email).toBe("test@example.com");
+        });
+        it("should search for a user by email and provider when lucene query uses equal char as separator", async () => {
+          const token = await getAdminToken();
+          const env = await getEnv();
+          const client = testClient(tsoaApp, env);
+          const createUserResponse = await client.api.v2.users.$post(
+            {
+              json: {
+                // we already have a username-password user in our fixtures
+                email: "foo@example.com",
+                connection: "email",
+              },
             },
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
-              "content-type": "application/json",
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+                "tenant-id": "tenantId",
+                "content-type": "application/json",
+              },
             },
-          },
-        );
-        expect(createUserResponse.status).toBe(201);
+          );
+          expect(createUserResponse.status).toBe(201);
 
-        const usersResponse = await client.api.v2.users.$get(
-          {
-            query: {
-              per_page: 2,
-              q: "provider=email",
+          const usersResponse = await client.api.v2.users.$get(
+            {
+              query: {
+                per_page: 2,
+                q: "provider=email",
+              },
             },
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+                "tenant-id": "tenantId",
+              },
             },
-          },
-        );
-        expect(usersResponse.status).toBe(200);
-        const body = (await usersResponse.json()) as UserResponse[];
-        expect(body.length).toBe(1);
-        expect(body[0].email).toBe("foo@example.com");
-        expect(body[0].provider).toBe("email");
+          );
+          expect(usersResponse.status).toBe(200);
+          const body = (await usersResponse.json()) as UserResponse[];
+          expect(body.length).toBe(1);
+          expect(body[0].email).toBe("foo@example.com");
+          expect(body[0].provider).toBe("email");
+        });
       });
+      // TO TEST - linked accounts!
+      // especially when the primary and secondary accounts have different email addresses!
+      // we need to check what auth0 does
     });
-    // TO TEST - linked accounts!
-    // especially when the primary and secondary accounts have different email addresses!
-    // we need to check what auth0 does
   });
 
   describe("link user", () => {
