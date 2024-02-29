@@ -9,13 +9,6 @@ function getEmailVerified(user: Partial<PostUsersBody>): number | undefined {
   return user.email_verified ? 1 : 0;
 }
 
-function getLinkedTo(user: Partial<PostUsersBody>): string | null {
-  if (user.linked_to === undefined) {
-    return null;
-  }
-  return user.linked_to;
-}
-
 export function update(db: Kysely<Database>) {
   return async (
     tenant_id: string,
@@ -25,9 +18,13 @@ export function update(db: Kysely<Database>) {
     const sqlUser: Partial<SqlUser> = {
       ...user,
       email_verified: getEmailVerified(user),
-      linked_to: getLinkedTo(user),
       updated_at: new Date().toISOString(),
     };
+
+    const unsafeTypeUser = sqlUser as any;
+    if (unsafeTypeUser.linked_to === undefined) {
+      unsafeTypeUser.linked_to = null;
+    }
 
     const results = await db
       .updateTable("users")

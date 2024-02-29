@@ -7,7 +7,7 @@ export interface BaseUser {
   name?: string;
   picture?: string;
   locale?: string;
-  linked_to?: string | null;
+  linked_to?: string;
   profileData?: string;
 }
 

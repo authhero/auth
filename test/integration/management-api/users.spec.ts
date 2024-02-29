@@ -647,6 +647,10 @@ describe("users", () => {
 
       expect(unlinkUserResponse.status).toBe(200);
 
+      // manually check in the db that the linked_to field has been reset
+      const user1Updated = await env.data.users.get("tenantId", newUser1.id);
+      expect(user1Updated!.linked_to).toBeUndefined();
+
       // now fetch user 2 again to check doesn't have user2 as identity
       const userResponse2 = await client.api.v2.users[":user_id"].$get(
         { param: { user_id: newUser2.user_id } },
