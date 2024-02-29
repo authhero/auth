@@ -545,6 +545,9 @@ describe("users", () => {
         expect(body[0].provider).toBe("email");
       });
     });
+    // TO TEST - linked accounts!
+    // especially when the primary and secondary accounts have different email addresses!
+    // we need to check what auth0 does
   });
 
   describe("link user", () => {
@@ -773,6 +776,117 @@ describe("users", () => {
       );
 
       expect(updateUserResponse.status).toBe(409);
+    });
+  });
+
+  describe("get by id", () => {
+    it("should return primary user with secondary user nested in identities, but should not return linked secondary user (should act as though the secondary user does not exist)", async () => {
+      const token = await getAdminToken();
+
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const createSecondaryUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            // use a different email here to make sure our implementation is not taking shortcuts
+            email: "secondary-user@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createSecondaryUserResponse.status).toBe(201);
+      const secondaryUser =
+        (await createSecondaryUserResponse.json()) as UserResponse;
+
+      // link the accounts
+      const params = {
+        param: {
+          user_id: secondaryUser.user_id,
+        },
+        json: {
+          link_with: "userId",
+        },
+      };
+      const linkUserResponse = await client.api.v2.users[
+        ":user_id"
+      ].identities.$post(params, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
+      });
+
+      expect(linkUserResponse.status).toBe(201);
+
+      // now pull the primary account down
+
+      const userResponse = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "userId",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      expect(userResponse.status).toBe(200);
+
+      const user = (await userResponse.json()) as UserResponse;
+
+      expect(user.email).toBe("foo@example.com");
+      expect(user.identities).toEqual([
+        {
+          connection: "Username-Password-Authentication",
+          user_id: "userId",
+          provider: "auth2",
+          isSocial: false,
+        },
+        // NICE! this is not done at all  8-)
+        {
+          connection: "email",
+          user_id: secondaryUser.user_id.split("|")[1],
+          provider: "email",
+          isSocial: false,
+          profileData: {
+            email: "secondary-user@example.com",
+            email_verified: false,
+          },
+        },
+      ]);
+
+      // try getting the secondary user
+
+      const secondaryUserResponse = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: secondaryUser.user_id,
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      // nice! this is wrong!
+      expect(secondaryUserResponse.status).toBe(404);
     });
   });
 });
