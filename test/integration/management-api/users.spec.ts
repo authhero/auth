@@ -370,6 +370,34 @@ describe("users", () => {
     const fetchedUser = (await newUser.json()) as UserResponse;
     expect(fetchedUser.email).toBe("fooz@bar.com");
   });
+  // TODO - split these tests up into a new test suite one for each HTTP verb!
+  it("should use email for name if not name is not passed", async () => {
+    const token = await getAdminToken();
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    const createUserResponse = await client.api.v2.users.$post(
+      {
+        json: {
+          email: "foo@bar.com",
+          connection: "email",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    expect(createUserResponse.status).toBe(201);
+
+    const createdUser = (await createUserResponse.json()) as UserResponse;
+
+    expect(createdUser.name).toBe("foo@bar.com");
+  });
 
   describe("search for user", () => {
     it("should search for a user with wildcard search on email", async () => {
