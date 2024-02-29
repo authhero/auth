@@ -91,6 +91,7 @@ describe("users by email", () => {
     const createDuplicateUserResponse = await client.api.v2.users.$post(
       {
         json: {
+          name: "Åkesson Þorsteinsson",
           email: "foo@example.com",
           connection: "Username-Password-Authentication",
           // seems odd that this isn't allowed... I think this endpoint needs looking at
@@ -150,7 +151,7 @@ describe("users by email", () => {
     expect(users[1]).toMatchObject({
       email: "foo@example.com",
       tenant_id: "tenantId",
-      name: "foo@example.com",
+      name: "Åkesson Þorsteinsson",
       provider: "email",
       connection: "email",
       email_verified: false,

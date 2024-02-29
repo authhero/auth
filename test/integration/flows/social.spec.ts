@@ -431,7 +431,6 @@ describe("social sign on", () => {
         // testing this means it must be working
         sub: createEmailUser.user_id,
         aud: "clientId",
-        name: "örjan.lindström@example.com",
         email: "örjan.lindström@example.com",
         email_verified: false,
         nonce: "nonce",
