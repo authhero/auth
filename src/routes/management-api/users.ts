@@ -76,27 +76,13 @@ export class UsersMgmtController extends Controller {
       q: query.join(" "),
     });
 
-    const users: UserResponse[] = result.users.map((user) => {
-      const { id, ...userWithoutId } = user;
+    const primarySqlUsers = result.users.filter((user) => !user.linked_to);
 
-      return {
-        ...userWithoutId,
-        user_id: user.id,
-        identities: [
-          {
-            connection: user.connection,
-            provider: user.provider,
-            user_id: userIdParse(user.id),
-            isSocial: user.is_social,
-          },
-          // TODO - need to do the join here with linked accounts
-        ],
-        // TODO: store this field in sql
-        username: user.email,
-        phone_number: "",
-        phone_verified: false,
-      };
-    });
+    const users: UserResponse[] = await Promise.all(
+      primarySqlUsers.map(async (primarySqlUser) => {
+        return await enrichUser(env, tenantId, primarySqlUser);
+      }),
+    );
 
     if (include_totals) {
       const res: GetUserResponseWithTotals = {
