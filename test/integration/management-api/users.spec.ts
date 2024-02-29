@@ -659,8 +659,8 @@ describe("users", () => {
       );
 
       expect(userResponse2.status).toBe(200);
-      const user1 = (await userResponse2.json()) as UserResponse;
-      expect(user1.identities).toEqual([
+      const user2 = (await userResponse2.json()) as UserResponse;
+      expect(user2.identities).toEqual([
         {
           connection: "email",
           user_id: newUser2.user_id.split("|")[1],
@@ -669,7 +669,7 @@ describe("users", () => {
         },
       ]);
       // this shows we have unlinked
-      expect(user1.identities.length).toBe(1);
+      expect(user2.identities.length).toBe(1);
     });
 
     it("should link two users using user_id and provider parameter", async () => {
