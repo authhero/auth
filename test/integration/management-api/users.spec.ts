@@ -384,7 +384,8 @@ describe("users management API endpoint", () => {
 
   describe("GET", () => {
     // TO TEST
-    //  - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
+    // - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
+    // - pagination! What I've done won't work of course unless we overfetch...
     it("should return an empty list of users for a tenant", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -406,7 +407,7 @@ describe("users management API endpoint", () => {
       expect(body.length).toBe(0);
     });
 
-    it.only("should return linked users as identities in primary user, and not in list of results", async () => {
+    it("should return linked users as identities in primary user, and not in list of results", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -484,6 +485,7 @@ describe("users management API endpoint", () => {
           isSocial: false,
           profileData: {
             email: "secondary-user@example.com",
+            email_verified: false,
           },
         },
       ]);
