@@ -27,7 +27,7 @@ describe("users by email", () => {
 
     const users = (await response.json()) as UserResponse[];
 
-    expect(users).toBe([]);
+    expect(users).toHaveLength(0);
   });
 
   it("should return a single user for a simple get by email - no linked accounts", async () => {
