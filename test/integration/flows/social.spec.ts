@@ -356,7 +356,7 @@ describe("social sign on", () => {
       // This is the big change here
       expect(idTokenPayload.sub).not.toBe("demo-social-provider|1234567890");
       expect(idTokenPayload.sub).toBe(createEmailUser.user_id);
-      expect(idTokenPayload.name).toBeNull();
+      expect(idTokenPayload.name).toBe("örjan.lindström@example.com");
       expect(idTokenPayload.email).toBe("örjan.lindström@example.com");
       // TODO - we are pretending that the email is always verified
       // expect(idTokenPayload.email_verified).toBe(true);
