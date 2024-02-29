@@ -810,10 +810,10 @@ describe("users", () => {
       // link the accounts
       const params = {
         param: {
-          user_id: secondaryUser.user_id,
+          user_id: "userId",
         },
         json: {
-          link_with: "userId",
+          link_with: secondaryUser.user_id,
         },
       };
       const linkUserResponse = await client.api.v2.users[
@@ -829,7 +829,6 @@ describe("users", () => {
       expect(linkUserResponse.status).toBe(201);
 
       // now pull the primary account down
-
       const userResponse = await client.api.v2.users[":user_id"].$get(
         {
           param: {
@@ -856,7 +855,6 @@ describe("users", () => {
           provider: "auth2",
           isSocial: false,
         },
-        // NICE! this is not done at all  8-)
         {
           connection: "email",
           user_id: secondaryUser.user_id.split("|")[1],
@@ -870,7 +868,6 @@ describe("users", () => {
       ]);
 
       // try getting the secondary user
-
       const secondaryUserResponse = await client.api.v2.users[":user_id"].$get(
         {
           param: {
@@ -885,7 +882,7 @@ describe("users", () => {
         },
       );
 
-      // nice! this is wrong!
+      // auth0 does not return linked accounts
       expect(secondaryUserResponse.status).toBe(404);
     });
   });
