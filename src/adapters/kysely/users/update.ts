@@ -21,11 +21,6 @@ export function update(db: Kysely<Database>) {
       updated_at: new Date().toISOString(),
     };
 
-    const unsafeTypeUser = sqlUser as any;
-    if (unsafeTypeUser.linked_to === undefined) {
-      unsafeTypeUser.linked_to = null;
-    }
-
     const results = await db
       .updateTable("users")
       .set(sqlUser)
