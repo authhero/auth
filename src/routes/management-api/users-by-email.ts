@@ -28,16 +28,8 @@ export class UsersByEmailController extends Controller {
     request.ctx.set("tenantId", tenant_id);
 
     const users = await env.data.users.getByEmail(tenant_id, email);
-    if (users.length === 0) {
-      throw new HTTPException(404, { message: "User not found" });
-    }
 
     const primarySqlUsers = users.filter((user) => !user.linked_to);
-
-    if (primarySqlUsers.length === 0) {
-      this.setStatus(404);
-      return [];
-    }
 
     const response: UserResponse[] = await Promise.all(
       primarySqlUsers.map(async (primarySqlUser) => {

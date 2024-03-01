@@ -36,7 +36,8 @@ describe("code-flow", () => {
           },
         },
       );
-      expect(resInitialQuery.status).toBe(404);
+      const results = await resInitialQuery.json();
+      expect(results).toHaveLength(0);
 
       const response = await client.passwordless.start.$post(
         {
