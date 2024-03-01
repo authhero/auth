@@ -159,7 +159,7 @@ describe("users management API endpoint", () => {
       expect(createUserResponse2.status).toBe(409);
     });
 
-    it("should lowercase email when creating a  user", async () => {
+    it("should lowercase email when creating a user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -311,6 +311,82 @@ describe("users management API endpoint", () => {
       );
 
       expect(updateUserResponse.status).toBe(409);
+    });
+
+    it("should return a 404 when trying to patch a linked user", async () => {
+      const token = await getAdminToken();
+
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // this could be a helper... create linked user for existing primary user... set up with two linked users?
+      const createSecondaryUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "secondary-user@example.com",
+            connection: "email",
+            name: "secondary user",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createSecondaryUserResponse.status).toBe(201);
+      const secondaryUser =
+        (await createSecondaryUserResponse.json()) as UserResponse;
+
+      // link the accounts
+      const params = {
+        param: {
+          user_id: "userId",
+        },
+        json: {
+          link_with: secondaryUser.user_id,
+        },
+      };
+      const linkUserResponse = await client.api.v2.users[
+        ":user_id"
+      ].identities.$post(params, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
+        },
+      });
+
+      expect(linkUserResponse.status).toBe(201);
+
+      // ----------------------
+      // now try and patch the linked user
+      // ----------------------
+
+      const params2 = {
+        param: {
+          user_id: "userId",
+        },
+        json: {
+          name: "new name",
+        },
+      };
+
+      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
+        params2,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(updateUserResponse.status).toBe(404);
     });
   });
 
