@@ -320,9 +320,7 @@ export class UsersMgmtController extends Controller {
     const { env } = request.ctx;
     request.ctx.set("tenantId", tenantId);
 
-    await env.data.users.update(tenantId, user_id, {
-      linked_to: undefined,
-    });
+    await env.data.users.unlink(tenantId, user_id);
 
     this.setStatus(200);
     return "ok";

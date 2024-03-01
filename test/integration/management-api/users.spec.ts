@@ -675,9 +675,13 @@ describe("users", () => {
 
       expect(unlinkUserResponse.status).toBe(200);
 
-      // now fetch user 1 again to check doesn't have user2 as identity
-      const userResponse1 = await client.api.v2.users[":user_id"].$get(
-        { param: { user_id: newUser1.user_id } },
+      // manually check in the db that the linked_to field has been reset
+      const user1Updated = await env.data.users.get("tenantId", newUser1.id);
+      expect(user1Updated!.linked_to).toBeUndefined();
+
+      // now fetch user 2 again to check doesn't have user2 as identity
+      const userResponse2 = await client.api.v2.users[":user_id"].$get(
+        { param: { user_id: newUser2.user_id } },
         {
           headers: {
             authorization: `Bearer ${token}`,
@@ -686,18 +690,18 @@ describe("users", () => {
         },
       );
 
-      expect(userResponse1.status).toBe(200);
-      const user1 = (await userResponse1.json()) as UserResponse;
-      expect(user1.identities).toEqual([
+      expect(userResponse2.status).toBe(200);
+      const user2 = (await userResponse2.json()) as UserResponse;
+      expect(user2.identities).toEqual([
         {
           connection: "email",
-          user_id: newUser1.user_id.split("|")[1],
+          user_id: newUser2.user_id.split("|")[1],
           provider: "email",
           isSocial: false,
         },
       ]);
       // this shows we have unlinked
-      expect(user1.identities.length).toBe(1);
+      expect(user2.identities.length).toBe(1);
     });
 
     it("should link two users using user_id and provider parameter", async () => {
