@@ -133,7 +133,7 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(404);
     }
 
-    if (!!user.linked_to) {
+    if (user.linked_to) {
       throw new HTTPException(404, {
         message: "User is linked to another user",
       });
