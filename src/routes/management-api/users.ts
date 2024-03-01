@@ -274,7 +274,8 @@ export class UsersMgmtController extends Controller {
     const patchedUser = await env.data.users.get(tenant_id, user_id);
 
     if (!patchedUser) {
-      throw new HTTPException(404);
+      // we should never reach here UNLESS there's some race condition where another service deletes the users after the update...
+      throw new HTTPException(500);
     }
 
     const userResponse: UserResponse = await enrichUser(
