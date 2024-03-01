@@ -254,7 +254,7 @@ export class UsersMgmtController extends Controller {
     const userToPatch = await env.data.users.get(tenant_id, user_id);
 
     // this seems wrong! check auth0!
-    if (userToPatch && !!userToPatch.linked_to) {
+    if (userToPatch && userToPatch.linked_to) {
       throw new HTTPException(404, {
         // not the auth0 error message but I'd rather deviate here
         message: "User is linked to another user",
