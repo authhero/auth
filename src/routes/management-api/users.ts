@@ -250,7 +250,6 @@ export class UsersMgmtController extends Controller {
       }
     }
 
-    // we need to check if the user is linked
     const userToPatch = await env.data.users.get(tenant_id, user_id);
 
     if (!userToPatch) {
@@ -267,7 +266,7 @@ export class UsersMgmtController extends Controller {
     const result = await env.data.users.update(tenant_id, user_id, userFields);
 
     if (!result) {
-      // is this the mysterious 500? TODO - why would this fail?
+      // TODO - why would this fail?
       throw new HTTPException(500);
     }
 
