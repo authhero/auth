@@ -5,370 +5,406 @@ import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
 
-describe("users", () => {
-  // TO TEST
-  //  - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
-  it("should return an empty list of users for a tenant", async () => {
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+describe("users management API endpoint", () => {
+  describe("GET", () => {
+    // TO TEST
+    //  - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
+    it("should return an empty list of users for a tenant", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    const token = await getAdminToken();
-    const response = await client.api.v2.users.$get(
-      {},
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
+      const token = await getAdminToken();
+      const response = await client.api.v2.users.$get(
+        {},
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "otherTenant",
+          },
         },
-      },
-    );
+      );
 
-    expect(response.status).toBe(200);
+      expect(response.status).toBe(200);
 
-    const body = (await response.json()) as UserResponse[];
-    expect(body.length).toBe(0);
+      const body = (await response.json()) as UserResponse[];
+      expect(body.length).toBe(0);
+    });
   });
 
-  // this is different to Auth0 where user_id OR email is required
-  it("should return a 400 if try and create a new user for a tenant without an email", async () => {
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+  describe("POST", () => {
+    // this is different to Auth0 where user_id OR email is required
+    it("should return a 400 if try and create a new user for a tenant without an email", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    const token = await getAdminToken();
-    const createUserResponse = await client.api.v2.users.$post(
-      {
-        json: {
-          username: "test@example.com",
-          connection: "email",
+      const token = await getAdminToken();
+      const createUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            username: "test@example.com",
+            connection: "email",
+          },
         },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-          "content-type": "application/json",
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
         },
-      },
-    );
+      );
 
-    expect(createUserResponse.status).toBe(400);
-  });
-
-  it("should create a new user for an empty tenant", async () => {
-    const token = await getAdminToken();
-
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-
-    const createUserResponse = await client.api.v2.users.$post(
-      {
-        json: {
-          email: "test@example.com",
-          connection: "email",
-        },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
-          "content-type": "application/json",
-        },
-      },
-    );
-
-    expect(createUserResponse.status).toBe(201);
-
-    const newUser = (await createUserResponse.json()) as UserResponse;
-    expect(newUser.email).toBe("test@example.com");
-    expect(newUser.user_id).toContain("|");
-
-    const [provider, id] = newUser.user_id.split("|");
-
-    expect(provider).toBe("email");
-    expect(id.startsWith("testid-")).toBe(true);
-
-    const usersResponse = await client.api.v2.users.$get(
-      {},
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "otherTenant",
-        },
-      },
-    );
-
-    expect(usersResponse.status).toBe(200);
-
-    const body = (await usersResponse.json()) as UserResponse[];
-    expect(body.length).toBe(1);
-    expect(body[0].user_id).toBe(newUser.user_id);
-    expect(body[0].identities).toEqual([
-      {
-        connection: "email",
-        // inside the identity the user_id isn't prefixed with the provider
-        user_id: id,
-        provider: "email",
-        isSocial: false,
-      },
-    ]);
-  });
-
-  it("should throw an error if you create the same passwordless email user twice", async () => {
-    const token = await getAdminToken();
-
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-
-    const createUserResponse1 = await client.api.v2.users.$post(
-      {
-        json: {
-          email: "test@example.com",
-          connection: "email",
-        },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-          "content-type": "application/json",
-        },
-      },
-    );
-
-    expect(createUserResponse1.status).toBe(201);
-
-    const createUserResponse2 = await client.api.v2.users.$post(
-      {
-        json: {
-          email: "test@example.com",
-          connection: "email",
-        },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-          "content-type": "application/json",
-        },
-      },
-    );
-
-    expect(createUserResponse2.status).toBe(409);
-  });
-
-  it("should update a user", async () => {
-    const token = await getAdminToken();
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-
-    const createUserResponse = await client.api.v2.users.$post(
-      {
-        json: {
-          email: "test@example.com",
-          connection: "email",
-        },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-          "content-type": "application/json",
-        },
-      },
-    );
-
-    expect(createUserResponse.status).toBe(201);
-
-    const newUser = (await createUserResponse.json()) as UserResponse;
-    const [provider, id] = newUser.user_id.split("|");
-
-    const params = {
-      json: {
-        email_verified: true,
-      },
-      param: {
-        user_id: `${provider}|${id}`,
-      },
-    };
-
-    const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
-      params,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "content-type": "application/json",
-          "tenant-id": "tenantId",
-        },
-      },
-    );
-
-    if (updateUserResponse.status !== 200) {
-      console.log(await updateUserResponse.text());
-    }
-
-    expect(updateUserResponse.status).toBe(200);
-
-    const usersResponse = await client.api.v2.users.$get(
-      {},
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-        },
-      },
-    );
-
-    const body = (await usersResponse.json()) as UserResponse[];
-    expect(body.length).toBe(2);
-    expect(body[1].email_verified).toBe(true);
-  });
-
-  it("should delete secondary account if delete primary account", async () => {
-    const token = await getAdminToken();
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-
-    const headers = {
-      authorization: `Bearer ${token}`,
-      "tenant-id": "tenantId",
-      "content-type": "application/json",
-    };
-
-    const createUserResponse1 = await client.api.v2.users.$post(
-      {
-        json: {
-          email: "test1@example.com",
-          connection: "email",
-        },
-      },
-      {
-        headers,
-      },
-    );
-
-    const newUser1 = (await createUserResponse1.json()) as UserResponse;
-
-    const createUserResponse2 = await client.api.v2.users.$post(
-      {
-        json: {
-          email: "test2@example.com",
-          connection: "email",
-        },
-      },
-      {
-        headers,
-      },
-    );
-
-    const newUser2 = (await createUserResponse2.json()) as UserResponse;
-
-    const typeCoercion = {
-      param: {
-        user_id: newUser2.id,
-      },
-      json: {
-        link_with: newUser1.id,
-      },
-    };
-    const linkUserResponse = await client.api.v2.users[
-      ":user_id"
-    ].identities.$post(typeCoercion, {
-      headers,
+      expect(createUserResponse.status).toBe(400);
     });
 
-    // inspect the db directly because the GET endpoints don't return linked users
-    const { users } = await env.data.users.list("tenantId", {
-      page: 0,
-      per_page: 10,
-      include_totals: true,
-      q: "",
+    it("should create a new user for an empty tenant", async () => {
+      const token = await getAdminToken();
+
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const createUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "test@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "otherTenant",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createUserResponse.status).toBe(201);
+
+      const newUser = (await createUserResponse.json()) as UserResponse;
+      expect(newUser.email).toBe("test@example.com");
+      expect(newUser.user_id).toContain("|");
+
+      const [provider, id] = newUser.user_id.split("|");
+
+      expect(provider).toBe("email");
+      expect(id.startsWith("testid-")).toBe(true);
+
+      const usersResponse = await client.api.v2.users.$get(
+        {},
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "otherTenant",
+          },
+        },
+      );
+
+      expect(usersResponse.status).toBe(200);
+
+      const body = (await usersResponse.json()) as UserResponse[];
+      expect(body.length).toBe(1);
+      expect(body[0].user_id).toBe(newUser.user_id);
+      expect(body[0].identities).toEqual([
+        {
+          connection: "email",
+          // inside the identity the user_id isn't prefixed with the provider
+          user_id: id,
+          provider: "email",
+          isSocial: false,
+        },
+      ]);
     });
-    expect(users.length).toBe(3);
 
-    // check we have linked user1 to user2
-    const user1 = users.find((u) => u.id === newUser1.id);
-    expect(user1?.linked_to).toBe(newUser2.id);
+    it("should throw an error if you create the same passwordless email user twice", async () => {
+      const token = await getAdminToken();
 
-    // --------------------------------------------------
-    // now delete the primary account - newUser2
-    // --------------------------------------------------
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    await client.api.v2.users[":user_id"].$delete(
-      { param: { user_id: newUser2.id } },
-      {
-        headers,
-      },
-    );
+      const createUserResponse1 = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "test@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
 
-    // user1 and user2 are deleted - cascading delete in SQL works (at least in SQLite)
-    const { users: usersNowDeleted } = await env.data.users.list("tenantId", {
-      page: 0,
-      per_page: 10,
-      include_totals: true,
-      q: "",
+      expect(createUserResponse1.status).toBe(201);
+
+      const createUserResponse2 = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "test@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createUserResponse2.status).toBe(409);
     });
 
-    expect(usersNowDeleted.length).toBe(1);
+    it("should lowercase email when creating a  user", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    expect(usersNowDeleted[0].id).not.toBe(newUser1.id);
-    expect(usersNowDeleted[0].id).not.toBe(newUser2.id);
+      // ----------------------
+      // Create user with uppercase email and check response is lower case
+      // ----------------------
+      const createUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "FOOZ@BAR.COM",
+            connection: "email",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createUserResponse.status).toBe(201);
+      const createdUser = (await createUserResponse.json()) as UserResponse;
+      expect(createdUser.email).toBe("fooz@bar.com");
+
+      // ----------------------
+      // Check directly in the database that the email is lower case
+      // ----------------------
+      const user = await env.data.users.get("tenantId", createdUser.user_id);
+      expect(user!.email).toBe("fooz@bar.com");
+
+      // ----------------------
+      // Fetch user through mgmt API get and check email is lower case
+      // ----------------------
+      const newUser = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            // this is not correct! should be user_id... interesting
+            user_id: user!.id,
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      expect(newUser.status).toBe(200);
+      const fetchedUser = (await newUser.json()) as UserResponse;
+      expect(fetchedUser.email).toBe("fooz@bar.com");
+    });
   });
 
-  it("should lowercase email when creating a  user", async () => {
-    const token = await getAdminToken();
-    const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+  describe("PATCH", () => {
+    it("should update a user", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
 
-    // ----------------------
-    // Create user with uppercase email and check response is lower case
-    // ----------------------
-    const createUserResponse = await client.api.v2.users.$post(
-      {
+      const createUserResponse = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "test@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createUserResponse.status).toBe(201);
+
+      const newUser = (await createUserResponse.json()) as UserResponse;
+      const [provider, id] = newUser.user_id.split("|");
+
+      const params = {
         json: {
-          email: "FOOZ@BAR.COM",
-          connection: "email",
+          email_verified: true,
         },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-          "content-type": "application/json",
-        },
-      },
-    );
-
-    expect(createUserResponse.status).toBe(201);
-    const createdUser = (await createUserResponse.json()) as UserResponse;
-    expect(createdUser.email).toBe("fooz@bar.com");
-
-    // ----------------------
-    // Check directly in the database that the email is lower case
-    // ----------------------
-    const user = await env.data.users.get("tenantId", createdUser.user_id);
-    expect(user!.email).toBe("fooz@bar.com");
-
-    // ----------------------
-    // Fetch user through mgmt API get and check email is lower case
-    // ----------------------
-    const newUser = await client.api.v2.users[":user_id"].$get(
-      {
         param: {
-          // this is not correct! should be user_id... interesting
-          user_id: user!.id,
+          user_id: `${provider}|${id}`,
         },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-        },
-      },
-    );
+      };
 
-    expect(newUser.status).toBe(200);
-    const fetchedUser = (await newUser.json()) as UserResponse;
-    expect(fetchedUser.email).toBe("fooz@bar.com");
+      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
+        params,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      if (updateUserResponse.status !== 200) {
+        console.log(await updateUserResponse.text());
+      }
+
+      expect(updateUserResponse.status).toBe(200);
+
+      const usersResponse = await client.api.v2.users.$get(
+        {},
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const body = (await usersResponse.json()) as UserResponse[];
+      expect(body.length).toBe(2);
+      expect(body[1].email_verified).toBe(true);
+    });
+
+    it("should throw a 409 when updating a user with an email of an already existing user", async () => {
+      const token = await getAdminToken();
+
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
+
+      const params = {
+        param: { user_id: newUser1.id },
+        json: {
+          email: newUser2.email,
+        },
+      };
+
+      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
+        params,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(updateUserResponse.status).toBe(409);
+    });
+  });
+
+  describe("DELETE", () => {
+    it("should delete secondary account if delete primary account", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const headers = {
+        authorization: `Bearer ${token}`,
+        "tenant-id": "tenantId",
+        "content-type": "application/json",
+      };
+
+      const createUserResponse1 = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "test1@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers,
+        },
+      );
+
+      const newUser1 = (await createUserResponse1.json()) as UserResponse;
+
+      const createUserResponse2 = await client.api.v2.users.$post(
+        {
+          json: {
+            email: "test2@example.com",
+            connection: "email",
+          },
+        },
+        {
+          headers,
+        },
+      );
+
+      const newUser2 = (await createUserResponse2.json()) as UserResponse;
+
+      const typeCoercion = {
+        param: {
+          user_id: newUser2.id,
+        },
+        json: {
+          link_with: newUser1.id,
+        },
+      };
+      const linkUserResponse = await client.api.v2.users[
+        ":user_id"
+      ].identities.$post(typeCoercion, {
+        headers,
+      });
+
+      // inspect the db directly because the GET endpoints don't return linked users
+      const { users } = await env.data.users.list("tenantId", {
+        page: 0,
+        per_page: 10,
+        include_totals: true,
+        q: "",
+      });
+      expect(users.length).toBe(3);
+
+      // check we have linked user1 to user2
+      const user1 = users.find((u) => u.id === newUser1.id);
+      expect(user1?.linked_to).toBe(newUser2.id);
+
+      // --------------------------------------------------
+      // now delete the primary account - newUser2
+      // --------------------------------------------------
+
+      await client.api.v2.users[":user_id"].$delete(
+        { param: { user_id: newUser2.id } },
+        {
+          headers,
+        },
+      );
+
+      // user1 and user2 are deleted - cascading delete in SQL works (at least in SQLite)
+      const { users: usersNowDeleted } = await env.data.users.list("tenantId", {
+        page: 0,
+        per_page: 10,
+        include_totals: true,
+        q: "",
+      });
+
+      expect(usersNowDeleted.length).toBe(1);
+
+      expect(usersNowDeleted[0].id).not.toBe(newUser1.id);
+      expect(usersNowDeleted[0].id).not.toBe(newUser2.id);
+    });
   });
   // TODO - split these tests up into a new test suite one for each HTTP verb!
   it("should use email for name if not name is not passed", async () => {
@@ -776,34 +812,6 @@ describe("users", () => {
           },
         },
       ]);
-    });
-
-    it("should throw a 409 when updating a user with an email of an allready existing user", async () => {
-      const token = await getAdminToken();
-
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
-      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
-
-      const params = {
-        param: { user_id: newUser1.id },
-        json: {
-          email: newUser2.email,
-        },
-      };
-
-      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
-        params,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-            "content-type": "application/json",
-          },
-        },
-      );
-
-      expect(updateUserResponse.status).toBe(409);
     });
   });
 
