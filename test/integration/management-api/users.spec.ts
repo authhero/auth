@@ -362,13 +362,19 @@ describe("users management API endpoint", () => {
 
       expect(linkUserResponse.status).toBe(201);
 
+      // sanity check that we have linked the correct user!
+      const linkedUser = await env.data.users.get(
+        "tenantId",
+        secondaryUser.user_id,
+      );
+      expect(linkedUser!.linked_to).toBe("userId");
+
       // ----------------------
       // now try and patch the linked user
       // ----------------------
-
       const params2 = {
         param: {
-          user_id: "userId",
+          user_id: secondaryUser.user_id,
         },
         json: {
           name: "new name",
