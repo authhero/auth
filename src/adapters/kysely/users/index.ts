@@ -7,6 +7,7 @@ import { getByEmail } from "./getByEmail";
 import { listUsers } from "./list";
 import { remove } from "./remove";
 import { update } from "./update";
+import { unlink } from "./unlink";
 
 export function createUsersAdapter(db: Kysely<Database>): UserDataAdapter {
   return {
@@ -16,5 +17,7 @@ export function createUsersAdapter(db: Kysely<Database>): UserDataAdapter {
     getByEmail: getByEmail(db),
     list: listUsers(db),
     update: update(db),
+    // TODO - think about this more when other issues fixed
+    unlink: unlink(db),
   };
 }
