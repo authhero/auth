@@ -250,15 +250,28 @@ export class UsersMgmtController extends Controller {
       }
     }
 
+    // new code to not run this if a linked user - TODO - test this more
+    const userToPatch = await env.data.users.get(tenant_id, user_id);
+
+    // this seems wrong! check auth0!
+    if (userToPatch && !!userToPatch.linked_to) {
+      throw new HTTPException(404, {
+        // not the auth0 error message but I'd rather deviate here
+        message: "User is linked to another user",
+      });
+    }
+
     const result = await env.data.users.update(tenant_id, user_id, userFields);
 
     if (!result) {
+      // is this the mysterious 500? TODO - see what this is doing
       throw new HTTPException(500);
     }
 
     const patchedUser = await env.data.users.get(tenant_id, user_id);
 
     if (!patchedUser) {
+      // how could this be true? the update call is a patch not an update... hmmmmm
       throw new HTTPException(404);
     }
 
