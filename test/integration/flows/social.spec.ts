@@ -600,25 +600,14 @@ describe("social sign on", () => {
       );
 
       // ---------------------------------------------
-      // fetch this linked user to sanity check rest of test
+      // load this linked user to sanity check rest of test
       // ---------------------------------------------
-      const linkedUserRes = await client.api.v2.users[":user_id"].$get(
-        {
-          param: { user_id: "other-social-provider|123456789012345678901" },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-          },
-        },
+      const linkedUser = await env.data.users.get(
+        "tenantId",
+        "other-social-provider|123456789012345678901",
       );
 
-      const linkedUser = (await linkedUserRes.json()) as UserResponse;
-      // This is not true... should it be? TODO
-      // expect(linkedUser.user_id).toBe("email|7575757575757");
-      // We can assert this at least...
-      expect(linkedUser.linked_to).toBe("email|7575757575757");
+      expect(linkedUser!.linked_to).toBe("email|7575757575757");
 
       // ---------------------------------------------
       // sanity check that users are entered in database in correct order
@@ -651,7 +640,6 @@ describe("social sign on", () => {
         socialCallbackResponseQuery.get("access_token")!,
       );
 
-      // Currently on the main branch this is returning the wrong user!
       expect(accessTokenPayload.sub).toBe("email|7575757575757");
     });
   });

@@ -133,6 +133,12 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(404);
     }
 
+    if (user.linked_to) {
+      throw new HTTPException(404, {
+        message: "User is linked to another user",
+      });
+    }
+
     const userResponse: UserResponse = await enrichUser(env, tenant_id, user);
 
     return userResponse;
