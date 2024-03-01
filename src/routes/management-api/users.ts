@@ -250,7 +250,7 @@ export class UsersMgmtController extends Controller {
       }
     }
 
-    // new code to not run this if a linked user - TODO - test this more
+    // we need to check if the user is linked
     const userToPatch = await env.data.users.get(tenant_id, user_id);
 
     // this seems wrong! check auth0!
@@ -264,14 +264,13 @@ export class UsersMgmtController extends Controller {
     const result = await env.data.users.update(tenant_id, user_id, userFields);
 
     if (!result) {
-      // is this the mysterious 500? TODO - see what this is doing
+      // is this the mysterious 500? TODO - why would this fail?
       throw new HTTPException(500);
     }
 
     const patchedUser = await env.data.users.get(tenant_id, user_id);
 
     if (!patchedUser) {
-      // how could this be true? the update call is a patch not an update... hmmmmm
       throw new HTTPException(404);
     }
 
