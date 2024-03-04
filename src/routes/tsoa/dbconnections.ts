@@ -79,9 +79,35 @@ export class DbConnectionsController extends Controller {
       throw new HTTPException(400, { message: "User already exists" });
     }
 
+    const primaryUser = await getPrimaryUserByEmail({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email,
+    });
+
+    const newUser = await env.data.users.create(client.tenant_id, {
+      id: `email|${userIdGenerate()}`,
+      email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      email_verified: false,
+      provider: "auth2",
+      connection: "Username-Password-Authentication",
+      is_social: false,
+      login_count: 0,
+      linked_to: primaryUser ? primaryUser.id : undefined,
+    });
+
+    // What do we return here if we are signing up a linked account?
+    // TODO - I think we handle account linking LAST
+    // investigate on auth0
+    // i. sign in with a new code use dan+newcodeuser@sesamy.com
+    // ii. then register... see what happens
+
     return {
-      _id: "65e5960004218b0cd1c26f87",
-      email: "dan+new-signup-login2@sesamy.com",
+      _id: newUser.id,
+      email: newUser.email,
+      // this is the crux of the issue!  8-)   What to do here?
       email_verified: false,
       app_metadata: {},
       user_metadata: {},
