@@ -68,12 +68,6 @@ export class DbConnectionsController extends Controller {
       throw new HTTPException(400, { message: "Invalid sign up" });
     }
 
-    const primaryUser = await getPrimaryUserByEmail({
-      userAdapter: env.data.users,
-      tenant_id: client.tenant_id,
-      email,
-    });
-
     const newUser = await env.data.users.create(client.tenant_id, {
       id: `auth2|${userIdGenerate()}`,
       email,
@@ -84,7 +78,6 @@ export class DbConnectionsController extends Controller {
       connection: "Username-Password-Authentication",
       is_social: false,
       login_count: 0,
-      linked_to: primaryUser ? primaryUser.id : undefined,
     });
 
     return {
