@@ -132,7 +132,14 @@ export class DbConnectionsController extends Controller {
 
     // always returns the same success! doesn't matter if email is bad, if user is non-existent!
     if (!user) {
-      return;
+      return "We've just sent you an email to reset your password.";
     }
+
+    // Need to decide what to do here then! dependent on next PR
+    // await env.data.email.sendCode(env, client, email, code);
+
+    // are we sending them to a login2 page?  an update-password page?
+    // IF SO - this is non-standard...
+    return "We've just sent you an email to reset your password.";
   }
 }
