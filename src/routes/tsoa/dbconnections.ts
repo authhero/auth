@@ -87,7 +87,7 @@ export class DbConnectionsController extends Controller {
     });
 
     const newUser = await env.data.users.create(client.tenant_id, {
-      id: `email|${userIdGenerate()}`,
+      id: `auth2|${userIdGenerate()}`,
       email,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
