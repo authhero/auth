@@ -76,7 +76,8 @@ export class DbConnectionsController extends Controller {
 
     if (existingUser) {
       // we can copy what auth0 returns here
-      throw new HTTPException(400, { message: "User already exists" });
+      // Auth0 doesn't inform that the user already exists
+      throw new HTTPException(400, { message: "Invalid sign up" });
     }
 
     const primaryUser = await getPrimaryUserByEmail({
