@@ -185,6 +185,8 @@ export class DbConnectionsController extends Controller {
 
     const state = session.id;
 
+    await env.data.universalLoginSessions.create(session);
+
     const code = generateOTP();
 
     await env.data.codes.create(client.tenant_id, {
