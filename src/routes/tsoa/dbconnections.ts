@@ -32,11 +32,24 @@ interface SignupResponse {
   user_metadata: {};
 }
 
+/*
+    Auth0 sends this:
+    client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW"
+    connection: "Username-Password-Authentication"
+    email: "dan+456@sesamy.com"
+  */
+
+interface ChangePasswordParams {
+  client_id: string;
+  connection: string;
+  email: string;
+}
+
 @Route("dbconnections")
 @Tags("dbconnections")
 export class DbConnectionsController extends Controller {
   @Post("signup")
-  @SuccessResponse(200, "Created")
+  @SuccessResponse(200)
   public async registerUser(
     @Body() body: SignupParams,
     @Request() request: RequestWithContext,
@@ -80,6 +93,12 @@ export class DbConnectionsController extends Controller {
       login_count: 0,
     });
 
+    // Store the password
+    await ctx.env.data.passwords.create(client.tenant_id, {
+      user_id: newUser.id,
+      password: body.password,
+    });
+
     return {
       _id: newUser.id,
       email: newUser.email,
@@ -87,5 +106,46 @@ export class DbConnectionsController extends Controller {
       app_metadata: {},
       user_metadata: {},
     };
+  }
+
+  @Post("change_password")
+  @SuccessResponse(200, "We've just sent you an email to reset your password.")
+  public async sendPasswordResetEmail(
+    @Body() body: ChangePasswordParams,
+    @Request() request: RequestWithContext,
+  ) {
+    const { ctx } = request;
+    const { env } = ctx;
+    const { email } = body;
+
+    if (body.connection !== "Username-Password-Authentication") {
+      throw new HTTPException(400, { message: "Connection not found" });
+    }
+
+    const client = await getClient(ctx.env, body.client_id);
+
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+
+    const user = await getPrimaryUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email,
+      // we are only allowing this on this route... I'm not sure how it could be different!
+      provider: "auth2",
+    });
+
+    // always returns the same success! doesn't matter if email is bad, if user is non-existent!
+    if (!user) {
+      return "We've just sent you an email to reset your password.";
+    }
+
+    // Need to decide what to do here then! dependent on next PR
+    // await env.data.email.sendCode(env, client, email, code);
+
+    // are we sending them to a login2 page?  an update-password page?
+    // IF SO - this is non-standard...
+    return "We've just sent you an email to reset your password.";
   }
 }
