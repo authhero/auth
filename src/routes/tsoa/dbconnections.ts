@@ -28,6 +28,10 @@ import {
   AuthParams,
   CodeChallengeMethod,
 } from "../../types";
+import generateOTP from "../../utils/otp";
+
+// duplicated from /passwordless route - EXTRACT THIS OUT!
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 interface SignupParams {
   client_id: string;
@@ -180,6 +184,17 @@ export class DbConnectionsController extends Controller {
     };
 
     const state = session.id;
+
+    const code = generateOTP();
+
+    await env.data.codes.create(client.tenant_id, {
+      id: nanoid(),
+      code,
+      type: "password_reset",
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+    });
 
     await env.data.email.sendPasswordReset(env, client, email, code, state);
 
