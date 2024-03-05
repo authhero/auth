@@ -211,15 +211,17 @@ export async function sendResetPassword(
   env: Env,
   client: Client,
   to: string,
-  code: string,
+  // I'm not following what auth0 does to not need a code...
+  // code: string,
   state: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get(
+    // This is probably only in english but it'll do for this proof-of-concept
     "templates/email/password-reset.liquid",
   );
 
   if (!response) {
-    throw new Error("Code template not found");
+    throw new Error("Password reset template not found");
   }
 
   const templateString = await response.text();
@@ -233,9 +235,10 @@ export async function sendResetPassword(
   );
 
   // TODO - implement i18n
-  const sendCodeTemplate = engine.parse(templateString);
-  const codeEmailBody = await engine.render(sendCodeTemplate, {
-    passwordResetUrl: `${env.ISSUER}u/reset-password?code=${code}&state=${state}`,
+  const sendPasswordResetTemplate = engine.parse(templateString);
+  const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
+    // the auth0 link looks like this passwordResetlBody
+    passwordResetUrl: `${env.ISSUER}u/reset-password?state=${state}`,
     vendorName: client.name,
     logo,
     primaryColor: client.tenant.primary_color || "#007bff",
@@ -250,7 +253,7 @@ export async function sendResetPassword(
     content: [
       {
         type: "text/html",
-        value: codeEmailBody,
+        value: passwordResetBody,
       },
     ],
     subject: translate(language, "passwordResetTitle").replace(

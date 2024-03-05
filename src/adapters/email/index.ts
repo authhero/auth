@@ -1,4 +1,4 @@
-import { sendCode, sendLink } from "../../controllers/email";
+import { sendCode, sendLink, sendResetPassword } from "../../controllers/email";
 import { DataAdapters } from "../interfaces";
 export default function createEmailAdapter(): Partial<DataAdapters> {
   return {
@@ -13,6 +13,9 @@ export default function createEmailAdapter(): Partial<DataAdapters> {
       },
       sendPasswordReset: async (env, client, to, state) => {
         console.log("sendPasswordReset", env, client, to, state);
+
+        // naming slightly different  8-)
+        return sendResetPassword(env, client, to, state);
       },
     },
   };

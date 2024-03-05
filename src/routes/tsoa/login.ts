@@ -501,8 +501,10 @@ export class LoginController extends Controller {
    * @param request
    */
   @Get("reset-password")
+  // in auth0 this is called reset-verify - should I copy the route names?
   public async getResetPassword(
     @Request() request: RequestWithContext,
+    // in auth0 this is called ticket
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
@@ -512,6 +514,7 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
+    // DG: what code? we get the state key which is unique enough to identify the user...
     // TODO: Should we validate the code here?
     return renderResetPassword(env, this, session);
   }
