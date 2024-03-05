@@ -11,6 +11,9 @@ export default function createEmailAdapter(): Partial<DataAdapters> {
 
         return sendLink(env, client, to, code, magicLink);
       },
+      sendPasswordReset: async (env, client, to, state) => {
+        console.log("sendPasswordReset", env, client, to, state);
+      },
     },
   };
 }

@@ -15,6 +15,13 @@ export interface EmailAdapter {
     to: string,
     code: string,
   ) => Promise<void>;
+  sendPasswordReset: (
+    env: Env,
+    client: Client,
+    to: string,
+    // this is called "ticket" in auth0
+    state: string,
+  ) => Promise<void>;
   // Only for testing
   list?: () => Promise<Email[]>;
 }
