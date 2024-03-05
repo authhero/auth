@@ -565,7 +565,7 @@ export class LoginController extends Controller {
       }
 
       await env.data.passwords.update(client.tenant_id, {
-        user_id: session.authParams.username,
+        user_id: user.id,
         password: params.password,
       });
     } catch (err) {
