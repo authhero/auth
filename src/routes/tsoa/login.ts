@@ -501,6 +501,7 @@ export class LoginController extends Controller {
    * @param request
    */
   @Get("reset-password")
+  // in auth0 this is called reset-verify
   public async getResetPassword(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
@@ -512,7 +513,6 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    // TODO: Should we validate the code here?
     return renderResetPassword(env, this, session);
   }
 

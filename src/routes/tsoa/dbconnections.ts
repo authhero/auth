@@ -16,6 +16,22 @@ import {
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../../utils/users";
+import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import {
+  UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS,
+  headers,
+} from "../../constants";
+import { nanoid } from "nanoid";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+  AuthParams,
+  CodeChallengeMethod,
+} from "../../types";
+import generateOTP from "../../utils/otp";
+
+// duplicated from /passwordless route - EXTRACT THIS OUT!
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 interface SignupParams {
   client_id: string;
@@ -132,20 +148,56 @@ export class DbConnectionsController extends Controller {
       userAdapter: env.data.users,
       tenant_id: client.tenant_id,
       email,
-      // we are only allowing this on this route... I'm not sure how it could be different!
+      // we are only allowing this on this route...
       provider: "auth2",
     });
 
-    // always returns the same success! doesn't matter if email is bad, if user is non-existent!
+    // route always returns success
     if (!user) {
       return "We've just sent you an email to reset your password.";
     }
 
-    // Need to decide what to do here then! dependent on next PR
-    // await env.data.email.sendCode(env, client, email, code);
+    // I hadn't considered these... what do we actually need?
+    const authParams: AuthParams = {
+      client_id: body.client_id,
+      // rest copy pasted from authorize route...
+      // redirect_uri,
+      // scope,
+      // state,
+      // audience,
+      // nonce,
+      // response_type,
+      // code_challenge,
+      // code_challenge_method,
+    };
 
-    // are we sending them to a login2 page?  an update-password page?
-    // IF SO - this is non-standard...
+    const session: UniversalLoginSession = {
+      id: nanoid(),
+      client_id: client.id,
+      tenant_id: client.tenant_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      expires_at: new Date(
+        Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
+      ).toISOString(),
+      authParams,
+    };
+
+    const state = session.id;
+
+    const code = generateOTP();
+
+    await env.data.codes.create(client.tenant_id, {
+      id: nanoid(),
+      code,
+      type: "password_reset",
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+    });
+
+    await env.data.email.sendPasswordReset(env, client, email, code, state);
+
     return "We've just sent you an email to reset your password.";
   }
 }
