@@ -211,8 +211,8 @@ export async function sendResetPassword(
   env: Env,
   client: Client,
   to: string,
-  // I'm not following what auth0 does to not need a code...
-  // code: string,
+  // auth0 just has a ticket, but we have a code and a state
+  code: string,
   state: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get(
@@ -237,8 +237,8 @@ export async function sendResetPassword(
   // TODO - implement i18n
   const sendPasswordResetTemplate = engine.parse(templateString);
   const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
-    // the auth0 link looks like this passwordResetlBody
-    passwordResetUrl: `${env.ISSUER}u/reset-password?state=${state}`,
+    // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
+    passwordResetUrl: `${env.ISSUER}u/reset-password?state=${state}&code=${code}`,
     vendorName: client.name,
     logo,
     primaryColor: client.tenant.primary_color || "#007bff",

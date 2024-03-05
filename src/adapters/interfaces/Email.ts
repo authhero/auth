@@ -19,7 +19,8 @@ export interface EmailAdapter {
     env: Env,
     client: Client,
     to: string,
-    // this is called "ticket" in auth0
+    // auth0 uses a ticket not a code...
+    code: string,
     state: string,
   ) => Promise<void>;
   // Only for testing
