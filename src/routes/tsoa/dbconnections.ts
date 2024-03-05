@@ -160,15 +160,7 @@ export class DbConnectionsController extends Controller {
     // I hadn't considered these... what do we actually need?
     const authParams: AuthParams = {
       client_id: body.client_id,
-      // rest copy pasted from authorize route...
-      // redirect_uri,
-      // scope,
-      // state,
-      // audience,
-      // nonce,
-      // response_type,
-      // code_challenge,
-      // code_challenge_method,
+      username: email,
     };
 
     const session: UniversalLoginSession = {
@@ -184,6 +176,8 @@ export class DbConnectionsController extends Controller {
     };
 
     const state = session.id;
+
+    await env.data.universalLoginSessions.create(session);
 
     const code = generateOTP();
 
