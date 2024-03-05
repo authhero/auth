@@ -39,6 +39,16 @@ export async function getEnv() {
       });
       return Promise.resolve();
     },
+    //@ts-ignore
+    sendPasswordReset: (env, client, to, code, state) => {
+      emails.push({
+        to,
+        code,
+        // TODO - support this once test this
+        // state,
+      });
+      return Promise.resolve();
+    },
     list: async () => {
       return emails;
     },
