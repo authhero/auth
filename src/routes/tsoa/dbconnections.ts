@@ -93,6 +93,12 @@ export class DbConnectionsController extends Controller {
       login_count: 0,
     });
 
+    // Store the password
+    await ctx.env.data.passwords.create(client.tenant_id, {
+      user_id: newUser.id,
+      password: body.password,
+    });
+
     return {
       _id: newUser.id,
       email: newUser.email,
