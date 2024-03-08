@@ -23,6 +23,13 @@ export interface EmailAdapter {
     code: string,
     state: string,
   ) => Promise<void>;
+  sendValidateEmailAddress: (
+    env: Env,
+    client: Client,
+    to: string,
+    code: string,
+    state: string,
+  ) => Promise<void>;
   // Only for testing
   list?: () => Promise<Email[]>;
 }
