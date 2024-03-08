@@ -115,6 +115,45 @@ export class DbConnectionsController extends Controller {
       password: body.password,
     });
 
+    // TBD - if we need more
+    const authParams: AuthParams = {
+      client_id: body.client_id,
+      username: email,
+    };
+
+    const session: UniversalLoginSession = {
+      id: nanoid(),
+      client_id: client.id,
+      tenant_id: client.tenant_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      expires_at: new Date(
+        Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
+      ).toISOString(),
+      authParams,
+    };
+
+    const state = session.id;
+
+    const code = generateOTP();
+
+    await env.data.codes.create(client.tenant_id, {
+      id: nanoid(),
+      code,
+      type: "verify-email",
+      user_id: newUser.id,
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+    });
+
+    await env.data.email.sendValidateEmailAddress(
+      env,
+      client,
+      email,
+      code,
+      state,
+    );
+
     return {
       _id: newUser.id,
       email: newUser.email,
