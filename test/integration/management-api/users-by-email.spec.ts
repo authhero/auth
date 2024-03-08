@@ -95,7 +95,7 @@ describe("users by email", () => {
         json: {
           name: "Åkesson Þorsteinsson",
           email: "foo@example.com",
-          connection: "Username-Password-Authentication",
+          connection: "email",
           // seems odd that this isn't allowed... I think this endpoint needs looking at
           // maybe it's good we have to use the mgmt API for our test fixtures
           // provider: "auth2",
@@ -170,7 +170,7 @@ describe("users by email", () => {
       {
         json: {
           email: "bar@example.com",
-          connection: "Username-Password-Authentication",
+          connection: "email",
         },
       },
       {

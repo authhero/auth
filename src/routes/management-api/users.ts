@@ -169,6 +169,12 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(400, { message: "Email is required" });
     }
 
+    if (user.connection !== "email") {
+      throw new HTTPException(400, {
+        message: "Only email connections are supported",
+      });
+    }
+
     const email = emailRaw.toLowerCase();
 
     const data = await env.data.users.create(tenantId, {
