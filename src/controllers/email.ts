@@ -267,12 +267,10 @@ export async function sendValidateEmailAddress(
   env: Env,
   client: Client,
   to: string,
-  // auth0 just has a ticket, but we have a code and a state
   code: string,
   state: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get(
-    // TODO - just have a button now the same as the password-reset.liquid
     "templates/email/validate-email-address.liquid",
   );
 
