@@ -394,6 +394,35 @@ describe("users management API endpoint", () => {
 
       expect(updateUserResponse.status).toBe(404);
     });
+
+    it("should return a 404 when trying to patch a non existent user", async () => {
+      const token = await getAdminToken();
+
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const params2 = {
+        param: {
+          user_id: "email|i-do-not-exist",
+        },
+        json: {
+          name: "new name",
+        },
+      };
+
+      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
+        params2,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(updateUserResponse.status).toBe(404);
+    });
   });
 
   describe("DELETE", () => {
