@@ -298,9 +298,7 @@ describe("social sign on", () => {
           json: {
             email: "örjan.lindström@example.com",
             connection: "email",
-            // password: "Test!",
-            // will this have email_verfied though? as this is a code account that has never been used...
-            // this does nothing. doesn't complain either
+            // we are ignoring this for code logins
             email_verified: true,
           },
         },
@@ -324,9 +322,7 @@ describe("social sign on", () => {
           isSocial: false,
         },
       ]);
-      // TODO - do we need to be able to set this true from mgmt API? OR should I actually verify it...
-      // maybe use code user?
-      // expect(createEmailUser.email_verified).toBe(true);
+      expect(createEmailUser.email_verified).toBe(true);
       // ---------------------------------------------
       // now do social sign on with same email - new user registered
       // ---------------------------------------------
@@ -432,7 +428,7 @@ describe("social sign on", () => {
         sub: createEmailUser.user_id,
         aud: "clientId",
         email: "örjan.lindström@example.com",
-        email_verified: false,
+        email_verified: true,
         nonce: "nonce",
         iss: "https://example.com/",
       });
