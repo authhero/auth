@@ -191,7 +191,9 @@ export class UsersMgmtController extends Controller {
       name: user.name || email,
       provider: "email",
       connection: "email",
-      email_verified: false,
+      // we need to be careful with this as the profile service was setting this true in places where I don't think it's correct
+      // AND when does the account linking happen then? here? first login?
+      email_verified: user.email_verified || false,
       last_ip: "",
       login_count: 0,
       is_social: false,
