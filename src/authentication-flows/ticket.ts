@@ -55,7 +55,7 @@ export async function ticketAuth(
   // this will trigger on the code and password flows BUT shouldn't the code accounts be validated as they've signed in?
   // Maybe this is where we should set email_verified to true!
   // we could do this check in a few places...
-  if (user?.email_verified) {
+  if (!user?.email_verified) {
     // TBD - should this page be on login2 like the expired code one? we're already adding a few universal auth pages...
     // BUT this route will be more frequently used so we probably want the styling totally matching
     return "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.";
