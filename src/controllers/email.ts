@@ -262,3 +262,58 @@ export async function sendResetPassword(
     ),
   });
 }
+
+export async function sendValidateEmailAddress(
+  env: Env,
+  client: Client,
+  to: string,
+  // auth0 just has a ticket, but we have a code and a state
+  code: string,
+  state: string,
+) {
+  const response = await env.AUTH_TEMPLATES.get(
+    // TODO - just have a button now the same as the password-reset.liquid
+    "templates/email/validate-email-address.liquid",
+  );
+
+  if (!response) {
+    throw new Error("Email address validation template not found");
+  }
+
+  const templateString = await response.text();
+
+  const language = client.tenant.language || "sv";
+
+  const logo = getClientLogoPngGreyBg(
+    client.tenant.logo ||
+      "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
+    env.IMAGE_PROXY_URL,
+  );
+
+  // TODO - implement i18n
+  const sendEmailValidationTemplate = engine.parse(templateString);
+  const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
+    emailValidationUrl: `${env.ISSUER}u/reset-password?state=${state}&code=${code}`,
+    vendorName: client.name,
+    logo,
+    primaryColor: client.tenant.primary_color || "#007bff",
+  });
+
+  await sendEmail(client, {
+    to: [{ email: to, name: to }],
+    from: {
+      email: client.tenant.sender_email,
+      name: client.tenant.sender_name,
+    },
+    content: [
+      {
+        type: "text/html",
+        value: emailValidationBody,
+      },
+    ],
+    subject: translate(language, "passwordResetTitle").replace(
+      "{{vendorName}}",
+      client.name,
+    ),
+  });
+}
