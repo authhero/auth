@@ -25,7 +25,7 @@ describe("silent-auth", () => {
     const query = {
       client_id: "clientId",
       response_type: "token id_token",
-      redirect_uri: "https://login2.sesamy.dev/sv/callback",
+      redirect_uri: "https://login2.sesamy.dev/callback",
       scope: "openid profile email",
       state: "vaaQLli49FhEg894zjZXT1w.f~1gOEt0",
       nonce: "Mh3lSnGeCS3mIjQuofbSjULzJn~GCfdN",

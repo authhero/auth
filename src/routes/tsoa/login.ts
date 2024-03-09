@@ -31,7 +31,7 @@ import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
-import { getUsersByEmail } from "../../utils/users";
+import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -463,12 +463,12 @@ export class LoginController extends Controller {
       await env.data.universalLoginSessions.update(session.id, session);
     }
 
-    // TODO - filter by primary user
-    const [user] = await getUsersByEmail(
-      env.data.users,
-      client.tenant_id,
-      params.username,
-    );
+    const user = await getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: params.username,
+      provider: "Username-Password-Authentication",
+    });
 
     if (user) {
       const code = generateOTP();
@@ -501,6 +501,7 @@ export class LoginController extends Controller {
    * @param request
    */
   @Get("reset-password")
+  // in auth0 this is called reset-verify
   public async getResetPassword(
     @Request() request: RequestWithContext,
     @Query("state") state: string,
@@ -512,7 +513,6 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    // TODO: Should we validate the code here?
     return renderResetPassword(env, this, session);
   }
 
@@ -529,7 +529,7 @@ export class LoginController extends Controller {
   ): Promise<string> {
     const { env } = request.ctx;
     const session = await env.data.universalLoginSessions.get(state);
-    if (!session?.username) {
+    if (!session) {
       throw new HTTPException(400, { message: "Session not found" });
     }
 
@@ -542,11 +542,15 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    // TODO - filter by primary user
-    const [user] = await env.data.users.getByEmail(
-      client.tenant_id,
-      session.authParams.username,
-    );
+    // Note! we don't use the primary user here. Something to be careful of
+    // this means the primary user could have a totally different email address
+    const user = await getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: session.authParams.username,
+      provider: "auth2",
+    });
+
     if (!user) {
       throw new HTTPException(400, { message: "User not found" });
     }
@@ -560,7 +564,7 @@ export class LoginController extends Controller {
       }
 
       await env.data.passwords.update(client.tenant_id, {
-        user_id: session.authParams.username,
+        user_id: user.id,
         password: params.password,
       });
     } catch (err) {

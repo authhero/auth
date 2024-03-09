@@ -5,20 +5,20 @@ import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 
+const AUTH_PARAMS = {
+  nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+  redirect_uri: "https://login.example.com/callback",
+  response_type: "token id_token",
+  scope: "openid profile email",
+  state: "state",
+};
+
 describe("code-flow", () => {
   describe("should log in using the sent magic link, when", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-
-      const AUTH_PARAMS = {
-        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
 
       // -----------------
       // Doing a new signup here, so expect this email not to exist
@@ -36,7 +36,8 @@ describe("code-flow", () => {
           },
         },
       );
-      expect(resInitialQuery.status).toBe(404);
+      const results = await resInitialQuery.json();
+      expect(results).toHaveLength(0);
 
       const response = await client.passwordless.start.$post(
         {
@@ -136,27 +137,34 @@ describe("code-flow", () => {
         iss: "https://example.com/",
       });
     });
-    it("is an existing user", async () => {
+
+    it("is an existing primary user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const AUTH_PARAMS = {
-        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
-
       // -----------------
-      // User should already exist in default fixture
+      // Create the user to log in with the magic link
       // -----------------
+      env.data.users.create("tenantId", {
+        id: "userId2",
+        email: "bar@example.com",
+        email_verified: true,
+        name: "",
+        nickname: "",
+        picture: "https://example.com/foo.png",
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       const resInitialQuery = await client.api.v2["users-by-email"].$get(
         {
           query: {
-            email: "foo@example.com",
+            email: "bar@example.com",
           },
         },
         {
@@ -167,6 +175,123 @@ describe("code-flow", () => {
         },
       );
       expect(resInitialQuery.status).toBe(200);
+
+      // -----------------
+      // Now get magic link emailed
+      // -----------------
+
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "bar@example.com",
+            send: "link",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const [{ to, magicLink }] = await env.data.email.list!();
+
+      expect(to).toBe("bar@example.com");
+
+      const link = magicLink!;
+
+      const authenticatePath = link?.split("https://example.com")[1];
+
+      expect(authenticatePath).toContain("/passwordless/verify_redirect");
+
+      const querySearchParams = new URLSearchParams(
+        authenticatePath.split("?")[1],
+      );
+      const query = Object.fromEntries(querySearchParams.entries());
+
+      // -----------------
+      // Authenticate using the magic link for the existing user
+      // -----------------
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
+
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login.example.com");
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
+
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("openid profile email");
+      expect(accessTokenPayload.sub).toBe("userId2");
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("bar@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+      expect(idTokenPayload.sub).toBe("userId2");
+
+      const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+
+      // ----------------------------------------
+      // now check silent auth works when logged in with magic link for existing user
+      // ----------------------------------------
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
+
+      const { exp, iat, sid, ...restOfIdTokenPayload } =
+        silentAuthIdTokenPayload;
+
+      expect(restOfIdTokenPayload).toEqual({
+        sub: "userId2",
+        aud: "clientId",
+        name: "",
+        nickname: "",
+        picture: "https://example.com/foo.png",
+        email: "bar@example.com",
+        email_verified: true,
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        iss: "https://example.com/",
+      });
+    });
+
+    it("is an existing linked user", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // Create the linked user to log in with the magic link
+      // -----------------
+      env.data.users.create("tenantId", {
+        id: "userId2",
+        email: "foo@example.com",
+        email_verified: true,
+        name: "",
+        nickname: "",
+        picture: "https://example.com/foo.png",
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        linked_to: "userId",
+      });
 
       // -----------------
       // Now get magic link emailed
@@ -225,6 +350,7 @@ describe("code-flow", () => {
       expect(accessTokenPayload.aud).toBe("default");
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
+      // this id shows we are fetching the primary user
       expect(accessTokenPayload.sub).toBe("userId");
 
       const idToken = searchParams.get("id_token");
@@ -262,17 +388,109 @@ describe("code-flow", () => {
       });
     });
 
+    it("is the same email address as an existing password user", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // Now get magic link emailed
+      // -----------------
+
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "foo@example.com",
+            send: "link",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const [{ to, magicLink }] = await env.data.email.list!();
+
+      expect(to).toBe("foo@example.com");
+
+      const link = magicLink!;
+
+      const authenticatePath = link?.split("https://example.com")[1];
+
+      expect(authenticatePath).toContain("/passwordless/verify_redirect");
+
+      const querySearchParams = new URLSearchParams(
+        authenticatePath.split("?")[1],
+      );
+      const query = Object.fromEntries(querySearchParams.entries());
+
+      // -----------------
+      // Authenticate using the magic link for the existing user
+      // -----------------
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
+
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+      expect(redirectUri.hostname).toBe("login.example.com");
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
+
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("openid profile email");
+      // this should we are fetching the primary user
+      expect(accessTokenPayload.sub).toBe("userId");
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("foo@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+      expect(idTokenPayload.sub).toBe("userId");
+
+      const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+
+      // ----------------------------------------
+      // now check silent auth works when logged in with magic link for existing user
+      // ----------------------------------------
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
+
+      const { exp, iat, sid, ...restOfIdTokenPayload } =
+        silentAuthIdTokenPayload;
+
+      expect(restOfIdTokenPayload).toEqual({
+        sub: "userId",
+        aud: "clientId",
+        name: "Åkesson Þorsteinsson",
+        nickname: "Åkesson Þorsteinsson",
+        picture: "https://example.com/foo.png",
+        email: "foo@example.com",
+        email_verified: true,
+        nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
+        iss: "https://example.com/",
+      });
+    });
     it("should log in with the same magic link multiple times", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const AUTH_PARAMS = {
-        nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
       // -----------
       // get code to log in
       // -----------
@@ -328,13 +546,6 @@ describe("code-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const AUTH_PARAMS = {
-        nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
-        redirect_uri: "https://login.example.com/sv/callback",
-        response_type: "token id_token",
-        scope: "openid profile email",
-        state: "state",
-      };
       // -----------
       // get code to log in
       // -----------
@@ -379,7 +590,7 @@ describe("code-flow", () => {
         authenticateResponse.headers.get("location")!,
       );
       expect(redirectUri.hostname).toBe("login2.sesamy.dev");
-      expect(redirectUri.pathname).toBe("/sv/expired-code");
+      expect(redirectUri.pathname).toBe("/expired-code");
       expect(redirectUri.searchParams.get("email")).toBe(
         encodeURIComponent("test@example.com"),
       );
@@ -400,13 +611,13 @@ describe("code-flow", () => {
         authenticateResponse2.headers.get("location")!,
       );
       expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
-      expect(redirectUri2.pathname).toBe("/sv/expired-code");
+      expect(redirectUri2.pathname).toBe("/expired-code");
       expect(redirectUri2.searchParams.get("email")).toBe(
         encodeURIComponent("another@email.com"),
       );
+      expect(redirectUri2.searchParams.get("lang")).toBe("sv");
     });
   });
-  //   // TO TEST
-  //   // like code-flow
-  //   // it("should return existing primary account when logging in with new code sign on with same email address", async () => {
 });
+// TO TEST
+// - should we do silent auth after each of these calls?

@@ -7,7 +7,7 @@ import { applyTokenResponse } from "../helpers/apply-token-response";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
-import { LogTypes } from "../types/auth0";
+import { LogTypes } from "../types";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -32,6 +32,7 @@ export async function ticketAuth(
   const { env } = ctx;
 
   ctx.set("logType", LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION);
+  ctx.set("connection", realm);
 
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
   if (!ticket) {
@@ -49,6 +50,15 @@ export async function ticketAuth(
 
   if (user?.linked_to) {
     user = await env.data.users.get(tenant_id, user.linked_to);
+  }
+
+  // this will trigger on the code and password flows BUT shouldn't the code accounts be validated as they've signed in?
+  // Maybe this is where we should set email_verified to true!
+  // we could do this check in a few places...
+  if (realm === "Username-Password-Authentication" && !user?.email_verified) {
+    // TBD - should this page be on login2 like the expired code one? we're already adding a few universal auth pages...
+    // BUT this route will be more frequently used so we probably want the styling totally matching
+    return "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.";
   }
 
   if (!user) {
@@ -86,6 +96,7 @@ export async function ticketAuth(
   }
 
   ctx.set("userId", user.id);
+  ctx.set("userName", user.name || user.email);
 
   const sessionId = await setSilentAuthCookies(
     env,

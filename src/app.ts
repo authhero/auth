@@ -18,10 +18,10 @@ const ALLOWED_ORIGINS = [
   "https://login2.sesamy.dev",
   "https://login2.sesamy.dev",
   "https://*.vercel.sesamy.dev",
-  "https://auth-admin.sesamy.dev",
   "https://login2.sesamy.com",
-  "https://auth-admin.sesamy.com",
   "https://appleid.apple.com",
+  "https://auth-admin.sesamy.dev",
+  "https://auth-admin.sesamy.com",
 ];
 
 const app = new Hono<{ Bindings: Env }>()

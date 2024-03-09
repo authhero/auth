@@ -47,7 +47,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
       ["linked_to", "tenant_id"],
       "users",
       ["id", "tenant_id"],
-      (cb) => cb.onDelete("cascade"),
+      // planetscale doesn't support FKs so we shouldn't rely on cascades!
+      // (cb) => cb.onDelete("cascade"),
     )
     .addColumn("last_ip", "varchar(255)")
     .addColumn("login_count", "integer")
@@ -57,6 +58,11 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("email_verified", "boolean")
     .addColumn("is_social", "boolean")
     .addColumn("app_metadata", "varchar(8092)")
+    .addUniqueConstraint("unique_email_provider", [
+      "email",
+      "provider",
+      "tenant_id",
+    ])
     // End added columns
     .execute();
 

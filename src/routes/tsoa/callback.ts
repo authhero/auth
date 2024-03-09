@@ -57,6 +57,7 @@ export class CallbackController extends Controller {
     request.ctx.set("tenantId", client.tenant_id);
 
     if (error) {
+      request.ctx.set("logType", LogTypes.FAILED_LOGIN);
       const { redirect_uri } = loginState.authParams;
 
       if (!redirect_uri) {
@@ -112,6 +113,16 @@ export class CallbackController extends Controller {
     if (!loginState) {
       throw new Error("State not found");
     }
+
+    request.ctx.set("client_id", loginState.authParams.client_id);
+    const client = await getClient(
+      request.ctx.env,
+      loginState.authParams.client_id,
+    );
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+    request.ctx.set("tenantId", client.tenant_id);
 
     return socialAuthCallback({
       ctx: request.ctx,

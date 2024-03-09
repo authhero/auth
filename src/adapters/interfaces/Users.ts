@@ -17,4 +17,5 @@ export interface UserDataAdapter {
     id: string,
     user: Partial<BaseUser>,
   ): Promise<boolean>;
+  unlink(tenantId: string, id: string): Promise<boolean>;
 }

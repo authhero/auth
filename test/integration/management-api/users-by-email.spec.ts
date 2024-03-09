@@ -6,7 +6,7 @@ import { UserResponse } from "../../../src/types/auth0";
 import { Identity } from "../../../src/types/auth0/Identity";
 
 describe("users by email", () => {
-  it("should return 404 for non existent email address?", async () => {
+  it("should return empty list if there are no users with queried email address", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
@@ -25,7 +25,9 @@ describe("users by email", () => {
       },
     );
 
-    expect(response.status).toBe(404);
+    const users = (await response.json()) as UserResponse[];
+
+    expect(users).toHaveLength(0);
   });
 
   it("should return a single user for a simple get by email - no linked accounts", async () => {
@@ -91,8 +93,9 @@ describe("users by email", () => {
     const createDuplicateUserResponse = await client.api.v2.users.$post(
       {
         json: {
+          name: "Åkesson Þorsteinsson",
           email: "foo@example.com",
-          connection: "Username-Password-Authentication",
+          connection: "email",
           // seems odd that this isn't allowed... I think this endpoint needs looking at
           // maybe it's good we have to use the mgmt API for our test fixtures
           // provider: "auth2",
@@ -150,7 +153,7 @@ describe("users by email", () => {
     expect(users[1]).toMatchObject({
       email: "foo@example.com",
       tenant_id: "tenantId",
-      name: "foo@example.com",
+      name: "Åkesson Þorsteinsson",
       provider: "email",
       connection: "email",
       email_verified: false,
@@ -167,7 +170,7 @@ describe("users by email", () => {
       {
         json: {
           email: "bar@example.com",
-          connection: "Username-Password-Authentication",
+          connection: "email",
         },
       },
       {
@@ -306,7 +309,9 @@ describe("users by email", () => {
         },
       },
     );
-    expect(barEmailAfterLink.status).toBe(404);
+    const barEmailAfterLinkUsers =
+      (await barEmailAfterLink.json()) as UserResponse[];
+    expect(barEmailAfterLinkUsers).toHaveLength(0);
 
     // ALSO TO TEST
     // - unlink accounts

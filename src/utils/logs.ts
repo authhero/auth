@@ -12,6 +12,7 @@ import {
   SuccessSignup,
   Log,
   LogsResponse,
+  FailedLogin,
 } from "../types";
 
 function getCommonFields(log: SqlLog) {
@@ -150,6 +151,14 @@ function getLog(log: SqlLog): Log {
         connection_id: log.connection_id || "",
       };
       return successSignup;
+    }
+
+    case "f": {
+      const failedLogin: FailedLogin = {
+        ...getCommonFields(log),
+        type: "f",
+      };
+      return failedLogin;
     }
 
     default:

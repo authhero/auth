@@ -18,9 +18,13 @@ import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
 import { LogTypes } from "../types";
+import {
+  getPrimaryUserByEmailAndProvider,
+  getPrimaryUserByEmail,
+} from "../utils/users";
 
 export async function socialAuth(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   controller: Controller,
   client: Client,
   connection: string,
@@ -30,6 +34,7 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection Not Found" });
   }
 
@@ -40,7 +45,7 @@ export async function socialAuth(
     oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
   oauthLoginUrl.searchParams.set("state", state);
-  oauthLoginUrl.searchParams.set("redirect_uri", `${env.ISSUER}callback`);
+  oauthLoginUrl.searchParams.set("redirect_uri", `${ctx.env.ISSUER}callback`);
   oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id);
   if (connectionInstance.response_type) {
     oauthLoginUrl.searchParams.set(
@@ -93,7 +98,10 @@ export async function socialAuthCallback({
 }: socialAuthCallbackParams) {
   const { env } = ctx;
   const client = await getClient(env, state.authParams.client_id);
+
   if (!client) {
+    // I'm not sure if these are correct as need to reverse engineer what Auth0 does
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Client not found" });
   }
   const connection = client.connections.find(
@@ -101,10 +109,14 @@ export async function socialAuthCallback({
   );
 
   if (!connection) {
+    // same here. unsure
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
+    // same here. unsure
+    ctx.set("logType", LogTypes.FAILED_LOGIN);
     throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
 
@@ -147,33 +159,28 @@ export async function socialAuthCallback({
   const email = emailRaw.toLocaleLowerCase();
   const strictEmailVerified = !!profileData.email_verified;
 
-  const ssoId = `${state.connection}|${sub}`;
-  let user = await env.data.users.get(client.tenant_id, ssoId);
-
-  if (!state.connection) {
-    throw new HTTPException(403, { message: "Connection not found" });
-  }
-
-  if (user?.linked_to) {
-    user = await env.data.users.get(client.tenant_id, user.linked_to);
-  }
+  let user = await getPrimaryUserByEmailAndProvider({
+    userAdapter: env.data.users,
+    tenant_id: client.tenant_id,
+    email,
+    provider: connection.name,
+  });
 
   if (!user) {
     ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
 
-    // This should be fixed to get the primary user!
-    const [sameEmailUser] = await env.data.users.getByEmail(
-      client.tenant_id,
-      // TODO - this needs to ONLY fetch primary users e.g. where linked_to is null
-      email,
-    );
+    const primaryUser = await getPrimaryUserByEmail({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: email,
+    });
 
     const newSocialUser = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
       email,
       name: email,
-      provider: state.connection,
-      connection: state.connection,
+      provider: connection.name,
+      connection: connection.name,
       email_verified: strictEmailVerified,
       last_ip: "",
       login_count: 0,
@@ -185,12 +192,12 @@ export async function socialAuthCallback({
     });
 
     // this means we have a primary account
-    if (sameEmailUser) {
-      user = sameEmailUser;
+    if (primaryUser) {
+      user = primaryUser;
 
       // link user with existing user
       await env.data.users.update(client.tenant_id, newSocialUser.id, {
-        linked_to: sameEmailUser.id,
+        linked_to: primaryUser.id,
       });
     } else {
       // here we are using the new user as the primary ccount
@@ -199,7 +206,7 @@ export async function socialAuthCallback({
   }
 
   ctx.set("tenantId", client.tenant_id);
-  ctx.set("email", email);
+  ctx.set("userName", email);
   ctx.set("userId", user.id);
 
   const sessionId = await setSilentAuthCookies(

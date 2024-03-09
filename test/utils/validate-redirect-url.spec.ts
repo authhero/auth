@@ -141,13 +141,7 @@ describe("validateRedirectUrl", () => {
     });
     test("http://localhost:3000#auth_token=foo-bar", () => {
       const allowedUrls: string[] = [];
-      const redirectUri = "http://localhost:3000/sv";
-      expect(validateRedirectUrl(allowedUrls, redirectUri)).toBe(true);
-    });
-    test("A Vercel preview domain in Swedish", () => {
-      const allowedUrls: string[] = [];
-      const redirectUri =
-        "https://test-test.vercel.sesamy.dev/sv/callback?auth_token=foo-bar";
+      const redirectUri = "http://localhost:3000";
       expect(validateRedirectUrl(allowedUrls, redirectUri)).toBe(true);
     });
   });

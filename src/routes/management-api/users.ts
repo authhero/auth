@@ -76,27 +76,13 @@ export class UsersMgmtController extends Controller {
       q: query.join(" "),
     });
 
-    const users: UserResponse[] = result.users.map((user) => {
-      const { id, ...userWithoutId } = user;
+    const primarySqlUsers = result.users.filter((user) => !user.linked_to);
 
-      return {
-        ...userWithoutId,
-        user_id: user.id,
-        identities: [
-          {
-            connection: user.connection,
-            provider: user.provider,
-            user_id: userIdParse(user.id),
-            isSocial: user.is_social,
-          },
-          // TODO - need to do the join here with linked accounts
-        ],
-        // TODO: store this field in sql
-        username: user.email,
-        phone_number: "",
-        phone_verified: false,
-      };
-    });
+    const users: UserResponse[] = await Promise.all(
+      primarySqlUsers.map(async (primarySqlUser) => {
+        return await enrichUser(env, tenantId, primarySqlUser);
+      }),
+    );
 
     if (include_totals) {
       const res: GetUserResponseWithTotals = {
@@ -131,6 +117,12 @@ export class UsersMgmtController extends Controller {
 
     if (!user) {
       throw new HTTPException(404);
+    }
+
+    if (user.linked_to) {
+      throw new HTTPException(404, {
+        message: "User is linked to another user",
+      });
     }
 
     const userResponse: UserResponse = await enrichUser(env, tenant_id, user);
@@ -171,19 +163,29 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse> {
     const { env } = request.ctx;
 
-    const { email } = user;
+    const { email: emailRaw } = user;
 
-    if (!email) {
+    if (!emailRaw) {
       throw new HTTPException(400, { message: "Email is required" });
     }
+
+    if (user.connection !== "email") {
+      throw new HTTPException(400, {
+        message: "Only email connections are supported",
+      });
+    }
+
+    const email = emailRaw.toLowerCase();
 
     const data = await env.data.users.create(tenantId, {
       email,
       id: `email|${userIdGenerate()}`,
-      name: email,
+      name: user.name || email,
       provider: "email",
       connection: "email",
-      email_verified: false,
+      // we need to be careful with this as the profile service was setting this true in places where I don't think it's correct
+      // AND when does the account linking happen then? here? first login?
+      email_verified: user.email_verified || false,
       last_ip: "",
       login_count: 0,
       is_social: false,
@@ -242,16 +244,31 @@ export class UsersMgmtController extends Controller {
       }
     }
 
+    const userToPatch = await env.data.users.get(tenant_id, user_id);
+
+    if (!userToPatch) {
+      throw new HTTPException(404);
+    }
+
+    if (userToPatch.linked_to) {
+      throw new HTTPException(404, {
+        // not the auth0 error message but I'd rather deviate here
+        message: "User is linked to another user",
+      });
+    }
+
     const result = await env.data.users.update(tenant_id, user_id, userFields);
 
     if (!result) {
+      // TODO - why would this fail?
       throw new HTTPException(500);
     }
 
     const patchedUser = await env.data.users.get(tenant_id, user_id);
 
     if (!patchedUser) {
-      throw new HTTPException(404);
+      // we should never reach here UNLESS there's some race condition where another service deletes the users after the update...
+      throw new HTTPException(500);
     }
 
     const userResponse: UserResponse = await enrichUser(
@@ -318,9 +335,7 @@ export class UsersMgmtController extends Controller {
     const { env } = request.ctx;
     request.ctx.set("tenantId", tenantId);
 
-    await env.data.users.update(tenantId, user_id, {
-      linked_to: undefined,
-    });
+    await env.data.users.unlink(tenantId, user_id);
 
     this.setStatus(200);
     return "ok";
