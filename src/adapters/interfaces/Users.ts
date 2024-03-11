@@ -12,10 +12,6 @@ export interface UserDataAdapter {
   create(tenantId: string, user: User): Promise<User>;
   remove(tenantId: string, id: string): Promise<boolean>;
   list(tenantId: string, params: ListParams): Promise<ListUsersResponse>;
-  update(
-    tenantId: string,
-    id: string,
-    user: Partial<BaseUser>,
-  ): Promise<boolean>;
+  update(tenantId: string, id: string, user: Partial<User>): Promise<boolean>;
   unlink(tenantId: string, id: string): Promise<boolean>;
 }

@@ -312,7 +312,7 @@ export class LoginController extends Controller {
       return renderEnterCode(env, this, session, "Code not found or expired");
     }
 
-    const user = getUserByEmailAndProvider({
+    const user = await getUserByEmailAndProvider({
       userAdapter: env.data.users,
       tenant_id: client.tenant_id,
       email,
@@ -322,7 +322,9 @@ export class LoginController extends Controller {
       throw new HTTPException(500, { message: "No user found" });
     }
 
-    // TODO - now need to update the user to be verified
+    await env.data.users.update(client.tenant_id, user.id, {
+      email_verified: true,
+    });
 
     // what should we actually do here?
     return "email validated";
