@@ -43,8 +43,6 @@ export async function ticketAuth(
     throw new HTTPException(403, { message: "Ticket not found" });
   }
 
-  console.log("TICKET", ticket);
-
   const provider = getProviderFromRealm(realm);
 
   let user = await getPrimaryUserByEmailAndProvider({
@@ -53,8 +51,6 @@ export async function ticketAuth(
     email: ticket.email,
     provider,
   });
-
-  console.log("USER", user);
 
   // this will trigger on the code and password flows BUT shouldn't the code accounts be validated as they've signed in?
   // Maybe this is where we should set email_verified to true!
