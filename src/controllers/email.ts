@@ -238,8 +238,7 @@ export async function sendValidateEmailAddress(
   // TODO - implement i18n
   const sendEmailValidationTemplate = engine.parse(templateString);
   const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
-    // TODO - what does auth0 do here? Haven't actually seen it in action... Would be good to copy their route
-    // need to actually create this route!
+    // we have not checked the route name that auth0 uses
     emailValidationUrl: `${env.ISSUER}u/validate-email?state=${state}&code=${code}`,
     vendorName: client.name,
     logo,
