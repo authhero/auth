@@ -321,16 +321,15 @@ describe("password-flow", () => {
       const client = testClient(tsoaApp, env);
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
-        param: {
-          clientId: "clientId",
-        },
         json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
           email: "new-username-password-user@example.com",
           password: "password",
         },
       };
 
-      await client.dbconnections.signup.$post(
+      const signupResponse = await client.dbconnections.signup.$post(
         typesDoNotWorkWithThisSetup___PARAMS,
         {
           headers: {
@@ -338,6 +337,7 @@ describe("password-flow", () => {
           },
         },
       );
+      expect(signupResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(
         {
