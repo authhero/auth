@@ -305,13 +305,6 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    const codes = await env.data.codes.list(client.tenant_id, email);
-    const foundCode = codes.find((storedCode) => storedCode.code === code);
-
-    if (!foundCode) {
-      throw new HTTPException(400, { message: "Code not found or expired" });
-    }
-
     const user = await getUserByEmailAndProvider({
       userAdapter: env.data.users,
       tenant_id: client.tenant_id,
@@ -320,6 +313,13 @@ export class LoginController extends Controller {
     });
     if (!user) {
       throw new HTTPException(500, { message: "No user found" });
+    }
+
+    const codes = await env.data.codes.list(client.tenant_id, user.id);
+    const foundCode = codes.find((storedCode) => storedCode.code === code);
+
+    if (!foundCode) {
+      throw new HTTPException(400, { message: "Code not found or expired" });
     }
 
     await env.data.users.update(client.tenant_id, user.id, {

@@ -97,9 +97,7 @@ export class DbConnectionsController extends Controller {
 
     const authParams: AuthParams = {
       client_id: body.client_id,
-      // This was a bug on the first implementation... what should we be doing here? storing user_id instead?
-      // check the forgot password route
-      username: newUser.id,
+      username: email,
     };
 
     const session: UniversalLoginSession = {
