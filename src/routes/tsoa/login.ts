@@ -283,7 +283,7 @@ export class LoginController extends Controller {
   /**
    * Validates a link sent to the user's email
    */
-  @Get("validate-email") // a GET that mutates data... interesting, but the only way?
+  @Get("validate-email")
   public async postValidateEmail(
     @Request() request: RequestWithContext,
     @Query("code") code: string,
