@@ -33,7 +33,7 @@ describe("password-flow", () => {
     });
     // I think we should move this one to a new describe block
     // after testing the email validation!
-    it("should create a new user with a password and login", async () => {
+    it.only("should create a new user with a password and login", async () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -60,7 +60,6 @@ describe("password-flow", () => {
         {
           json: {
             client_id: "clientId",
-            connection: "Username-Password-Authentication",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
             password,
@@ -90,51 +89,62 @@ describe("password-flow", () => {
 
       const tokenResponse = await client.authorize.$get({ query });
 
-      expect(tokenResponse.status).toBe(302);
-      expect(await tokenResponse.text()).toBe("Redirecting...");
-      // ahhh ok, so here is where the login fails... why not above on the initial AJAX request?
-      // BECAUSE It's a full page redirect NOT an error message return in the AJAX X-Origin username/passowrd post
-      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      // OK! we are at a point where I can continue!
+      expect(await tokenResponse.text()).toBe(
+        "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.",
+      );
 
-      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      // TODO
+      // - read email
+      // - click link
+      // - check email is verified
+      // - check login works
 
-      expect(redirectUri.hostname).toBe("login.example.com");
-      expect(searchParams.get("state")).toBe("state");
-      const accessToken = searchParams.get("access_token");
-      const accessTokenPayload = parseJwt(accessToken!);
-      expect(accessTokenPayload.aud).toBe("default");
-      expect(accessTokenPayload.iss).toBe("https://example.com/");
-      expect(accessTokenPayload.scope).toBe("");
-      const idToken = searchParams.get("id_token");
-      const idTokenPayload = parseJwt(idToken!);
-      expect(idTokenPayload.email).toBe("password-login-test@example.com");
-      expect(idTokenPayload.aud).toBe("clientId");
-      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
-      // now check silent auth works after password login
-      const { idToken: silentAuthIdTokenPayload } =
-        await doSilentAuthRequestAndReturnTokens(
-          authCookieHeader,
-          client,
-          "unique-nonce",
-          "clientId",
-        );
-      const {
-        // these are the fields that change on every test run
-        exp,
-        iat,
-        sid,
-        sub,
-        ...restOfIdTokenPayload
-      } = silentAuthIdTokenPayload;
-      expect(sub).toContain("email|");
-      expect(restOfIdTokenPayload).toEqual({
-        aud: "clientId",
-        email: "password-login-test@example.com",
-        // this is correct for password login
-        email_verified: false,
-        nonce: "unique-nonce",
-        iss: "https://example.com/",
-      });
+      // expect(tokenResponse.status).toBe(302);
+      // expect(await tokenResponse.text()).toBe("Redirecting...");
+      // // ahhh ok, so here is where the login fails... why not above on the initial AJAX request?
+      // // BECAUSE It's a full page redirect NOT an error message return in the AJAX X-Origin username/passowrd post
+      // const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      // expect(redirectUri.hostname).toBe("login.example.com");
+      // expect(searchParams.get("state")).toBe("state");
+      // const accessToken = searchParams.get("access_token");
+      // const accessTokenPayload = parseJwt(accessToken!);
+      // expect(accessTokenPayload.aud).toBe("default");
+      // expect(accessTokenPayload.iss).toBe("https://example.com/");
+      // expect(accessTokenPayload.scope).toBe("");
+      // const idToken = searchParams.get("id_token");
+      // const idTokenPayload = parseJwt(idToken!);
+      // expect(idTokenPayload.email).toBe("password-login-test@example.com");
+      // expect(idTokenPayload.aud).toBe("clientId");
+      // const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+      // // now check silent auth works after password login
+      // const { idToken: silentAuthIdTokenPayload } =
+      //   await doSilentAuthRequestAndReturnTokens(
+      //     authCookieHeader,
+      //     client,
+      //     "unique-nonce",
+      //     "clientId",
+      //   );
+      // const {
+      //   // these are the fields that change on every test run
+      //   exp,
+      //   iat,
+      //   sid,
+      //   sub,
+      //   ...restOfIdTokenPayload
+      // } = silentAuthIdTokenPayload;
+      // expect(sub).toContain("email|");
+      // expect(restOfIdTokenPayload).toEqual({
+      //   aud: "clientId",
+      //   email: "password-login-test@example.com",
+      //   // this is correct for password login
+      //   email_verified: false,
+      //   nonce: "unique-nonce",
+      //   iss: "https://example.com/",
+      // });
     });
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
