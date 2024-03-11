@@ -284,7 +284,7 @@ export class LoginController extends Controller {
    * Validates a link sent to the user's email
    */
   @Get("validate-email")
-  public async postValidateEmail(
+  public async validateEmail(
     @Request() request: RequestWithContext,
     @Query("code") code: string,
     @Query("state") state: string,
