@@ -309,7 +309,7 @@ export class LoginController extends Controller {
     const foundCode = codes.find((storedCode) => storedCode.code === code);
 
     if (!foundCode) {
-      return renderEnterCode(env, this, session, "Code not found or expired");
+      throw new HTTPException(400, { message: "Code not found or expired" });
     }
 
     const user = await getUserByEmailAndProvider({
