@@ -54,7 +54,6 @@ describe("password-flow", () => {
           },
         },
       );
-
       expect(createUserResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(
@@ -75,6 +74,7 @@ describe("password-flow", () => {
         },
       );
 
+      // this should not work... we need to actually validate the email before allowing a login....
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       const query = {
         auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -91,7 +91,9 @@ describe("password-flow", () => {
       const tokenResponse = await client.authorize.$get({ query });
 
       expect(tokenResponse.status).toBe(302);
-      expect(await tokenResponse.text()).toBe("Redirecting");
+      expect(await tokenResponse.text()).toBe("Redirecting...");
+      // ahhh ok, so here is where the login fails... why not above on the initial AJAX request?
+      // BECAUSE It's a full page redirect NOT an error message return in the AJAX X-Origin username/passowrd post
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
       const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
