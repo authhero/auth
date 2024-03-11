@@ -24,7 +24,7 @@ import { getClient } from "../../services/clients";
 import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { LogTypes } from "../../types";
 
-const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
+const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -68,7 +68,7 @@ export class PasswordlessController extends Controller {
       authParams: body.authParams,
       tenant_id: client.tenant_id,
       created_at: new Date(),
-      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+      expires_at: new Date(Date.now() + OTP_EXPIRATION_TIME),
     });
 
     request.ctx.set("log", `Code: ${code}`);
