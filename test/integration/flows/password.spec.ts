@@ -12,15 +12,14 @@ describe("password-flow", () => {
       const client = testClient(tsoaApp, env);
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
-        param: {
-          clientId: "invalidClientId",
-        },
         json: {
+          client_id: "invalidClientId",
+          connection: "Username-Password-Authentication",
           email: "test@example.com",
           password: "password",
         },
       };
-      const response = await client[":clientId"].dbconnection.register.$post(
+      const response = await client.dbconnections.signup.$post(
         typesDoNotWorkWithThisSetup___PARAMS,
         {
           headers: {
@@ -40,21 +39,21 @@ describe("password-flow", () => {
       const client = testClient(tsoaApp, env);
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
-        param: {
-          clientId: "clientId",
-        },
         json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
           email: "password-login-test@example.com",
           password,
         },
       };
-      const createUserResponse = await client[
-        ":clientId"
-      ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
-        headers: {
-          "content-type": "application/json",
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
         },
-      });
+      );
 
       expect(createUserResponse.status).toBe(201);
 
@@ -62,6 +61,7 @@ describe("password-flow", () => {
         {
           json: {
             client_id: "clientId",
+            connection: "Username-Password-Authentication",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
             password,
@@ -135,34 +135,32 @@ describe("password-flow", () => {
       });
     });
 
-    // I expected this test to fail now we've migrated to hono/testing and we're using a real SQL database...
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
       const aNewPassword = "a new password";
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
-        param: {
-          clientId: "clientId",
-        },
         json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
           // existing password user in our fixtures
           email: "foo@example.com",
-          // this should not overwrite the existing password
           password: aNewPassword,
         },
       };
-      const createUserResponse = await client[
-        ":clientId"
-      ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
-        headers: {
-          "content-type": "application/json",
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
         },
-      });
+      );
 
-      // I'm not sure this is what should happen
-      // TODO - investigate auth0 mgmt API
-      expect(createUserResponse.status).toBe(201);
+      expect(createUserResponse.status).toBe(400);
+      const body = await createUserResponse.text();
+      expect(body).toBe("Invalid sign up");
 
       const loginResponse = await client.co.authenticate.$post(
         {
@@ -180,10 +178,7 @@ describe("password-flow", () => {
           },
         },
       );
-      // here at least the password has not been overwritten
       expect(loginResponse.status).toBe(403);
-      // TODO
-      // - update the password and then check we can login... I don't think we have that flow tested... or implemented
     });
     // TO TEST--------------------------------------------------------
     // should do what with registration signup for existing email (code) user?
@@ -326,16 +321,15 @@ describe("password-flow", () => {
       const client = testClient(tsoaApp, env);
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
-        param: {
-          clientId: "clientId",
-        },
         json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
           email: "new-username-password-user@example.com",
           password: "password",
         },
       };
 
-      await client[":clientId"].dbconnection.register.$post(
+      const signupResponse = await client.dbconnections.signup.$post(
         typesDoNotWorkWithThisSetup___PARAMS,
         {
           headers: {
@@ -343,6 +337,7 @@ describe("password-flow", () => {
           },
         },
       );
+      expect(signupResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(
         {
