@@ -20,7 +20,7 @@ describe("password-flow", () => {
           password: "password",
         },
       };
-      const response = await client[":clientId"].dbconnection.register.$post(
+      const response = await client.dbconnections.signup.$post(
         typesDoNotWorkWithThisSetup___PARAMS,
         {
           headers: {
@@ -48,13 +48,14 @@ describe("password-flow", () => {
           password,
         },
       };
-      const createUserResponse = await client[
-        ":clientId"
-      ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
-        headers: {
-          "content-type": "application/json",
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
         },
-      });
+      );
 
       expect(createUserResponse.status).toBe(201);
 
@@ -152,13 +153,14 @@ describe("password-flow", () => {
           password: aNewPassword,
         },
       };
-      const createUserResponse = await client[
-        ":clientId"
-      ].dbconnection.register.$post(typesDoNotWorkWithThisSetup___PARAMS, {
-        headers: {
-          "content-type": "application/json",
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
         },
-      });
+      );
 
       // I'm not sure this is what should happen
       // TODO - investigate auth0 mgmt API
@@ -335,7 +337,7 @@ describe("password-flow", () => {
         },
       };
 
-      await client[":clientId"].dbconnection.register.$post(
+      await client.dbconnections.signup.$post(
         typesDoNotWorkWithThisSetup___PARAMS,
         {
           headers: {
