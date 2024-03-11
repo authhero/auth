@@ -24,59 +24,6 @@ function getLocale(language: string) {
 
 const engine = new Liquid();
 
-// exportasync function sendEmailValidation(
-//   env: Env,
-//   client: Client,
-//   to: string,
-//   code: string,
-// ) {
-//   if (client.email_validation === "disabled") {
-//     return;
-//   }
-
-//   const response = await env.AUTH_TEMPLATES.get(
-//     "templates/email/verify-email.liquid",
-//   );
-//   if (!response) {
-//     throw new Error("Verify email template not found");
-//   }
-
-//   const templateString = await response.text();
-
-//   const language = client.tenant.language || "sv";
-
-//   const logo = getClientLogoPngGreyBg(
-//     client.tenant.logo ||
-//       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
-//     env.IMAGE_PROXY_URL,
-//   );
-
-//   // TODO - implement i18n
-//   const sendCodeTemplate = engine.parse(templateString);
-//   const codeEmailBody = await engine.render(sendCodeTemplate, {
-//     code,
-//     vendorName: client.name,
-//     logo,
-//   });
-
-//   await sendEmail(client, {
-//     to: [{ email: to, name: to }],
-//     from: {
-//       email: client.tenant.sender_email,
-//       name: client.tenant.sender_name,
-//     },
-//     content: [
-//       {
-//         type: "text/html",
-//         value: codeEmailBody,
-//       },
-//     ],
-//     subject: translate(language, "codeEmailTitle")
-//       .replace("{{vendorName}}", client.name)
-//       .replace("{{code}}", code),
-//   });
-// }
-
 export async function sendCode(
   env: Env,
   client: Client,
@@ -271,7 +218,7 @@ export async function sendValidateEmailAddress(
   state: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get(
-    "templates/email/validate-email-address.liquid",
+    "templates/email/verify-email.liquid",
   );
 
   if (!response) {
@@ -291,9 +238,8 @@ export async function sendValidateEmailAddress(
   // TODO - implement i18n
   const sendEmailValidationTemplate = engine.parse(templateString);
   const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
-    // TODO - what does auth0 do here? Haven't actually seen it in action... Would be good to copy their route
-    // need to actually create this route!
-    emailValidationUrl: `${env.ISSUER}u/validate-email-address?state=${state}&code=${code}`,
+    // we have not checked the route name that auth0 uses
+    emailValidationUrl: `${env.ISSUER}u/validate-email?state=${state}&code=${code}`,
     vendorName: client.name,
     logo,
     primaryColor: client.tenant.primary_color || "#007bff",

@@ -3,7 +3,6 @@ import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
 import {
-  getUserByEmailAndProvider,
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
