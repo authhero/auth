@@ -15,6 +15,7 @@ import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { LogTypes } from "../../types";
+import { getPrimaryUserByEmailAndProvider } from "../../utils/users";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -114,8 +115,13 @@ export class AuthenticateController extends Controller {
       ticket.authParams = otp.authParams;
     } else {
       request.ctx.set("connection", "Username-Password-Authentication");
-      // TODO - filter this don't just take first
-      const [user] = await env.data.users.getByEmail(client.tenant_id, email);
+
+      const user = await getPrimaryUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email,
+        provider: "auth2",
+      });
 
       if (!user) {
         throw new HTTPException(403);
