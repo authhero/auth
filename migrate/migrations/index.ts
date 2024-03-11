@@ -26,6 +26,7 @@ import * as n25_logDescMaxLength from "./2024-02-05T18:35:00_log-desc-max-length
 import * as n26_logsTableExtraFields from "./2024-02-08T12:45:00_logs-table-extra-fields";
 import * as n27_usersTableNameIndex from "./2024-02-13T11:25:00_users-table-name-index";
 import * as n28_usersEmailConstrain from "./2024-02-19T20:14:00_users-email-constrain";
+import * as n29_increaseOtpStateLength from "./2024-03-11T12:45:00_increase-otp-state-length";
 
 // These need to be in alphabetic order
 export default {
@@ -57,4 +58,5 @@ export default {
   n26_logsTableExtraFields,
   n27_usersTableNameIndex,
   n28_usersEmailConstrain,
+  n29_increaseOtpStateLength,
 };
