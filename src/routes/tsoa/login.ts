@@ -283,7 +283,7 @@ export class LoginController extends Controller {
   /**
    * Validates a link sent to the user's email
    */
-  @Get("validate-email")
+  @Get("validate-email") // a GET that mutates data... interesting, but the only way?
   public async postValidateEmail(
     @Request() request: RequestWithContext,
     @Query("code") code: string,
@@ -305,24 +305,27 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    try {
-      const codes = await env.data.codes.list(client.tenant_id, email);
-      const foundCode = codes.find((storedCode) => storedCode.code === code);
+    const codes = await env.data.codes.list(client.tenant_id, email);
+    const foundCode = codes.find((storedCode) => storedCode.code === code);
 
-      if (!foundCode) {
-        return renderEnterCode(env, this, session, "Code not found or expired");
-      }
-
-      // TODO - filter by primary user
-      let [user] = await env.data.users.getByEmail(client.tenant_id, email);
-      if (!user) {
-        throw new HTTPException(500, { message: "No user found" });
-      }
-
-      return handleLogin(env, this, user, session);
-    } catch (err: any) {
-      return renderEmailValidation(env, this, session, err.message);
+    if (!foundCode) {
+      return renderEnterCode(env, this, session, "Code not found or expired");
     }
+
+    const user = getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email,
+      provider: "auth2",
+    });
+    if (!user) {
+      throw new HTTPException(500, { message: "No user found" });
+    }
+
+    // TODO - now need to update the user to be verified
+
+    // what should we actually do here?
+    return "email validated";
   }
 
   /**

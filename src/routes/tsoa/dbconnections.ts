@@ -196,7 +196,6 @@ export class DbConnectionsController extends Controller {
       return "We've just sent you an email to reset your password.";
     }
 
-    // I hadn't considered these... what do we actually need?
     const authParams: AuthParams = {
       client_id: body.client_id,
       username: email,
