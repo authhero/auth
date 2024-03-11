@@ -281,13 +281,12 @@ export class LoginController extends Controller {
   }
 
   /**
-   * Validates a code entered in the validate-email form
-   * @param request
+   * Validates a link sent to the user's email
    */
-  @Post("validate-email")
+  @Get("validate-email")
   public async postValidateEmail(
     @Request() request: RequestWithContext,
-    @Body() params: { code: string },
+    @Query("code") code: string,
     @Query("state") state: string,
   ): Promise<string> {
     const { env } = request.ctx;
@@ -307,11 +306,10 @@ export class LoginController extends Controller {
     }
 
     try {
-      // another duplicate here - DRY rule of three!
-      const otps = await env.data.OTP.list(client.tenant_id, email);
-      const otp = otps.find((otp) => otp.code === params.code);
+      const codes = await env.data.codes.list(client.tenant_id, email);
+      const foundCode = codes.find((storedCode) => storedCode.code === code);
 
-      if (!otp) {
+      if (!foundCode) {
         return renderEnterCode(env, this, session, "Code not found or expired");
       }
 
@@ -557,7 +555,7 @@ export class LoginController extends Controller {
 
     try {
       const codes = await env.data.codes.list(client.tenant_id, user.id);
-      const foundCode = codes.find((otp) => otp.code === code);
+      const foundCode = codes.find((storedCode) => storedCode.code === code);
 
       if (!foundCode) {
         return renderEnterCode(env, this, session, "Code not found or expired");
