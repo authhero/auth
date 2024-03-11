@@ -9,8 +9,8 @@ const dialect = new PlanetScaleDialect({
     fetch(new Request(opts, { ...init, cache: undefined })),
 });
 
-migrateToLatest(dialect)
-  // migrateDown(dialect)
+// migrateToLatest(dialect)
+migrateDown(dialect)
   .then(() => {
     console.log("migrated");
   })

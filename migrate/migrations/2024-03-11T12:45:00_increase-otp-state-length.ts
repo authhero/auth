@@ -22,6 +22,6 @@ export async function down(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .alterTable("otps")
-    .addColumn("state", "varchar(2048)")
+    .addColumn("state", "varchar(1024)")
     .execute();
 }
