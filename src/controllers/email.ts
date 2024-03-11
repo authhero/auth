@@ -218,7 +218,7 @@ export async function sendValidateEmailAddress(
   state: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get(
-    "templates/email/validate-email-address.liquid",
+    "templates/email/verify-email.liquid",
   );
 
   if (!response) {
