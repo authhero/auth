@@ -8,6 +8,10 @@ import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
 import { LogTypes } from "../types";
+import {
+  getPrimaryUserByEmail,
+  getPrimaryUserByEmailAndProvider,
+} from "../utils/users";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -39,23 +43,25 @@ export async function ticketAuth(
     throw new HTTPException(403, { message: "Ticket not found" });
   }
 
+  console.log("TICKET", ticket);
+
   const provider = getProviderFromRealm(realm);
 
-  const usersWithSameEmail = await env.data.users.getByEmail(
+  let user = await getPrimaryUserByEmailAndProvider({
+    userAdapter: env.data.users,
     tenant_id,
-    ticket.email,
-  );
+    email: ticket.email,
+    provider,
+  });
 
-  let user = usersWithSameEmail.find((u) => u.provider === provider) || null;
-
-  if (user?.linked_to) {
-    user = await env.data.users.get(tenant_id, user.linked_to);
-  }
+  console.log("USER", user);
 
   // this will trigger on the code and password flows BUT shouldn't the code accounts be validated as they've signed in?
   // Maybe this is where we should set email_verified to true!
   // we could do this check in a few places...
   if (realm === "Username-Password-Authentication" && !user?.email_verified) {
+    console.log("OK WE SHOULD BE HERE!");
+
     // TBD - should this page be on login2 like the expired code one? we're already adding a few universal auth pages...
     // BUT this route will be more frequently used so we probably want the styling totally matching
     return "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.";
@@ -68,7 +74,11 @@ export async function ticketAuth(
       );
     }
 
-    const primaryUser = usersWithSameEmail.find((u) => !u.linked_to);
+    const primaryUser = await getPrimaryUserByEmail({
+      userAdapter: env.data.users,
+      tenant_id,
+      email: ticket.email,
+    });
 
     const linkedTo = primaryUser?.id;
 
