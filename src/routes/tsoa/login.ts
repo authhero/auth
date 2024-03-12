@@ -602,12 +602,12 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    const users = await env.data.users.getByEmail(
-      client.tenant_id,
-      loginParams.username,
-    );
-
-    const auth2User = users.find((user) => user.provider === "auth2");
+    const auth2User = await getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: loginParams.username,
+      provider: "auth2",
+    });
 
     if (!auth2User) {
       throw new HTTPException(400, { message: "User not found" });
