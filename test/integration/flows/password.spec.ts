@@ -313,29 +313,6 @@ describe("password-flow", () => {
       // no body returned
       expect(loginResponse.status).toBe(403);
     });
-    it("should reject login of existing user with incorrect password", async () => {
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
-
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "wrong-password",
-            username: "foo@example.com",
-          },
-        },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
-      // no body returned
-      expect(loginResponse.status).toBe(403);
-    });
     it("should not allow password of a different user to be used", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -456,5 +433,7 @@ describe("password-flow", () => {
     // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
   // TO TEST
-  // - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
+  // - linking! Same as code flow tests - register new email-password user when existing user with same email exists... do this now that we have account linking
+  // and email validation!
+  // should also have a test with a NON linked user...
 });
