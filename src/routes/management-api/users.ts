@@ -28,6 +28,7 @@ import { Identity } from "../../types/auth0/Identity";
 import { enrichUser } from "../../utils/enrichUser";
 import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { LogTypes } from "../../types";
+import { getUsersByEmail } from "../../utils/users";
 
 interface LinkWithBodyParams {
   link_with: string;
@@ -231,7 +232,8 @@ export class UsersMgmtController extends Controller {
     const { verify_email, ...userFields } = user;
 
     if (userFields.email) {
-      const existingUser = await env.data.users.getByEmail(
+      const existingUser = await getUsersByEmail(
+        env.data.users,
         tenant_id,
         userFields.email,
       );
