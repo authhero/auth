@@ -31,9 +31,8 @@ describe("password-flow", () => {
 
       expect(response.status).toBe(404);
     });
-    // TO FIX - this test will not work now because we require email_validation before logging in...
-    // seems like we need new tests here
-    it.skip("should create a new user with a password and login", async () => {
+
+    it("should create a new user with a password and login", async () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -54,14 +53,12 @@ describe("password-flow", () => {
           },
         },
       );
-
-      expect(createUserResponse.status).toBe(201);
+      expect(createUserResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(
         {
           json: {
             client_id: "clientId",
-            connection: "Username-Password-Authentication",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
             password,
@@ -75,6 +72,7 @@ describe("password-flow", () => {
         },
       );
 
+      // this will not work! need to validate the email before allowing a login
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       const query = {
         auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -86,8 +84,31 @@ describe("password-flow", () => {
         state: "state",
         realm: "Username-Password-Authentication",
       };
-      // Trade the ticket for token
 
+      // cannot login now because email not validated!
+      const loginBlockedRes = await client.authorize.$get({ query });
+
+      expect(await loginBlockedRes.text()).toBe(
+        "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.",
+      );
+
+      const [{ to, code, state }] = await env.data.email.list!();
+
+      expect(to).toBe("password-login-test@example.com");
+      expect(code).toBeDefined();
+      expect(state).toBe("testid-1");
+
+      const emailValidatedRes = await client.u["validate-email"].$get({
+        query: {
+          state,
+          code,
+        },
+      });
+
+      expect(emailValidatedRes.status).toBe(200);
+      expect(await emailValidatedRes.text()).toBe("email validated");
+
+      // interesting that we can reuse the above authorize call 8-)
       const tokenResponse = await client.authorize.$get({ query });
 
       expect(tokenResponse.status).toBe(302);
@@ -124,12 +145,11 @@ describe("password-flow", () => {
         sub,
         ...restOfIdTokenPayload
       } = silentAuthIdTokenPayload;
-      expect(sub).toContain("email|");
+      expect(sub).toContain("auth2|");
       expect(restOfIdTokenPayload).toEqual({
         aud: "clientId",
         email: "password-login-test@example.com",
-        // this is correct for password login
-        email_verified: false,
+        email_verified: true,
         nonce: "unique-nonce",
         iss: "https://example.com/",
       });

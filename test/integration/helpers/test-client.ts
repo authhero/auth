@@ -44,8 +44,7 @@ export async function getEnv() {
       emails.push({
         to,
         code,
-        // TODO - support this once test this
-        // state,
+        state,
       });
       return Promise.resolve();
     },
@@ -54,8 +53,7 @@ export async function getEnv() {
       emails.push({
         to,
         code,
-        // TODO - support this once test this
-        // state,
+        state,
       });
       return Promise.resolve();
     },
