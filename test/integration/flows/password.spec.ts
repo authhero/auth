@@ -85,28 +85,30 @@ describe("password-flow", () => {
         state: "state",
         realm: "Username-Password-Authentication",
       };
-      // Trade the ticket for token
 
-      const tokenResponse = await client.authorize.$get({ query });
+      // cannot login now because email not validated!
+      const loginBlockedRes = await client.authorize.$get({ query });
 
-      // OK! we are at a point where I can continue!
-      expect(await tokenResponse.text()).toBe(
+      expect(await loginBlockedRes.text()).toBe(
         "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.",
       );
 
-      // const [{ code: otp }] = await env.data.email.list!();
+      const [{ to, code, state }] = await env.data.email.list!();
 
-      const [email] = await env.data.email.list!();
-
-      // console.log(emails);
-      expect(email.to).toBe("password-login-test@example.com");
-      // shouldn't this be a link? eh?
-      expect(email.code).toBeDefined();
+      expect(to).toBe("password-login-test@example.com");
+      expect(code).toBeDefined();
       // is this different when the test is solo'd? makes sense being this as we have deterministic ID generation
-      expect(email.state).toBe("testid-1");
+      expect(state).toBe("testid-1");
 
-      // do we need to create a link like this?
-      // emailValidationUrl: `${env.ISSUER}u/validate-email?state=${state}&code=${code}`,
+      const emailValidatedRes = await client.u["validate-email"].$get({
+        query: {
+          state,
+          code,
+        },
+      });
+
+      expect(emailValidatedRes.status).toBe(200);
+      expect(await emailValidatedRes.text()).toBe("email validated");
 
       // TODO
       // - click link
