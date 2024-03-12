@@ -94,8 +94,21 @@ describe("password-flow", () => {
         "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.",
       );
 
+      // const [{ code: otp }] = await env.data.email.list!();
+
+      const [email] = await env.data.email.list!();
+
+      // console.log(emails);
+      expect(email.to).toBe("password-login-test@example.com");
+      // shouldn't this be a link? eh?
+      expect(email.code).toBeDefined();
+      // is this different when the test is solo'd? makes sense being this as we have deterministic ID generation
+      expect(email.state).toBe("testid-1");
+
+      // do we need to create a link like this?
+      // emailValidationUrl: `${env.ISSUER}u/validate-email?state=${state}&code=${code}`,
+
       // TODO
-      // - read email
       // - click link
       // - check email is verified
       // - check login works
