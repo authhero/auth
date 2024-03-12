@@ -73,7 +73,7 @@ describe("password-flow", () => {
         },
       );
 
-      // this should not work... we need to actually validate the email before allowing a login....
+      // this will not work... we need to validate the email before allowing a login
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       const query = {
         auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -110,56 +110,51 @@ describe("password-flow", () => {
       expect(emailValidatedRes.status).toBe(200);
       expect(await emailValidatedRes.text()).toBe("email validated");
 
-      // TODO
-      // - click link
-      // - check email is verified
-      // - check login works
+      // interesting that we can reuse the above authorize call 8-)
+      const tokenResponse = await client.authorize.$get({ query });
 
-      // expect(tokenResponse.status).toBe(302);
-      // expect(await tokenResponse.text()).toBe("Redirecting...");
-      // // ahhh ok, so here is where the login fails... why not above on the initial AJAX request?
-      // // BECAUSE It's a full page redirect NOT an error message return in the AJAX X-Origin username/passowrd post
-      // const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
-      // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
 
-      // expect(redirectUri.hostname).toBe("login.example.com");
-      // expect(searchParams.get("state")).toBe("state");
-      // const accessToken = searchParams.get("access_token");
-      // const accessTokenPayload = parseJwt(accessToken!);
-      // expect(accessTokenPayload.aud).toBe("default");
-      // expect(accessTokenPayload.iss).toBe("https://example.com/");
-      // expect(accessTokenPayload.scope).toBe("");
-      // const idToken = searchParams.get("id_token");
-      // const idTokenPayload = parseJwt(idToken!);
-      // expect(idTokenPayload.email).toBe("password-login-test@example.com");
-      // expect(idTokenPayload.aud).toBe("clientId");
-      // const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
-      // // now check silent auth works after password login
-      // const { idToken: silentAuthIdTokenPayload } =
-      //   await doSilentAuthRequestAndReturnTokens(
-      //     authCookieHeader,
-      //     client,
-      //     "unique-nonce",
-      //     "clientId",
-      //   );
-      // const {
-      //   // these are the fields that change on every test run
-      //   exp,
-      //   iat,
-      //   sid,
-      //   sub,
-      //   ...restOfIdTokenPayload
-      // } = silentAuthIdTokenPayload;
-      // expect(sub).toContain("email|");
-      // expect(restOfIdTokenPayload).toEqual({
-      //   aud: "clientId",
-      //   email: "password-login-test@example.com",
-      //   // this is correct for password login
-      //   email_verified: false,
-      //   nonce: "unique-nonce",
-      //   iss: "https://example.com/",
-      // });
+      expect(redirectUri.hostname).toBe("login.example.com");
+      expect(searchParams.get("state")).toBe("state");
+      const accessToken = searchParams.get("access_token");
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.aud).toBe("default");
+      expect(accessTokenPayload.iss).toBe("https://example.com/");
+      expect(accessTokenPayload.scope).toBe("");
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("password-login-test@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+      // now check silent auth works after password login
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client,
+          "unique-nonce",
+          "clientId",
+        );
+      const {
+        // these are the fields that change on every test run
+        exp,
+        iat,
+        sid,
+        sub,
+        ...restOfIdTokenPayload
+      } = silentAuthIdTokenPayload;
+      expect(sub).toContain("auth2|");
+      expect(restOfIdTokenPayload).toEqual({
+        aud: "clientId",
+        email: "password-login-test@example.com",
+        email_verified: true,
+        nonce: "unique-nonce",
+        iss: "https://example.com/",
+      });
     });
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
