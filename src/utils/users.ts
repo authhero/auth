@@ -61,8 +61,33 @@ export async function getPrimaryUserByEmail({
     q: `email:${email}`,
   });
 
-  // we should do this in SQL so we don't get issues with pagination!
-  return users.find((user) => !user.linked_to);
+  if (users.length === 0) {
+    return;
+  }
+
+  const primaryUsers = users.filter((user) => !user.linked_to);
+
+  if (primaryUsers.length > 0) {
+    if (primaryUsers.length > 1) {
+      console.error("More than one primary user found for same email");
+    }
+
+    return primaryUsers[0];
+  }
+
+  // so now we have only linked users for this email address
+
+  // I am going to assume that all the linked users with the same email address
+  // are linked to the same primary account
+
+  const primaryAccount = await userAdapter.get(tenant_id, users[0].linked_to!);
+
+  if (!primaryAccount) {
+    // this is a real error where we should interrupt the flow
+    throw new Error("Primary account not found");
+  }
+
+  return primaryAccount;
 }
 
 interface GetPrimaryUserByEmailAndProviderParams {
