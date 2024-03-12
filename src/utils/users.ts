@@ -16,7 +16,7 @@ export async function getUsersByEmail(
   return response.users;
 }
 
-interface GetPrimaryUserByEmailAndProviderParams {
+interface GetUserByEmailAndProviderParams {
   userAdapter: UserDataAdapter;
   tenant_id: string;
   email: string;
@@ -28,7 +28,7 @@ export async function getUserByEmailAndProvider({
   tenant_id,
   email,
   provider,
-}: GetPrimaryUserByEmailAndProviderParams): Promise<User | null> {
+}: GetUserByEmailAndProviderParams): Promise<User | null> {
   const { users } = await userAdapter.list(tenant_id, {
     page: 0,
     per_page: 10,
@@ -36,9 +36,11 @@ export async function getUserByEmailAndProvider({
     q: `email:${email} provider:${provider}`,
   });
 
-  const [user] = users;
+  if (users.length > 1) {
+    console.error("More than one user found for same email and provider");
+  }
 
-  return user || null;
+  return users[0] || null;
 }
 
 interface GetPrimaryUserByEmailParams {
@@ -61,6 +63,13 @@ export async function getPrimaryUserByEmail({
 
   // we should do this in SQL so we don't get issues with pagination!
   return users.find((user) => !user.linked_to);
+}
+
+interface GetPrimaryUserByEmailAndProviderParams {
+  userAdapter: UserDataAdapter;
+  tenant_id: string;
+  email: string;
+  provider: string;
 }
 
 export async function getPrimaryUserByEmailAndProvider({
