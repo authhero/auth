@@ -9,9 +9,9 @@ import {
   Security,
 } from "@tsoa/runtime";
 import { RequestWithContext } from "../../types/RequestWithContext";
-import { HTTPException } from "hono/http-exception";
 import { UserResponse } from "../../types/auth0/UserResponse";
 import { enrichUser } from "../../utils/enrichUser";
+import { getUsersByEmail } from "../../utils/users";
 
 @Route("api/v2/users-by-email")
 @Tags("management-api")
@@ -27,7 +27,7 @@ export class UsersByEmailController extends Controller {
 
     request.ctx.set("tenantId", tenant_id);
 
-    const users = await env.data.users.getByEmail(tenant_id, email);
+    const users = await getUsersByEmail(env.data.users, tenant_id, email);
 
     const primarySqlUsers = users.filter((user) => !user.linked_to);
 
