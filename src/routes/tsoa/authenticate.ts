@@ -15,7 +15,7 @@ import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { LogTypes } from "../../types";
-import { getPrimaryUserByEmailAndProvider } from "../../utils/users";
+import { getUserByEmailAndProvider } from "../../utils/users";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -116,7 +116,8 @@ export class AuthenticateController extends Controller {
     } else {
       request.ctx.set("connection", "Username-Password-Authentication");
 
-      const user = await getPrimaryUserByEmailAndProvider({
+      // we do not want to fetch a primary user here we want the auth2 user
+      const user = await getUserByEmailAndProvider({
         userAdapter: env.data.users,
         tenant_id: client.tenant_id,
         email,

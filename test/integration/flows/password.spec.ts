@@ -4,6 +4,8 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
+import { getAdminToken } from "../helpers/token";
+import { UserResponse } from "../../../src/types";
 
 describe("password-flow", () => {
   describe("Register password", () => {
@@ -32,7 +34,7 @@ describe("password-flow", () => {
       expect(response.status).toBe(404);
     });
 
-    it("should create a new user with a password and login", async () => {
+    it("should create a new user with a password and only allow login after email validation", async () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -153,6 +155,183 @@ describe("password-flow", () => {
         nonce: "unique-nonce",
         iss: "https://example.com/",
       });
+    });
+
+    // maybe this test should be broken up into login tests below... maybe we want more flows like this!
+    // still more to test e.g. resent email validation email after failed login (here we are just testing the verify email email which is only sent once)
+    it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
+      const password = "password";
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+      const token = await getAdminToken();
+
+      // -------------------------------
+      // create code user
+      // -------------------------------
+      await env.data.users.create("tenantId", {
+        id: "email|codeUserId",
+        email: "existing-code-user@example.com",
+        email_verified: true,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        login_count: 0,
+      });
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "existing-code-user@example.com",
+          password,
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      // -----------------------------
+      // validate email
+      // -----------------------------
+      const [{ to, code, state }] = await env.data.email.list!();
+
+      expect(to).toBe("existing-code-user@example.com");
+      expect(code).toBeDefined();
+
+      const emailValidatedRes = await client.u["validate-email"].$get({
+        query: {
+          state,
+          code,
+        },
+      });
+
+      expect(emailValidatedRes.status).toBe(200);
+      expect(await emailValidatedRes.text()).toBe("email validated");
+
+      // -----------------------------
+      // sanity check that linking has happened!
+      // -----------------------------
+      const users = await env.data.users.list("tenantId", {
+        page: 0,
+        per_page: 10,
+        include_totals: false,
+        q: "",
+      });
+      const [linkedPasswordUser] = users.users.filter(
+        (u) =>
+          u.email === "existing-code-user@example.com" &&
+          u.provider === "auth2",
+      );
+
+      expect(linkedPasswordUser.linked_to).toBe("email|codeUserId");
+
+      // -----------------------------
+      // login with password
+      // -----------------------------
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password,
+            username: "existing-code-user@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(loginResponse.status).toBe(200);
+
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      const query = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
+
+      const tokenResponse = await client.authorize.$get({ query });
+
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      expect(redirectUri.hostname).toBe("login.example.com");
+      expect(searchParams.get("state")).toBe("state");
+      const idTokenPayload = parseJwt(searchParams.get("id_token")!);
+      expect(idTokenPayload.email).toBe("existing-code-user@example.com");
+      expect(idTokenPayload.sub).toBe("email|codeUserId");
+      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+      // now check silent auth works after password login
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client,
+          "unique-nonce",
+          "clientId",
+        );
+
+      // this proves that account linking has happened
+      expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
+
+      // -----------------------------
+      // get user by id assert that the username-password user info is in the identities array
+      // -----------------------------
+
+      const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|codeUserId",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const primaryUser = (await primaryUserRes.json()) as UserResponse;
+
+      expect(primaryUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "codeUserId",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "testid-8",
+          isSocial: false,
+          profileData: {
+            email: "existing-code-user@example.com",
+            email_verified: true,
+          },
+        },
+      ]);
     });
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
@@ -313,29 +492,6 @@ describe("password-flow", () => {
       // no body returned
       expect(loginResponse.status).toBe(403);
     });
-    it("should reject login of existing user with incorrect password", async () => {
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
-
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "wrong-password",
-            username: "foo@example.com",
-          },
-        },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
-      // no body returned
-      expect(loginResponse.status).toBe(403);
-    });
     it("should not allow password of a different user to be used", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -456,5 +612,7 @@ describe("password-flow", () => {
     // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
   // TO TEST
-  // - linking! Same as code flow tests - register new email-password user when existing user with same email exists...
+  // link a code user to another user with a different email address
+  // THEN do an email password sign up with this same email address
+  // I don't think this code will follow the chain of linked accounts... how complex could this get?
 });
