@@ -4,6 +4,8 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
+import { getAdminToken } from "../helpers/token";
+import { UserResponse } from "../../../src/types";
 
 describe("password-flow", () => {
   describe("Register password", () => {
@@ -161,6 +163,7 @@ describe("password-flow", () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const token = await getAdminToken();
 
       // -------------------------------
       // create code user
@@ -291,8 +294,44 @@ describe("password-flow", () => {
       // this proves that account linking has happened
       expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
 
-      // TO TEST
-      // get user by id and assert that the username-password user info is in the identities array
+      // -----------------------------
+      // get user by id assert that the username-password user info is in the identities array
+      // -----------------------------
+
+      const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|codeUserId",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const primaryUser = (await primaryUserRes.json()) as UserResponse;
+
+      expect(primaryUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "codeUserId",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "testid-8",
+          isSocial: false,
+          profileData: {
+            email: "existing-code-user@example.com",
+            email_verified: true,
+          },
+        },
+      ]);
     });
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
