@@ -544,6 +544,7 @@ export class LoginController extends Controller {
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
+
     // Note! we don't use the primary user here. Something to be careful of
     // this means the primary user could have a totally different email address
     const user = await getUserByEmailAndProvider({
@@ -602,20 +603,20 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    const auth2User = await getUserByEmailAndProvider({
+    const user = await getUserByEmailAndProvider({
       userAdapter: env.data.users,
       tenant_id: client.tenant_id,
       email: loginParams.username,
       provider: "auth2",
     });
 
-    if (!auth2User) {
+    if (!user) {
       throw new HTTPException(400, { message: "User not found" });
     }
 
     try {
       const { valid } = await env.data.passwords.validate(client.tenant_id, {
-        user_id: auth2User.id,
+        user_id: user.id,
         password: loginParams.password,
       });
 
@@ -623,7 +624,7 @@ export class LoginController extends Controller {
         return renderLogin(env, this, session, state, "Invalid password");
       }
 
-      return handleLogin(env, this, auth2User, session);
+      return handleLogin(env, this, user, session);
     } catch (err: any) {
       return renderLogin(env, this, session, err.message);
     }
