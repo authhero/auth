@@ -645,9 +645,6 @@ describe("password-flow", () => {
 
       const [{ to, code, state }] = await env.data.email.list!();
 
-      // const [email] = await env.data.email.list!();
-      // console.log(email);
-
       expect(to).toBe("foo@example.com");
       expect(code).toBeDefined();
       expect(state).toBeDefined();
@@ -656,7 +653,7 @@ describe("password-flow", () => {
       // reset password
       //-------------------
 
-      // not testing the GET that loads the webform
+      // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
       const resetPassword = await client.u["reset-password"].$post({
         json: {
           password: "new-password-1234!",
