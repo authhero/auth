@@ -612,7 +612,7 @@ describe("password-flow", () => {
     // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
   // TO TEST
-  // - linking! Same as code flow tests - register new email-password user when existing user with same email exists... do this now that we have account linking
-  // and email validation!
-  // should also have a test with a NON linked user...
+  // link a code user to another user with a different email address
+  // THEN do an email password sign up with this same email address
+  // I don't think this code will follow the chain of linked accounts... how complex could this get?
 });

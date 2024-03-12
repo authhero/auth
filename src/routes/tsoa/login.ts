@@ -326,12 +326,12 @@ export class LoginController extends Controller {
       email_verified: true,
     });
 
-    // TODO - account linking!
-
     // INTERESTING! we are going to have a bug here actually...
     // if an email already has existing accounts AND THEN there's a username-password sign up
     // we might start selecting that using these helpers!!!
     // and even linking other accounts to it
+
+    // so this helper is not fit for purpose! I feel like I should do a PR here with some more complex cases...
     // const primaryUser = await getPrimaryUserByEmail({
     //   userAdapter: env.data.users,
     //   tenant_id: client.tenant_id,
@@ -339,7 +339,9 @@ export class LoginController extends Controller {
     // });
     // this seems actually quite serious and we shouldn't release username-password until we've thought about it...
     // what's the solution?
-    // A. select users where linked_to is null AND NOT username-password
+    // A. select users where linked_to is null AND NOT username-password? - still won't catch them all
+    // we need to ignore unlinked username-password accounts...  and if we get multiple accounts where linked_to is set we need to follow that chain
+    // IF THEY ARE LINKED TO DIFFERENT ONES then we need to flag this to datadog
 
     const usersWithSameEmail = await getUsersByEmail(
       env.data.users,
@@ -355,6 +357,7 @@ export class LoginController extends Controller {
         (user) => !user.linked_to,
       );
 
+      // these cases are currently not handled! if we think they're edge cases and we release this, we should at least inform datadog!
       if (primaryUsers.length > 1) {
         console.error("More than one primary user found for email", email);
       }
@@ -363,17 +366,10 @@ export class LoginController extends Controller {
         console.error("No primary user found for email", email);
         // so here we should ... hope there is only one usersWithSameEmailButNotUsernamePassword
         // and then follow that linked_to chain?
-        // I think we should write some complex tests for this... or at least use different email addresses
-        // and manually link
-        // I THINK I already did this on a few
       }
 
       // now actually link this username-password user to the primary user
       if (primaryUsers.length === 1) {
-        // await env.data.users.update(client.tenant_id, primaryUsers[0].id, {
-        //   linked_to: user.id,
-        // });
-
         await env.data.users.update(client.tenant_id, user.id, {
           linked_to: primaryUsers[0].id,
         });
