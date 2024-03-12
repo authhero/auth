@@ -611,6 +611,114 @@ describe("password-flow", () => {
     // - username-password user across different clients on the same tenant
     // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
+  describe("Password reset", () => {
+    it("should send password reset email for existing user, and allow password to be changed", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // foo@example.com is an existing username-password user
+      // with password - Test!
+
+      //-------------------
+      // send password reset email
+      //-------------------
+
+      const passwordResetSendResponse =
+        await client.dbconnections.change_password.$post(
+          {
+            json: {
+              client_id: "clientId",
+              email: "foo@example.com",
+              connection: "Username-Password-Authentication",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+      expect(passwordResetSendResponse.status).toBe(200);
+      expect(await passwordResetSendResponse.text()).toBe(
+        "We've just sent you an email to reset your password.",
+      );
+
+      const [{ to, code, state }] = await env.data.email.list!();
+
+      // const [email] = await env.data.email.list!();
+      // console.log(email);
+
+      expect(to).toBe("foo@example.com");
+      expect(code).toBeDefined();
+      expect(state).toBeDefined();
+
+      //-------------------
+      // reset password
+      //-------------------
+
+      // not testing the GET that loads the webform
+      const resetPassword = await client.u["reset-password"].$post({
+        json: {
+          password: "new-password-1234!",
+        },
+        query: {
+          state,
+          code,
+        },
+      });
+
+      expect(resetPassword.status).toBe(200);
+
+      // ------------------
+      // now check we can login with the new password
+      // ------------------
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "new-password-1234!",
+            username: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(loginResponse.status).toBe(200);
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      const query = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
+
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({ query });
+
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
+      const accessTokenPayload = parseJwt(accessToken!);
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("foo@example.com");
+      expect(idTokenPayload.aud).toBe("clientId");
+    });
+  });
+
   // TO TEST
   // link a code user to another user with a different email address
   // THEN do an email password sign up with this same email address
