@@ -723,6 +723,88 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload2.sub).toBe("userId");
   });
 
+  // this should blow up!
+  describe("most complex linking flow I can think of", () => {
+    it.only("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // create code user - the base user
+      // -----------------
+
+      await env.data.users.create("tenantId", {
+        id: "email|the-base-user",
+        email: "the-base-user@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      // -----------------
+      // create username-password user with different email address and link to the above user
+      // -----------------
+
+      await env.data.users.create("tenantId", {
+        id: "auth2|the-auth2-same-email-user",
+        email: "same-email@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        linked_to: "email|the-base-user",
+      });
+
+      // -----------------
+      // sanity check these users are linked
+      // -----------------
+
+      const baseUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|the-base-user",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const baseUser = (await baseUserRes.json()) as UserResponse;
+      console.log(baseUser);
+
+      expect(baseUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "the-base-user",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "the-auth2-same-email-user",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+        },
+      ]);
+    });
+  });
+
   it("should accept the same code multiple times", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
