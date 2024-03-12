@@ -875,22 +875,68 @@ describe("code-flow", () => {
       // this proves that we are following the linked user chain
       expect(idTokenPayload.email).toBe("the-base-user@example.com");
 
-      // // now check silent auth works when logged in with code----------------------------------------
-      // const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
+      // now check silent auth works when logged in with code----------------------------------------
+      const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
 
-      // const { idToken: silentAuthIdTokenPayload } =
-      //   await doSilentAuthRequestAndReturnTokens(
-      //     setCookiesHeader,
-      //     client,
-      //     AUTH_PARAMS.nonce,
-      //     "clientId",
-      //   );
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          setCookiesHeader,
+          client,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
 
-      // expect(silentAuthIdTokenPayload.sub).toBe("userId2");
+      // this proves the account linking chain is still working
+      expect(silentAuthIdTokenPayload.sub).toBe("email|the-base-user");
 
       //------------------------------------------------------------------------------------------------
       // fetch the base user again now and check we have THREE identities in there
       //------------------------------------------------------------------------------------------------
+
+      const baseUserRes2 = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|the-base-user",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const baseUser2 = (await baseUserRes2.json()) as UserResponse;
+
+      expect(baseUser2.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "the-base-user",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "the-auth2-same-email-user",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+        },
+        {
+          connection: "email",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+          provider: "email",
+          user_id: "testid-34",
+        },
+      ]);
     });
   });
 
