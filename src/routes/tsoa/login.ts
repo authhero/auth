@@ -603,11 +603,12 @@ export class LoginController extends Controller {
       throw new HTTPException(400, { message: "Client not found" });
     }
 
-    // TODO - wait, each of these is different! need to search by  email AND provider, and then return the primary user...
-    const [user] = await env.data.users.getByEmail(
-      client.tenant_id,
-      loginParams.username,
-    );
+    const user = await getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: loginParams.username,
+      provider: "auth2",
+    });
 
     if (!user) {
       throw new HTTPException(400, { message: "User not found" });
