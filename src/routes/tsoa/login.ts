@@ -326,23 +326,6 @@ export class LoginController extends Controller {
       email_verified: true,
     });
 
-    // INTERESTING! we are going to have a bug here actually...
-    // if an email already has existing accounts AND THEN there's a username-password sign up
-    // we might start selecting that using these helpers!!!
-    // and even linking other accounts to it
-
-    // so this helper is not fit for purpose! I feel like I should do a PR here with some more complex cases...
-    // const primaryUser = await getPrimaryUserByEmail({
-    //   userAdapter: env.data.users,
-    //   tenant_id: client.tenant_id,
-    //   email: email,
-    // });
-    // this seems actually quite serious and we shouldn't release username-password until we've thought about it...
-    // what's the solution?
-    // A. select users where linked_to is null AND NOT username-password? - still won't catch them all
-    // we need to ignore unlinked username-password accounts...  and if we get multiple accounts where linked_to is set we need to follow that chain
-    // IF THEY ARE LINKED TO DIFFERENT ONES then we need to flag this to datadog
-
     const usersWithSameEmail = await getUsersByEmail(
       env.data.users,
       client.tenant_id,
@@ -375,9 +358,6 @@ export class LoginController extends Controller {
         });
       }
     }
-
-    // even this, I can see is getting in a mess... what happens if there's an existing email account
-    // which is linked to accounts of a different email address? We have A LOT of that
 
     // what should we actually do here?
     return "email validated";
