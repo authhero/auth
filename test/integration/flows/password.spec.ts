@@ -217,7 +217,6 @@ describe("password-flow", () => {
       // -----------------------------
       // sanity check that linking has happened!
       // -----------------------------
-
       const users = await env.data.users.list("tenantId", {
         page: 0,
         per_page: 10,
@@ -230,29 +229,31 @@ describe("password-flow", () => {
           u.provider === "auth2",
       );
 
-      console.log(linkedPasswordUser);
       expect(linkedPasswordUser.linked_to).toBe("email|codeUserId");
 
       // -----------------------------
       // login with password
       // -----------------------------
 
-      // const loginResponse = await client.co.authenticate.$post(
-      //   {
-      //     json: {
-      //       client_id: "clientId",
-      //       credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-      //       realm: "Username-Password-Authentication",
-      //       password,
-      //       username: "existing-code-user@example.com",
-      //     },
-      //   },
-      //   {
-      //     headers: {
-      //       "content-type": "application/json",
-      //     },
-      //   },
-      // );
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password,
+            username: "existing-code-user@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      console.log(await loginResponse.text());
+      expect(loginResponse.status).toBe(200);
 
       // const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       // const query = {
