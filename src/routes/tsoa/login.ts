@@ -375,7 +375,6 @@ export class LoginController extends Controller {
       let [user] = await getUsersByEmail(
         env.data.users,
         client.tenant_id,
-        // what is user name here? I'm not sure if this route actually works...
         loginParams.username,
       );
 
@@ -467,23 +466,21 @@ export class LoginController extends Controller {
       await env.data.universalLoginSessions.update(session.id, session);
     }
 
-    // TODO - filter by primary user
-    const users = await getUsersByEmail(
-      env.data.users,
-      client.tenant_id,
-      params.username,
-    );
+    const user = await getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: params.username,
+      provider: "Username-Password-Authentication",
+    });
 
-    const auth2User = users.find((user) => user.provider === "auth2");
-
-    if (auth2User) {
+    if (user) {
       const code = generateOTP();
 
       await env.data.codes.create(client.tenant_id, {
         id: nanoid(),
         code,
         type: "password_reset",
-        user_id: auth2User.id,
+        user_id: user.id,
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
       });
@@ -547,26 +544,22 @@ export class LoginController extends Controller {
     if (!client) {
       throw new HTTPException(400, { message: "Client not found" });
     }
+    // Note! we don't use the primary user here. Something to be careful of
+    // this means the primary user could have a totally different email address
+    const user = await getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: session.authParams.username,
+      provider: "auth2",
+    });
 
-    const users = await env.data.users.getByEmail(
-      client.tenant_id,
-      session.authParams.username,
-    );
-
-    const auth2User = users.find((user) => user.provider === "auth2");
-
-    if (!auth2User) {
+    if (!user) {
       throw new HTTPException(400, { message: "User not found" });
     }
 
     try {
-<<<<<<< HEAD
       const codes = await env.data.codes.list(client.tenant_id, user.id);
       const foundCode = codes.find((storedCode) => storedCode.code === code);
-=======
-      const codes = await env.data.codes.list(client.tenant_id, auth2User.id);
-      const foundCode = codes.find((otp) => otp.code === code);
->>>>>>> 95445a37 (fix: select correct auth2 user providers on login flow routes)
 
       if (!foundCode) {
         return renderEnterCode(env, this, session, "Code not found or expired");
