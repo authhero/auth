@@ -169,7 +169,7 @@ export class UsersMgmtController extends Controller {
       throw new HTTPException(400, { message: "Email is required" });
     }
 
-    if (user.connection !== "email") {
+    if (user?.connection !== "email") {
       throw new HTTPException(400, {
         message: "Only email connections are supported",
       });
@@ -182,7 +182,7 @@ export class UsersMgmtController extends Controller {
       id: `email|${userIdGenerate()}`,
       name: user.name || email,
       provider: "email",
-      connection: "email",
+      connection: user.connection || "email",
       // we need to be careful with this as the profile service was setting this true in places where I don't think it's correct
       // AND when does the account linking happen then? here? first login?
       email_verified: user.email_verified || false,
