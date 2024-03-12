@@ -723,9 +723,8 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload2.sub).toBe("userId");
   });
 
-  // this should blow up!
   describe("most complex linking flow I can think of", () => {
-    it.only("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
+    it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -782,7 +781,6 @@ describe("code-flow", () => {
       );
 
       const baseUser = (await baseUserRes.json()) as UserResponse;
-      console.log(baseUser);
 
       expect(baseUser.identities).toEqual([
         {
@@ -802,6 +800,97 @@ describe("code-flow", () => {
           },
         },
       ]);
+
+      // -----------------
+      // Now do a new passwordless flow with a new user with email same-email@example.com
+      // -----------------
+
+      const passwordlessStartRes = await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "same-email@example.com",
+            send: "code",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(passwordlessStartRes.status).toBe(200);
+
+      const [{ code: otp }] = await env.data.email.list!();
+
+      // Authenticate using the code
+      const authenticateResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type:
+              "http://auth0.com/oauth/grant-type/passwordless/otp",
+            otp,
+            realm: "email",
+            username: "same-email@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(authenticateResponse.status).toBe(200);
+
+      const { login_ticket } =
+        (await authenticateResponse.json()) as LoginTicket;
+
+      const query = {
+        ...AUTH_PARAMS,
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        realm: "email",
+      };
+
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({
+        query,
+      });
+
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      const accessToken = searchParams.get("access_token");
+      const accessTokenPayload = parseJwt(accessToken!);
+
+      // this proves that we are following the linked user chain
+      expect(accessTokenPayload.sub).toBe("email|the-base-user");
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      // this proves that we are following the linked user chain
+      expect(idTokenPayload.email).toBe("the-base-user@example.com");
+
+      // // now check silent auth works when logged in with code----------------------------------------
+      // const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
+
+      // const { idToken: silentAuthIdTokenPayload } =
+      //   await doSilentAuthRequestAndReturnTokens(
+      //     setCookiesHeader,
+      //     client,
+      //     AUTH_PARAMS.nonce,
+      //     "clientId",
+      //   );
+
+      // expect(silentAuthIdTokenPayload.sub).toBe("userId2");
+
+      //------------------------------------------------------------------------------------------------
+      // fetch the base user again now and check we have THREE identities in there
+      //------------------------------------------------------------------------------------------------
     });
   });
 
