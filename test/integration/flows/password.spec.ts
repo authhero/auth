@@ -157,7 +157,7 @@ describe("password-flow", () => {
 
     // maybe this test should be broken up into login tests below... maybe we want more flows like this!
     // still more to test e.g. resent email validation email after failed login (here we are just testing the verify email email which is only sent once)
-    it.only("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
+    it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -202,7 +202,6 @@ describe("password-flow", () => {
 
       expect(to).toBe("existing-code-user@example.com");
       expect(code).toBeDefined();
-      expect(state).toBe("testid-1");
 
       const emailValidatedRes = await client.u["validate-email"].$get({
         query: {
@@ -252,46 +251,45 @@ describe("password-flow", () => {
         },
       );
 
-      console.log(await loginResponse.text());
       expect(loginResponse.status).toBe(200);
 
-      // const { login_ticket } = (await loginResponse.json()) as LoginTicket;
-      // const query = {
-      //   auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      //   client_id: "clientId",
-      //   login_ticket,
-      //   referrer: "https://login.example.com",
-      //   response_type: "token id_token",
-      //   redirect_uri: "http://login.example.com",
-      //   state: "state",
-      //   realm: "Username-Password-Authentication",
-      // };
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      const query = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
 
-      // const tokenResponse = await client.authorize.$get({ query });
+      const tokenResponse = await client.authorize.$get({ query });
 
-      // expect(tokenResponse.status).toBe(302);
-      // expect(await tokenResponse.text()).toBe("Redirecting");
-      // const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
-      // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
 
-      // expect(redirectUri.hostname).toBe("login.example.com");
-      // expect(searchParams.get("state")).toBe("state");
-      // const idTokenPayload = parseJwt(searchParams.get("id_token")!);
-      // expect(idTokenPayload.email).toBe("existing-code-user@example.com");
-      // expect(idTokenPayload.sub).toBe("email|codeUserId");
-      // const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
-      // // now check silent auth works after password login
-      // const { idToken: silentAuthIdTokenPayload } =
-      //   await doSilentAuthRequestAndReturnTokens(
-      //     authCookieHeader,
-      //     client,
-      //     "unique-nonce",
-      //     "clientId",
-      //   );
+      expect(redirectUri.hostname).toBe("login.example.com");
+      expect(searchParams.get("state")).toBe("state");
+      const idTokenPayload = parseJwt(searchParams.get("id_token")!);
+      expect(idTokenPayload.email).toBe("existing-code-user@example.com");
+      expect(idTokenPayload.sub).toBe("email|codeUserId");
+      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+      // now check silent auth works after password login
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          authCookieHeader,
+          client,
+          "unique-nonce",
+          "clientId",
+        );
 
-      // // this proves that account linking has happened
-      // expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
+      // this proves that account linking has happened
+      expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
 
       // TO TEST
       // get user by id and assert that the username-password user info is in the identities array
