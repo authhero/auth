@@ -31,8 +31,7 @@ describe("password-flow", () => {
 
       expect(response.status).toBe(404);
     });
-    // I think we should move this one to a new describe block
-    // after testing the email validation!
+
     it("should create a new user with a password and login", async () => {
       const password = "password";
       const env = await getEnv();
@@ -73,7 +72,7 @@ describe("password-flow", () => {
         },
       );
 
-      // this will not work... we need to validate the email before allowing a login
+      // this will not work! need to validate the email before allowing a login
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       const query = {
         auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -97,7 +96,6 @@ describe("password-flow", () => {
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();
-      // is this different when the test is solo'd? makes sense being this as we have deterministic ID generation
       expect(state).toBe("testid-1");
 
       const emailValidatedRes = await client.u["validate-email"].$get({
