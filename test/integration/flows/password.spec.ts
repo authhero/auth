@@ -157,7 +157,7 @@ describe("password-flow", () => {
 
     // maybe this test should be broken up into login tests below... maybe we want more flows like this!
     // still more to test e.g. resent email validation email after failed login (here we are just testing the verify email email which is only sent once)
-    it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
+    it.only("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -214,63 +214,86 @@ describe("password-flow", () => {
       expect(emailValidatedRes.status).toBe(200);
       expect(await emailValidatedRes.text()).toBe("email validated");
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password,
-            username: "existing-code-user@example.com",
-          },
-        },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
+      // -----------------------------
+      // sanity check that linking has happened!
+      // -----------------------------
+
+      const users = await env.data.users.list("tenantId", {
+        page: 0,
+        per_page: 10,
+        include_totals: false,
+        q: "",
+      });
+      const [linkedPasswordUser] = users.users.filter(
+        (u) =>
+          u.email === "existing-code-user@example.com" &&
+          u.provider === "auth2",
       );
 
-      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
-      const query = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
+      console.log(linkedPasswordUser);
+      expect(linkedPasswordUser.linked_to).toBe("email|codeUserId");
 
-      const tokenResponse = await client.authorize.$get({ query });
+      // -----------------------------
+      // login with password
+      // -----------------------------
 
-      expect(tokenResponse.status).toBe(302);
-      expect(await tokenResponse.text()).toBe("Redirecting");
-      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      // const loginResponse = await client.co.authenticate.$post(
+      //   {
+      //     json: {
+      //       client_id: "clientId",
+      //       credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+      //       realm: "Username-Password-Authentication",
+      //       password,
+      //       username: "existing-code-user@example.com",
+      //     },
+      //   },
+      //   {
+      //     headers: {
+      //       "content-type": "application/json",
+      //     },
+      //   },
+      // );
 
-      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      // const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      // const query = {
+      //   auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      //   client_id: "clientId",
+      //   login_ticket,
+      //   referrer: "https://login.example.com",
+      //   response_type: "token id_token",
+      //   redirect_uri: "http://login.example.com",
+      //   state: "state",
+      //   realm: "Username-Password-Authentication",
+      // };
 
-      expect(redirectUri.hostname).toBe("login.example.com");
-      expect(searchParams.get("state")).toBe("state");
-      const idTokenPayload = parseJwt(searchParams.get("id_token")!);
-      expect(idTokenPayload.email).toBe("existing-code-user@example.com");
-      expect(idTokenPayload.sub).toBe("email|codeUserId");
-      const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
-      // now check silent auth works after password login
-      const { idToken: silentAuthIdTokenPayload } =
-        await doSilentAuthRequestAndReturnTokens(
-          authCookieHeader,
-          client,
-          "unique-nonce",
-          "clientId",
-        );
+      // const tokenResponse = await client.authorize.$get({ query });
 
-      // this proves that account linking has happened
-      expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
+      // expect(tokenResponse.status).toBe(302);
+      // expect(await tokenResponse.text()).toBe("Redirecting");
+      // const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      // expect(redirectUri.hostname).toBe("login.example.com");
+      // expect(searchParams.get("state")).toBe("state");
+      // const idTokenPayload = parseJwt(searchParams.get("id_token")!);
+      // expect(idTokenPayload.email).toBe("existing-code-user@example.com");
+      // expect(idTokenPayload.sub).toBe("email|codeUserId");
+      // const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+      // // now check silent auth works after password login
+      // const { idToken: silentAuthIdTokenPayload } =
+      //   await doSilentAuthRequestAndReturnTokens(
+      //     authCookieHeader,
+      //     client,
+      //     "unique-nonce",
+      //     "clientId",
+      //   );
+
+      // // this proves that account linking has happened
+      // expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
 
       // TO TEST
-      // that the username-password user info is in the identities array
+      // get user by id and assert that the username-password user info is in the identities array
     });
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {

@@ -347,7 +347,12 @@ export class LoginController extends Controller {
       email,
     );
     const usersWithSameEmailButNotUsernamePassword = usersWithSameEmail.filter(
-      (user) => user.provider !== "Username-Password-Authentication",
+      (user) => user.provider !== "auth2",
+    );
+
+    console.log(
+      "usersWithSameEmailButNotUsernamePassword",
+      usersWithSameEmailButNotUsernamePassword,
     );
 
     if (usersWithSameEmailButNotUsernamePassword.length > 0) {
@@ -370,8 +375,13 @@ export class LoginController extends Controller {
 
       // now actually link this username-password user to the primary user
       if (primaryUsers.length === 1) {
-        await env.data.users.update(client.tenant_id, primaryUsers[0].id, {
-          linked_to: user.id,
+        // await env.data.users.update(client.tenant_id, primaryUsers[0].id, {
+        //   linked_to: user.id,
+        // });
+
+        console.log("Linking", user.id, "to", primaryUsers[0].id);
+        await env.data.users.update(client.tenant_id, user.id, {
+          linked_to: primaryUsers[0].id,
         });
       }
     }
