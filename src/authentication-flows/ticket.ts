@@ -8,6 +8,10 @@ import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
 import { LogTypes } from "../types";
+import {
+  getPrimaryUserByEmail,
+  getPrimaryUserByEmailAndProvider,
+} from "../utils/users";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -41,16 +45,12 @@ export async function ticketAuth(
 
   const provider = getProviderFromRealm(realm);
 
-  const usersWithSameEmail = await env.data.users.getByEmail(
+  let user = await getPrimaryUserByEmailAndProvider({
+    userAdapter: env.data.users,
     tenant_id,
-    ticket.email,
-  );
-
-  let user = usersWithSameEmail.find((u) => u.provider === provider) || null;
-
-  if (user?.linked_to) {
-    user = await env.data.users.get(tenant_id, user.linked_to);
-  }
+    email: ticket.email,
+    provider,
+  });
 
   // this will trigger on the code and password flows BUT shouldn't the code accounts be validated as they've signed in?
   // Maybe this is where we should set email_verified to true!
@@ -68,7 +68,11 @@ export async function ticketAuth(
       );
     }
 
-    const primaryUser = usersWithSameEmail.find((u) => !u.linked_to);
+    const primaryUser = await getPrimaryUserByEmail({
+      userAdapter: env.data.users,
+      tenant_id,
+      email: ticket.email,
+    });
 
     const linkedTo = primaryUser?.id;
 
