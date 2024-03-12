@@ -33,7 +33,7 @@ describe("password-flow", () => {
     });
     // I think we should move this one to a new describe block
     // after testing the email validation!
-    it.only("should create a new user with a password and login", async () => {
+    it("should create a new user with a password and login", async () => {
       const password = "password";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
