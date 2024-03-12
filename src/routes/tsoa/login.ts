@@ -326,6 +326,59 @@ export class LoginController extends Controller {
       email_verified: true,
     });
 
+    // TODO - account linking!
+
+    // INTERESTING! we are going to have a bug here actually...
+    // if an email already has existing accounts AND THEN there's a username-password sign up
+    // we might start selecting that using these helpers!!!
+    // and even linking other accounts to it
+    // const primaryUser = await getPrimaryUserByEmail({
+    //   userAdapter: env.data.users,
+    //   tenant_id: client.tenant_id,
+    //   email: email,
+    // });
+    // this seems actually quite serious and we shouldn't release username-password until we've thought about it...
+    // what's the solution?
+    // A. select users where linked_to is null AND NOT username-password
+
+    const usersWithSameEmail = await getUsersByEmail(
+      env.data.users,
+      client.tenant_id,
+      email,
+    );
+    const usersWithSameEmailButNotUsernamePassword = usersWithSameEmail.filter(
+      (user) => user.provider !== "Username-Password-Authentication",
+    );
+
+    if (usersWithSameEmailButNotUsernamePassword.length > 0) {
+      const primaryUsers = usersWithSameEmailButNotUsernamePassword.filter(
+        (user) => !user.linked_to,
+      );
+
+      if (primaryUsers.length > 1) {
+        console.error("More than one primary user found for email", email);
+      }
+
+      if (primaryUsers.length === 0) {
+        console.error("No primary user found for email", email);
+        // so here we should ... hope there is only one usersWithSameEmailButNotUsernamePassword
+        // and then follow that linked_to chain?
+        // I think we should write some complex tests for this... or at least use different email addresses
+        // and manually link
+        // I THINK I already did this on a few
+      }
+
+      // now actually link this username-password user to the primary user
+      if (primaryUsers.length === 1) {
+        await env.data.users.update(client.tenant_id, primaryUsers[0].id, {
+          linked_to: user.id,
+        });
+      }
+    }
+
+    // even this, I can see is getting in a mess... what happens if there's an existing email account
+    // which is linked to accounts of a different email address? We have A LOT of that
+
     // what should we actually do here?
     return "email validated";
   }
