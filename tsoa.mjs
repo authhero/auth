@@ -26,6 +26,8 @@ import { readFile, writeFile } from "fs/promises";
               openid: "Basic user information",
               email: "User email",
               profile: "User profile information",
+              "auth:read": "Read authorization",
+              "auth:write": "Write authorization",
             },
           },
         },

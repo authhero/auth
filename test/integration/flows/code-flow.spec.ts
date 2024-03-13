@@ -6,7 +6,6 @@ import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
-import createTestUsers from "../helpers/createTestUsers";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",

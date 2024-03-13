@@ -7,19 +7,6 @@ import { getEnv } from "../helpers/test-client";
 import { tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 
-function getDefaultSilentAuthSearchParams() {
-  return {
-    response_type: "token id_token",
-    scope: "openid profile email",
-    redirect_uri: "http://localhost:3000/callback",
-    state: "state",
-    // silent auth pararms!
-    prompt: "none",
-    nonce: "unique-nonce",
-    response_mode: "web_message",
-  };
-}
-
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {
     const env = await getEnv();
