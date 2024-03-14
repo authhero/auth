@@ -135,7 +135,7 @@ describe("users management API endpoint", () => {
         expect(createUserResponse2.status).toBe(409);
       });
 
-      it.only("is an existing linked account", async () => {
+      it("is an existing linked account", async () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
@@ -204,41 +204,23 @@ describe("users management API endpoint", () => {
           },
         ]);
 
-        // const createUserResponse1 = await client.api.v2.users.$post(
-        //   {
-        //     json: {
-        //       email: "test@example.com",
-        //       connection: "email",
-        //     },
-        //   },
-        //   {
-        //     headers: {
-        //       authorization: `Bearer ${token}`,
-        //       "tenant-id": "tenantId",
-        //       "content-type": "application/json",
-        //     },
-        //   },
-        // );
+        const createDuplicateCodeUserResponse = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "existing-code-user@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+              "content-type": "application/json",
+            },
+          },
+        );
 
-        // expect(createUserResponse1.status).toBe(201);
-
-        // const createUserResponse2 = await client.api.v2.users.$post(
-        //   {
-        //     json: {
-        //       email: "test@example.com",
-        //       connection: "email",
-        //     },
-        //   },
-        //   {
-        //     headers: {
-        //       authorization: `Bearer ${token}`,
-        //       "tenant-id": "tenantId",
-        //       "content-type": "application/json",
-        //     },
-        //   },
-        // );
-
-        // expect(createUserResponse2.status).toBe(409);
+        expect(createDuplicateCodeUserResponse.status).toBe(409);
       });
     });
 
