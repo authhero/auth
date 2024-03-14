@@ -13,7 +13,7 @@ const AUTH_PARAMS = {
   state: "state",
 };
 
-describe("code-flow", () => {
+describe("magic link flow", () => {
   describe("should log in using the sent magic link, when", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
@@ -487,136 +487,134 @@ describe("code-flow", () => {
         iss: "https://example.com/",
       });
     });
-    it("should log in with the same magic link multiple times", async () => {
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+  });
+  it("should log in with the same magic link multiple times", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
-      // -----------
-      // get code to log in
-      // -----------
-      await client.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "test@example.com",
-            send: "link",
-          },
+    // -----------
+    // get code to log in
+    // -----------
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "test@example.com",
+          send: "link",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
         },
-      );
+      },
+    );
 
-      const [{ magicLink }] = await env.data.email.list!();
+    const [{ magicLink }] = await env.data.email.list!();
 
-      const link = magicLink!;
+    const link = magicLink!;
 
-      const authenticatePath = link?.split("https://example.com")[1];
+    const authenticatePath = link?.split("https://example.com")[1];
 
-      expect(authenticatePath).toContain("/passwordless/verify_redirect");
+    expect(authenticatePath).toContain("/passwordless/verify_redirect");
 
-      const querySearchParams = new URLSearchParams(
-        authenticatePath.split("?")[1],
-      );
-      const query = Object.fromEntries(querySearchParams.entries());
+    const querySearchParams = new URLSearchParams(
+      authenticatePath.split("?")[1],
+    );
+    const query = Object.fromEntries(querySearchParams.entries());
 
-      // ------------
-      // Authenticate using the magic link the first time
-      // ----------------
-      const authenticateResponse =
-        await client.passwordless.verify_redirect.$get({
-          query,
-        });
-      expect(authenticateResponse.status).toBe(302);
-      // ------------
-      // Authenticate using the magic link the second time
-      // ----------------
-      const authenticateResponse2 =
-        await client.passwordless.verify_redirect.$get({
-          query,
-        });
-      expect(authenticateResponse2.status).toBe(302);
-    });
+    // ------------
+    // Authenticate using the magic link the first time
+    // ----------------
+    const authenticateResponse = await client.passwordless.verify_redirect.$get(
+      {
+        query,
+      },
+    );
+    expect(authenticateResponse.status).toBe(302);
+    // ------------
+    // Authenticate using the magic link the second time
+    // ----------------
+    const authenticateResponse2 =
+      await client.passwordless.verify_redirect.$get({
+        query,
+      });
+    expect(authenticateResponse2.status).toBe(302);
+  });
 
-    it("should not accept any invalid params on the magic link", async () => {
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+  it("should not accept any invalid params on the magic link", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
 
-      // -----------
-      // get code to log in
-      // -----------
-      await client.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "test@example.com",
-            send: "link",
-          },
+    // -----------
+    // get code to log in
+    // -----------
+    await client.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "test@example.com",
+          send: "link",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
         },
-      );
+      },
+    );
 
-      const [{ magicLink }] = await env.data.email.list!();
+    const [{ magicLink }] = await env.data.email.list!();
 
-      const link = magicLink!;
-      // ------------
-      // Overwrite the magic link with a bad code, and try and use it
-      // ----------------
-      const magicLinkWithBadCode = new URL(link!);
-      magicLinkWithBadCode.searchParams.set("verification_code", "123456");
+    const link = magicLink!;
+    // ------------
+    // Overwrite the magic link with a bad code, and try and use it
+    // ----------------
+    const magicLinkWithBadCode = new URL(link!);
+    magicLinkWithBadCode.searchParams.set("verification_code", "123456");
 
-      const query = Object.fromEntries(
-        magicLinkWithBadCode.searchParams.entries(),
-      );
+    const query = Object.fromEntries(
+      magicLinkWithBadCode.searchParams.entries(),
+    );
 
-      const authenticateResponse =
-        await client.passwordless.verify_redirect.$get({
-          query,
-        });
+    const authenticateResponse = await client.passwordless.verify_redirect.$get(
+      {
+        query,
+      },
+    );
 
-      // we are still getting a redirect but to a page on login2 saying the code is expired
-      expect(authenticateResponse.status).toBe(302);
-      const redirectUri = new URL(
-        authenticateResponse.headers.get("location")!,
-      );
-      expect(redirectUri.hostname).toBe("login2.sesamy.dev");
-      expect(redirectUri.pathname).toBe("/expired-code");
-      expect(redirectUri.searchParams.get("email")).toBe(
-        encodeURIComponent("test@example.com"),
-      );
-      // ------------
-      // Overwrite the magic link with a bad email, and try and use it
-      // ----------------
-      const magicLinkWithBadEmail = new URL(link!);
-      magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
+    // we are still getting a redirect but to a page on login2 saying the code is expired
+    expect(authenticateResponse.status).toBe(302);
+    const redirectUri = new URL(authenticateResponse.headers.get("location")!);
+    expect(redirectUri.hostname).toBe("login2.sesamy.dev");
+    expect(redirectUri.pathname).toBe("/expired-code");
+    expect(redirectUri.searchParams.get("email")).toBe(
+      encodeURIComponent("test@example.com"),
+    );
+    // ------------
+    // Overwrite the magic link with a bad email, and try and use it
+    // ----------------
+    const magicLinkWithBadEmail = new URL(link!);
+    magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
 
-      const authenticateResponse2 =
-        await client.passwordless.verify_redirect.$get({
-          query: Object.fromEntries(
-            magicLinkWithBadEmail.searchParams.entries(),
-          ),
-        });
-      expect(authenticateResponse2.status).toBe(302);
-      const redirectUri2 = new URL(
-        authenticateResponse2.headers.get("location")!,
-      );
-      expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
-      expect(redirectUri2.pathname).toBe("/expired-code");
-      expect(redirectUri2.searchParams.get("email")).toBe(
-        encodeURIComponent("another@email.com"),
-      );
-      expect(redirectUri2.searchParams.get("lang")).toBe("sv");
-    });
+    const authenticateResponse2 =
+      await client.passwordless.verify_redirect.$get({
+        query: Object.fromEntries(magicLinkWithBadEmail.searchParams.entries()),
+      });
+    expect(authenticateResponse2.status).toBe(302);
+    const redirectUri2 = new URL(
+      authenticateResponse2.headers.get("location")!,
+    );
+    expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
+    expect(redirectUri2.pathname).toBe("/expired-code");
+    expect(redirectUri2.searchParams.get("email")).toBe(
+      encodeURIComponent("another@email.com"),
+    );
+    expect(redirectUri2.searchParams.get("lang")).toBe("sv");
   });
 });
 // TO TEST
