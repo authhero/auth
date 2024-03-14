@@ -1049,7 +1049,7 @@ describe("code-flow", () => {
 
   describe("edge cases", () => {
     // I should probably put some of this in the description!
-    it.only("should login correctly for a code account linked to another account with a different email, when a password account has only been signed up but not activated", async () => {
+    it("should login correctly for a code account linked to another account with a different email, when a password account has only been signed up but not activated", async () => {
       // create a new user with a password
       const token = await getAdminToken();
       const env = await getEnv();
@@ -1196,6 +1196,38 @@ describe("code-flow", () => {
       }
 
       expect(authenticateResponse.status).toBe(200);
+
+      const { login_ticket } =
+        (await authenticateResponse.json()) as LoginTicket;
+
+      const query = {
+        ...AUTH_PARAMS,
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        realm: "email",
+      };
+
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({
+        query,
+      });
+
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      const accessToken = searchParams.get("access_token");
+      const accessTokenPayload = parseJwt(accessToken!);
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+
+      // these prove that we are getting the code account's primary account!
+      expect(accessTokenPayload.sub).toBe("auth2|base-user");
+      expect(idTokenPayload.email).toBe("base-user@example.com");
     });
   });
 });
