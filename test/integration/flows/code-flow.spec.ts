@@ -1048,7 +1048,6 @@ describe("code-flow", () => {
   // - do not allow code from a different account: we should be fine without this but I can see a way we could mess this up!
 
   describe("edge cases", () => {
-    // I should probably put some of this in the description!
     it("should login correctly for a code account linked to another account with a different email, when a password account has only been signed up but not activated", async () => {
       // create a new user with a password
       const token = await getAdminToken();
@@ -1122,8 +1121,8 @@ describe("code-flow", () => {
 
       // -----------------
       // Now start password sign up with same code-user@example.com email
+      // I'm seeing if this affects the code user with the same email address
       // -----------------
-
       const typesDoNotWorkWithThisSetup___PARAMS = {
         json: {
           client_id: "clientId",
@@ -1143,7 +1142,8 @@ describe("code-flow", () => {
       expect(createUserResponse.status).toBe(200);
 
       //-----------------
-      // now try and sign in with code-user@example.com code flow... let's see!
+      // now try and sign in with code-user@example.com code flow
+      // I'm testing that the unlinked password user with the same email address does not affect this
       // -----------------
 
       const response = await client.passwordless.start.$post(
