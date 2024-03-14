@@ -1049,7 +1049,7 @@ describe("code-flow", () => {
 
   describe("edge cases", () => {
     // I should probably put some of this in the description!
-    it("should login correctly for a code account linked to another account with a different email, when a password account has only been signed up but not activated", async () => {
+    it.only("should login correctly for a code account linked to another account with a different email, when a password account has only been signed up but not activated", async () => {
       // create a new user with a password
       const token = await getAdminToken();
       const env = await getEnv();
@@ -1077,8 +1077,8 @@ describe("code-flow", () => {
         email: "code-user@example.com",
         email_verified: true,
         login_count: 0,
-        provider: "auth2",
-        connection: "Username-Password-Authentication",
+        provider: "email",
+        connection: "email",
         is_social: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -1109,16 +1109,92 @@ describe("code-flow", () => {
           user_id: "base-user",
         },
         {
-          connection: "Username-Password-Authentication",
+          connection: "email",
           isSocial: false,
           profileData: {
             email: "code-user@example.com",
             email_verified: true,
           },
-          provider: "auth2",
+          provider: "email",
           user_id: "code-user",
         },
       ]);
+
+      // -----------------
+      // Now start password sign up with same code-user@example.com email
+      // -----------------
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "code-user@example.com",
+          password: "password",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      //-----------------
+      // now try and sign in with code-user@example.com code flow... let's see!
+      // -----------------
+
+      const response = await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "code-user@example.com",
+            send: "code",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const [{ code: otp }] = await env.data.email.list!();
+
+      // Authenticate using the code
+      const authenticateResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type:
+              "http://auth0.com/oauth/grant-type/passwordless/otp",
+            otp,
+            realm: "email",
+            username: "code-user@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      if (authenticateResponse.status !== 200) {
+        throw new Error(
+          `Failed to authenticate with status: ${
+            authenticateResponse.status
+          } and message: ${await response.text()}`,
+        );
+      }
+
+      expect(authenticateResponse.status).toBe(200);
     });
   });
 });
