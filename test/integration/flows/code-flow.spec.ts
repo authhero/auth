@@ -15,6 +15,24 @@ const AUTH_PARAMS = {
   state: "state",
 };
 
+const LOGIN2_STATE = "client_id=clientId&connection=auth2";
+
+const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
+  redirect_uri: "https://login2.sesamy.dev/callback",
+  scope: "openid profile email",
+  state: LOGIN2_STATE,
+  client_id: "clientId",
+  nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+  response_type: "token id_token",
+};
+
+const SOCIAL_STATE_PARAM = btoa(
+  JSON.stringify({
+    authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+    connection: "demo-social-provider",
+  }),
+).replace("==", "");
+
 describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
@@ -1444,6 +1462,67 @@ describe("code-flow", () => {
       // these prove that we are getting the code account's primary account!
       expect(accessTokenPayload.sub).toBe("auth2|base-user");
       expect(idTokenPayload.email).toBe("base-user@example.com");
+    });
+
+    it("should ignore un-verified account when linking to an existing email account", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // should I manually add these users to the database?
+      // +ve: more concise test
+      // -ve: not testing the full flow
+
+      // -----------------
+      // signup new user
+      // -----------------
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          // matches social sign up we will do next
+          email: "örjan.lindström@example.com",
+          password: "password",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      //-----------------
+      // sign up new social user that has same email address
+      //-----------------
+
+      const socialCallbackQuery = {
+        state: SOCIAL_STATE_PARAM,
+        code: "code",
+      };
+
+      const socialCallbackResponse = await client.callback.$get({
+        query: socialCallbackQuery,
+      });
+      expect(socialCallbackResponse.status).toBe(302);
+      const location2 = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      );
+      const socialCallbackQuery2 = new URLSearchParams(location2.hash.slice(1));
+
+      const idToken = socialCallbackQuery2.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.sub).toBe(
+        // this shows no account linking is being done to the unvalidated email account...
+        // WAIT! is this enough of a test?
+        // the test would be manually linking another account to this one
+        "demo-social-provider|123456789012345678901",
+      );
+      expect(idTokenPayload.email_verified).toBe(true);
     });
   });
 });
