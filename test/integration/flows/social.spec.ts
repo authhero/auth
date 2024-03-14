@@ -638,6 +638,60 @@ describe("social sign on", () => {
 
       expect(accessTokenPayload.sub).toBe("email|7575757575757");
     });
+
+    it("should ignore un-verified account when linking to an existing email account", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // signup new user
+      // -----------------
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          // matches social sign up we will do next
+          email: "örjan.lindström@example.com",
+          password: "password",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      //-----------------
+      // sign up new social user that has same email address
+      //-----------------
+
+      const socialCallbackQuery = {
+        state: SOCIAL_STATE_PARAM,
+        code: "code",
+      };
+
+      const socialCallbackResponse = await client.callback.$get({
+        query: socialCallbackQuery,
+      });
+      expect(socialCallbackResponse.status).toBe(302);
+      const location2 = new URL(
+        socialCallbackResponse.headers.get("location")!,
+      );
+      const socialCallbackQuery2 = new URLSearchParams(location2.hash.slice(1));
+
+      const idToken = socialCallbackQuery2.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.sub).toBe(
+        // this shows no account linking is being done to the unvalidated email account...
+        "demo-social-provider|123456789012345678901",
+      );
+      expect(idTokenPayload.email_verified).toBe(true);
+    });
   });
 
   describe("Security", () => {
