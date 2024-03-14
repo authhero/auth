@@ -723,6 +723,223 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload2.sub).toBe("userId");
   });
 
+  describe("most complex linking flow I can think of", () => {
+    it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // create code user - the base user
+      // -----------------
+
+      await env.data.users.create("tenantId", {
+        id: "email|the-base-user",
+        email: "the-base-user@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      // -----------------
+      // create username-password user with different email address and link to the above user
+      // -----------------
+
+      await env.data.users.create("tenantId", {
+        id: "auth2|the-auth2-same-email-user",
+        email: "same-email@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        linked_to: "email|the-base-user",
+      });
+
+      // -----------------
+      // sanity check these users are linked
+      // -----------------
+
+      const baseUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|the-base-user",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const baseUser = (await baseUserRes.json()) as UserResponse;
+
+      expect(baseUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "the-base-user",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "the-auth2-same-email-user",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+        },
+      ]);
+
+      // -----------------
+      // Now do a new passwordless flow with a new user with email same-email@example.com
+      // -----------------
+
+      const passwordlessStartRes = await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "same-email@example.com",
+            send: "code",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(passwordlessStartRes.status).toBe(200);
+
+      const [{ code: otp }] = await env.data.email.list!();
+
+      // Authenticate using the code
+      const authenticateResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type:
+              "http://auth0.com/oauth/grant-type/passwordless/otp",
+            otp,
+            realm: "email",
+            username: "same-email@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(authenticateResponse.status).toBe(200);
+
+      const { login_ticket } =
+        (await authenticateResponse.json()) as LoginTicket;
+
+      const query = {
+        ...AUTH_PARAMS,
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        realm: "email",
+      };
+
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({
+        query,
+      });
+
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      const accessToken = searchParams.get("access_token");
+      const accessTokenPayload = parseJwt(accessToken!);
+
+      // this proves that we are following the linked user chain
+      expect(accessTokenPayload.sub).toBe("email|the-base-user");
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      // this proves that we are following the linked user chain
+      expect(idTokenPayload.email).toBe("the-base-user@example.com");
+
+      // now check silent auth works when logged in with code----------------------------------------
+      const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
+
+      const { idToken: silentAuthIdTokenPayload } =
+        await doSilentAuthRequestAndReturnTokens(
+          setCookiesHeader,
+          client,
+          AUTH_PARAMS.nonce,
+          "clientId",
+        );
+
+      // this proves the account linking chain is still working
+      expect(silentAuthIdTokenPayload.sub).toBe("email|the-base-user");
+
+      //------------------------------------------------------------------------------------------------
+      // fetch the base user again now and check we have THREE identities in there
+      //------------------------------------------------------------------------------------------------
+
+      const baseUserRes2 = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|the-base-user",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+
+      const baseUser2 = (await baseUserRes2.json()) as UserResponse;
+
+      expect(baseUser2.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "the-base-user",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "the-auth2-same-email-user",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+        },
+        {
+          connection: "email",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+          provider: "email",
+          user_id: "testid-34",
+        },
+      ]);
+    });
+  });
+
   it("should accept the same code multiple times", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",

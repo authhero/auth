@@ -16,7 +16,7 @@ export async function getUsersByEmail(
   return response.users;
 }
 
-interface GetPrimaryUserByEmailAndProviderParams {
+interface GetUserByEmailAndProviderParams {
   userAdapter: UserDataAdapter;
   tenant_id: string;
   email: string;
@@ -28,7 +28,7 @@ export async function getUserByEmailAndProvider({
   tenant_id,
   email,
   provider,
-}: GetPrimaryUserByEmailAndProviderParams): Promise<User | null> {
+}: GetUserByEmailAndProviderParams): Promise<User | null> {
   const { users } = await userAdapter.list(tenant_id, {
     page: 0,
     per_page: 10,
@@ -36,9 +36,11 @@ export async function getUserByEmailAndProvider({
     q: `email:${email} provider:${provider}`,
   });
 
-  const [user] = users;
+  if (users.length > 1) {
+    console.error("More than one user found for same email and provider");
+  }
 
-  return user || null;
+  return users[0] || null;
 }
 
 interface GetPrimaryUserByEmailParams {
@@ -59,8 +61,40 @@ export async function getPrimaryUserByEmail({
     q: `email:${email}`,
   });
 
-  // we should do this in SQL so we don't get issues with pagination!
-  return users.find((user) => !user.linked_to);
+  if (users.length === 0) {
+    return;
+  }
+
+  const primaryUsers = users.filter((user) => !user.linked_to);
+
+  if (primaryUsers.length > 0) {
+    if (primaryUsers.length > 1) {
+      console.error("More than one primary user found for same email");
+    }
+
+    return primaryUsers[0];
+  }
+
+  // so now we have only linked users for this email address
+
+  // I am going to assume that all the linked users with the same email address
+  // are linked to the same primary account
+
+  const primaryAccount = await userAdapter.get(tenant_id, users[0].linked_to!);
+
+  if (!primaryAccount) {
+    // this is a real error where we should interrupt the flow
+    throw new Error("Primary account not found");
+  }
+
+  return primaryAccount;
+}
+
+interface GetPrimaryUserByEmailAndProviderParams {
+  userAdapter: UserDataAdapter;
+  tenant_id: string;
+  email: string;
+  provider: string;
 }
 
 export async function getPrimaryUserByEmailAndProvider({
