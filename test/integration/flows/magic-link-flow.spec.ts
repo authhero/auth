@@ -4,6 +4,7 @@ import { getEnv } from "../helpers/test-client";
 import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
+import { UserResponse } from "../../../src/types";
 
 const AUTH_PARAMS = {
   nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
@@ -615,6 +616,91 @@ describe("magic link flow", () => {
       encodeURIComponent("another@email.com"),
     );
     expect(redirectUri2.searchParams.get("lang")).toBe("sv");
+  });
+
+  describe("edge cases", () => {
+    it("should ignore un-verified password account when signing up with magic link", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // signup new user
+      // -----------------
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "same-user-signin@example.com",
+          password: "password",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      const unverifiedPasswordUser =
+        (await createUserResponse.json()) as UserResponse;
+
+      //-----------------
+      // sign up new code user that has same email address
+      //-----------------
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "same-user-signin@example.com",
+            send: "link",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      // first email will be email verification
+      const [, { magicLink }] = await env.data.email.list!();
+
+      const authenticatePath = magicLink!?.split("https://example.com")[1];
+
+      const querySearchParams = new URLSearchParams(
+        authenticatePath.split("?")[1],
+      );
+      const query = Object.fromEntries(querySearchParams.entries());
+
+      const authenticateResponse =
+        await client.passwordless.verify_redirect.$get({
+          query,
+        });
+
+      const redirectUri = new URL(
+        authenticateResponse.headers.get("location")!,
+      );
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
+
+      const accessTokenPayload = parseJwt(accessToken!);
+      // this shows that we are linking to an unverified password account
+      expect(accessTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      // these shows that we are linking to an unverified password account
+      expect(idTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
+      expect(idTokenPayload.email_verified).toBe(true);
+    });
   });
 });
 // TO TEST

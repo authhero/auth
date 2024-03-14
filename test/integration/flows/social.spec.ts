@@ -639,7 +639,7 @@ describe("social sign on", () => {
       expect(accessTokenPayload.sub).toBe("email|7575757575757");
     });
 
-    it("should ignore un-verified account when linking to an existing email account", async () => {
+    it("should ignore un-verified password account when signing up with social account", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
