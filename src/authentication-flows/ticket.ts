@@ -12,6 +12,14 @@ import {
   getPrimaryUserByEmail,
   getPrimaryUserByEmailAndProvider,
 } from "../utils/users";
+import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
+import { nanoid } from "nanoid";
+import generateOTP from "../utils/otp";
+import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../constants";
+import { getClient } from "../services/clients";
+
+// de-dupe
+const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -55,10 +63,59 @@ export async function ticketAuth(
   // this will trigger on the code and password flows BUT shouldn't the code accounts be validated as they've signed in?
   // Maybe this is where we should set email_verified to true!
   // we could do this check in a few places...
-  if (realm === "Username-Password-Authentication" && !user?.email_verified) {
-    // TBD - should this page be on login2 like the expired code one? we're already adding a few universal auth pages...
-    // BUT this route will be more frequently used so we probably want the styling totally matching
-    return "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.";
+  if (user) {
+    if (realm === "Username-Password-Authentication" && !user.email_verified) {
+      // send another email validation email
+      const authParams: AuthParams = {
+        client_id: ticket.client_id,
+        username: ticket.email,
+      };
+
+      const session: UniversalLoginSession = {
+        id: nanoid(),
+        client_id: ticket.client_id,
+        tenant_id: tenant_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        expires_at: new Date(
+          Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
+        ).toISOString(),
+        authParams,
+      };
+
+      await env.data.universalLoginSessions.create(session);
+
+      const state = session.id;
+
+      const code = generateOTP();
+
+      await env.data.codes.create(tenant_id, {
+        id: nanoid(),
+        code,
+        type: "validation",
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+      });
+
+      const client = await getClient(ctx.env, ticket.client_id);
+
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      await env.data.email.sendValidateEmailAddress(
+        env,
+        client,
+        ticket.email,
+        code,
+        state,
+      );
+
+      // TBD - should this page be on login2 like the expired code one? we're already adding a few universal auth pages...
+      // BUT this route will be more frequently used so we probably want the styling totally matching
+      return "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.";
+    }
   }
 
   if (!user) {
