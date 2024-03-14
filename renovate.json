@@ -24,5 +24,6 @@
     "before 5am every weekday",
     "every weekend"
   ],
-  "branchConcurrentLimit": 2
+  "branchConcurrentLimit": 2,
+  "ignoreDeps": ["node"]
 }
