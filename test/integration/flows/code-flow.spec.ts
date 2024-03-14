@@ -15,24 +15,6 @@ const AUTH_PARAMS = {
   state: "state",
 };
 
-const LOGIN2_STATE = "client_id=clientId&connection=auth2";
-
-const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
-  redirect_uri: "https://login2.sesamy.dev/callback",
-  scope: "openid profile email",
-  state: LOGIN2_STATE,
-  client_id: "clientId",
-  nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-  response_type: "token id_token",
-};
-
-const SOCIAL_STATE_PARAM = btoa(
-  JSON.stringify({
-    authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
-    connection: "demo-social-provider",
-  }),
-).replace("==", "");
-
 describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
@@ -1464,14 +1446,9 @@ describe("code-flow", () => {
       expect(idTokenPayload.email).toBe("base-user@example.com");
     });
 
-    it("should ignore un-verified account when linking to an existing email account", async () => {
-      const token = await getAdminToken();
+    it("should ignore un-verified password account when signing up with code account", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-
-      // should I manually add these users to the database?
-      // +ve: more concise test
-      // -ve: not testing the full flow
 
       // -----------------
       // signup new user
@@ -1481,8 +1458,7 @@ describe("code-flow", () => {
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
-          // matches social sign up we will do next
-          email: "örjan.lindström@example.com",
+          email: "same-user-signin@example.com",
           password: "password",
         },
       };
@@ -1496,32 +1472,89 @@ describe("code-flow", () => {
       );
       expect(createUserResponse.status).toBe(200);
 
-      //-----------------
-      // sign up new social user that has same email address
-      //-----------------
+      const unverifiedPasswordUser =
+        (await createUserResponse.json()) as UserResponse;
 
-      const socialCallbackQuery = {
-        state: SOCIAL_STATE_PARAM,
-        code: "code",
+      //-----------------
+      // sign up new code user that has same email address
+      //-----------------
+      const response = await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "same-user-signin@example.com",
+            send: "code",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      if (response.status !== 200) {
+        throw new Error(await response.text());
+      }
+
+      // first email will be email verification
+      const [, { code: otp }] = await env.data.email.list!();
+
+      // Authenticate using the code
+      const authenticateResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type:
+              "http://auth0.com/oauth/grant-type/passwordless/otp",
+            otp,
+            realm: "email",
+            username: "same-user-signin@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const { login_ticket } =
+        (await authenticateResponse.json()) as LoginTicket;
+
+      const query = {
+        ...AUTH_PARAMS,
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        realm: "email",
       };
 
-      const socialCallbackResponse = await client.callback.$get({
-        query: socialCallbackQuery,
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({
+        query,
       });
-      expect(socialCallbackResponse.status).toBe(302);
-      const location2 = new URL(
-        socialCallbackResponse.headers.get("location")!,
-      );
-      const socialCallbackQuery2 = new URLSearchParams(location2.hash.slice(1));
 
-      const idToken = socialCallbackQuery2.get("id_token");
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
+
+      const accessTokenPayload = parseJwt(accessToken!);
+      // this shows that we are linking to an unverified password account
+      expect(accessTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
+
+      const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
-      expect(idTokenPayload.sub).toBe(
-        // this shows no account linking is being done to the unvalidated email account...
-        // WAIT! is this enough of a test?
-        // the test would be manually linking another account to this one
-        "demo-social-provider|123456789012345678901",
-      );
+      // these shows that we are linking to an unverified password account
+      expect(idTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
       expect(idTokenPayload.email_verified).toBe(true);
     });
   });
