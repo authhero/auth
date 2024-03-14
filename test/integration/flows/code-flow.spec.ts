@@ -1043,6 +1043,12 @@ describe("code-flow", () => {
 
   // TO TEST
   // - using expired codes? how can we fast-forward time with wrangler...
-  // - log in with existing primary user
   // - more linked accounts
+  // more basic error testing e.g.
+  // - do not allow code from a different account: we should be fine without this but I can see a way we could mess this up!
+
+  describe("edge cases", () => {
+    // I should probably put some of this in the description!
+    it("should login correctly for a code account linked to another account with a different email, when a password account has only been signed up but not activated", async () => {});
+  });
 });
