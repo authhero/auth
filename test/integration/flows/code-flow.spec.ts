@@ -1048,7 +1048,7 @@ describe("code-flow", () => {
   // - do not allow code from a different account: we should be fine without this but I can see a way we could mess this up!
 
   describe("edge cases", () => {
-    it("should login correctly for a code account linked to another account with a different email, when a password account has only been signed up but not activated", async () => {
+    it("should login correctly for a code account linked to another account with a different email, when a password account has been registered but not verified", async () => {
       // create a new user with a password
       const token = await getAdminToken();
       const env = await getEnv();
