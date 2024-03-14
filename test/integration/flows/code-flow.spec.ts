@@ -1165,7 +1165,8 @@ describe("code-flow", () => {
 
       expect(response.status).toBe(200);
 
-      const [{ code: otp }] = await env.data.email.list!();
+      // first email is email validation from sign up above
+      const [, { code: otp }] = await env.data.email.list!();
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
