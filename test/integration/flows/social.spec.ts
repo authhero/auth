@@ -687,7 +687,6 @@ describe("social sign on", () => {
       const idToken = socialCallbackQuery2.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.sub).toBe(
-        // this shows no account linking is being done to the unvalidated email account...
         "demo-social-provider|123456789012345678901",
       );
       expect(idTokenPayload.email_verified).toBe(true);

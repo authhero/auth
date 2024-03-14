@@ -692,12 +692,10 @@ describe("magic link flow", () => {
       const accessToken = searchParams.get("access_token");
 
       const accessTokenPayload = parseJwt(accessToken!);
-      // this shows that we are linking to an unverified password account
       expect(accessTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
 
       const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
-      // these shows that we are linking to an unverified password account
       expect(idTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
       expect(idTokenPayload.email_verified).toBe(true);
     });
