@@ -18,6 +18,7 @@ import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
 import { nanoid } from "nanoid";
 import { AuthParams } from "../../types";
 import generateOTP from "../../utils/otp";
+import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -95,45 +96,11 @@ export class DbConnectionsController extends Controller {
       password: body.password,
     });
 
-    const authParams: AuthParams = {
-      client_id: body.client_id,
-      username: email,
-    };
-
-    const session: UniversalLoginSession = {
-      id: nanoid(),
-      client_id: client.id,
-      tenant_id: client.tenant_id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      expires_at: new Date(
-        Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
-      ).toISOString(),
-      authParams,
-    };
-
-    await env.data.universalLoginSessions.create(session);
-
-    const state = session.id;
-
-    const code = generateOTP();
-
-    await env.data.codes.create(client.tenant_id, {
-      id: nanoid(),
-      code,
-      type: "validation",
-      user_id: newUser.id,
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-    });
-
-    await env.data.email.sendValidateEmailAddress(
+    await sendEmailVerificationEmail({
       env,
       client,
-      email,
-      code,
-      state,
-    );
+      user: newUser,
+    });
 
     return {
       _id: newUser.id,
