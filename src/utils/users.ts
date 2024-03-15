@@ -54,12 +54,21 @@ export async function getPrimaryUserByEmail({
   tenant_id,
   email,
 }: GetPrimaryUserByEmailParams): Promise<User | undefined> {
-  const { users } = await userAdapter.list(tenant_id, {
-    page: 0,
-    per_page: 10,
-    include_totals: false,
-    q: `email:${email}`,
-  });
+  const { users: usersWithUnverifiedPasswordAccounts } = await userAdapter.list(
+    tenant_id,
+    {
+      page: 0,
+      per_page: 10,
+      include_totals: false,
+      q: `email:${email}`,
+    },
+  );
+
+  // filter out unverified accounts
+  const users = usersWithUnverifiedPasswordAccounts.filter(
+    // maybe we should do this for all providers
+    (user) => !(user.provider === "auth2" && !user.email_verified),
+  );
 
   if (users.length === 0) {
     return;

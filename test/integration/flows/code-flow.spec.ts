@@ -1445,5 +1445,115 @@ describe("code-flow", () => {
       expect(accessTokenPayload.sub).toBe("auth2|base-user");
       expect(idTokenPayload.email).toBe("base-user@example.com");
     });
+
+    it("should ignore un-verified password account when signing up with code account", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // signup new user
+      // -----------------
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "same-user-signin@example.com",
+          password: "password",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      const unverifiedPasswordUser =
+        (await createUserResponse.json()) as UserResponse;
+
+      //-----------------
+      // sign up new code user that has same email address
+      //-----------------
+      const response = await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "same-user-signin@example.com",
+            send: "code",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      if (response.status !== 200) {
+        throw new Error(await response.text());
+      }
+
+      // first email will be email verification
+      const [, { code: otp }] = await env.data.email.list!();
+
+      // Authenticate using the code
+      const authenticateResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type:
+              "http://auth0.com/oauth/grant-type/passwordless/otp",
+            otp,
+            realm: "email",
+            username: "same-user-signin@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const { login_ticket } =
+        (await authenticateResponse.json()) as LoginTicket;
+
+      const query = {
+        ...AUTH_PARAMS,
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        realm: "email",
+      };
+
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({
+        query,
+      });
+
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const accessToken = searchParams.get("access_token");
+
+      const accessTokenPayload = parseJwt(accessToken!);
+      expect(accessTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
+      expect(idTokenPayload.email_verified).toBe(true);
+    });
   });
 });
