@@ -542,8 +542,13 @@ describe("magic link flow", () => {
       await client.passwordless.verify_redirect.$get({
         query,
       });
-    // what code should this be?
-    expect(authenticateResponse2.status).toBe(400);
+    expect(authenticateResponse2.status).toBe(302);
+    const redirectUri2 = new URL(
+      authenticateResponse2.headers.get("location")!,
+    );
+    expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
+    // we also show this page if the code is incorrect
+    expect(redirectUri2.pathname).toBe("/expired-code");
   });
 
   it("should not accept any invalid params on the magic link", async () => {
