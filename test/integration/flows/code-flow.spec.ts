@@ -14,11 +14,6 @@ const AUTH_PARAMS = {
   scope: "openid profile email",
   state: "state",
 };
-// TO TEST
-// use same code twice!
-// colocate with incorrect code test, should be the same flow really
-// two birds with one stone
-// THEN - check this PR with Markus
 
 describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
