@@ -1591,5 +1591,88 @@ describe("code-flow", () => {
       expect(idTokenPayload.sub).not.toBe(unverifiedPasswordUser._id);
       expect(idTokenPayload.email_verified).toBe(true);
     });
+
+    // tickets are used by a few flows so this probably should not be here
+    it("should only allow a ticket to be used once", async () => {
+      const AUTH_PARAMS = {
+        nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
+        redirect_uri: "https://login.example.com/callback",
+        response_type: "token id_token",
+        scope: "openid profile email",
+        state: "state",
+      };
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+      await client.passwordless.start.$post(
+        {
+          json: {
+            authParams: AUTH_PARAMS,
+            client_id: "clientId",
+            connection: "email",
+            email: "foo@example.com",
+            send: "code",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      const [{ code: otp }] = await env.data.email.list!();
+      const authenticateResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type:
+              "http://auth0.com/oauth/grant-type/passwordless/otp",
+            otp,
+            realm: "email",
+            username: "foo@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(authenticateResponse.status).toBe(200);
+
+      const { login_ticket } =
+        (await authenticateResponse.json()) as LoginTicket;
+
+      const query = {
+        ...AUTH_PARAMS,
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        realm: "email",
+      };
+
+      // -----------------
+      // Trade the ticket for token once so it is used
+      // -----------------
+
+      const tokenResponse = await client.authorize.$get({
+        query,
+      });
+
+      expect(tokenResponse.status).toBe(302);
+      expect(await tokenResponse.text()).toBe("Redirecting");
+
+      // -----------------
+      // Now try trading ticket again and it should not work
+      // -----------------
+
+      const rejectedSecondTicketUsageRes = await client.authorize.$get({
+        query,
+      });
+
+      // what should happen here? currently it seems to keep working...
+      expect(rejectedSecondTicketUsageRes.status).not.toBe(302);
+      expect(await rejectedSecondTicketUsageRes.text()).not.toBe("Redirecting");
+    });
   });
 });
