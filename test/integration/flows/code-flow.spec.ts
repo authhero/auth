@@ -945,7 +945,7 @@ describe("code-flow", () => {
     });
   });
 
-  it.only("should only allow a code to be used once", async () => {
+  it("should only allow a code to be used once", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
@@ -1012,7 +1012,12 @@ describe("code-flow", () => {
       },
     );
 
-    expect(authRes2.status).toBe(302);
+    expect(authRes2.status).toBe(403);
+    // this message isn't exactly true! We could check what auth0 does
+    expect(await authRes2.json()).toEqual({
+      error: "access_denied",
+      error_description: "Wrong email or verification code.",
+    });
   });
 
   it("should not accept an invalid code", async () => {
