@@ -324,7 +324,7 @@ describe("password-flow", () => {
         {
           connection: "Username-Password-Authentication",
           provider: "auth2",
-          user_id: "testid-8",
+          user_id: "testid-10",
           isSocial: false,
           profileData: {
             email: "existing-code-user@example.com",
@@ -332,6 +332,87 @@ describe("password-flow", () => {
           },
         },
       ]);
+    });
+
+    it("should resend email validation email after login attempts, and this should work", async () => {
+      const password = "password";
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "password-login-test@example.com",
+          password,
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password,
+            username: "password-login-test@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      const query = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
+
+      await client.authorize.$get({ query });
+
+      const emailList = await env.data.email.list!();
+      // this is the change! get the second email
+      const { to, code, state } = emailList[1];
+
+      expect(to).toBe("password-login-test@example.com");
+
+      const emailValidatedRes = await client.u["validate-email"].$get({
+        query: {
+          state,
+          code,
+        },
+      });
+
+      expect(emailValidatedRes.status).toBe(200);
+
+      const tokenResponse = await client.authorize.$get({ query });
+
+      expect(tokenResponse.status).toBe(302);
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("password-login-test@example.com");
     });
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
