@@ -16,5 +16,5 @@ export interface SqlTicket {
   redirect_uri?: string;
   created_at: string;
   expires_at: string;
-  used_at?: Date;
+  used_at?: string;
 }
