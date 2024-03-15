@@ -135,8 +135,41 @@ describe("password-flow", () => {
       expect(emailValidatedRes.status).toBe(200);
       expect(await emailValidatedRes.text()).toBe("email validated");
 
-      // interesting that we can reuse the above authorize call 8-)
-      const tokenResponse = await client.authorize.$get({ query });
+      //-------------------
+      // login again now to check that it works
+      //-------------------
+
+      const loginResponse2 = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password,
+            username: "password-login-test@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const { login_ticket: loginTicket2 } =
+        (await loginResponse2.json()) as LoginTicket;
+      const query2 = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket: loginTicket2,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
+
+      const tokenResponse = await client.authorize.$get({ query: query2 });
 
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
