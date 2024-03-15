@@ -7,6 +7,7 @@ export function get(db: Kysely<Database>) {
       .selectFrom("tickets")
       .where("tickets.tenant_id", "=", tenant_id)
       .where("tickets.id", "=", id)
+      .where("tickets.used_at", "is", null)
       .selectAll()
       .executeTakeFirst();
 
@@ -36,6 +37,7 @@ export function get(db: Kysely<Database>) {
       },
       created_at: new Date(ticket.created_at),
       expires_at: new Date(ticket.expires_at),
+      used_at: ticket.used_at ? new Date(ticket.used_at) : undefined,
     };
   };
 }

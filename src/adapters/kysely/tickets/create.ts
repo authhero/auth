@@ -10,6 +10,7 @@ export function create(db: Kysely<Database>) {
       ...authParams,
       created_at: ticket.created_at.toISOString(),
       expires_at: ticket.expires_at.toISOString(),
+      used_at: ticket.used_at ? ticket.used_at.toISOString() : undefined,
     };
 
     await db.insertInto("tickets").values(sqlTicket).execute();
