@@ -14,6 +14,11 @@ const AUTH_PARAMS = {
   scope: "openid profile email",
   state: "state",
 };
+// TO TEST
+// use same code twice!
+// colocate with incorrect code test, should be the same flow really
+// two birds with one stone
+// THEN - check this PR with Markus
 
 describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
@@ -940,7 +945,7 @@ describe("code-flow", () => {
     });
   });
 
-  it("should accept the same code multiple times", async () => {
+  it.only("should only allow a code to be used once", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
@@ -989,7 +994,7 @@ describe("code-flow", () => {
     );
     expect(authRes.status).toBe(200);
 
-    // now use the same code again
+    // now try to use the same code again
     const authRes2 = await client.co.authenticate.$post(
       {
         json: {
@@ -1007,7 +1012,7 @@ describe("code-flow", () => {
       },
     );
 
-    expect(authRes2.status).toBe(200);
+    expect(authRes2.status).toBe(302);
   });
 
   it("should not accept an invalid code", async () => {
