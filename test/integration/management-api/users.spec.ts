@@ -91,47 +91,137 @@ describe("users management API endpoint", () => {
       ]);
     });
 
-    it("should throw an error if you create the same passwordless email user twice", async () => {
-      const token = await getAdminToken();
+    describe("should return a 409 if you create the same passwordless email user twice when existing user:", () => {
+      it("is an existing primary account", async () => {
+        const token = await getAdminToken();
 
-      const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
 
-      const createUserResponse1 = await client.api.v2.users.$post(
-        {
-          json: {
-            email: "test@example.com",
+        const createUserResponse1 = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "test@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+              "content-type": "application/json",
+            },
+          },
+        );
+
+        expect(createUserResponse1.status).toBe(201);
+
+        const createUserResponse2 = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "test@example.com",
+              connection: "email",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+              "content-type": "application/json",
+            },
+          },
+        );
+
+        expect(createUserResponse2.status).toBe(409);
+      });
+
+      it("is an existing linked account", async () => {
+        const token = await getAdminToken();
+
+        const env = await getEnv();
+        const client = testClient(tsoaApp, env);
+
+        // ----------------------
+        // Inject fixtures for primary and linked users
+        // ----------------------
+
+        await env.data.users.create("tenantId", {
+          email: "primary@example.com",
+          id: "auth2|primaryId",
+          provider: "auth2",
+          email_verified: true,
+          connection: "Username-Password-Authentication",
+          is_social: false,
+          login_count: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+        await env.data.users.create("tenantId", {
+          email: "existing-code-user@example.com",
+          id: "email|existingCodeUserId",
+          provider: "email",
+          email_verified: true,
+          connection: "email",
+          is_social: false,
+          login_count: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          linked_to: "auth2|primaryId",
+        });
+
+        // sanity check that primary user is set up correctly
+        const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+          {
+            param: {
+              user_id: "auth2|primaryId",
+            },
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+            },
+          },
+        );
+        const primaryUser = (await primaryUserRes.json()) as UserResponse;
+        expect(primaryUser.identities).toEqual([
+          {
+            connection: "Username-Password-Authentication",
+            provider: "auth2",
+            user_id: "primaryId",
+            isSocial: false,
+          },
+          {
             connection: "email",
+            provider: "email",
+            user_id: "existingCodeUserId",
+            isSocial: false,
+            profileData: {
+              email: "existing-code-user@example.com",
+              email_verified: true,
+            },
           },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-            "content-type": "application/json",
-          },
-        },
-      );
+        ]);
 
-      expect(createUserResponse1.status).toBe(201);
-
-      const createUserResponse2 = await client.api.v2.users.$post(
-        {
-          json: {
-            email: "test@example.com",
-            connection: "email",
+        const createDuplicateCodeUserResponse = await client.api.v2.users.$post(
+          {
+            json: {
+              email: "existing-code-user@example.com",
+              connection: "email",
+            },
           },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-            "content-type": "application/json",
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+              "content-type": "application/json",
+            },
           },
-        },
-      );
+        );
 
-      expect(createUserResponse2.status).toBe(409);
+        expect(createDuplicateCodeUserResponse.status).toBe(409);
+      });
     });
 
     it("should lowercase email when creating a user", async () => {
