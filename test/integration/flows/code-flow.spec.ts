@@ -1665,14 +1665,14 @@ describe("code-flow", () => {
       // -----------------
       // Now try trading ticket again and it should not work
       // -----------------
-
       const rejectedSecondTicketUsageRes = await client.authorize.$get({
         query,
       });
 
-      // what should happen here? currently it seems to keep working...
-      expect(rejectedSecondTicketUsageRes.status).not.toBe(302);
-      expect(await rejectedSecondTicketUsageRes.text()).not.toBe("Redirecting");
+      expect(rejectedSecondTicketUsageRes.status).toBe(403);
+      expect(await rejectedSecondTicketUsageRes.text()).toBe(
+        "Ticket not found",
+      );
     });
   });
 });
