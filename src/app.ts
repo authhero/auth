@@ -72,6 +72,10 @@ app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
 });
 
+app.get("/u/reset-password", async (ctx: Context<{ Bindings: Env }>) => {
+  return ctx.html("<h1>Reset Password</h1>");
+});
+
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 

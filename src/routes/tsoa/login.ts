@@ -537,27 +537,27 @@ export class LoginController extends Controller {
    * Renders a reset password form
    * @param request
    */
-  @Get("reset-password")
-  // in auth0 this is called reset-verify
-  public async getResetPassword(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-  ) {
-    const { env } = request.ctx;
+  // @Get("reset-password")
+  // // in auth0 this is called reset-verify
+  // public async getResetPassword(
+  //   @Request() request: RequestWithContext,
+  //   @Query("state") state: string,
+  // ) {
+  //   const { env } = request.ctx;
 
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
+  //   const session = await env.data.universalLoginSessions.get(state);
+  //   if (!session) {
+  //     throw new HTTPException(400, { message: "Session not found" });
+  //   }
 
-    // JSX Demo!
-    // return request.ctx.html(<ReactThing />);
+  //   // JSX Demo!
+  //   // return request.ctx.html(<ReactThing />);
 
-    // ok well this also does not work...
-    return renderReactThing(request.ctx);
+  //   // ok well this also does not work...
+  //   return renderReactThing(request.ctx);
 
-    // return renderResetPassword(env, this, session);
-  }
+  //   // return renderResetPassword(env, this, session);
+  // }
 
   /**
    * Renders a reset password form
