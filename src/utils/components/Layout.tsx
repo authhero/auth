@@ -11,26 +11,53 @@ const Layout: FC<{ title: string }> = ({ title, children }) => {
         <meta name="robots" content="noindex, follow" />
 
         <link
-          rel="stylesheet"
-          type="text/css"
-          href="/static/stylesheets/font-awesome.min.css"
+          rel="preload"
+          href="https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Regular.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
         <link
-          rel="stylesheet"
-          type="text/css"
-          href="/static/stylesheets/material-design-iconic-font.min.css"
-        />
-
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="/static/stylesheets/main.css"
+          rel="preload"
+          href="https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Medium.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
         <link
-          rel="stylesheet"
-          type="text/css"
-          href="/static/stylesheets/util.css"
+          rel="preload"
+          href="https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Bold.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/favicons/apple-touch-icon.png"
+        />
+        <link
+          rel="mask-icon"
+          href="/favicons/safari-pinned-tab.svg"
+          color="#000000"
+        />
+        {/* <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicons/favicon-32x32-light.png"
+        /> */}
+        {/* <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicons/favicon-16x16-light.png"
+        /> */}
+        <meta name="theme-color" content="#000000" />
       </head>
 
       <body>
