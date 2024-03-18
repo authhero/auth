@@ -80,6 +80,25 @@ app.get(
   },
 );
 
+app.get(
+  "/css/default.css",
+  async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
+    const response = await ctx.env.AUTH_TEMPLATES.get(
+      "templates/static/stylesheets/tailwind.css",
+    );
+
+    if (!response) {
+      throw new Error("Template not found");
+    }
+
+    const templateString = await response.text();
+
+    return ctx.text(templateString, 200, {
+      "content-type": "text/css",
+    });
+  },
+);
+
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 
