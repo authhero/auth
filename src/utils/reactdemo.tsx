@@ -4,6 +4,17 @@ import { Var } from "../types/Var";
 import { Env } from "../types/Env";
 import Layout from "./components/Layout";
 
+const Button: FC<{}> = ({ children }) => {
+  return (
+    <button
+      class="relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover text-base sm:mt-4 md:text-base"
+      type="submit"
+    >
+      <span class="flex items-center justify-center space-x-2">{children}</span>
+    </button>
+  );
+};
+
 const ResetPasswordPage: FC<{}> = (props: {}) => {
   return (
     <Layout title="Reset Password">
@@ -21,9 +32,7 @@ const ResetPasswordPage: FC<{}> = (props: {}) => {
           {/* TODO - display error here */}
           {/* {!!error && <em class="mb-2 bg-red">{error}</e  m>} */}
           {/* TODO - copy Button component over and use this */}
-          <button class="text-base sm:mt-4 md:text-base" type="submit">
-            Change password
-          </button>
+          <Button>Change password</Button>
         </form>
       </div>
     </Layout>
