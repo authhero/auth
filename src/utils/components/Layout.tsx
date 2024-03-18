@@ -29,6 +29,7 @@ const Layout: FC<{ title: string }> = ({ title, children }) => {
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        <link rel="stylesheet" href="/css/default.css" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1"
