@@ -67,6 +67,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@ape-egg/tailwind-rows-columns": "^1.0.2",
     "@cloudflare/workers-types": "4.20240312.0",
     "@semantic-release/git": "10.0.1",
     "@types/bcryptjs": "2.4.6",

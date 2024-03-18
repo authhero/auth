@@ -20,6 +20,11 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
+"@ape-egg/tailwind-rows-columns@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@ape-egg/tailwind-rows-columns/-/tailwind-rows-columns-1.0.2.tgz#abd8c8263c2a42922af8c4c401f7de44b1365fb5"
+  integrity sha512-4Fy3KFWTNp6yBqHrbuu5OIUceekFb/EgNpNzyFONBImUNuo/p6vScYj7p998PSr2D3IhDMrgBJmT9YDShMuZYw==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.21.4", "@babel/code-frame@^7.22.13":
   version "7.22.13"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.22.13.tgz#e3c1c099402598483b7a8c46a721d1038803755e"
