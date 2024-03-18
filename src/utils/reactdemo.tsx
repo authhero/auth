@@ -11,7 +11,6 @@ const ResetPasswordPage: FC<{}> = (props: {}) => {
       <div class="flex flex-1 flex-col justify-center">
         <form
         // TODO - use default form action
-        // onSubmit={handleSubmit}
         >
           <input
             type="text"
@@ -19,13 +18,10 @@ const ResetPasswordPage: FC<{}> = (props: {}) => {
             placeholder="enter new password"
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
+          {/* TODO - display error here */}
           {/* {!!error && <em class="mb-2 bg-red">{error}</e  m>} */}
-          {/* TODO - copy this component over */}
-          <button
-            class="text-base text-white sm:mt-4 md:text-base"
-            // isLoading={isSubmitting}
-            type="submit"
-          >
+          {/* TODO - copy Button component over and use this */}
+          <button class="text-base sm:mt-4 md:text-base" type="submit">
             Change password
           </button>
         </form>
