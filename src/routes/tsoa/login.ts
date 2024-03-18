@@ -32,7 +32,7 @@ import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
-import type { FC } from "hono/jsx";
+import { renderReactThing } from "../../utils/reactdemo";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -45,17 +45,6 @@ interface LoginParams {
 interface PasswordResetParams {
   username: string;
 }
-
-const ReactThing: FC<{}> = (props: {}) => {
-  return (
-    <html>
-      <body>
-        <h1>Hello Hono!</h1>
-        <p>this is JSX</p>
-      </body>
-    </html>
-  );
-};
 
 async function handleLogin(
   env: Env,
@@ -565,7 +554,7 @@ export class LoginController extends Controller {
     // return request.ctx.html(<ReactThing />);
 
     // ok well this also does not work...
-    return request.ctx.html(<p>Hello world</p>);
+    return renderReactThing(request.ctx);
 
     // return renderResetPassword(env, this, session);
   }
