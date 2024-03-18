@@ -27,7 +27,9 @@
       "*": ["node_modules/*"]
     },
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
   },
   "include": ["src/**/*", "test/**/*", "integration-test/**/*", "scripts/**/*"]
 }
