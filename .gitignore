@@ -19,3 +19,5 @@ data/
 **/.DS_Store
 .vscode
 db.sqlite
+
+src/styles/output.css

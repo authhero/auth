@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #__next {
+    @apply h-full;
+  }
+  body {
+    @apply bg-gray-100 text-base leading-[120%] tracking-[0.0125rem] antialiased dark:text-white;
+  }
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    @apply text-sm tracking-[0.0125rem];
+  }
+  .text-display {
+    @apply text-3xl font-medium sm:text-6xl sm:tracking-[-0.125rem] md:text-7xl md:tracking-[-0.125rem];
+  }
+  h1 {
+    @apply text-2xl font-medium sm:text-4xl sm:tracking-[-0.0625rem] md:text-5xl md:tracking-[-0.0625rem];
+  }
+  h2 {
+    @apply text-xl font-medium sm:text-3xl sm:tracking-normal md:text-4xl md:tracking-[-0.0625rem];
+  }
+  h3 {
+    @apply text-lg font-medium sm:text-2xl md:text-3xl;
+  }
+  h4 {
+    @apply text-base font-medium sm:text-lg md:text-2xl;
+  }
+  h5 {
+    @apply text-sm font-medium sm:text-base md:text-lg;
+  }
+  h6 {
+    @apply text-xs font-medium sm:text-sm md:text-base;
+  }
+}
+.text-5xl {
+  @apply md:text-6xl;
+}
+.text-4xl {
+  @apply md:text-5xl;
+}
+.text-3xl {
+  @apply md:text-4xl;
+}
+.text-2xl {
+  @apply md:text-3xl;
+}
+.text-xl {
+  @apply md:text-2xl;
+}
+.text-lg {
+  @apply md:text-xl;
+}
+.text-base {
+  @apply md:text-lg;
+}
+.text-sm {
+  @apply md:text-base;
+}
+.text-xs {
+  @apply md:text-sm;
+}
+
+:root {
+  --primary-color: #7d68f4;
+  --primary-hover: #7e69f4;
+  --text-on-primary: #ffffff;
+}
+
+svg {
+  @apply transform-gpu;
+}
+
+*,
+*::before,
+*::after {
+  @apply underline-offset-4;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield !important;
+}
+
+[class^="uicon-"],
+[class*=" uicon-"] {
+  line-height: 100%;
+  letter-spacing: 0;
+}
+
+/* @import "./fonts.css";
+@import "./uicon.css"; */
