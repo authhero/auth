@@ -6,8 +6,6 @@ const Layout: FC<{ title: string }> = ({ title, children }) => {
       <head>
         <title>{title}</title>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-
         <meta name="robots" content="noindex, follow" />
 
         <link
@@ -35,7 +33,7 @@ const Layout: FC<{ title: string }> = ({ title, children }) => {
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1"
         />
-        <link
+        {/* <link
           rel="apple-touch-icon"
           sizes="180x180"
           href="/favicons/apple-touch-icon.png"
@@ -44,7 +42,7 @@ const Layout: FC<{ title: string }> = ({ title, children }) => {
           rel="mask-icon"
           href="/favicons/safari-pinned-tab.svg"
           color="#000000"
-        />
+        /> */}
         {/* <link
           rel="icon"
           type="image/png"
@@ -81,7 +79,7 @@ const Layout: FC<{ title: string }> = ({ title, children }) => {
                     // href={supportUrl}
                     href="https://sesamy.com"
                   >
-                    {t("contact_support")}
+                    contact_support
                   </a>
                   <span className="text-gray-300">|</span>{" "}
                   <span>copyright_sesamy</span>
