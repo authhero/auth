@@ -4,8 +4,7 @@
 
 @layer base {
   html,
-  body,
-  #__next {
+  body {
     @apply h-full;
   }
   body {

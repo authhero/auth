@@ -7,8 +7,8 @@ import Layout from "./components/Layout";
 const ResetPasswordPage: FC<{}> = (props: {}) => {
   return (
     <Layout title="Reset Password">
-      <div className="mb-8 text-2xl font-medium">Reset password</div>
-      <div className="flex flex-1 flex-col justify-center">
+      <div class="mb-8 text-2xl font-medium">Reset password</div>
+      <div class="flex flex-1 flex-col justify-center">
         <form
         // TODO - use default form action
         // onSubmit={handleSubmit}
@@ -17,12 +17,12 @@ const ResetPasswordPage: FC<{}> = (props: {}) => {
             type="text"
             name="password"
             placeholder="enter new password"
-            className="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
+            class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
-          {/* {!!error && <em className="mb-2 bg-red">{error}</e  m>} */}
+          {/* {!!error && <em class="mb-2 bg-red">{error}</e  m>} */}
           {/* TODO - copy this component over */}
           <button
-            className="text-base text-white sm:mt-4 md:text-base"
+            class="text-base text-white sm:mt-4 md:text-base"
             // isLoading={isSubmitting}
             type="submit"
           >
