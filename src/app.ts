@@ -11,6 +11,7 @@ import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
+import { renderReactThing } from "./utils/reactdemo";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -71,6 +72,13 @@ const app = new Hono<{ Bindings: Env }>()
 app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
 });
+
+app.get(
+  "/u/reset-password",
+  async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
+    return renderReactThing(ctx);
+  },
+);
 
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
