@@ -11,6 +11,7 @@ import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
+import { renderReactThing } from "./utils/reactdemo";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -73,7 +74,7 @@ app.get("/spec", async () => {
 });
 
 app.get("/u/reset-password", async (ctx: Context<{ Bindings: Env }>) => {
-  return ctx.html("<h1>Reset Password</h1>");
+  return renderReactThing(ctx);
 });
 
 app.get("/docs", swaggerUi);

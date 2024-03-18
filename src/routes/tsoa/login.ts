@@ -32,7 +32,6 @@ import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
-import { renderReactThing } from "../../utils/reactdemo";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;

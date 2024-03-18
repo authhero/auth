@@ -26,8 +26,8 @@ export async function renderReactThing(
   // return html`<p>Hello world</p>`;
 
   // try using actual react components
-  // return ctx.html(<ReactThing />);
+  return ctx.html(<ReactThing />);
 
   // just renders a string. no knowledge of HTML
-  return html`<ReactThing />`;
+  // return html`<ReactThing />`;
 }
