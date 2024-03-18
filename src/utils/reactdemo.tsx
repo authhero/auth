@@ -7,22 +7,16 @@ import Layout from "./components/Layout";
 const ResetPasswordPage: FC<{}> = (props: {}) => {
   return (
     <Layout title="Reset Password">
-      <div className="mb-8 text-2xl font-medium">{t("enter_password")}</div>
+      <div className="mb-8 text-2xl font-medium">Reset password</div>
       <div className="flex flex-1 flex-col justify-center">
         <form
         // TODO - use default form action
         // onSubmit={handleSubmit}
         >
           <input
-            type="email"
-            name="email"
-            // placeholder={t("email_placeholder") || ""}
-            className="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
-          />
-          <input
             type="text"
             name="password"
-            placeholder={t("password") || ""}
+            placeholder="enter new password"
             className="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
           {/* {!!error && <em className="mb-2 bg-red">{error}</e  m>} */}
