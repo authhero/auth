@@ -2,7 +2,7 @@ module.exports = {
   darkMode: "class",
   content: [
     // wilcard from docs
-    "./src/**/*.{html,js}",
+    "./src/**/*.tsx",
   ],
   theme: {
     extend: {
