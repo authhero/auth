@@ -7,33 +7,33 @@ import Layout from "./components/Layout";
 const ResetPasswordPage: FC<{}> = (props: {}) => {
   return (
     <Layout title="Reset Password">
-      <div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
-        <form class="login100-form validate-form" method="post">
-          <span class="login100-form-title p-b-49">Change password</span>
-          <div class="wrap-input100 validate-input m-b-23">
-            <span class="label-input100">
-              New password - at some point we'll add a second confirmation one
-              AND we need to tell the user it has to have whatever rules we
-              specify... OR we just echo back error messages from auth2 in HTML
-            </span>
-            <input
-              class="input100"
-              type="text"
-              name="password"
-              placeholder="Type your password"
-              value="{{password}}"
-              required
-            />
-            <span class="focus-input100" data-symbol=""></span>
-          </div>
-          {/* TODO */}
-          {/* <div>{{ errorMessage }}</div> */}
-          <div class="container-login100-form-btn">
-            <div class="wrap-login100-form-btn">
-              <div class="login100-form-bgbtn"></div>
-              <button class="login100-form-btn">Change password</button>
-            </div>
-          </div>
+      <div className="mb-8 text-2xl font-medium">{t("enter_password")}</div>
+      <div className="flex flex-1 flex-col justify-center">
+        <form
+        // TODO - use default form action
+        // onSubmit={handleSubmit}
+        >
+          <input
+            type="email"
+            name="email"
+            // placeholder={t("email_placeholder") || ""}
+            className="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
+          />
+          <input
+            type="text"
+            name="password"
+            placeholder={t("password") || ""}
+            className="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
+          />
+          {/* {!!error && <em className="mb-2 bg-red">{error}</e  m>} */}
+          {/* TODO - copy this component over */}
+          <button
+            className="text-base text-white sm:mt-4 md:text-base"
+            // isLoading={isSubmitting}
+            type="submit"
+          >
+            Change password
+          </button>
         </form>
       </div>
     </Layout>
