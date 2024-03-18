@@ -2,7 +2,9 @@ module.exports = {
   darkMode: "class",
   content: [
     // wilcard from docs
-    "./src/**/*.tsx",
+    // "./src/**/*.tsx",
+    "./src/utils/reactdemo.tsx",
+    "./src/utils/components/Layout.tsx",
   ],
   theme: {
     extend: {
