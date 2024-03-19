@@ -20,9 +20,7 @@ const ResetPasswordPage: FC<{}> = (props: {}) => {
     <Layout title="Reset Password">
       <div class="mb-8 text-2xl font-medium">Reset password</div>
       <div class="flex flex-1 flex-col justify-center">
-        <form
-        // TODO - use default form action
-        >
+        <form method="post">
           <input
             type="text"
             name="password"
