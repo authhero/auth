@@ -91,8 +91,25 @@ app.post(
       @Query("state") state: string,
     */
 
+    // console.log("ctx.req.query: ", ctx.req.query);
+    // console.log("ctx.req.json: ", ctx.req.json);
+
+    const { password } = await ctx.req.parseBody();
+    console.log("password: ", password);
+    const state = ctx.req.query("state");
+    console.log("state: ", state);
+
     // how to do params? Markus mentioned Zod...
     // could manually this for now
+    if (!password) {
+      throw new HTTPException(400, { message: "Password required" });
+    }
+    if (typeof password !== "string") {
+      throw new HTTPException(400, { message: "Password must be a string" });
+    }
+    if (!state) {
+      throw new HTTPException(400, { message: "State required" });
+    }
 
     const { env } = ctx;
     const session = await env.data.universalLoginSessions.get(state);
@@ -100,7 +117,7 @@ app.post(
       throw new HTTPException(400, { message: "Session not found" });
     }
 
-    if (!validatePassword(params.password)) {
+    if (!validatePassword(password)) {
       // TODO - we need to rerender the JSX form here but with an error...
       // do we do serverside rendering? IN WHICH CASE this cannot be in tsoa
       // because then JSX will not work
@@ -147,7 +164,7 @@ app.post(
 
       await env.data.passwords.update(client.tenant_id, {
         user_id: user.id,
-        password: params.password,
+        password,
       });
     } catch (err) {
       // return renderMessage(env, this, {
