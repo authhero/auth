@@ -18,7 +18,7 @@ describe("password-flow", () => {
           client_id: "invalidClientId",
           connection: "Username-Password-Authentication",
           email: "test@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
       const response = await client.dbconnections.signup.$post(
@@ -35,7 +35,7 @@ describe("password-flow", () => {
     });
 
     it("should create a new user with a password and only allow login after email validation", async () => {
-      const password = "password";
+      const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -160,7 +160,7 @@ describe("password-flow", () => {
     // maybe this test should be broken up into login tests below... maybe we want more flows like this!
     // still more to test e.g. resent email validation email after failed login (here we are just testing the verify email email which is only sent once)
     it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
-      const password = "password";
+      const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
       const token = await getAdminToken();
@@ -335,7 +335,7 @@ describe("password-flow", () => {
     });
 
     it("should resend email validation email after login attempts, and this should work", async () => {
-      const password = "password";
+      const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -470,7 +470,7 @@ describe("password-flow", () => {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "weak-password@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
       const createUserResponse = await client.dbconnections.signup.$post(
@@ -606,7 +606,7 @@ describe("password-flow", () => {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "new-username-password-user@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
 
@@ -626,7 +626,7 @@ describe("password-flow", () => {
             client_id: "clientId",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
-            password: "password",
+            password: "Password1234!",
             username: "new-username-password-user@example.com",
           },
         },
