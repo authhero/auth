@@ -863,6 +863,119 @@ describe("password-flow", () => {
 
       expect(resetPassword.status).toBe(400);
     });
+    // This is a flow we want to support as we could lock a user out of their account if they forget their password before using it!
+    it.only("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "reset-new-user@example.com",
+          password: "Password1234!",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(createUserResponse.status).toBe(200);
+
+      //-------------------
+      // send password reset email even though have never logged in
+      //-------------------
+      const passwordResetSendResponse =
+        await client.dbconnections.change_password.$post(
+          {
+            json: {
+              client_id: "clientId",
+              email: "reset-new-user@example.com",
+              connection: "Username-Password-Authentication",
+            },
+          },
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+        );
+      expect(passwordResetSendResponse.status).toBe(200);
+      expect(await passwordResetSendResponse.text()).toBe(
+        "We've just sent you an email to reset your password.",
+      );
+      const [{ to, code, state }] = await env.data.email.list!();
+      expect(to).toBe("reset-new-user@example.com");
+      expect(code).toBeDefined();
+      expect(state).toBeDefined();
+      //-------------------
+      // reset password
+      //-------------------
+      const resetPassword = await client.u["reset-password"].$post({
+        json: {
+          password: "New-password-1234!",
+        },
+        query: {
+          state,
+          code,
+        },
+      });
+      expect(resetPassword.status).toBe(200);
+
+      // ------------------
+      // now check we can login with the new password, and we are not told to verify our email
+      // ------------------
+      const loginResponse = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password: "New-password-1234!",
+            username: "reset-new-user@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      expect(loginResponse.status).toBe(200);
+      const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+      const query = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
+      // Trade the ticket for token
+      const tokenResponse = await client.authorize.$get({ query });
+
+      // THIS IS NOT WORKING! it allowing us to change the password I think
+      // but then we're getting an error message back telling us to verify our email
+      console.log(await tokenResponse.text());
+      expect(tokenResponse.status).toBe(302);
+      // const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      // const accessToken = searchParams.get("access_token");
+      // const accessTokenPayload = parseJwt(accessToken!);
+      // const idToken = searchParams.get("id_token");
+      // const idTokenPayload = parseJwt(idToken!);
+      // expect(idTokenPayload.email).toBe("foo@example.com");
+      // expect(idTokenPayload.aud).toBe("clientId");
+
+      // ------------------
+      // check that email_verified is set to true!
+    });
   });
 
   // TO TEST
