@@ -917,7 +917,8 @@ describe("password-flow", () => {
       //-------------------
       // reset password
       //-------------------
-      const resetPassword = await client.u["reset-password"].$post({
+      const anyClient = client as any;
+      const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
           password: "New-password-1234!",
         },
