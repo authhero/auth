@@ -15,7 +15,7 @@ const Button: FC<{}> = ({ children }) => {
   );
 };
 
-const ResetPasswordPage: FC<{ error?: string }> = ({ error }) => {
+export const ResetPasswordPage: FC<{ error?: string }> = ({ error }) => {
   return (
     <Layout title="Reset Password">
       <div class="mb-8 text-2xl font-medium">Reset password</div>
@@ -34,12 +34,3 @@ const ResetPasswordPage: FC<{ error?: string }> = ({ error }) => {
     </Layout>
   );
 };
-
-export async function renderReactThing(
-  ctx: Context<{ Bindings: Env; Variables: Var }>,
-  error?: string,
-  status?: number,
-) {
-  // we should just call this <ResetPasswordPage/> where we need it! do in the next PR
-  return ctx.html(<ResetPasswordPage error={error} />, status || 200);
-}
