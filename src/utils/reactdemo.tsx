@@ -38,8 +38,8 @@ const ResetPasswordPage: FC<{ error?: string }> = ({ error }) => {
 export async function renderReactThing(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   error?: string,
+  status?: number,
 ) {
-  // we could make app.ts into app.tsx and render the JSX there directly...
-  // I figure we should have a JSX-only file that adds lots of routes?
-  return ctx.html(<ResetPasswordPage error={error} />);
+  // we should just call this <ResetPasswordPage/> where we need it! do in the next PR
+  return ctx.html(<ResetPasswordPage error={error} />, status || 200);
 }

@@ -116,18 +116,11 @@ app.post(
     }
 
     if (!validatePassword(password)) {
-      // TODO - we need to rerender the JSX form here but with an error...
-      // do we do serverside rendering? IN WHICH CASE this cannot be in tsoa
-      // because then JSX will not work
-      // return renderResetPassword(
-      //   env,
-      //   this,
-      //   session,
-      //   "Password does not meet the requirements",
-      // );
-      throw new HTTPException(400, {
-        message: "Password does not meet the requirements",
-      });
+      return renderReactThing(
+        ctx,
+        "Password does not meet the requirements",
+        400,
+      );
     }
 
     if (!session.authParams.username) {
@@ -157,7 +150,10 @@ app.post(
       const foundCode = codes.find((storedCode) => storedCode.code === code);
 
       if (!foundCode) {
-        // return renderEnterCode(env, this, session, "Code not found or expired");
+        // surely we should check this on the GET rather than have the user waste time entering a new password?
+        // THEN we can assume here it works and throw a hono exception if it doesn't... because it's an issue with our system
+        // ALTHOUGH the user could have taken a long time to enter the password...
+        return renderReactThing(ctx, "Code not found or expired", 400);
       }
 
       await env.data.passwords.update(client.tenant_id, {
@@ -165,21 +161,12 @@ app.post(
         password,
       });
     } catch (err) {
-      // return renderMessage(env, this, {
-      //   ...session,
-      //   page_title: "Password reset",
-      //   message: "The password could not be reset",
-      // });
+      // seems like we should not do this catch... try and see what happens
+      return renderReactThing(ctx, "The password could not be reset", 400);
     }
 
-    // return renderMessage(env, this, {
-    //   ...session,
-    //   page_title: "Password reset",
-    //   message: "The password has been reset",
-    // });
-
-    // at this point this should be a component with props  8-)
-    return renderReactThing(ctx);
+    // need JSX success here
+    return ctx.text("The password has been reset", 200);
   },
 );
 
