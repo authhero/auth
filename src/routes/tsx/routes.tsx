@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { Env } from "../../types";
 import { Var } from "../../types/Var";
-import { ResetPasswordPage } from "../../utils/reactdemo";
+import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import { getUserByEmailAndProvider } from "../../utils/users";
 import { getClient } from "../../services/clients";
