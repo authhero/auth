@@ -85,19 +85,16 @@ app.get(
 app.post(
   "/u/reset-password",
   async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
-    /*
-      @Request() request: RequestWithContext,
-      @Body() loginParams: LoginParams,
-      @Query("state") state: string,
-      @Query("code") code: string,
-    */
+    // in our tests we are POSTing up JSON, which previously worked
+    const json = await ctx.req.json();
+    const jsonPassword = json.password;
 
-    const { password } = await ctx.req.parseBody();
-    console.log("password: ", password);
+    // but in the browser we are doing a POST with form data
+    const body = await ctx.req.parseBody();
+    const password = body.password || jsonPassword;
+
     const state = ctx.req.query("state");
-    console.log("state: ", state);
     const code = ctx.req.query("code");
-    console.log("code: ", code);
 
     if (!password) {
       throw new HTTPException(400, { message: "Password required" });
@@ -182,7 +179,7 @@ app.post(
     // });
 
     // at this point this should be a component with props  8-)
-    // return renderReactThing(ctx, error);
+    return renderReactThing(ctx);
   },
 );
 
