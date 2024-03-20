@@ -470,7 +470,7 @@ describe("password-flow", () => {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "weak-password@example.com",
-          password: "Password1234!",
+          password: "password",
         },
       };
       const createUserResponse = await client.dbconnections.signup.$post(
