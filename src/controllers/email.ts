@@ -203,10 +203,12 @@ export async function sendResetPassword(
         value: passwordResetBody,
       },
     ],
-    subject: translate(language, "passwordResetTitle").replace(
-      "{{vendorName}}",
-      client.name,
-    ),
+    // TODO - i18n
+    // subject: translate(language, "passwordResetTitle").replace(
+    //   "{{vendorName}}",
+    //   client.name,
+    // ),
+    subject: "Reset your password",
   });
 }
 
@@ -257,9 +259,11 @@ export async function sendValidateEmailAddress(
         value: emailValidationBody,
       },
     ],
-    subject: translate(language, "passwordResetTitle").replace(
-      "{{vendorName}}",
-      client.name,
-    ),
+    // TODO - i18n
+    // subject: translate(language, "passwordResetTitle").replace(
+    //   "{{vendorName}}",
+    //   client.name,
+    // ),
+    subject: "Validate your email address",
   });
 }
