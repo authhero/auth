@@ -757,8 +757,10 @@ describe("password-flow", () => {
       // reset password
       //-------------------
 
+      const anyClient = client as any;
+
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
-      const resetPassword = await client.u["reset-password"].$post({
+      const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
           password: "New-password-1234!",
         },
@@ -847,8 +849,9 @@ describe("password-flow", () => {
       //-------------------
       // reject when try to set weak password
       //-------------------
+      const anyClient = client as any;
 
-      const resetPassword = await client.u["reset-password"].$post({
+      const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
           // we have unit tests for the util function we use so just doing one unhappy path
           password: "weak-password",
@@ -914,7 +917,8 @@ describe("password-flow", () => {
       //-------------------
       // reset password
       //-------------------
-      const resetPassword = await client.u["reset-password"].$post({
+      const anyClient = client as any;
+      const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
           password: "New-password-1234!",
         },
