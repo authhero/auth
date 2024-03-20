@@ -460,6 +460,30 @@ describe("password-flow", () => {
       );
       expect(loginResponse.status).toBe(403);
     });
+    it("should reject signups for weak passwords", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+      const aNewPassword = "a new password";
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "weak-password@example.com",
+          password: "password",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createUserResponse.status).toBe(403);
+    });
     // TO TEST--------------------------------------------------------
     // should do what with registration signup for existing email (code) user?
     // --- we don't have account linking implemented on this flow
@@ -795,6 +819,8 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
     });
+    // TO TEST
+    // - password strength when resetting
   });
 
   // TO TEST
