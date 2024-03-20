@@ -863,8 +863,7 @@ describe("password-flow", () => {
 
       expect(resetPassword.status).toBe(400);
     });
-    // This is a flow we want to support as we could lock a user out of their account if they forget their password before using it!
-    it.only("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
+    it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -957,24 +956,19 @@ describe("password-flow", () => {
         state: "state",
         realm: "Username-Password-Authentication",
       };
-      // Trade the ticket for token
       const tokenResponse = await client.authorize.$get({ query });
 
-      // THIS IS NOT WORKING! it allowing us to change the password I think
-      // but then we're getting an error message back telling us to verify our email
-      console.log(await tokenResponse.text());
+      // this proves that email_verified is set to true, and the new password has been set
       expect(tokenResponse.status).toBe(302);
-      // const redirectUri = new URL(tokenResponse.headers.get("location")!);
-      // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
-      // const accessToken = searchParams.get("access_token");
-      // const accessTokenPayload = parseJwt(accessToken!);
-      // const idToken = searchParams.get("id_token");
-      // const idTokenPayload = parseJwt(idToken!);
-      // expect(idTokenPayload.email).toBe("foo@example.com");
-      // expect(idTokenPayload.aud).toBe("clientId");
+      const redirectUri = new URL(tokenResponse.headers.get("location")!);
+      const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+      const accessToken = searchParams.get("access_token");
+      expect(accessToken).toBeDefined();
 
-      // ------------------
-      // check that email_verified is set to true!
+      const idToken = searchParams.get("id_token");
+      const idTokenPayload = parseJwt(idToken!);
+      expect(idTokenPayload.email).toBe("reset-new-user@example.com");
+      expect(idTokenPayload.email_verified).toBe(true);
     });
   });
 

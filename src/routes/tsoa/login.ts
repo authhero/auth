@@ -606,6 +606,7 @@ export class LoginController extends Controller {
         password: params.password,
       });
 
+      // we could do this on the GET...
       if (!user.email_verified) {
         await env.data.users.update(client.tenant_id, user.id, {
           email_verified: true,
