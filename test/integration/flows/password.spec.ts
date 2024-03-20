@@ -418,7 +418,7 @@ describe("password-flow", () => {
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const aNewPassword = "a new password";
+      const aNewPassword = "A-new-valid-password-1234!";
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
         json: {
@@ -819,7 +819,7 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
     });
-    it.only("should reject weak passwords", async () => {
+    it("should reject weak passwords", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
