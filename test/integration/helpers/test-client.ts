@@ -216,7 +216,7 @@ export async function getEnv() {
 
   data.passwords.create("tenantId", {
     user_id: "userId",
-    password: "Test!",
+    password: "Test1234!",
   });
 
   return {

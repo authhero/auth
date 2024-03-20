@@ -62,7 +62,7 @@ describe("Register password user", () => {
         query: signupSearchParamsQuery,
         json: {
           username: "test@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       },
       {

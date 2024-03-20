@@ -1344,7 +1344,7 @@ describe("code-flow", () => {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "code-user@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
       const createUserResponse = await client.dbconnections.signup.$post(
@@ -1459,7 +1459,7 @@ describe("code-flow", () => {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "same-user-signin@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
       const createUserResponse = await client.dbconnections.signup.$post(

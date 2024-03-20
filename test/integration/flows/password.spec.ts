@@ -18,7 +18,7 @@ describe("password-flow", () => {
           client_id: "invalidClientId",
           connection: "Username-Password-Authentication",
           email: "test@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
       const response = await client.dbconnections.signup.$post(
@@ -35,7 +35,7 @@ describe("password-flow", () => {
     });
 
     it("should create a new user with a password and only allow login after email validation", async () => {
-      const password = "password";
+      const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -160,7 +160,7 @@ describe("password-flow", () => {
     // maybe this test should be broken up into login tests below... maybe we want more flows like this!
     // still more to test e.g. resent email validation email after failed login (here we are just testing the verify email email which is only sent once)
     it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
-      const password = "password";
+      const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
       const token = await getAdminToken();
@@ -335,7 +335,7 @@ describe("password-flow", () => {
     });
 
     it("should resend email validation email after login attempts, and this should work", async () => {
-      const password = "password";
+      const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -418,7 +418,7 @@ describe("password-flow", () => {
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const aNewPassword = "a new password";
+      const aNewPassword = "A-new-valid-password-1234!";
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
         json: {
@@ -460,6 +460,29 @@ describe("password-flow", () => {
       );
       expect(loginResponse.status).toBe(403);
     });
+    it("should reject signups for weak passwords", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      const typesDoNotWorkWithThisSetup___PARAMS = {
+        json: {
+          client_id: "clientId",
+          connection: "Username-Password-Authentication",
+          email: "weak-password@example.com",
+          password: "password",
+        },
+      };
+      const createUserResponse = await client.dbconnections.signup.$post(
+        typesDoNotWorkWithThisSetup___PARAMS,
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      expect(createUserResponse.status).toBe(400);
+    });
     // TO TEST--------------------------------------------------------
     // should do what with registration signup for existing email (code) user?
     // --- we don't have account linking implemented on this flow
@@ -477,7 +500,7 @@ describe("password-flow", () => {
             client_id: "clientId",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
-            password: "Test!",
+            password: "Test1234!",
             username: "foo@example.com",
           },
         },
@@ -582,7 +605,7 @@ describe("password-flow", () => {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "new-username-password-user@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
 
@@ -602,7 +625,7 @@ describe("password-flow", () => {
             client_id: "clientId",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
-            password: "password",
+            password: "Password1234!",
             username: "new-username-password-user@example.com",
           },
         },
@@ -630,7 +653,7 @@ describe("password-flow", () => {
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
             // this is the password of foo@example.com
-            password: "Test!",
+            password: "Test1234!",
             username: "new-username-password-user@example.com",
           },
         },
@@ -675,7 +698,7 @@ describe("password-flow", () => {
             client_id: "otherClientIdOnOtherTenant",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
-            password: "Test!",
+            password: "Test1234!",
             username: "foo@example.com",
           },
         },
@@ -737,7 +760,7 @@ describe("password-flow", () => {
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
       const resetPassword = await client.u["reset-password"].$post({
         json: {
-          password: "new-password-1234!",
+          password: "New-password-1234!",
         },
         query: {
           state,
@@ -757,7 +780,7 @@ describe("password-flow", () => {
             client_id: "clientId",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
-            password: "new-password-1234!",
+            password: "New-password-1234!",
             username: "foo@example.com",
           },
         },
@@ -794,6 +817,51 @@ describe("password-flow", () => {
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
+    });
+    it("should reject weak passwords", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // foo@example.com is an existing username-password user
+      // with password - Test!
+
+      //-------------------
+      // get code to call password reset endpoint
+      //-------------------
+      await client.dbconnections.change_password.$post(
+        {
+          json: {
+            client_id: "clientId",
+            email: "foo@example.com",
+            connection: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      const [{ code, state }] = await env.data.email.list!();
+
+      //-------------------
+      // reject when try to set weak password
+      //-------------------
+
+      const resetPassword = await client.u["reset-password"].$post({
+        json: {
+          // we have unit tests for the util function we use so just doing one unhappy path
+          password: "weak-password",
+        },
+        query: {
+          state,
+          code,
+        },
+      });
+
+      console.log(await resetPassword.text());
+
+      expect(resetPassword.status).toBe(400);
     });
   });
 

@@ -32,6 +32,7 @@ import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
+import validatePassword from "../../utils/validatePassword";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -553,6 +554,21 @@ export class LoginController extends Controller {
     const session = await env.data.universalLoginSessions.get(state);
     if (!session) {
       throw new HTTPException(400, { message: "Session not found" });
+    }
+
+    if (!validatePassword(params.password)) {
+      // TODO - we need to rerender the JSX form here but with an error...
+      // do we do serverside rendering? IN WHICH CASE this cannot be in tsoa
+      // because then JSX will not work
+      // return renderResetPassword(
+      //   env,
+      //   this,
+      //   session,
+      //   "Password does not meet the requirements",
+      // );
+      throw new HTTPException(400, {
+        message: "Password does not meet the requirements",
+      });
     }
 
     if (!session.authParams.username) {

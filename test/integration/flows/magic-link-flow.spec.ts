@@ -632,7 +632,7 @@ describe("magic link flow", () => {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "same-user-signin@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
       const createUserResponse = await client.dbconnections.signup.$post(

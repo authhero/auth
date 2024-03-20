@@ -653,7 +653,7 @@ describe("social sign on", () => {
           connection: "Username-Password-Authentication",
           // matches social sign up we will do next
           email: "örjan.lindström@example.com",
-          password: "password",
+          password: "Password1234!",
         },
       };
       const createUserResponse = await client.dbconnections.signup.$post(
