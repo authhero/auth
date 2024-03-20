@@ -463,7 +463,6 @@ describe("password-flow", () => {
     it("should reject signups for weak passwords", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      const aNewPassword = "a new password";
 
       const typesDoNotWorkWithThisSetup___PARAMS = {
         json: {
@@ -482,6 +481,7 @@ describe("password-flow", () => {
         },
       );
 
+      // TODO - check what auth0 does here!
       expect(createUserResponse.status).toBe(403);
     });
     // TO TEST--------------------------------------------------------
@@ -819,8 +819,51 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
     });
-    // TO TEST
-    // - password strength when resetting
+    it("should reject weak passwords", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // foo@example.com is an existing username-password user
+      // with password - Test!
+
+      //-------------------
+      // get code to call password reset endpoint
+      //-------------------
+      await client.dbconnections.change_password.$post(
+        {
+          json: {
+            client_id: "clientId",
+            email: "foo@example.com",
+            connection: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      const [{ code, state }] = await env.data.email.list!();
+
+      //-------------------
+      // reject when try to set weak password
+      //-------------------
+
+      const resetPassword = await client.u["reset-password"].$post({
+        json: {
+          // we have unit tests for the util function we use so just doing one unhappy path
+          password: "weak-password",
+        },
+        query: {
+          state,
+          code,
+        },
+      });
+
+      console.log(await resetPassword.text());
+
+      expect(resetPassword.status).toBe(400);
+    });
   });
 
   // TO TEST

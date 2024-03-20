@@ -19,6 +19,7 @@ import { nanoid } from "nanoid";
 import { AuthParams } from "../../types";
 import generateOTP from "../../utils/otp";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
+import validatePassword from "../../utils/validatePassword";
 
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -54,6 +55,14 @@ export class DbConnectionsController extends Controller {
   ): Promise<SignupResponse> {
     if (body.connection !== "Username-Password-Authentication") {
       throw new HTTPException(400, { message: "Connection not found" });
+    }
+
+    // TODO - what does auth0 do here?
+    // better to do the check before creating user?
+    if (!validatePassword(body.password)) {
+      throw new HTTPException(403, {
+        message: "Password does not meet the requirements",
+      });
     }
 
     const { ctx } = request;
