@@ -481,8 +481,7 @@ describe("password-flow", () => {
         },
       );
 
-      // TODO - check what auth0 does here!
-      expect(createUserResponse.status).toBe(403);
+      expect(createUserResponse.status).toBe(400);
     });
     // TO TEST--------------------------------------------------------
     // should do what with registration signup for existing email (code) user?

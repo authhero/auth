@@ -57,10 +57,9 @@ export class DbConnectionsController extends Controller {
       throw new HTTPException(400, { message: "Connection not found" });
     }
 
-    // TODO - what does auth0 do here?
-    // better to do the check before creating user?
+    // auth0 returns a detailed JSON response with the way the password does match the strength rules
     if (!validatePassword(body.password)) {
-      throw new HTTPException(403, {
+      throw new HTTPException(400, {
         message: "Password does not meet the requirements",
       });
     }
