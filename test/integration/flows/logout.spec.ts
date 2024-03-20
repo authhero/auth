@@ -18,7 +18,7 @@ describe("logout", () => {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
-          password: "Test!",
+          password: "Test1234!",
           username: "foo@example.com",
         },
       },

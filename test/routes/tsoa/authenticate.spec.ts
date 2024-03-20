@@ -15,7 +15,7 @@ describe("Authenticated", () => {
       const body: PasswordAuthenticateParams = {
         client_id: "clientId",
         username: "test@example.com",
-        password: "Test!",
+        password: "Test1234!",
         realm: "Username-Password-Authentication",
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
       };
@@ -38,7 +38,7 @@ describe("Authenticated", () => {
 
       const password: PasswordParams = {
         user_id: "userId",
-        password: "Test!",
+        password: "Test1234!",
       };
 
       const ctx = await contextFixture({
@@ -70,7 +70,7 @@ describe("Authenticated", () => {
       const body: PasswordAuthenticateParams = {
         client_id: "clientId",
         username: "test@example.com",
-        password: "Test!",
+        password: "Test1234!",
         realm: "Username-Password-Authentication",
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
       };

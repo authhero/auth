@@ -46,7 +46,7 @@ describe("Login with password user", () => {
       query: loginSearchParamsQuery,
       json: {
         username: "foo@example.com",
-        password: "Test!",
+        password: "Test1234!",
       },
     });
 
