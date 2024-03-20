@@ -85,13 +85,37 @@ app.get(
 app.post(
   "/u/reset-password",
   async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
-    // in our tests we are POSTing up JSON, which previously worked
-    const json = await ctx.req.json();
-    const jsonPassword = json.password;
+    const contentType = ctx.req.header("content-type");
 
-    // but in the browser we are doing a POST with form data
-    const body = await ctx.req.parseBody();
-    const password = body.password || jsonPassword;
+    if (
+      contentType !== "application/json" &&
+      contentType !== "application/x-www-form-urlencoded"
+    ) {
+      throw new HTTPException(400, {
+        message:
+          "Content-Type must be application/json or application/x-www-form-urlencoded",
+      });
+    }
+
+    let password = "";
+
+    if (contentType === "application/x-www-form-urlencoded") {
+      // in our tests we are POSTing up JSON, which previously worked
+      const json = await ctx.req.json();
+      password = json.password;
+    }
+
+    if (contentType === "application/json") {
+      // but in the browser we are doing a POST with form data
+      const body = await ctx.req.parseBody();
+
+      const bodyPassword = body.password;
+      if (typeof bodyPassword !== "string") {
+        throw new HTTPException(400, { message: "Password must be a string" });
+      }
+
+      password = bodyPassword;
+    }
 
     const state = ctx.req.query("state");
     const code = ctx.req.query("code");
