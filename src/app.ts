@@ -89,18 +89,16 @@ app.post(
       @Request() request: RequestWithContext,
       @Body() loginParams: LoginParams,
       @Query("state") state: string,
+      @Query("code") code: string,
     */
-
-    // console.log("ctx.req.query: ", ctx.req.query);
-    // console.log("ctx.req.json: ", ctx.req.json);
 
     const { password } = await ctx.req.parseBody();
     console.log("password: ", password);
     const state = ctx.req.query("state");
     console.log("state: ", state);
+    const code = ctx.req.query("code");
+    console.log("code: ", code);
 
-    // how to do params? Markus mentioned Zod...
-    // could manually this for now
     if (!password) {
       throw new HTTPException(400, { message: "Password required" });
     }
@@ -109,6 +107,9 @@ app.post(
     }
     if (!state) {
       throw new HTTPException(400, { message: "State required" });
+    }
+    if (!code) {
+      throw new HTTPException(400, { message: "Code required" });
     }
 
     const { env } = ctx;
