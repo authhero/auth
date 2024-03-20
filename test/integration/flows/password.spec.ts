@@ -761,7 +761,7 @@ describe("password-flow", () => {
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
       const resetPassword = await client.u["reset-password"].$post({
         json: {
-          password: "new-password-1234!",
+          password: "New-password-1234!",
         },
         query: {
           state,
@@ -781,7 +781,7 @@ describe("password-flow", () => {
             client_id: "clientId",
             credential_type: "http://auth0.com/oauth/grant-type/password-realm",
             realm: "Username-Password-Authentication",
-            password: "new-password-1234!",
+            password: "New-password-1234!",
             username: "foo@example.com",
           },
         },
