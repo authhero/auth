@@ -99,13 +99,13 @@ app.post(
 
     let password = "";
 
-    if (contentType === "application/x-www-form-urlencoded") {
+    if (contentType === "application/json") {
       // in our tests we are POSTing up JSON, which previously worked
       const json = await ctx.req.json();
       password = json.password;
     }
 
-    if (contentType === "application/json") {
+    if (contentType === "application/x-www-form-urlencoded") {
       // but in the browser we are doing a POST with form data
       const body = await ctx.req.parseBody();
 
