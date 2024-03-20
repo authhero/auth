@@ -32,7 +32,6 @@ import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
-import validatePassword from "../../utils/validatePassword";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -537,88 +536,7 @@ export class LoginController extends Controller {
    * Renders a reset password form
    * @param request
    */
-  // @Get("reset-password") - added directly to Hono
-
-  /**
-   * Renders a reset password form
-   * @param request
-   */
-  @Post("reset-password")
-  public async postResetPassword(
-    @Request() request: RequestWithContext,
-    @Body() params: { password: string },
-    @Query("state") state: string,
-    @Query("code") code: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    if (!validatePassword(params.password)) {
-      // TODO - we need to rerender the JSX form here but with an error...
-      // do we do serverside rendering? IN WHICH CASE this cannot be in tsoa
-      // because then JSX will not work
-      // return renderResetPassword(
-      //   env,
-      //   this,
-      //   session,
-      //   "Password does not meet the requirements",
-      // );
-      throw new HTTPException(400, {
-        message: "Password does not meet the requirements",
-      });
-    }
-
-    if (!session.authParams.username) {
-      throw new HTTPException(400, { message: "Username required" });
-    }
-
-    const client = await getClient(env, session.authParams.client_id);
-    if (!client) {
-      throw new HTTPException(400, { message: "Client not found" });
-    }
-
-    // Note! we don't use the primary user here. Something to be careful of
-    // this means the primary user could have a totally different email address
-    const user = await getUserByEmailAndProvider({
-      userAdapter: env.data.users,
-      tenant_id: client.tenant_id,
-      email: session.authParams.username,
-      provider: "auth2",
-    });
-
-    if (!user) {
-      throw new HTTPException(400, { message: "User not found" });
-    }
-
-    try {
-      const codes = await env.data.codes.list(client.tenant_id, user.id);
-      const foundCode = codes.find((storedCode) => storedCode.code === code);
-
-      if (!foundCode) {
-        return renderEnterCode(env, this, session, "Code not found or expired");
-      }
-
-      await env.data.passwords.update(client.tenant_id, {
-        user_id: user.id,
-        password: params.password,
-      });
-    } catch (err) {
-      return renderMessage(env, this, {
-        ...session,
-        page_title: "Password reset",
-        message: "The password could not be reset",
-      });
-    }
-
-    return renderMessage(env, this, {
-      ...session,
-      page_title: "Password reset",
-      message: "The password has been reset",
-    });
-  }
+  // GET & POST u/reset-password -are directly in Hono router
 
   @Post("login")
   public async postLogin(

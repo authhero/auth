@@ -6,12 +6,14 @@ import { RegisterRoutes } from "../build/routes";
 import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
-import { serve } from "./routes/login";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
 import { renderReactThing } from "./utils/reactdemo";
+import validatePassword from "./utils/validatePassword";
+import { getUserByEmailAndProvider } from "./utils/users";
+import { getClient } from "./services/clients";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -77,6 +79,92 @@ app.get(
   "/u/reset-password",
   async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
     return renderReactThing(ctx);
+  },
+);
+
+app.post(
+  "/u/reset-password",
+  async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
+    /*
+      @Request() request: RequestWithContext,
+      @Body() loginParams: LoginParams,
+      @Query("state") state: string,
+    */
+
+    // how to do params? Markus mentioned Zod...
+    // could manually this for now
+
+    const { env } = ctx;
+    const session = await env.data.universalLoginSessions.get(state);
+    if (!session) {
+      throw new HTTPException(400, { message: "Session not found" });
+    }
+
+    if (!validatePassword(params.password)) {
+      // TODO - we need to rerender the JSX form here but with an error...
+      // do we do serverside rendering? IN WHICH CASE this cannot be in tsoa
+      // because then JSX will not work
+      // return renderResetPassword(
+      //   env,
+      //   this,
+      //   session,
+      //   "Password does not meet the requirements",
+      // );
+      throw new HTTPException(400, {
+        message: "Password does not meet the requirements",
+      });
+    }
+
+    if (!session.authParams.username) {
+      throw new HTTPException(400, { message: "Username required" });
+    }
+
+    const client = await getClient(env, session.authParams.client_id);
+    if (!client) {
+      throw new HTTPException(400, { message: "Client not found" });
+    }
+
+    // Note! we don't use the primary user here. Something to be careful of
+    // this means the primary user could have a totally different email address
+    const user = await getUserByEmailAndProvider({
+      userAdapter: env.data.users,
+      tenant_id: client.tenant_id,
+      email: session.authParams.username,
+      provider: "auth2",
+    });
+
+    if (!user) {
+      throw new HTTPException(400, { message: "User not found" });
+    }
+
+    try {
+      const codes = await env.data.codes.list(client.tenant_id, user.id);
+      const foundCode = codes.find((storedCode) => storedCode.code === code);
+
+      if (!foundCode) {
+        // return renderEnterCode(env, this, session, "Code not found or expired");
+      }
+
+      await env.data.passwords.update(client.tenant_id, {
+        user_id: user.id,
+        password: params.password,
+      });
+    } catch (err) {
+      // return renderMessage(env, this, {
+      //   ...session,
+      //   page_title: "Password reset",
+      //   message: "The password could not be reset",
+      // });
+    }
+
+    // return renderMessage(env, this, {
+    //   ...session,
+    //   page_title: "Password reset",
+    //   message: "The password has been reset",
+    // });
+
+    // at this point this should be a component with props  8-)
+    // return renderReactThing(ctx, error);
   },
 );
 
