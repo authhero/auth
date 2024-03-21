@@ -29,11 +29,13 @@ export async function postResetPassword(
   }
 
   let password = "";
+  let reEnterPassword = "";
 
   if (contentType === "application/json") {
     // in our tests we are POSTing up JSON, which previously worked
     const json = await ctx.req.json();
     password = json.password;
+    reEnterPassword = json["re-enter-password"];
   }
 
   if (contentType === "application/x-www-form-urlencoded") {
@@ -41,11 +43,16 @@ export async function postResetPassword(
     const body = await ctx.req.parseBody();
 
     const bodyPassword = body.password;
-    if (typeof bodyPassword !== "string") {
+    const bodyReEnterPassword = body["re-enter-password"];
+    if (
+      typeof bodyPassword !== "string" ||
+      typeof bodyReEnterPassword !== "string"
+    ) {
       throw new HTTPException(400, { message: "Password must be a string" });
     }
 
     password = bodyPassword;
+    reEnterPassword = bodyReEnterPassword;
   }
 
   const state = ctx.req.query("state");
@@ -54,14 +61,15 @@ export async function postResetPassword(
   if (!password) {
     throw new HTTPException(400, { message: "Password required" });
   }
-  if (typeof password !== "string") {
-    throw new HTTPException(400, { message: "Password must be a string" });
-  }
   if (!state) {
     throw new HTTPException(400, { message: "State required" });
   }
   if (!code) {
     throw new HTTPException(400, { message: "Code required" });
+  }
+
+  if (password !== reEnterPassword) {
+    return ctx.html(<ResetPasswordPage error="Passwords do not match" />, 400);
   }
 
   const { env } = ctx;
