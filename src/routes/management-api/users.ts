@@ -62,6 +62,49 @@ export class UsersMgmtController extends Controller {
   ): Promise<UserResponse[] | GetUserResponseWithTotals> {
     const { env } = request.ctx;
 
+    // ugly hardcoded switch for now!
+    if (q?.includes("identities.profileData.email")) {
+      // assuming no other query params here... could be stricter
+      const linkedAccountEmail = q.split("=")[1];
+      const results = await env.data.users.list(tenantId, {
+        page,
+        per_page,
+        include_totals,
+        q: `email:${linkedAccountEmail}`,
+      });
+
+      // we want to ignore unlinked accounts
+      const linkedAccounts = results.users.filter((u) => u.linked_to);
+
+      // Assuming there is only one result here. Not very defensive programming!
+      const [linkedAccount] = linkedAccounts;
+      if (!linkedAccount) {
+        return [];
+      }
+
+      // get primary account
+      const primaryAccount = await env.data.users.get(
+        tenantId,
+        // we know linked_to is truthy here but typescript cannot read .filter() logic above
+        // possible to fix!
+        linkedAccount.linked_to!,
+      );
+
+      if (!primaryAccount) {
+        throw new HTTPException(500, {
+          message: "Primary account not found",
+        });
+      }
+
+      const primaryAccountEnriched = await enrichUser(
+        env,
+        tenantId,
+        primaryAccount,
+      );
+
+      return [primaryAccountEnriched];
+    }
+
     // Filter out linked users
     const query: string[] = ["-_exists_:linked_to"];
     if (q) {

@@ -766,6 +766,117 @@ describe("users management API endpoint", () => {
       const body = (await usersResponse.json()) as UserResponse[];
       expect(body.length).toBe(1);
     });
+    it("should be able to search on linked user's email address using profile data query", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // -----------------
+      // user fixtures
+      // -----------------
+
+      // create new password user
+      env.data.users.create("tenantId", {
+        id: "auth2|base-user",
+        email: "base-user@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      // create new code user WITH DIFFERENT EMAIL ADDRESS and link this to the password user
+      env.data.users.create("tenantId", {
+        id: "auth2|code-user",
+        email: "code-user@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        linked_to: "auth2|base-user",
+      });
+
+      // sanity check - get base user and check identities
+      const baseUserRes = await client.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "auth2|base-user",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      expect(baseUserRes.status).toBe(200);
+      const baseUser = (await baseUserRes.json()) as UserResponse;
+      expect(baseUser.identities).toEqual([
+        {
+          connection: "Username-Password-Authentication",
+          isSocial: false,
+          provider: "auth2",
+          user_id: "base-user",
+        },
+        {
+          connection: "email",
+          isSocial: false,
+          profileData: {
+            email: "code-user@example.com",
+            email_verified: true,
+          },
+          provider: "email",
+          user_id: "code-user",
+        },
+      ]);
+
+      // ------------------
+      // Now query using profile data
+      // ------------------
+      const usersResponse = await client.api.v2.users.$get(
+        {
+          query: {
+            per_page: 2,
+            q: "identities.profileData.email=code-user@example.com",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "tenant-id": "tenantId",
+          },
+        },
+      );
+      expect(usersResponse.status).toBe(200);
+      const body = (await usersResponse.json()) as UserResponse[];
+      expect(body.length).toBe(1);
+
+      // assert that we get the primary user back
+      expect(body[0].identities).toEqual([
+        {
+          connection: "Username-Password-Authentication",
+          isSocial: false,
+          provider: "auth2",
+          user_id: "base-user",
+        },
+        {
+          connection: "email",
+          isSocial: false,
+          profileData: {
+            email: "code-user@example.com",
+            email_verified: true,
+          },
+          provider: "email",
+          user_id: "code-user",
+        },
+      ]);
+    });
     describe("lucene queries", () => {
       /*
        
