@@ -763,6 +763,7 @@ describe("password-flow", () => {
       const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
           password: "New-password-1234!",
+          "re-enter-password": "New-password-1234!",
         },
         query: {
           state,
@@ -921,6 +922,7 @@ describe("password-flow", () => {
       const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
           password: "New-password-1234!",
+          "re-enter-password": "New-password-1234!",
         },
         query: {
           state,
