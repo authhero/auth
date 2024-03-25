@@ -38,6 +38,8 @@ const server = {
           // TODO - Zod this not type cast!
           const vendorSettings =
             (await vendorSettingsRes.json()) as VendorSettings;
+
+          return vendorSettings;
         },
       },
       ctx,
