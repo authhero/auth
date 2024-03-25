@@ -1,18 +1,17 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
-import { Context } from "hono";
-import { Env } from "../../types";
-import { Var } from "../../types/Var";
+import { Tenant } from "../../types";
 
 type ResetPasswordPageProps = {
   error?: string;
-  ctx: Context<{ Bindings: Env; Variables: Var }>;
+  tenant: Tenant;
 };
 
-const ResetPasswordPage: FC<ResetPasswordPageProps> = ({ error, ctx }) => {
+const ResetPasswordPage: FC<ResetPasswordPageProps> = ({ error, tenant }) => {
   return (
-    <Layout title="Reset Password">
+    // maybe prop drilling isn't the solution here but let's style the thing first!
+    <Layout title="Reset Password" tenant={tenant}>
       <div class="mb-8 text-2xl font-medium">Reset password</div>
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">

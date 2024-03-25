@@ -1,6 +1,14 @@
 import type { FC } from "hono/jsx";
+import { Tenant } from "../../types";
 
-const Layout: FC<{ title: string }> = ({ title, children }) => {
+type LayoutProps = {
+  title: string;
+  tenant: Tenant;
+};
+
+const Layout: FC<LayoutProps> = ({ title, children, tenant }) => {
+  // get styles from tenant
+
   return (
     <html lang="en">
       <head>

@@ -10,13 +10,57 @@ import { HTTPException } from "hono/http-exception";
 export async function getResetPassword(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
 ) {
-  return ctx.html(<ResetPasswordPage ctx={ctx} />);
+  const state = ctx.req.query("state");
+  if (!state) {
+    throw new HTTPException(400, { message: "State required" });
+  }
+
+  const { env } = ctx;
+
+  const session = await env.data.universalLoginSessions.get(state);
+  if (!session) {
+    throw new HTTPException(400, { message: "Session not found" });
+  }
+
+  const client = await getClient(env, session.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
+
+  const tenant = await env.data.tenants.get(client.tenant_id);
+  if (!tenant) {
+    throw new HTTPException(400, { message: "Tenant not found" });
+  }
+
+  return ctx.html(<ResetPasswordPage tenant={tenant} />);
 }
 
 export async function postResetPassword(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
 ) {
   const contentType = ctx.req.header("content-type");
+
+  const state = ctx.req.query("state");
+  if (!state) {
+    throw new HTTPException(400, { message: "State required" });
+  }
+
+  const { env } = ctx;
+
+  const session = await env.data.universalLoginSessions.get(state);
+  if (!session) {
+    throw new HTTPException(400, { message: "Session not found" });
+  }
+
+  const client = await getClient(env, session.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
+
+  const tenant = await env.data.tenants.get(client.tenant_id);
+  if (!tenant) {
+    throw new HTTPException(400, { message: "Tenant not found" });
+  }
 
   if (
     contentType !== "application/json" &&
@@ -55,14 +99,10 @@ export async function postResetPassword(
     reEnterPassword = bodyReEnterPassword;
   }
 
-  const state = ctx.req.query("state");
   const code = ctx.req.query("code");
 
   if (!password) {
     throw new HTTPException(400, { message: "Password required" });
-  }
-  if (!state) {
-    throw new HTTPException(400, { message: "State required" });
   }
   if (!code) {
     throw new HTTPException(400, { message: "Code required" });
@@ -70,22 +110,16 @@ export async function postResetPassword(
 
   if (password !== reEnterPassword) {
     return ctx.html(
-      <ResetPasswordPage error="Passwords do not match" ctx={ctx} />,
+      <ResetPasswordPage error="Passwords do not match" tenant={tenant} />,
       400,
     );
-  }
-
-  const { env } = ctx;
-  const session = await env.data.universalLoginSessions.get(state);
-  if (!session) {
-    throw new HTTPException(400, { message: "Session not found" });
   }
 
   if (!validatePassword(password)) {
     return ctx.html(
       <ResetPasswordPage
         error="Password does not meet the requirements"
-        ctx={ctx}
+        tenant={tenant}
       />,
       400,
     );
@@ -93,11 +127,6 @@ export async function postResetPassword(
 
   if (!session.authParams.username) {
     throw new HTTPException(400, { message: "Username required" });
-  }
-
-  const client = await getClient(env, session.authParams.client_id);
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
   }
 
   // Note! we don't use the primary user here. Something to be careful of
@@ -122,7 +151,7 @@ export async function postResetPassword(
       // THEN we can assume here it works and throw a hono exception if it doesn't... because it's an issue with our system
       // ALTHOUGH the user could have taken a long time to enter the password...
       return ctx.html(
-        <ResetPasswordPage error="Code not found or expired" ctx={ctx} />,
+        <ResetPasswordPage error="Code not found or expired" tenant={tenant} />,
         400,
       );
     }
@@ -141,7 +170,10 @@ export async function postResetPassword(
   } catch (err) {
     // seems like we should not do this catch... try and see what happens
     return ctx.html(
-      <ResetPasswordPage error="The password could not be reset" ctx={ctx} />,
+      <ResetPasswordPage
+        error="The password could not be reset"
+        tenant={tenant}
+      />,
       400,
     );
   }
