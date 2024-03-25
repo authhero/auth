@@ -856,6 +856,7 @@ describe("password-flow", () => {
         json: {
           // we have unit tests for the util function we use so just doing one unhappy path
           password: "weak-password",
+          "re-enter-password": "weak-password",
         },
         query: {
           state,
@@ -863,9 +864,8 @@ describe("password-flow", () => {
         },
       });
 
-      console.log(await resetPassword.text());
-
       expect(resetPassword.status).toBe(400);
+      // TO TEST! when don't send up matching second password! I think it might be throwing a 500...
     });
     it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
