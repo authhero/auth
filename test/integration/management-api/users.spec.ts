@@ -766,7 +766,7 @@ describe("users management API endpoint", () => {
       const body = (await usersResponse.json()) as UserResponse[];
       expect(body.length).toBe(1);
     });
-    it.only("should be able to search on linked user's email address using profile data query", async () => {
+    it("should be able to search on linked user's email address using profile data query", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
