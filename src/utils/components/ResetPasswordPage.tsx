@@ -1,8 +1,16 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
+import { Context } from "hono";
+import { Env } from "../../types";
+import { Var } from "../../types/Var";
 
-const ResetPasswordPage: FC<{ error?: string }> = ({ error }) => {
+type ResetPasswordPageProps = {
+  error?: string;
+  ctx: Context<{ Bindings: Env; Variables: Var }>;
+};
+
+const ResetPasswordPage: FC<ResetPasswordPageProps> = ({ error, ctx }) => {
   return (
     <Layout title="Reset Password">
       <div class="mb-8 text-2xl font-medium">Reset password</div>

@@ -10,7 +10,7 @@ import { HTTPException } from "hono/http-exception";
 export async function getResetPassword(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
 ) {
-  return ctx.html(<ResetPasswordPage />);
+  return ctx.html(<ResetPasswordPage ctx={ctx} />);
 }
 
 export async function postResetPassword(
@@ -69,7 +69,10 @@ export async function postResetPassword(
   }
 
   if (password !== reEnterPassword) {
-    return ctx.html(<ResetPasswordPage error="Passwords do not match" />, 400);
+    return ctx.html(
+      <ResetPasswordPage error="Passwords do not match" ctx={ctx} />,
+      400,
+    );
   }
 
   const { env } = ctx;
@@ -80,7 +83,10 @@ export async function postResetPassword(
 
   if (!validatePassword(password)) {
     return ctx.html(
-      <ResetPasswordPage error="Password does not meet the requirements" />,
+      <ResetPasswordPage
+        error="Password does not meet the requirements"
+        ctx={ctx}
+      />,
       400,
     );
   }
@@ -116,7 +122,7 @@ export async function postResetPassword(
       // THEN we can assume here it works and throw a hono exception if it doesn't... because it's an issue with our system
       // ALTHOUGH the user could have taken a long time to enter the password...
       return ctx.html(
-        <ResetPasswordPage error="Code not found or expired" />,
+        <ResetPasswordPage error="Code not found or expired" ctx={ctx} />,
         400,
       );
     }
@@ -135,7 +141,7 @@ export async function postResetPassword(
   } catch (err) {
     // seems like we should not do this catch... try and see what happens
     return ctx.html(
-      <ResetPasswordPage error="The password could not be reset" />,
+      <ResetPasswordPage error="The password could not be reset" ctx={ctx} />,
       400,
     );
   }
