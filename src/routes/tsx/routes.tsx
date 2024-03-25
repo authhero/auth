@@ -37,12 +37,9 @@ export async function getResetPassword(
 
   // getting weird!
   const tenantNameInVendorStyles = tenant.name.toLowerCase();
-
-  const vendorSettingsRes = await fetch(
-    `https://api.sesamy.dev/profile/vendors/${tenantNameInVendorStyles}/style`,
+  const vendorSettings = await env.fetchVendorSettings(
+    tenantNameInVendorStyles,
   );
-  // TODO - Zod this not type cast!
-  const vendorSettings = (await vendorSettingsRes.json()) as VendorSettings;
 
   return ctx.html(<ResetPasswordPage vendorSettings={vendorSettings} />);
 }
@@ -75,11 +72,6 @@ export async function postResetPassword(
   }
   const tenantNameInVendorStyles = tenant.name.toLowerCase();
 
-  // TODO - move into helper for real usage
-  // const vendorSettingsRes = await fetch(
-  //   `https://api.sesamy.dev/profile/vendors/${tenantNameInVendorStyles}/style`,
-  // );
-  // const vendorSettings = (await vendorSettingsRes.json()) as VendorSettings;
   const vendorSettings = await env.fetchVendorSettings(
     tenantNameInVendorStyles,
   );
