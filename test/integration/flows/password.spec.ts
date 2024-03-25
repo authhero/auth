@@ -893,13 +893,14 @@ describe("password-flow", () => {
       const [{ code, state }] = await env.data.email.list!();
 
       //-------------------
-      // reject when try to set weak password
+      // reject when confrimation password does not match!
       //-------------------
       const anyClient = client as any;
 
       const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
           password: "StrongPassword1234!",
+          // this is also strong but does match the previous line
           "re-enter-password": "AnotherStrongPassword1234!",
         },
         query: {
