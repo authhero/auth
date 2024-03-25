@@ -9,13 +9,28 @@ type LayoutProps = {
 const Layout: FC<LayoutProps> = ({ title, children, tenant }) => {
   // get styles from tenant
 
+  const primaryColor = tenant.primary_color;
+  // in login2 this is primaryHoverColor
+  const primaryHoverColor = tenant.secondary_color;
+  // no idea! we only have primary & secondary
+  // const buttonTextColor = tenant.button_text_color
+
+  // do not have background image. do not have anything!
+
+  // fetch from https://api.sesamy.dev/profile/vendors/{tenant_id}/style
+
   return (
     <html lang="en">
       <head>
         <title>{title}</title>
         <meta charset="UTF-8" />
         <meta name="robots" content="noindex, follow" />
-
+        <style>
+          {/* docStyles.setProperty("--primary-color", serviceStyles.primaryColor);
+      docStyles.setProperty("--primary-hover", serviceStyles.primaryHoverColor);
+      docStyles.setProperty("--text-on-primary", serviceStyles.buttonTextColor); */}
+          doc {}
+        </style>
         <link
           rel="preload"
           href="https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Regular.woff2"
