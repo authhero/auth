@@ -865,7 +865,50 @@ describe("password-flow", () => {
       });
 
       expect(resetPassword.status).toBe(400);
-      // TO TEST! when don't send up matching second password! I think it might be throwing a 500...
+    });
+    it("should reject non-matching confirmation password", async () => {
+      const env = await getEnv();
+      const client = testClient(tsoaApp, env);
+
+      // foo@example.com is an existing username-password user
+      // with password - Test!
+
+      //-------------------
+      // get code to call password reset endpoint
+      //-------------------
+      await client.dbconnections.change_password.$post(
+        {
+          json: {
+            client_id: "clientId",
+            email: "foo@example.com",
+            connection: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+      const [{ code, state }] = await env.data.email.list!();
+
+      //-------------------
+      // reject when try to set weak password
+      //-------------------
+      const anyClient = client as any;
+
+      const resetPassword = await anyClient.u["reset-password"].$post({
+        json: {
+          password: "StrongPassword1234!",
+          "re-enter-password": "AnotherStrongPassword1234!",
+        },
+        query: {
+          state,
+          code,
+        },
+      });
+
+      expect(resetPassword.status).toBe(400);
     });
     it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
