@@ -20,4 +20,4 @@ data/
 .vscode
 db.sqlite
 
-src/styles/output.css
+src/styles/tailwind.css
