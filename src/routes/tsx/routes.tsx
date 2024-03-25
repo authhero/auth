@@ -6,6 +6,7 @@ import validatePassword from "../../utils/validatePassword";
 import { getUserByEmailAndProvider } from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
+import { VendorSettings } from "../../types";
 
 export async function getResetPassword(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -40,12 +41,10 @@ export async function getResetPassword(
   const vendorSettingsRes = await fetch(
     `https://api.sesamy.dev/profile/vendors/${tenantNameInVendorStyles}/style`,
   );
+  // TODO - Zod this not type cast!
+  const vendorSettings = (await vendorSettingsRes.json()) as VendorSettings;
 
-  const vendorSettings = await vendorSettingsRes.json();
-
-  console.log(vendorSettings);
-
-  return ctx.html(<ResetPasswordPage tenant={tenant} />);
+  return ctx.html(<ResetPasswordPage vendorSettings={vendorSettings} />);
 }
 
 export async function postResetPassword(
@@ -74,6 +73,11 @@ export async function postResetPassword(
   if (!tenant) {
     throw new HTTPException(400, { message: "Tenant not found" });
   }
+
+  const vendorSettingsRes = await fetch(
+    `https://api.sesamy.dev/profile/vendors/${tenantNameInVendorStyles}/style`,
+  );
+  const vendorSettings = (await vendorSettingsRes.json()) as VendorSettings;
 
   if (
     contentType !== "application/json" &&
@@ -123,7 +127,10 @@ export async function postResetPassword(
 
   if (password !== reEnterPassword) {
     return ctx.html(
-      <ResetPasswordPage error="Passwords do not match" tenant={tenant} />,
+      <ResetPasswordPage
+        error="Passwords do not match"
+        vendorSettings={vendorSettings}
+      />,
       400,
     );
   }
@@ -132,7 +139,7 @@ export async function postResetPassword(
     return ctx.html(
       <ResetPasswordPage
         error="Password does not meet the requirements"
-        tenant={tenant}
+        vendorSettings={vendorSettings}
       />,
       400,
     );
@@ -164,7 +171,10 @@ export async function postResetPassword(
       // THEN we can assume here it works and throw a hono exception if it doesn't... because it's an issue with our system
       // ALTHOUGH the user could have taken a long time to enter the password...
       return ctx.html(
-        <ResetPasswordPage error="Code not found or expired" tenant={tenant} />,
+        <ResetPasswordPage
+          error="Code not found or expired"
+          vendorSettings={vendorSettings}
+        />,
         400,
       );
     }
@@ -185,7 +195,7 @@ export async function postResetPassword(
     return ctx.html(
       <ResetPasswordPage
         error="The password could not be reset"
-        tenant={tenant}
+        vendorSettings={vendorSettings}
       />,
       400,
     );

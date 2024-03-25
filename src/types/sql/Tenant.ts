@@ -12,3 +12,22 @@ export interface Tenant {
   created_at: string;
   updated_at: string;
 }
+
+// we really do not want to be doing this BUT until we have this info in auth2... unduplicated... then we need these
+type StyleType = {
+  primaryColor: string;
+  buttonTextColor: string;
+  primaryHoverColor: string;
+};
+
+export type VendorSettings = {
+  logoUrl: string;
+  loginBackgroundImage?: string;
+  style: StyleType;
+  supportEmail: string;
+  supportUrl: string;
+  name: string;
+  // this is a hack pending putting Sesamy styles as a vendor style
+  showGreyishBackground?: boolean;
+  termsAndConditionsUrl?: string;
+};
