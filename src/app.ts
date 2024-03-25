@@ -77,7 +77,7 @@ app.get("/u/reset-password", getResetPassword);
 app.post("/u/reset-password", postResetPassword);
 
 app.get(
-  "/css/default.css",
+  "/css/tailwind.css",
   async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
     const response = await ctx.env.AUTH_TEMPLATES.get(
       "templates/static/stylesheets/tailwind.css",
