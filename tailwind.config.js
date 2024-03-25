@@ -3,12 +3,7 @@ const tailwindRowsColumns = require("@ape-egg/tailwind-rows-columns");
 module.exports = {
   darkMode: "class",
   plugins: [tailwindRowsColumns],
-  content: [
-    // wilcard from docs
-    // "./src/**/*.tsx",
-    "./src/utils/reactdemo.tsx",
-    "./src/utils/components/Layout.tsx",
-  ],
+  content: ["./src/utils/components/*.tsx"],
   theme: {
     extend: {
       screens: {

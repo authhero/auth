@@ -1,10 +1,19 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
+import { VendorSettings } from "../../types";
 
-const ResetPasswordPage: FC<{ error?: string }> = ({ error }) => {
+type ResetPasswordPageProps = {
+  error?: string;
+  vendorSettings: VendorSettings;
+};
+
+const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
+  error,
+  vendorSettings,
+}) => {
   return (
-    <Layout title="Reset Password">
+    <Layout title="Reset Password" vendorSettings={vendorSettings}>
       <div class="mb-8 text-2xl font-medium">Reset password</div>
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">

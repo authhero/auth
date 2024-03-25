@@ -6,6 +6,7 @@ import createEmailAdapter from "./adapters/email";
 import createR2Adapter from "./adapters/r2";
 import { PlanetScaleDialect } from "kysely-planetscale";
 import { getDb } from "./services/db";
+import { VendorSettings } from "./types";
 
 const server = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
@@ -28,6 +29,17 @@ const server = {
           ...createEmailAdapter(),
           ...createAdapters(db),
           ...createR2Adapter(env),
+        },
+        fetchVendorSettings: async (tenantName: string) => {
+          const vendorSettingsRes = await fetch(
+            `https://api.sesamy.dev/profile/vendors/${tenantName}/style`,
+          );
+
+          // TODO - Zod this not type cast!
+          const vendorSettings =
+            (await vendorSettingsRes.json()) as VendorSettings;
+
+          return vendorSettings;
         },
       },
       ctx,
