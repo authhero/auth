@@ -8,11 +8,11 @@ type AppLogoProps = {
 const AppLogo: FC<AppLogoProps> = ({ vendorSettings }) => {
   if (vendorSettings?.logoUrl) {
     return (
-      <div className="flex h-9 items-center">
+      <div class="flex h-9 items-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={vendorSettings.logoUrl}
-          className="max-h-full"
+          class="max-h-full"
           // do we not have the vendor name?
           alt="Vendor logo"
         />
@@ -25,8 +25,8 @@ const AppLogo: FC<AppLogoProps> = ({ vendorSettings }) => {
   return <div />;
 
   //   return (
-  //     <div className="mb-9 flex h-9 items-center">
-  //       <Icon className="text-xl text-white" name="sesamy" />
+  //     <div class="mb-9 flex h-9 items-center">
+  //       <Icon class="text-xl text-white" name="sesamy" />
   //     </div>
   //   );
 };
