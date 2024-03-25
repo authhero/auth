@@ -22,12 +22,6 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
         <title>{title}</title>
         <meta charset="UTF-8" />
         <meta name="robots" content="noindex, follow" />
-        <style>
-          {/* docStyles.setProperty("--primary-color", serviceStyles.primaryColor);
-      docStyles.setProperty("--primary-hover", serviceStyles.primaryHoverColor);
-      docStyles.setProperty("--text-on-primary", serviceStyles.buttonTextColor); */}
-          doc {}
-        </style>
         <link
           rel="preload"
           href="https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Regular.woff2"

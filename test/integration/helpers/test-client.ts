@@ -245,13 +245,10 @@ export async function getEnv() {
           primaryHoverColor: "#7D68F4",
         },
         loginBackgroundImage: "",
-        // checkoutHideSocial: false,
         supportEmail: "support@sesamy.com",
         supportUrl: "https://support.sesamy.com",
-        // siteUrl: "https://sesamy.com",
         termsAndConditionsUrl:
           "https://store.sesamy.com/pages/terms-of-service",
-        // manageSubscriptionsUrl: "https://account.sesamy.com/manage-subscriptions",
       };
       return mockVendorSettings;
     },

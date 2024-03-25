@@ -13,7 +13,6 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
   vendorSettings,
 }) => {
   return (
-    // maybe prop drilling isn't the solution here but let's style the thing first!
     <Layout title="Reset Password" vendorSettings={vendorSettings}>
       <div class="mb-8 text-2xl font-medium">Reset password</div>
       <div class="flex flex-1 flex-col justify-center">

@@ -33,9 +33,6 @@ export async function getResetPassword(
     throw new HTTPException(400, { message: "Tenant not found" });
   }
 
-  // fetch from https://api.sesamy.dev/profile/vendors/{tenant_id}/style
-
-  // getting weird!
   const tenantNameInVendorStyles = tenant.name.toLowerCase();
   const vendorSettings = await env.fetchVendorSettings(
     tenantNameInVendorStyles,
