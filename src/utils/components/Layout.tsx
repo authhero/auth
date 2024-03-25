@@ -6,7 +6,15 @@ type LayoutProps = {
   vendorSettings: VendorSettings;
 };
 
+const DEFAULT_BG = "https://assets.sesamy.com/images/login-bg.jpg";
+
 const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
+  const inlineStyles = {
+    backgroundImage: `url(${
+      vendorSettings?.loginBackgroundImage || DEFAULT_BG
+    })`,
+  };
+
   return (
     <html lang="en">
       <head>
@@ -71,7 +79,10 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
       </head>
 
       <body>
-        <div class="row min-h-full w-full overflow-hidden bg-cover bg-center text-sm sm:bg-fixed sm:bg-left-top">
+        <div
+          class="row min-h-full w-full overflow-hidden bg-cover bg-center text-sm sm:bg-fixed sm:bg-left-top"
+          style={inlineStyles}
+        >
           <div class="row-up-left w-[calc(100%-theme(space.2)-theme(space.2))] max-w-[1295px] !flex-nowrap sm:w-[calc(100%-theme(space.16)-theme(space.16))]">
             <div class="column-left w-full sm:w-auto">
               <div class="relative flex w-full flex-col rounded-2xl bg-white px-5 py-10 dark:bg-gray-800 dark:text-white sm:min-h-[700px] sm:max-w-md sm:px-14 sm:py-14 md:min-w-[448px] short:min-h-[558px] min-h-[calc(100vh-83px)]">
