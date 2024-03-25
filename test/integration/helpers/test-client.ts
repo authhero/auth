@@ -3,7 +3,7 @@ import SQLite from "better-sqlite3";
 import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
 import { getCertificate } from "./token";
-import { Database } from "../../../src/types";
+import { Database, VendorSettings } from "../../../src/types";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -235,6 +235,26 @@ export async function getEnv() {
     LOGIN2_URL: "https://login2.sesamy.dev",
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
+    fetchVendorSettings: async (tenantName: string) => {
+      const mockVendorSettings: VendorSettings = {
+        name: "sesamy",
+        logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
+        style: {
+          primaryColor: "#7D68F4",
+          buttonTextColor: "#7D68F4",
+          primaryHoverColor: "#7D68F4",
+        },
+        loginBackgroundImage: "",
+        // checkoutHideSocial: false,
+        supportEmail: "support@sesamy.com",
+        supportUrl: "https://support.sesamy.com",
+        // siteUrl: "https://sesamy.com",
+        termsAndConditionsUrl:
+          "https://store.sesamy.com/pages/terms-of-service",
+        // manageSubscriptionsUrl: "https://account.sesamy.com/manage-subscriptions",
+      };
+      return mockVendorSettings;
+    },
   };
 }
 
