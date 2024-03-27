@@ -43,7 +43,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        <link rel="stylesheet" href="/css/default.css" />
+        <link rel="stylesheet" href="/css/tailwind.css" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1"
