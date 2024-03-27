@@ -7,6 +7,18 @@ type LayoutProps = {
   vendorSettings: VendorSettings;
 };
 
+const globalDocStyle = (vendorSettings: VendorSettings) => {
+  const { style } = vendorSettings;
+  // cannot render CSS directly in JSX but we can return a template string
+  return `
+    body {
+      --primary-color: ${style.primaryColor};
+      --secondary-hover: ${style.primaryHoverColor};
+      --text-on-primary: ${style.buttonTextColor};
+    }
+  `;
+};
+
 const DEFAULT_BG = "https://assets.sesamy.com/images/login-bg.jpg";
 
 const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
@@ -48,6 +60,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1"
         />
+        <style>{globalDocStyle(vendorSettings)}</style>
         {/* <link
           rel="apple-touch-icon"
           sizes="180x180"

@@ -67,11 +67,10 @@
   @apply md:text-sm;
 }
 
-/* hardcoded kvartal styles */
 :root {
-  --primary-color: #4f3985;
-  --primary-hover: #ffffff;
-  --text-on-primary: #5f44a0;
+  --primary-color: #7d68f4;
+  --primary-hover: #7e69f4;
+  --text-on-primary: #ffffff;
 }
 
 svg {
