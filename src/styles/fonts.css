@@ -1,0 +1,24 @@
+@font-face {
+  font-display: swap;
+  font-family: "KHTeka";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Regular.woff2")
+    format("woff2");
+}
+@font-face {
+  font-display: swap;
+  font-family: "KHTeka";
+  font-style: normal;
+  font-weight: 500;
+  src: url("https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Medium.woff2")
+    format("woff2");
+}
+@font-face {
+  font-display: swap;
+  font-family: "KHTeka";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://assets.sesamy.com/fonts/khteka/WOFF2/KHTeka-Bold.woff2")
+    format("woff2");
+}
