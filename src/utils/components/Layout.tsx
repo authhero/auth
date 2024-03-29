@@ -4,7 +4,7 @@ import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";
 // TODO - import others and actually switch language!
-import en from "../../locales/en/default.json";
+import en from "../../localesLogin2/en/default.json";
 
 type LayoutProps = {
   title: string;
