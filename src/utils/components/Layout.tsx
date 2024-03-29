@@ -27,7 +27,7 @@ i18next.init({
   lng: "en",
   debug: true,
   resources: {
-    en,
+    en: { translation: en },
   },
 });
 
