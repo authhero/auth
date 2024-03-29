@@ -111,6 +111,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
                 </div>
                 <div class="flex flex-1 flex-col">
                   {children}
+                  {/* // do this on the next PR! */}
                   {/* <Footer vendorSettings={vendorSettings} /> */}
                 </div>
               </div>
@@ -119,13 +120,14 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
                 <div class="flex justify-center space-x-2 text-xs text-white sm:justify-normal md:text-xs">
                   <a
                     class="text-xs text-white hover:underline md:text-xs"
+                    // use this now we have vendor settings!
                     // href={supportUrl}
                     href="https://sesamy.com"
                   >
-                    contact_support
+                    {i18next.t("contact_support")}
                   </a>
                   <span class="text-gray-300">|</span>{" "}
-                  <span>copyright_sesamy</span>
+                  <span>{i18next.t("copyright_sesamy")}</span>
                 </div>
               </div>
             </div>
