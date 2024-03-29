@@ -6,7 +6,6 @@ import validatePassword from "../../utils/validatePassword";
 import { getUserByEmailAndProvider } from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
-import { VendorSettings } from "../../types";
 import i18next from "i18next";
 import { Tenant } from "../../types";
 import en from "../../localesLogin2/en/default.json";
@@ -16,7 +15,7 @@ import sv from "../../localesLogin2/sv/default.json";
 
 function initI18n(lng: string) {
   i18next.init({
-    lng: "en",
+    lng,
     debug: true,
     resources: {
       en: { translation: en },
