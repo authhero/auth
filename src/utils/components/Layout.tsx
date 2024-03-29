@@ -3,6 +3,7 @@ import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";
+import Icon from "./Icon";
 
 type LayoutProps = {
   title: string;
