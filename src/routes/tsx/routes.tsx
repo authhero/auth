@@ -7,7 +7,6 @@ import { getUserByEmailAndProvider } from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import i18next from "i18next";
-import { Tenant } from "../../types";
 import en from "../../localesLogin2/en/default.json";
 import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
@@ -51,9 +50,11 @@ export async function getResetPassword(
     throw new HTTPException(400, { message: "Tenant not found" });
   }
 
-  const tenantNameInVendorStyles = tenant.name.toLowerCase();
   const vendorSettings = await env.fetchVendorSettings(
-    tenantNameInVendorStyles,
+    // Note this will not be correct because in login2 we are styling based on vendor_id
+    // the tenant IDs here are nanoids, where as the vendor ids in HQ are human readable albeit lower case
+    // I figure we can worry about this as we do it and don't get styled flows
+    session.authParams.client_id,
   );
 
   if (!session.authParams.username) {
