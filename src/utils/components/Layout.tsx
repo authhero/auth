@@ -3,8 +3,11 @@ import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";
-// TODO - import others and actually switch language!
 import en from "../../localesLogin2/en/default.json";
+import it from "../../localesLogin2/it/default.json";
+import nb from "../../localesLogin2/nb/default.json";
+import sv from "../../localesLogin2/sv/default.json";
+import { Tenant } from "../../types";
 
 type LayoutProps = {
   title: string;
@@ -29,6 +32,9 @@ i18next.init({
   debug: true,
   resources: {
     en: { translation: en },
+    it: { translation: it },
+    nb: { translation: nb },
+    sv: { translation: sv },
   },
 });
 
