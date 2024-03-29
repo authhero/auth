@@ -120,9 +120,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
                 <div class="flex justify-center space-x-2 text-xs text-white sm:justify-normal md:text-xs">
                   <a
                     class="text-xs text-white hover:underline md:text-xs"
-                    // use this now we have vendor settings!
-                    // href={supportUrl}
-                    href="https://sesamy.com"
+                    href={vendorSettings.supportUrl}
                   >
                     {i18next.t("contact_support")}
                   </a>
