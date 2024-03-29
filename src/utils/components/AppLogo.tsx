@@ -18,8 +18,7 @@ const AppLogo: FC<AppLogoProps> = ({ vendorSettings }) => {
     );
   }
 
-  // can't return undefined in hono/jsx so just empty div
-  return <div />;
+  return <></>;
 };
 
 export default AppLogo;
