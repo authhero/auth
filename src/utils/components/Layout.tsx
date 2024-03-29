@@ -2,6 +2,7 @@ import type { FC } from "hono/jsx";
 import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
 import i18next from "i18next";
+import Footer from "./Footer";
 // TODO - import others and actually switch language!
 import en from "../../locales/en/default.json";
 
@@ -111,8 +112,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
                 </div>
                 <div class="flex flex-1 flex-col">
                   {children}
-                  {/* // do this on the next PR! */}
-                  {/* <Footer vendorSettings={vendorSettings} /> */}
+                  <Footer vendorSettings={vendorSettings} />
                 </div>
               </div>
 
