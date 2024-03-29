@@ -6,7 +6,7 @@ type Props = {
   vendorSettings?: VendorSettings;
 };
 const Footer = ({ vendorSettings }: Props) => {
-  const { termsAndConditionsUrl, name } = vendorSettings || {};
+  const { termsAndConditionsUrl } = vendorSettings || {};
 
   return (
     <div className="mt-8">
@@ -22,19 +22,6 @@ const Footer = ({ vendorSettings }: Props) => {
         >
           {i18next.t("terms")}
         </a>
-        {name === "sesamy" && (
-          <>
-            {" "}
-            {i18next.t("and")}{" "}
-            <a
-              href={"https://store.sesamy.com/pages/privacy-policy"}
-              className="text-primary hover:underline"
-              target="_blank"
-            >
-              {i18next.t("privacy_policy")}
-            </a>
-          </>
-        )}
       </div>
     </div>
   );
