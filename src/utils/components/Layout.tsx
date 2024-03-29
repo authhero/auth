@@ -3,11 +3,6 @@ import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";
-import en from "../../localesLogin2/en/default.json";
-import it from "../../localesLogin2/it/default.json";
-import nb from "../../localesLogin2/nb/default.json";
-import sv from "../../localesLogin2/sv/default.json";
-import { Tenant } from "../../types";
 
 type LayoutProps = {
   title: string;
@@ -25,18 +20,6 @@ const globalDocStyle = (vendorSettings: VendorSettings) => {
     }
   `;
 };
-
-i18next.init({
-  // TODO - will this come from vendor settings?
-  lng: "en",
-  debug: true,
-  resources: {
-    en: { translation: en },
-    it: { translation: it },
-    nb: { translation: nb },
-    sv: { translation: sv },
-  },
-});
 
 const DEFAULT_BG = "https://assets.sesamy.com/images/login-bg.jpg";
 
