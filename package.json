@@ -18,6 +18,7 @@
     "prepare": "husky install",
     "type-check": "tsc",
     "pull-translations": "i18nexus pull -k EWI52U0e8j13AX31kLcS-A --path ./src/locales && prettier --write ./src/locales/**/*.json",
+    "pull-translations:login2": "i18nexus pull -k U5P1_tq3Teu7FZx4OrfI9w --path ./src/localesLogin2 && prettier --write ./src/localesLogin2/**/*.json",
     "knip": "knip",
     "tailwind": "tailwindcss -i ./src/styles/input.css -o ./src/styles/output.css",
     "tailwind:watch": "tailwindcss -i ./src/styles/input.css -o ./src/styles/output.css --watch"
