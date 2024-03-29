@@ -1,6 +1,9 @@
 import type { FC } from "hono/jsx";
 import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
+import i18next from "i18next";
+// TODO - import others and actually switch language!
+import en from "../../locales/en/default.json";
 
 type LayoutProps = {
   title: string;
@@ -18,6 +21,15 @@ const globalDocStyle = (vendorSettings: VendorSettings) => {
     }
   `;
 };
+
+i18next.init({
+  // TODO - will this come from vendor settings?
+  lng: "en",
+  debug: true,
+  resources: {
+    en,
+  },
+});
 
 const DEFAULT_BG = "https://assets.sesamy.com/images/login-bg.jpg";
 
