@@ -6,15 +6,20 @@ import { VendorSettings } from "../../types";
 type ResetPasswordPageProps = {
   error?: string;
   vendorSettings: VendorSettings;
+  email: string;
 };
 
 const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
   error,
   vendorSettings,
+  email,
 }) => {
   return (
     <Layout title="Reset Password" vendorSettings={vendorSettings}>
-      <div class="mb-8 text-2xl font-medium">Reset password</div>
+      <div class="mb-4 text-lg font-medium sm:text-2xl">Reset password</div>
+      <div class="mb-6 text-gray-300">
+        {`Enter your new password below for the email account: ${email}`}
+      </div>
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">
           <input

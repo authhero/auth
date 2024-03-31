@@ -38,7 +38,16 @@ export async function getResetPassword(
     tenantNameInVendorStyles,
   );
 
-  return ctx.html(<ResetPasswordPage vendorSettings={vendorSettings} />);
+  if (!session.authParams.username) {
+    throw new HTTPException(400, { message: "Username required" });
+  }
+
+  return ctx.html(
+    <ResetPasswordPage
+      vendorSettings={vendorSettings}
+      email={session.authParams.username}
+    />,
+  );
 }
 
 export async function postResetPassword(
@@ -119,11 +128,16 @@ export async function postResetPassword(
     throw new HTTPException(400, { message: "Code required" });
   }
 
+  if (!session.authParams.username) {
+    throw new HTTPException(400, { message: "Username required" });
+  }
+
   if (password !== reEnterPassword) {
     return ctx.html(
       <ResetPasswordPage
         error="Passwords do not match"
         vendorSettings={vendorSettings}
+        email={session.authParams.username}
       />,
       400,
     );
@@ -134,13 +148,10 @@ export async function postResetPassword(
       <ResetPasswordPage
         error="Password does not meet the requirements"
         vendorSettings={vendorSettings}
+        email={session.authParams.username}
       />,
       400,
     );
-  }
-
-  if (!session.authParams.username) {
-    throw new HTTPException(400, { message: "Username required" });
   }
 
   // Note! we don't use the primary user here. Something to be careful of
@@ -168,6 +179,7 @@ export async function postResetPassword(
         <ResetPasswordPage
           error="Code not found or expired"
           vendorSettings={vendorSettings}
+          email={session.authParams.username}
         />,
         400,
       );
@@ -190,6 +202,7 @@ export async function postResetPassword(
       <ResetPasswordPage
         error="The password could not be reset"
         vendorSettings={vendorSettings}
+        email={session.authParams.username}
       />,
       400,
     );
