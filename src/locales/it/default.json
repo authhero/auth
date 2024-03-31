@@ -1,13 +1,15 @@
 {
+  "codeEmailEnterCode": "Inserite il codice all'indirizzo {{vendorName}} per completare il login.",
+  "codeEmailTitle": "Benvenuti su {{vendorName}}! {{code}} è il codice di accesso",
+  "codeValid30Mins": "Il codice è valido per 30 minuti",
+  "contact_support": "Avete bisogno di aiuto?",
   "contactUs": "Contattateci",
   "copyright": "Copyright © 2023 SESAMY. Tutti i diritti riservati.",
-  "supportInfo": "Se avete domande o bisogno di assistenza, potete contattare il nostro team di supporto",
-  "codeEmailTitle": "Benvenuti su {{vendorName}}! {{code}} è il codice di accesso",
+  "copyright_sesamy": "©2023 Sesamy",
+  "linkEmailClickToLogin": "Fare clic sul pulsante per accedere",
   "linkEmailLogin": "Accedi",
-  "codeValid30Mins": "Il codice è valido per 30 minuti",
-  "codeEmailEnterCode": "Inserite il codice all'indirizzo {{vendorName}} per completare il login.",
-  "passwordResetTitle": "Modifica della password dell'account {{vendorName}} ",
   "linkEmailOrEnterCode": "Oppure inserire il codice all'indirizzo {{vendorName}} per completare il login.",
-  "welcomeToYourAccount": "Benvenuto nel tuo account {{vendorName}}!",
-  "linkEmailClickToLogin": "Fare clic sul pulsante per accedere"
+  "passwordResetTitle": "Modifica della password dell'account {{vendorName}} ",
+  "supportInfo": "Se avete domande o bisogno di assistenza, potete contattare il nostro team di supporto",
+  "welcomeToYourAccount": "Benvenuto nel tuo account {{vendorName}}!"
 }

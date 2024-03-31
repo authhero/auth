@@ -1,6 +1,9 @@
 import type { FC } from "hono/jsx";
 import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
+import i18next from "i18next";
+// TODO - import others and actually switch language!
+import en from "../../locales/en/default.json";
 
 type LayoutProps = {
   title: string;
@@ -18,6 +21,15 @@ const globalDocStyle = (vendorSettings: VendorSettings) => {
     }
   `;
 };
+
+i18next.init({
+  // TODO - will this come from vendor settings?
+  lng: "en",
+  debug: true,
+  resources: {
+    en: { translation: en },
+  },
+});
 
 const DEFAULT_BG = "https://assets.sesamy.com/images/login-bg.jpg";
 
@@ -99,6 +111,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
                 </div>
                 <div class="flex flex-1 flex-col">
                   {children}
+                  {/* // do this on the next PR! */}
                   {/* <Footer vendorSettings={vendorSettings} /> */}
                 </div>
               </div>
@@ -107,13 +120,12 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
                 <div class="flex justify-center space-x-2 text-xs text-white sm:justify-normal md:text-xs">
                   <a
                     class="text-xs text-white hover:underline md:text-xs"
-                    // href={supportUrl}
-                    href="https://sesamy.com"
+                    href={vendorSettings.supportUrl}
                   >
-                    contact_support
+                    {i18next.t("contact_support")}
                   </a>
                   <span class="text-gray-300">|</span>{" "}
-                  <span>copyright_sesamy</span>
+                  <span>{i18next.t("copyright_sesamy")}</span>
                 </div>
               </div>
             </div>

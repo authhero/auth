@@ -1,13 +1,15 @@
 {
+  "codeEmailEnterCode": "Enter the code at {{vendorName}} to complete the login",
+  "codeEmailTitle": "Welcome to {{vendorName}}! {{code}} is the login code",
+  "codeValid30Mins": "The code is valid for 30 minutes",
+  "contact_support": "Need Help?",
   "contactUs": "Contact us",
   "copyright": "Copyright © 2023 SESAMY. All rights reserved.",
-  "supportInfo": "If you have questions or need assistance, you can contact our support team",
-  "codeEmailTitle": "Welcome to {{vendorName}}! {{code}} is the login code",
+  "copyright_sesamy": "©2023 Sesamy",
+  "linkEmailClickToLogin": "Click the button to log in",
   "linkEmailLogin": "Sign in",
-  "codeValid30Mins": "The code is valid for 30 minutes",
-  "codeEmailEnterCode": "Enter the code at {{vendorName}} to complete the login",
-  "passwordResetTitle": "Change password for your {{vendorName}} account",
   "linkEmailOrEnterCode": "Or enter the code at {{vendorName}} to complete the login.",
-  "welcomeToYourAccount": "Welcome to your {{vendorName}} account!",
-  "linkEmailClickToLogin": "Click the button to log in"
+  "passwordResetTitle": "Change password for your {{vendorName}} account",
+  "supportInfo": "If you have questions or need assistance, you can contact our support team",
+  "welcomeToYourAccount": "Welcome to your {{vendorName}} account!"
 }
