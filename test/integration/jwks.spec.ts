@@ -1,4 +1,4 @@
-import { OpenIDConfiguration } from "../../src/routes/tsoa/jwks";
+import { OpenIDConfiguration } from "../../src/routes/tsoa/well-known";
 import { Jwks, JwksKeys } from "../../src/types/jwks";
 import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
