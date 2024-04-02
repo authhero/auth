@@ -3,8 +3,6 @@ import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";
-// TODO - import others and actually switch language!
-import en from "../../localesLogin2/en/default.json";
 
 type LayoutProps = {
   title: string;
@@ -22,15 +20,6 @@ const globalDocStyle = (vendorSettings: VendorSettings) => {
     }
   `;
 };
-
-i18next.init({
-  // TODO - will this come from vendor settings?
-  lng: "en",
-  debug: true,
-  resources: {
-    en: { translation: en },
-  },
-});
 
 const DEFAULT_BG = "https://assets.sesamy.com/images/login-bg.jpg";
 

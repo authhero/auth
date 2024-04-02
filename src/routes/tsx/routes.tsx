@@ -6,7 +6,25 @@ import validatePassword from "../../utils/validatePassword";
 import { getUserByEmailAndProvider } from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
-import { VendorSettings } from "../../types";
+import i18next from "i18next";
+import { Tenant } from "../../types";
+import en from "../../localesLogin2/en/default.json";
+import it from "../../localesLogin2/it/default.json";
+import nb from "../../localesLogin2/nb/default.json";
+import sv from "../../localesLogin2/sv/default.json";
+
+function initI18n(lng: string) {
+  i18next.init({
+    lng,
+    debug: true,
+    resources: {
+      en: { translation: en },
+      it: { translation: it },
+      nb: { translation: nb },
+      sv: { translation: sv },
+    },
+  });
+}
 
 export async function getResetPassword(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -41,6 +59,7 @@ export async function getResetPassword(
   if (!session.authParams.username) {
     throw new HTTPException(400, { message: "Username required" });
   }
+  initI18n(tenant.language || "sv");
 
   return ctx.html(
     <ResetPasswordPage
@@ -76,6 +95,9 @@ export async function postResetPassword(
   if (!tenant) {
     throw new HTTPException(400, { message: "Tenant not found" });
   }
+
+  initI18n(tenant.language || "sv");
+
   const tenantNameInVendorStyles = tenant.name.toLowerCase();
 
   const vendorSettings = await env.fetchVendorSettings(
