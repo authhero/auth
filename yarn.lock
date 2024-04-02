@@ -25,6 +25,13 @@
   resolved "https://registry.yarnpkg.com/@ape-egg/tailwind-rows-columns/-/tailwind-rows-columns-1.0.2.tgz#abd8c8263c2a42922af8c4c401f7de44b1365fb5"
   integrity sha512-4Fy3KFWTNp6yBqHrbuu5OIUceekFb/EgNpNzyFONBImUNuo/p6vScYj7p998PSr2D3IhDMrgBJmT9YDShMuZYw==
 
+"@asteasolutions/zod-to-openapi@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@asteasolutions/zod-to-openapi/-/zod-to-openapi-5.5.0.tgz#f3be8f1e97ece0fcef2e6ff5e9230da8138d20a6"
+  integrity sha512-d5HwrvM6dOKr3XdeF+DmashGvfEc+1oiEfbscugsiwSTrFtuMa7ETpW9sTNnVgn+hJaz+PRxPQUYD7q9/5dUig==
+  dependencies:
+    openapi3-ts "^4.1.2"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.21.4", "@babel/code-frame@^7.22.13":
   version "7.22.13"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.22.13.tgz#e3c1c099402598483b7a8c46a721d1038803755e"
@@ -821,6 +828,19 @@
     "@hapi/boom" "^10.0.1"
     "@hapi/bourne" "^3.0.0"
     "@hapi/hoek" "^11.0.2"
+
+"@hono/zod-openapi@^0.9.10":
+  version "0.9.10"
+  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-0.9.10.tgz#c72c7e0e4253c2ba6cf9b1b20fbe21f049a1bf23"
+  integrity sha512-v/b/z0qPxDo952gjRyhJ0n9ifbPoIluR2KmXDL20np0hj99+XvakoIHK5/T/3+hUmXlTj1Kn3TiGsSV6hwZesg==
+  dependencies:
+    "@asteasolutions/zod-to-openapi" "^5.5.0"
+    "@hono/zod-validator" "0.2.1"
+
+"@hono/zod-validator@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@hono/zod-validator/-/zod-validator-0.2.1.tgz#41ed7464fea2f1453e22e812fe9de0b5119c158e"
+  integrity sha512-HFoxln7Q6JsE64qz2WBS28SD33UB2alp3aRKmcWnNLDzEL1BLsWfbdX6e1HIiUprHYTIXf5y7ax8eYidKUwyaA==
 
 "@humanwhocodes/config-array@^0.11.14":
   version "0.11.14"
@@ -7269,6 +7289,13 @@ only@~0.0.2:
   resolved "https://registry.yarnpkg.com/only/-/only-0.0.2.tgz#2afde84d03e50b9a8edc444e30610a70295edfb4"
   integrity sha512-Fvw+Jemq5fjjyWz6CpKx6w9s7xxqo3+JCyM0WXWeCSOboZ8ABkyvP8ID4CZuChA/wxSx+XSJmdOm8rGVyJ1hdQ==
 
+openapi3-ts@^4.1.2:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/openapi3-ts/-/openapi3-ts-4.3.1.tgz#8f4b68e97e7885d531694938f59983e866c47dc1"
+  integrity sha512-ha/kTOLhMQL7MvS9Abu/cpCXx5qwHQ++88YkUzn1CGfmM8JvCOG/4ZE6tRsexgXRFaoJrcwLyf81H2Y/CXALtA==
+  dependencies:
+    yaml "^2.4.1"
+
 optionator@^0.9.3:
   version "0.9.3"
   resolved "https://registry.yarnpkg.com/optionator/-/optionator-0.9.3.tgz#007397d44ed1872fdc6ed31360190f81814e2c64"
@@ -9537,7 +9564,7 @@ yaml@2.3.4:
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.3.4.tgz#53fc1d514be80aabf386dc6001eb29bf3b7523b2"
   integrity sha512-8aAvwVUSHpfEqTQ4w/KMlf3HcRdt50E5ODIQJBw1fQ5RL34xabzxtUlzTXVqc4rkZsPbvrXKWnABCD7kWSmocA==
 
-yaml@^2.3.4:
+yaml@^2.3.4, yaml@^2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.4.1.tgz#2e57e0b5e995292c25c75d2658f0664765210eed"
   integrity sha512-pIXzoImaqmfOrL7teGUBt/T7ZDnyeGBWyXQBvOVhLkWLN37GXv8NMLK406UY6dS51JfcQHsmcW5cJ441bHg6Lg==

@@ -51,6 +51,7 @@
     ]
   },
   "dependencies": {
+    "@hono/zod-openapi": "^0.9.10",
     "@planetscale/database": "^1.11.0",
     "@tsoa/runtime": "^6.0.0",
     "bcryptjs": "^2.4.3",
