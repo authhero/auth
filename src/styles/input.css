@@ -1,3 +1,6 @@
+@import "./fonts.css";
+@import "./uicon.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -95,6 +98,3 @@ input[type="number"] {
   line-height: 100%;
   letter-spacing: 0;
 }
-
-@import "./fonts.css";
-@import "./uicon.css";
