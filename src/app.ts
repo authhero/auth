@@ -25,9 +25,9 @@ const ALLOWED_ORIGINS = [
   "https://auth-admin.sesamy.com",
 ];
 
-const app = new OpenAPIHono<{ Bindings: Env }>();
+const rootApp = new OpenAPIHono<{ Bindings: Env }>();
 
-app
+export const app = rootApp
   .onError((err, ctx) => {
     if (err instanceof HTTPException) {
       // Get the custom response
@@ -71,7 +71,8 @@ app
     });
   });
 
-export const loginApp = app.route("/u", login);
+export const loginApp = rootApp.route("/u", login);
+
 loginApp.doc("/u/doc", {
   openapi: "3.0.0",
   info: {
