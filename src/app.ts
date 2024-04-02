@@ -1,4 +1,5 @@
 import { Context, Hono } from "hono";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { Env } from "./types/Env";
@@ -10,7 +11,7 @@ import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
-import { getResetPassword, postResetPassword } from "./routes/tsx/routes";
+import { login } from "./routes/tsx/routes";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -24,7 +25,9 @@ const ALLOWED_ORIGINS = [
   "https://auth-admin.sesamy.com",
 ];
 
-const app = new Hono<{ Bindings: Env }>()
+const rootApp = new OpenAPIHono<{ Bindings: Env }>();
+
+export const app = rootApp
   .onError((err, ctx) => {
     if (err instanceof HTTPException) {
       // Get the custom response
@@ -68,13 +71,19 @@ const app = new Hono<{ Bindings: Env }>()
     });
   });
 
+export const loginApp = rootApp.route("/u", login);
+
+loginApp.doc("/u/doc", {
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "Login spec",
+  },
+});
+
 app.get("/spec", async () => {
   return new Response(JSON.stringify(swagger));
 });
-
-app.get("/u/reset-password", getResetPassword);
-
-app.post("/u/reset-password", postResetPassword);
 
 app.get(
   "/css/tailwind.css",

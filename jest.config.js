@@ -3,6 +3,7 @@ module.exports = {
   transform: {
     "^.+\\.(t|j)sx?$": "ts-jest",
   },
+  transformIgnorePatterns: ["node_modules/(?!(yaml)/)"],
   testTimeout: 10000,
   testEnvironment: "jest-environment-jsdom",
   testRegex: "/test/.*\\.spec\\.ts$",
