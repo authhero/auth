@@ -1,15 +1,13 @@
+/* 
+I thought we could just import this here but I've no idea what other kind of magic is happening here... 
+https://login2.sesamy.dev/_next/static/media/uicon.0b00e08a.woff2
+
+
+We could get Kim involved or I could have a look last
+*/
 @font-face {
   font-family: "uicon";
-  src: url("../fonts/uicon/uicon.eot?t=1696266411242"); /* IE9*/
-  src:
-    url("../fonts/uicon/uicon.eot?t=1696266411242#iefix")
-      format("embedded-opentype"),
-    /* IE6-IE8 */ url("../fonts/uicon/uicon.woff2?t=1696266411242")
-      format("woff2"),
-    url("../fonts/uicon/uicon.woff?t=1696266411242") format("woff"),
-    url("../fonts/uicon/uicon.ttf?t=1696266411242") format("truetype"),
-    /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
-      url("../fonts/uicon/uicon.svg?t=1696266411242#uicon") format("svg"); /* iOS 4.1- */
+  src: url("https://login2.sesamy.dev/_next/static/media/uicon.0b00e08a.woff2");
 }
 
 [class^="uicon-"],
