@@ -8,12 +8,10 @@ export const jwksSchema = z.object({
   n: z.string(),
   use: z.string().optional(),
 });
-export type Jwks = z.infer<typeof jwksSchema>;
 
 export const jwksKeySchema = z.object({
   keys: z.array(jwksSchema),
 });
-export type JwksKeys = z.infer<typeof jwksKeySchema>;
 
 export const openIDConfigurationSchema = z.object({
   issuer: z.string(),
