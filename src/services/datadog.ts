@@ -68,6 +68,7 @@ async function log(
     },
     app: ctx.var,
     version: packageJson.version,
+    service: "auth2",
     trace_id:
       ctx.req.header("x-datadog-trace-id") || req.header("cf-ray") || "",
   };
