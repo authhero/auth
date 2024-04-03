@@ -68,6 +68,8 @@ async function log(
     },
     app: ctx.var,
     version: packageJson.version,
+    trace_id:
+      ctx.req.header("x-datadog-trace-id") || req.header("cf-ray") || "",
   };
 
   const logResponse = await fetch(dd_logsEndpoint, {
