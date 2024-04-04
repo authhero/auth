@@ -1,4 +1,5 @@
 {
+  "Server error: Invalid code": "Invalid code",
   "account_detected": "Account detected",
   "account_with_sso_provider": "We have detected that you have already created an account through",
   "agree_to": "By signing in, you agree to our",
@@ -49,7 +50,6 @@
   "resend_code": "Resend code",
   "send_me_a_new_magic_link": "Send me a new magic link",
   "sent_code_spam": "Remember to check your spam folder if the email did not arrive.",
-  "Server error: Invalid code": "Invalid code",
   "sign_in": "Sign in",
   "signup_success": "Sign up successful",
   "spotify_already_linked_body": "It appears that your Spotify account is currently linked to another Sesamy account. But fear not, we're here to guide you through the process to get this fixed.",
@@ -63,8 +63,8 @@
   "user_account_does_not_exist": "User account does not exist",
   "validate_code": "Validate code",
   "verify_your_email": "Verify your email",
-  "welcome": "Welcome",
   "we_sent_a_code_to": "Please, check your email inbox at <0>{{email}}</0> and introduce the six digit code that we sent you.",
+  "welcome": "Welcome",
   "yes_continue": "Continue with this account",
   "yes_continue_with": "Yes, continue with {{text}}",
   "yes_continue_with_existing_account": "Yes, continue with existing account"

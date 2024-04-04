@@ -1,4 +1,5 @@
 {
+  "Server error: Invalid code": "Codice non valido",
   "account_detected": "Account rilevato",
   "account_with_sso_provider": "Abbiamo rilevato che l'utente ha già creato un account tramite",
   "agree_to": "Effettuando l'accesso, l'utente accetta la nostra",
@@ -49,7 +50,6 @@
   "resend_code": "Reinvio del codice",
   "send_me_a_new_magic_link": "Inviami un nuovo link magico",
   "sent_code_spam": "Ricordate di controllare la cartella spam se l'e-mail non è arrivata.",
-  "Server error: Invalid code": "Codice non valido",
   "sign_in": "Accedi",
   "signup_success": "Iscriviti con successo",
   "spotify_already_linked_body": "Sembra che il vostro account Spotify sia attualmente collegato a un altro account Sesamy. Ma non temete, siamo qui per guidarvi attraverso la procedura per risolvere il problema.",
@@ -63,8 +63,8 @@
   "user_account_does_not_exist": "L'account utente non esiste",
   "validate_code": "Convalida del codice",
   "verify_your_email": "Verificare l'e-mail",
-  "welcome": "Benvenuti",
   "we_sent_a_code_to": "Controllate la vostra casella di posta elettronica all'indirizzo <0>{{email}}</0> e introduca il codice a sei cifre che le abbiamo inviato.",
+  "welcome": "Benvenuti",
   "yes_continue": "Continuare con questo account",
   "yes_continue_with": "Sì, continuare con {{text}}",
   "yes_continue_with_existing_account": "Sì, continuare con l'account esistente"
