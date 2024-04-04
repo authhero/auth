@@ -21,7 +21,8 @@
     "pull-translations:login2": "i18nexus pull -k U5P1_tq3Teu7FZx4OrfI9w --path ./src/localesLogin2 && prettier --write ./src/localesLogin2/**/*.json",
     "knip": "knip",
     "tailwind": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css",
-    "tailwind:watch": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css --watch"
+    "tailwind:watch": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css --watch",
+    "sort-translations": "sort-json src/locales/en/default.json"
   },
   "author": "",
   "license": "MIT",
@@ -95,6 +96,7 @@
     "prettier": "3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.12",
     "semantic-release": "21.1.2",
+    "sort-json": "^2.0.1",
     "tailwindcss": "^3.4.1",
     "ts-jest": "29.1.2",
     "typescript": "5.4.3",
