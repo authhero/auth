@@ -174,6 +174,7 @@ export async function sendResetPassword(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = getLocale(language);
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -181,7 +182,19 @@ export async function sendResetPassword(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendPasswordResetTemplate = engine.parse(templateString);
+  const sendPasswordResetUniversalTemplate = engine.parse(templateString);
+  const sendPasswordResetTemplateString = await engine.render(
+    sendPasswordResetUniversalTemplate,
+    {
+      ...locale,
+      vendorName: client.name,
+      logo,
+      primaryColor: client.tenant.primary_color || "#007bff",
+    },
+  );
+  const sendPasswordResetTemplate = engine.parse(
+    sendPasswordResetTemplateString,
+  );
   const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
     // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
     passwordResetUrl: `${env.ISSUER}u/reset-password?state=${state}&code=${code}`,
