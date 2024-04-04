@@ -1,4 +1,5 @@
 {
+  "Server error: Invalid code": "Ugyldig kode",
   "account_detected": "Konto oppdaget",
   "account_with_sso_provider": "Vi har oppdaget at du allerede har opprettet en konto gjennom",
   "agree_to": "Ved å logge på godtar du vår",
@@ -49,7 +50,6 @@
   "resend_code": "Send kode på nytt",
   "send_me_a_new_magic_link": "Send meg en ny magisk lenke",
   "sent_code_spam": "Husk å sjekke søppelpostmappen din hvis e-posten ikke kom.",
-  "Server error: Invalid code": "Ugyldig kode",
   "sign_in": "Logg inn",
   "signup_success": "Vellykket registrering",
   "spotify_already_linked_body": "Det ser ut til at Spotify-kontoen din for øyeblikket er koblet til en annen Sesamy-konto. Men ikke vær redd, vi er her for å veilede deg gjennom prosessen for å få dette fikset.",
@@ -63,8 +63,8 @@
   "user_account_does_not_exist": "Brukerkonto eksisterer ikke",
   "validate_code": "Bekreft koden",
   "verify_your_email": "Bekreft e-posten din",
-  "welcome": "Velkommen",
   "we_sent_a_code_to": "Vennligst sjekk e-postinnboksen din på <0> {{email}}</0> og bruk den sekssifrede koden vi sendte deg.",
+  "welcome": "Velkommen",
   "yes_continue": "Fortsett med denne kontoen",
   "yes_continue_with": "Ja, fortsett med {{text}}",
   "yes_continue_with_existing_account": "Ja, fortsett med eksisterende konto"

@@ -1,4 +1,5 @@
 {
+  "Server error: Invalid code": "Koden är inte giltig",
   "account_detected": "Fortsätt med existerande konto",
   "account_with_sso_provider": "Det verkar som att du redan har skapat ett konto genom",
   "agree_to": "Genom att logga in godkänner du våra",
@@ -49,7 +50,6 @@
   "resend_code": "Skicka koden igen",
   "send_me_a_new_magic_link": "Skicka en ny inloggninglänk",
   "sent_code_spam": "Kom ihåg att kontrollera din spam-mapp om du inte kan hitta mailet vi skickade.",
-  "Server error: Invalid code": "Koden är inte giltig",
   "sign_in": "Logga in",
   "signup_success": "Registrera dig framgångsrik",
   "spotify_already_linked_body": "Det verkar som att ditt Spotify-konto för närvarande är kopplat till ett annat Sesamy-konto. Ingen fara, vi är här för att guida dig genom processen för att lösa detta.",
@@ -63,8 +63,8 @@
   "user_account_does_not_exist": "Kontot existerar inte",
   "validate_code": "Validera kod",
   "verify_your_email": "Verifiera e-postadress",
-  "welcome": "Välkommen",
   "we_sent_a_code_to": "Vi har skickat en 6-siffrig kod till din e-post på följande adress <0>{{email}}</0>",
+  "welcome": "Välkommen",
   "yes_continue": "Fortsätt med konto",
   "yes_continue_with": "Ja, fortsätt med {{text}}",
   "yes_continue_with_existing_account": "Ja, fortsätt med detta kontot"
