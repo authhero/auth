@@ -7,15 +7,15 @@ on: pull_request
 
 jobs:
   node-test:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-4vcpu-ubuntu-2204
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - name: Setup Node.js
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4
+        uses: buildjet/setup-node@v4
         with:
           cache: "yarn"
           node-version: "18.13"
-      - uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3
+      - uses: buildjet/cache@v3
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
