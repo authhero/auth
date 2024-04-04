@@ -66,14 +66,11 @@
           {{welcomeToYourAccount}}
         </mj-text>
         <mj-text font-size="16px" line-height="19.2px">
-          {{linkEmailClickToLogin}}
+          {{verifyEmailClickToVerify}}
         </mj-text>
         <mj-button href="{{emailValidationUrl}}" target="_blank" width="100%" border-radius="6px" background-color="{{buttonColor}}" font-size="16px" css-class="clickable-button" inner-padding="15px 25px" line-height="20px">
-          {{linkEmailLogin}}
+          {{verifyEmailVerify}}
         </mj-button>
-        <mj-text font-size="16px" line-height="19.2px">
-          {{linkEmailOrEnterCode}}
-        </mj-text>
       </mj-column>
     </mj-section>
     <mj-section>
