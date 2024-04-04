@@ -22,7 +22,7 @@
     "knip": "knip",
     "tailwind": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css",
     "tailwind:watch": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css --watch",
-    "sort-translations": "sort-json src/locales/en/default.json"
+    "sort-translations": "sort-json src/locales/*/*.json src/localesLogin2/*/*.json"
   },
   "author": "",
   "license": "MIT",
