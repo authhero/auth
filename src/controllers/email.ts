@@ -182,6 +182,9 @@ export async function sendResetPassword(
     env.IMAGE_PROXY_URL,
   );
 
+  // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
+  const passwordResetUrl = `${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
+
   const sendPasswordResetUniversalTemplate = engine.parse(templateString);
   const sendPasswordResetTemplateString = await engine.render(
     sendPasswordResetUniversalTemplate,
@@ -190,14 +193,14 @@ export async function sendResetPassword(
       vendorName: client.name,
       logo,
       primaryColor: client.tenant.primary_color || "#007bff",
+      passwordResetUrl,
     },
   );
   const sendPasswordResetTemplate = engine.parse(
     sendPasswordResetTemplateString,
   );
   const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
-    // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
-    passwordResetUrl: `${env.ISSUER}u/reset-password?state=${state}&code=${code}`,
+    passwordResetUrl,
     vendorName: client.name,
     logo,
     primaryColor: client.tenant.primary_color || "#007bff",
@@ -248,6 +251,9 @@ export async function sendValidateEmailAddress(
     env.IMAGE_PROXY_URL,
   );
 
+  // we have not checked the route name that auth0 uses
+  const emailValidationUrl = `${env.ISSUER}u/validate-email?state=${state}&code=${code}`;
+
   const sendEmailValidationUniversalTemplate = engine.parse(templateString);
   const sendEmailValidationTemplateString = await engine.render(
     sendEmailValidationUniversalTemplate,
@@ -256,14 +262,14 @@ export async function sendValidateEmailAddress(
       vendorName: client.name,
       logo,
       primaryColor: client.tenant.primary_color || "#007bff",
+      emailValidationUrl,
     },
   );
   const sendEmailValidationTemplate = engine.parse(
     sendEmailValidationTemplateString,
   );
   const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
-    // we have not checked the route name that auth0 uses
-    emailValidationUrl: `${env.ISSUER}u/validate-email?state=${state}&code=${code}`,
+    emailValidationUrl,
     vendorName: client.name,
     logo,
     primaryColor: client.tenant.primary_color || "#007bff",
