@@ -12,6 +12,7 @@
   "passwordResetTitle": "Endre passord for {{vendorName}} kontoen din",
   "supportInfo": "Hvis du har spørsmål eller trenger hjelp, kan du kontakte supportteamet vårt",
   "verifyEmailClickToVerify": "Klikk på knappen for å bekrefte e-postadressen din",
+  "verifyEmailTitle": "Bekreft e-postadressen din",
   "verifyEmailVerify": "Bekreft konto",
   "welcomeToYourAccount": "Velkommen til din brukerkonto hos {{vendorName}} !"
 }

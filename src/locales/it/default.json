@@ -12,6 +12,7 @@
   "passwordResetTitle": "Modifica della password dell'account {{vendorName}} ",
   "supportInfo": "Se avete domande o bisogno di assistenza, potete contattare il nostro team di supporto",
   "verifyEmailClickToVerify": "Fare clic sul pulsante per verificare l'indirizzo e-mail",
+  "verifyEmailTitle": "Convalidare l'indirizzo e-mail",
   "verifyEmailVerify": "Verifica dell'account",
   "welcomeToYourAccount": "Benvenuto nel tuo account {{vendorName}}!"
 }

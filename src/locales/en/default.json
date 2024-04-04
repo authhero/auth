@@ -12,6 +12,7 @@
   "passwordResetTitle": "Change password for your {{vendorName}} account",
   "supportInfo": "If you have questions or need assistance, you can contact our support team",
   "verifyEmailClickToVerify": "Click the button to verify your email address",
+  "verifyEmailTitle": "Validate your email address",
   "verifyEmailVerify": "Verify account",
   "welcomeToYourAccount": "Welcome to your {{vendorName}} account!"
 }

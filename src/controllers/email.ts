@@ -237,7 +237,6 @@ export async function sendValidateEmailAddress(
     env.IMAGE_PROXY_URL,
   );
 
-  // TODO - implement i18n
   const sendEmailValidationTemplate = engine.parse(templateString);
   const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
     // we have not checked the route name that auth0 uses
@@ -259,11 +258,9 @@ export async function sendValidateEmailAddress(
         value: emailValidationBody,
       },
     ],
-    // TODO - i18n
-    // subject: translate(language, "passwordResetTitle").replace(
-    //   "{{vendorName}}",
-    //   client.name,
-    // ),
-    subject: "Validate your email address",
+    subject: translate(language, "verifyEmailTitle").replace(
+      "{{vendorName}}",
+      client.name,
+    ),
   });
 }
