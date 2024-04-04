@@ -90,9 +90,17 @@ describe("password-flow", () => {
       // cannot login now because email not validated!
       const loginBlockedRes = await client.authorize.$get({ query });
 
-      expect(await loginBlockedRes.text()).toBe(
-        "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.",
+      // this will redirect us to login2
+      const login2RedirectUri2 = new URL(
+        loginBlockedRes.headers.get("location")!,
       );
+      expect(login2RedirectUri2.hostname).toBe("login2.sesamy.dev");
+      expect(login2RedirectUri2.pathname).toBe("/unverified-email");
+      expect(login2RedirectUri2.searchParams.get("email")).toBe(
+        encodeURIComponent("password-login-test@example.com"),
+      );
+      expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
+      expect(await loginBlockedRes.text()).toBe("Redirecting");
 
       const [{ to, code, state }] = await env.data.email.list!();
 
