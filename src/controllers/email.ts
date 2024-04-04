@@ -181,7 +181,6 @@ export async function sendResetPassword(
     env.IMAGE_PROXY_URL,
   );
 
-  // TODO - implement i18n
   const sendPasswordResetTemplate = engine.parse(templateString);
   const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
     // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
@@ -203,12 +202,10 @@ export async function sendResetPassword(
         value: passwordResetBody,
       },
     ],
-    // TODO - i18n
-    // subject: translate(language, "passwordResetTitle").replace(
-    //   "{{vendorName}}",
-    //   client.name,
-    // ),
-    subject: "Reset your password",
+    subject: translate(language, "passwordResetTitle").replace(
+      "{{vendorName}}",
+      client.name,
+    ),
   });
 }
 
