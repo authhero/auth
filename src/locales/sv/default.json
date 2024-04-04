@@ -11,5 +11,7 @@
   "linkEmailOrEnterCode": "Eller skriv in koden på {{vendorName}} för att slutföra inloggningen.",
   "passwordResetTitle": "Byt lösenord för ditt {{vendorName}} konto",
   "supportInfo": "Om du har frågor eller behöver assistans kan du kontakta vårt supportteam",
+  "verifyEmailClickToVerify": "Klicka på knappen för att verifiera din e-postadress",
+  "verifyEmailVerify": "Verifiera konto",
   "welcomeToYourAccount": "Välkommen till ditt {{vendorName}}-konto!"
 }
