@@ -262,8 +262,9 @@ export async function sendValidateEmailAddress(
       ...locale,
       vendorName: client.name,
       logo,
-      primaryColor: client.tenant.primary_color || "#007bff",
       emailValidationUrl,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      buttonColor: client.tenant.primary_color || "#7d68f4",
     },
   );
   const sendEmailValidationTemplate = engine.parse(
@@ -273,7 +274,8 @@ export async function sendValidateEmailAddress(
     emailValidationUrl,
     vendorName: client.name,
     logo,
-    primaryColor: client.tenant.primary_color || "#007bff",
+    supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+    buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
   await sendEmail(client, {
