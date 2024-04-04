@@ -240,6 +240,7 @@ export async function sendValidateEmailAddress(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = getLocale(language);
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -247,7 +248,19 @@ export async function sendValidateEmailAddress(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendEmailValidationTemplate = engine.parse(templateString);
+  const sendEmailValidationUniversalTemplate = engine.parse(templateString);
+  const sendEmailValidationTemplateString = await engine.render(
+    sendEmailValidationUniversalTemplate,
+    {
+      ...locale,
+      vendorName: client.name,
+      logo,
+      primaryColor: client.tenant.primary_color || "#007bff",
+    },
+  );
+  const sendEmailValidationTemplate = engine.parse(
+    sendEmailValidationTemplateString,
+  );
   const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
     // we have not checked the route name that auth0 uses
     emailValidationUrl: `${env.ISSUER}u/validate-email?state=${state}&code=${code}`,
