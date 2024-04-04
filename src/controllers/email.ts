@@ -163,7 +163,6 @@ export async function sendResetPassword(
   state: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get(
-    // This is probably only in english but it'll do for this proof-of-concept
     "templates/email/password-reset.liquid",
   );
 
@@ -192,8 +191,9 @@ export async function sendResetPassword(
       ...locale,
       vendorName: client.name,
       logo,
-      primaryColor: client.tenant.primary_color || "#007bff",
       passwordResetUrl,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      buttonColor: client.tenant.primary_color || "#7d68f4",
     },
   );
   const sendPasswordResetTemplate = engine.parse(
@@ -203,7 +203,8 @@ export async function sendResetPassword(
     passwordResetUrl,
     vendorName: client.name,
     logo,
-    primaryColor: client.tenant.primary_color || "#007bff",
+    supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+    buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
   await sendEmail(client, {
