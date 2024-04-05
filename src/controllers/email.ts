@@ -163,7 +163,6 @@ export async function sendResetPassword(
   state: string,
 ) {
   const response = await env.AUTH_TEMPLATES.get(
-    // This is probably only in english but it'll do for this proof-of-concept
     "templates/email/password-reset.liquid",
   );
 
@@ -174,6 +173,7 @@ export async function sendResetPassword(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = getLocale(language);
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -181,14 +181,30 @@ export async function sendResetPassword(
     env.IMAGE_PROXY_URL,
   );
 
-  // TODO - implement i18n
-  const sendPasswordResetTemplate = engine.parse(templateString);
+  // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
+  const passwordResetUrl = `${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
+
+  const sendPasswordResetUniversalTemplate = engine.parse(templateString);
+  const sendPasswordResetTemplateString = await engine.render(
+    sendPasswordResetUniversalTemplate,
+    {
+      ...locale,
+      vendorName: client.name,
+      logo,
+      passwordResetUrl,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      buttonColor: client.tenant.primary_color || "#7d68f4",
+    },
+  );
+  const sendPasswordResetTemplate = engine.parse(
+    sendPasswordResetTemplateString,
+  );
   const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
-    // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
-    passwordResetUrl: `${env.ISSUER}u/reset-password?state=${state}&code=${code}`,
+    passwordResetUrl,
     vendorName: client.name,
     logo,
-    primaryColor: client.tenant.primary_color || "#007bff",
+    supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+    buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
   await sendEmail(client, {
@@ -203,12 +219,10 @@ export async function sendResetPassword(
         value: passwordResetBody,
       },
     ],
-    // TODO - i18n
-    // subject: translate(language, "passwordResetTitle").replace(
-    //   "{{vendorName}}",
-    //   client.name,
-    // ),
-    subject: "Reset your password",
+    subject: translate(language, "passwordResetTitle").replace(
+      "{{vendorName}}",
+      client.name,
+    ),
   });
 }
 
@@ -230,6 +244,7 @@ export async function sendValidateEmailAddress(
   const templateString = await response.text();
 
   const language = client.tenant.language || "sv";
+  const locale = getLocale(language);
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
@@ -237,14 +252,30 @@ export async function sendValidateEmailAddress(
     env.IMAGE_PROXY_URL,
   );
 
-  // TODO - implement i18n
-  const sendEmailValidationTemplate = engine.parse(templateString);
+  // we have not checked the route name that auth0 uses
+  const emailValidationUrl = `${env.ISSUER}u/validate-email?state=${state}&code=${code}`;
+
+  const sendEmailValidationUniversalTemplate = engine.parse(templateString);
+  const sendEmailValidationTemplateString = await engine.render(
+    sendEmailValidationUniversalTemplate,
+    {
+      ...locale,
+      vendorName: client.name,
+      logo,
+      emailValidationUrl,
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      buttonColor: client.tenant.primary_color || "#7d68f4",
+    },
+  );
+  const sendEmailValidationTemplate = engine.parse(
+    sendEmailValidationTemplateString,
+  );
   const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
-    // we have not checked the route name that auth0 uses
-    emailValidationUrl: `${env.ISSUER}u/validate-email?state=${state}&code=${code}`,
+    emailValidationUrl,
     vendorName: client.name,
     logo,
-    primaryColor: client.tenant.primary_color || "#007bff",
+    supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+    buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
   await sendEmail(client, {
@@ -259,11 +290,9 @@ export async function sendValidateEmailAddress(
         value: emailValidationBody,
       },
     ],
-    // TODO - i18n
-    // subject: translate(language, "passwordResetTitle").replace(
-    //   "{{vendorName}}",
-    //   client.name,
-    // ),
-    subject: "Validate your email address",
+    subject: translate(language, "verifyEmailTitle").replace(
+      "{{vendorName}}",
+      client.name,
+    ),
   });
 }

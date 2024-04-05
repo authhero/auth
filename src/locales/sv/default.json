@@ -10,6 +10,11 @@
   "linkEmailLogin": "Logga in",
   "linkEmailOrEnterCode": "Eller skriv in koden på {{vendorName}} för att slutföra inloggningen.",
   "passwordResetTitle": "Byt lösenord för ditt {{vendorName}} konto",
+  "resetPasswordEmailClickToReset": "Klicka på knappen för att återställa ditt lösenord",
+  "resetPasswordEmailReset": "Återställ ditt lösenord",
   "supportInfo": "Om du har frågor eller behöver assistans kan du kontakta vårt supportteam",
+  "verifyEmailClickToVerify": "Klicka på knappen för att verifiera din e-postadress",
+  "verifyEmailTitle": "Bekräfta din e-postadress",
+  "verifyEmailVerify": "Verifiera konto",
   "welcomeToYourAccount": "Välkommen till ditt {{vendorName}}-konto!"
 }
