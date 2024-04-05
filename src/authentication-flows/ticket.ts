@@ -14,6 +14,7 @@ import {
 } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
+import { headers } from "../constants";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -68,9 +69,77 @@ export async function ticketAuth(
         user,
       });
 
-      // TBD - should this page be on login2 like the expired code one? we're already adding a few universal auth pages...
-      // BUT this route will be more frequently used so we probably want the styling totally matching
-      return "Email address not verified. We have sent a validation email to your address. Please click the link in the email to continue.";
+      // TODO - move this page to auth2 BUT we need to be able to render JSX straight in here... WIP with Markus moving off TSOA
+      const login2UniverifiedEmailUrl = new URL(
+        `${env.LOGIN2_URL}/unverified-email`,
+      );
+
+      const stateDecoded = new URLSearchParams(authParams.state);
+
+      login2UniverifiedEmailUrl.searchParams.set(
+        "email",
+        encodeURIComponent(ticket.email),
+      );
+
+      login2UniverifiedEmailUrl.searchParams.set(
+        "lang",
+        client.tenant.language || "sv",
+      );
+
+      const redirectUri = stateDecoded.get("redirect_uri");
+      if (redirectUri) {
+        login2UniverifiedEmailUrl.searchParams.set("redirect_uri", redirectUri);
+      }
+
+      const audience = stateDecoded.get("audience");
+      if (audience) {
+        login2UniverifiedEmailUrl.searchParams.set("audience", audience);
+      }
+
+      const nonce = stateDecoded.get("nonce");
+      if (nonce) {
+        login2UniverifiedEmailUrl.searchParams.set("nonce", nonce);
+      }
+
+      const scope = stateDecoded.get("scope");
+      if (scope) {
+        login2UniverifiedEmailUrl.searchParams.set("scope", scope);
+      }
+
+      const responseType = stateDecoded.get("response_type");
+      if (responseType) {
+        login2UniverifiedEmailUrl.searchParams.set(
+          "response_type",
+          responseType,
+        );
+      }
+
+      const state2 = stateDecoded.get("state");
+      if (state2) {
+        login2UniverifiedEmailUrl.searchParams.set("state", state2);
+      }
+
+      const client_id = stateDecoded.get("client_id");
+      if (client_id) {
+        login2UniverifiedEmailUrl.searchParams.set("client_id", client_id);
+      }
+
+      // this will always be auth2
+      const connection2 = stateDecoded.get("connection");
+      if (connection2) {
+        login2UniverifiedEmailUrl.searchParams.set("connection", connection2);
+      }
+
+      ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
+
+      controller.setHeader(
+        headers.location,
+        login2UniverifiedEmailUrl.toString(),
+      );
+
+      controller.setStatus(302);
+
+      return "Redirecting";
     }
   }
 
