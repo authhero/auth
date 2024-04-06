@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("parseJwt", () => {

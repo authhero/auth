@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";

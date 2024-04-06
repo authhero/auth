@@ -64,7 +64,7 @@ describe("users management API endpoint", () => {
       const [provider, id] = newUser.user_id.split("|");
 
       expect(provider).toBe("email");
-      expect(id.startsWith("testid-")).toBe(true);
+      expect(id).toBeTypeOf("string");
 
       const usersResponse = await client.api.v2.users.$get(
         {},

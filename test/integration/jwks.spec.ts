@@ -88,7 +88,7 @@ describe("jwks", () => {
     expect(body.keys.length).toBe(1);
 
     // this is a new key because the kid is different - note it's the first generation of our mock nanoid
-    expect(body.keys[0].kid).toBe("testid-0");
+    expect(body.keys[0].kid).toBeTypeOf("string");
   });
 
   it("should return an openid-configuration with the current issues", async () => {

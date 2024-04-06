@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import userIdGenerate from "../../src/utils/userIdGenerate";
 
 // this test makes no sense as the util function is just calling nanoid

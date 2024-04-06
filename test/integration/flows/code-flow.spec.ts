@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { UserResponse } from "../../../src/types/auth0";
@@ -934,7 +935,7 @@ describe("code-flow", () => {
             email_verified: true,
           },
           provider: "email",
-          user_id: "testid-34",
+          user_id: baseUser2.identities[2].user_id,
         },
       ]);
     });

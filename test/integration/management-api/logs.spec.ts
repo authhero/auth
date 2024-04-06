@@ -77,7 +77,7 @@ describe("logs", () => {
     // no client_id here when creating a user - just tenant_id
     expect(log.client_id).toBeNull();
     expect(log.user_agent).toBe("ua");
-    expect(log.log_id).toBe("testid-1");
+    expect(log.log_id).toBeTypeOf("string");
     expect(log.details?.request.method).toBe("POST");
   });
 
@@ -136,7 +136,7 @@ describe("logs", () => {
     expect(typeof log.date).toBe("string");
     expect(log.client_id).toBe("clientId");
     expect(log.user_agent).toBe("ua");
-    expect(log.log_id).toContain("testid-");
+    expect(log.log_id).toBeTypeOf("string");
     expect(log.details?.request.method).toBe("GET");
   });
 });

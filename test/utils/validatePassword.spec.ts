@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import validatePassword from "../../src/utils/validatePassword";
 
 describe("validatePassword", () => {

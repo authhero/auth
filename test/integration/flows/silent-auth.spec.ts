@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
