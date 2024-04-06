@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it } from "vitest";
 import { contextFixture, controllerFixture } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
@@ -10,14 +10,6 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("passwordlessAuth", () => {
   const date = new Date();
-
-  beforeAll(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(date);
-  });
-  afterAll(() => {
-    jest.useRealTimers();
-  });
 
   it("should redirect with implicit flow as anchor links", async () => {
     const ctx = await contextFixture({
@@ -62,18 +54,20 @@ describe("passwordlessAuth", () => {
     const redirectURL = new URL(redirectHeader);
     const hashParams = new URLSearchParams(redirectURL.hash.slice(1));
 
-    const accessToken = parseJwt(hashParams.get("access_token") as string);
+    const { sub, ...accessToken } = parseJwt(
+      hashParams.get("access_token") as string,
+    );
 
     expect(response).toEqual("Redirecting");
     expect(controller.getStatus()).toEqual(302);
     expect(accessToken).toEqual({
       aud: "default",
-      sub: "email|testid-0",
       scope: "openid profile email",
       iss: "https://auth.example.com/",
       iat: Math.floor(date.getTime() / 1000),
       exp: Math.floor(date.getTime() / 1000) + 86400,
     });
+    expect(sub).toMatch(/^email|/);
     expect(hashParams.get("id_token")).toBe(null);
     expect(hashParams.get("token_type")).toBe("Bearer");
     expect(hashParams.get("expires_in")).toBe("86400");

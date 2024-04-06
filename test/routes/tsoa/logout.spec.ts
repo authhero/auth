@@ -1,3 +1,4 @@
+import { describe, beforeAll, it, expect } from "vitest";
 import { requestWithContext } from "../../fixtures/requestWithContext";
 import { LogoutController } from "../../../src/routes/tsoa/logout";
 
