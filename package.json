@@ -97,6 +97,7 @@
     "typescript": "5.4.3",
     "validator": "^13.11.0",
     "vitest": "^1.4.0",
+    "vitest-fetch-mock": "^0.2.2",
     "wrangler": "3.34.2"
   },
   "lint-staged": {

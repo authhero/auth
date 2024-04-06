@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { LogsResponse, UserResponse } from "../../../src/types/auth0";

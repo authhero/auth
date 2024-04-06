@@ -1,13 +1,16 @@
+import { describe, it, expect } from "vitest";
+import { testClient } from "hono/testing";
 import {
   jwksKeySchema,
   jwksSchema,
   openIDConfigurationSchema,
 } from "../../src/types/jwks";
+// import { OpenIDConfiguration } from "../../src/routes/tsoa/jwks";
+// import { Jwks, JwksKeys } from "../../src/types/jwks";
 import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
 import { tsoaApp } from "../../src/app";
 import { wellKnown } from "../../src/routes/oauth2/well-known";
-import { testClient } from "hono/testing";
 import { z } from "zod";
 
 describe("jwks", () => {
