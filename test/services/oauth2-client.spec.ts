@@ -63,8 +63,6 @@ describe("OAuth2Client", () => {
       // Setup global.fetch with the mock
       global.fetch = mockFetch("invalid_grant", 400);
 
-      // (global as any).fetch = mockFetch("invalid_grant", 400);
-
       const code = "some_authorization_code";
       await expect(client.exchangeCodeForTokenResponse(code)).rejects.toThrow(
         "Error exchanging code for token: invalid_grant",

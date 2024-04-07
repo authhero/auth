@@ -71,14 +71,14 @@ export async function getEnv() {
   await data.keys.create(getCertificate());
 
   // Create Default Settings----------------------------------------
-  data.tenants.create({
+  await data.tenants.create({
     id: "DEFAULT_SETTINGS",
     name: "Default Settings",
     sender_email: "login@example.com",
     sender_name: "SenderName",
     audience: "https://sesamy.com",
   });
-  data.applications.create("DEFAULT_SETTINGS", {
+  await data.applications.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CLIENT",
     name: "Default Client",
     allowed_web_origins: "https://sesamy.com",
@@ -87,7 +87,7 @@ export async function getEnv() {
     email_validation: "enabled",
     client_secret: "secret",
   });
-  data.connections.create("DEFAULT_SETTINGS", {
+  await data.connections.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CONNECTION",
     name: "demo-social-provider",
     client_id: "socialClientId",
@@ -100,7 +100,7 @@ export async function getEnv() {
     created_at: "created_at",
     updated_at: "updated_at",
   });
-  data.connections.create("DEFAULT_SETTINGS", {
+  await data.connections.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CONNECTION2",
     name: "other-social-provider",
     client_id: "otherSocialClientId",
@@ -191,15 +191,15 @@ export async function getEnv() {
     updated_at: "updated_at",
   };
 
-  data.tenants.create(testTenant);
-  data.tenants.create(anotherTenant);
-  data.applications.create("tenantId", testApplication);
-  data.applications.create("tenantId", testApplication2);
-  data.applications.create("otherTenant", anotherAppOnAnotherTenant);
-  data.connections.create("tenantId", testConnection1);
-  data.connections.create("tenantId", testConnection2);
+  await data.tenants.create(testTenant);
+  await data.tenants.create(anotherTenant);
+  await data.applications.create("tenantId", testApplication);
+  await data.applications.create("tenantId", testApplication2);
+  await data.applications.create("otherTenant", anotherAppOnAnotherTenant);
+  await data.connections.create("tenantId", testConnection1);
+  await data.connections.create("tenantId", testConnection2);
 
-  data.users.create("tenantId", {
+  await data.users.create("tenantId", {
     id: "userId",
     email: "foo@example.com",
     email_verified: true,
@@ -214,7 +214,7 @@ export async function getEnv() {
     updated_at: new Date().toISOString(),
   });
 
-  data.passwords.create("tenantId", {
+  await data.passwords.create("tenantId", {
     user_id: "userId",
     password: "Test1234!",
   });
