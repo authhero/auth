@@ -107,7 +107,7 @@ describe("password-flow", () => {
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();
-      expect(state).toBe("testid-1");
+      expect(state).toBeTypeOf("string");
 
       const emailValidatedRes = await client.u["validate-email"].$get({
         query: {

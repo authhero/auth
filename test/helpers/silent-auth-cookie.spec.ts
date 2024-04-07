@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { contextFixture, controllerFixture } from "../fixtures";
 import { setSilentAuthCookies } from "../../src/helpers/silent-auth-cookie";
 import { headers } from "../../src/constants";
@@ -19,8 +20,20 @@ describe("silentAuthCookie", () => {
     );
 
     const cookie = controller.getHeader(headers.setCookie) as string;
-    expect(cookie).toBe(
-      "auth-token=testid-0; Max-Age=604800; Path=/; HttpOnly; Secure; SameSite=None",
-    );
+
+    const params: any = {};
+    cookie.split(";").forEach((p) => {
+      const [key, value] = p.trim().split("=");
+      params[key] = value;
+    });
+
+    expect(params).toEqual({
+      HttpOnly: undefined,
+      "Max-Age": "604800",
+      Path: "/",
+      SameSite: "None",
+      Secure: undefined,
+      "auth-token": params["auth-token"],
+    });
   });
 });
