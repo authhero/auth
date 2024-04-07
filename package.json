@@ -65,7 +65,7 @@
     "mime": "^3.0.0",
     "nanoid": "^3.3.3",
     "tsoa": "^6.1.4",
-    "tsoa-hono": "^1.2.1",
+    "tsoa-hono": "^1.2.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
