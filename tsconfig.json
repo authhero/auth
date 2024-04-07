@@ -18,11 +18,7 @@
     "declaration": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "types": [
-      "@cloudflare/workers-types",
-      "@types/jest",
-      "@types/service-worker-mock"
-    ],
+    "types": ["@cloudflare/workers-types", "@types/service-worker-mock"],
     "paths": {
       "*": ["node_modules/*"]
     },
