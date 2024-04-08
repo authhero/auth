@@ -87,7 +87,7 @@ describe("jwks", () => {
     // this is correct because the above endpoint filters out any revoked certificates
     expect(body.keys.length).toBe(1);
 
-    expect(body.keys[0].kid).toBeTypeOf("string");
+    expect(body.keys[0].kid).not.toBe(initialKeys.keys[0].kid);
   });
 
   it("should return an openid-configuration with the current issues", async () => {
