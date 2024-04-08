@@ -1,5 +1,9 @@
 import { JWKS_CACHE_TIMEOUT_IN_SECONDS } from "../../constants";
-import { jwksSchema, openIDConfigurationSchema } from "../../types/jwks";
+import {
+  jwksKeySchema,
+  jwksSchema,
+  openIDConfigurationSchema,
+} from "../../types/jwks";
 import { Env } from "../../types";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 
@@ -15,12 +19,11 @@ export const wellKnown = new OpenAPIHono<{ Bindings: Env }>()
       request: {},
       responses: {
         200: {
-          // TODO: not sure why this types doesn't match
-          // content: {
-          //   "application/json": {
-          //     schema: z.array(jwksSchema),
-          //   },
-          // },
+          content: {
+            "application/json": {
+              schema: jwksKeySchema,
+            },
+          },
           description: "List of tenants",
         },
       },
@@ -67,12 +70,11 @@ export const wellKnown = new OpenAPIHono<{ Bindings: Env }>()
       request: {},
       responses: {
         200: {
-          // TODO: not sure why this types doesn't match
-          // content: {
-          //   "application/json": {
-          //     schema: openIDConfigurationSchema,
-          //   },
-          // },
+          content: {
+            "application/json": {
+              schema: openIDConfigurationSchema,
+            },
+          },
           description: "List of tenants",
         },
       },
