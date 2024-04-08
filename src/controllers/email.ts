@@ -54,7 +54,7 @@ export async function sendCode(
     {
       ...locale,
       code,
-      vendorName: client.name,
+      vendorName: client.tenant.name,
       logo,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
       buttonColor: client.tenant.primary_color || "#7d68f4",
@@ -63,7 +63,7 @@ export async function sendCode(
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
-    vendorName: client.name,
+    vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     buttonColor: client.tenant.primary_color || "#7d68f4",
@@ -82,7 +82,7 @@ export async function sendCode(
       },
     ],
     subject: translate(language, "codeEmailTitle")
-      .replace("{{vendorName}}", client.name)
+      .replace("{{vendorName}}", client.tenant.name)
       .replace("{{code}}", code),
   });
 }
@@ -119,7 +119,7 @@ export async function sendLink(
       ...locale,
       // pass in variables twice! no harm to overdo it
       code,
-      vendorName: client.name,
+      vendorName: client.tenant.name,
       logo,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
       magicLink,
@@ -129,7 +129,7 @@ export async function sendLink(
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
-    vendorName: client.name,
+    vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     magicLink,
@@ -149,7 +149,7 @@ export async function sendLink(
       },
     ],
     subject: translate(language, "codeEmailTitle")
-      .replace("{{vendorName}}", client.name)
+      .replace("{{vendorName}}", client.tenant.name)
       .replace("{{code}}", code),
   });
 }
@@ -189,7 +189,7 @@ export async function sendResetPassword(
     sendPasswordResetUniversalTemplate,
     {
       ...locale,
-      vendorName: client.name,
+      vendorName: client.tenant.name,
       logo,
       passwordResetUrl,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
@@ -201,7 +201,7 @@ export async function sendResetPassword(
   );
   const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
     passwordResetUrl,
-    vendorName: client.name,
+    vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     buttonColor: client.tenant.primary_color || "#7d68f4",
@@ -221,7 +221,7 @@ export async function sendResetPassword(
     ],
     subject: translate(language, "passwordResetTitle").replace(
       "{{vendorName}}",
-      client.name,
+      client.tenant.name,
     ),
   });
 }
@@ -260,7 +260,7 @@ export async function sendValidateEmailAddress(
     sendEmailValidationUniversalTemplate,
     {
       ...locale,
-      vendorName: client.name,
+      vendorName: client.tenant.name,
       logo,
       emailValidationUrl,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
@@ -272,7 +272,7 @@ export async function sendValidateEmailAddress(
   );
   const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
     emailValidationUrl,
-    vendorName: client.name,
+    vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     buttonColor: client.tenant.primary_color || "#7d68f4",
@@ -292,7 +292,7 @@ export async function sendValidateEmailAddress(
     ],
     subject: translate(language, "verifyEmailTitle").replace(
       "{{vendorName}}",
-      client.name,
+      client.tenant.name,
     ),
   });
 }

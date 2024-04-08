@@ -69,16 +69,7 @@ export function createClientsAdapter(db: Kysely<Database>) {
         allowed_web_origins: splitUrls(application.allowed_web_origins),
         email_validation: application.email_validation,
         client_secret: application.client_secret,
-        tenant: removeNullProperties({
-          audience: tenant.audience,
-          logo: tenant.logo,
-          primary_color: tenant.primary_color,
-          secondary_color: tenant.secondary_color,
-          sender_email: tenant.sender_email,
-          sender_name: tenant.sender_name,
-          language: tenant.language,
-          support_url: tenant.support_url,
-        }),
+        tenant: removeNullProperties(tenant),
       };
 
       return client;
