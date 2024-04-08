@@ -524,7 +524,7 @@ describe("authorize", () => {
       );
 
       expect(sub).toMatch(/^email|/);
-      expect(sub).toBeTypeOf("string");
+      expect(sid).toBeTypeOf("string");
 
       expect(idToken).toEqual({
         aud: "clientId",
