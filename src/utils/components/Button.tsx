@@ -1,6 +1,6 @@
 import type { FC } from "hono/jsx";
 
-const Button: FC<{}> = ({ children }) => {
+const Button: FC<{ children: string }> = ({ children }) => {
   return (
     <button
       class="relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover"

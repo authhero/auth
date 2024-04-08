@@ -1,5 +1,3 @@
-// This is to make Request and other browser stuff work
-import "isomorphic-fetch";
 import { Context } from "hono";
 import {
   Application,

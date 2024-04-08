@@ -1,13 +1,16 @@
+import { describe, it, expect } from "vitest";
+import { testClient } from "hono/testing";
 import {
   jwksKeySchema,
   jwksSchema,
   openIDConfigurationSchema,
 } from "../../src/types/jwks";
+// import { OpenIDConfiguration } from "../../src/routes/tsoa/jwks";
+// import { Jwks, JwksKeys } from "../../src/types/jwks";
 import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
 import { tsoaApp } from "../../src/app";
 import { wellKnown } from "../../src/routes/oauth2/well-known";
-import { testClient } from "hono/testing";
 import { z } from "zod";
 
 describe("jwks", () => {
@@ -84,8 +87,7 @@ describe("jwks", () => {
     // this is correct because the above endpoint filters out any revoked certificates
     expect(body.keys.length).toBe(1);
 
-    // this is a new key because the kid is different - note it's the first generation of our mock nanoid
-    expect(body.keys[0].kid).toBe("testid-0");
+    expect(body.keys[0].kid).not.toBe(initialKeys.keys[0].kid);
   });
 
   it("should return an openid-configuration with the current issues", async () => {

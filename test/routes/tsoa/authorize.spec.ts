@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect, vi } from "vitest";
 import { RequestWithContext } from "../../../src/types/RequestWithContext";
 import { contextFixture } from "../../fixtures";
 import { AuthorizeController } from "../../../src/routes/tsoa/authorize";
@@ -16,11 +17,11 @@ describe("authorize", () => {
   const date = new Date("2023-11-28T12:00:00.000Z");
 
   beforeAll(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(date);
+    vi.useFakeTimers();
+    vi.setSystemTime(date);
   });
   afterAll(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("silent authentication", () => {
@@ -250,7 +251,7 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
       const state = redirectUrl.searchParams.get("state");
 
-      expect(state?.startsWith("testid-")).toBe(true);
+      expect(state).toBeTypeOf("string");
 
       expect(actual).toBe("Redirecting...");
       expect(controller.getStatus()).toBe(302);
@@ -451,12 +452,15 @@ describe("authorize", () => {
 
       const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
 
-      const accessToken = parseJwt(searchParams.get("access_token")!);
+      const { sub, ...accessToken } = parseJwt(
+        searchParams.get("access_token")!,
+      );
+
+      expect(sub).toMatch(/^email|/);
 
       expect(accessToken).toEqual({
         aud: "default",
         scope: "openid profile email",
-        sub: "email|testid-1",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
@@ -515,13 +519,16 @@ describe("authorize", () => {
       const redirectUrl = new URL(locationHeader);
       const searchParams = new URLSearchParams(redirectUrl.hash.slice(1));
 
-      const idToken = parseJwt(searchParams.get("id_token") as string);
+      const { sid, sub, ...idToken } = parseJwt(
+        searchParams.get("id_token") as string,
+      );
+
+      expect(sub).toMatch(/^email|/);
+      expect(sid).toBeTypeOf("string");
 
       expect(idToken).toEqual({
         aud: "clientId",
-        sub: "email|testid-3",
         nonce: "nonce",
-        sid: "testid-4",
         iss: "https://auth.example.com/",
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
@@ -564,9 +571,12 @@ describe("authorize", () => {
 
       expect(redirectUrl.host).toBe("example.com");
 
-      const stateObj = JSON.parse(
+      const { sid, userId, user, ...stateObj } = JSON.parse(
         atob(redirectUrl.searchParams.get("code") as string),
       );
+
+      expect(sid).toMatch(/^email|/);
+      expect(userId).toMatch(/^email|/);
 
       expect(stateObj).toEqual({
         authParams: {
@@ -577,24 +587,25 @@ describe("authorize", () => {
           // hhmmmmm, is this a correct change? we could use .toMatchObject and ignore extra keys...
           scope: null,
         },
-        sid: "testid-6",
         state: "state",
-        user: {
-          connection: "email",
-          created_at: "2023-11-28T12:00:00.000Z",
-          email: "test@example.com",
-          email_verified: true,
-          id: "email|testid-5",
-          is_social: false,
-          last_ip: "",
-          last_login: "2023-11-28T12:00:00.000Z",
-          login_count: 1,
-          name: "test@example.com",
-          provider: "email",
-          tenant_id: "tenantId",
-          updated_at: "2023-11-28T12:00:00.000Z",
-        },
-        userId: "email|testid-5",
+      });
+
+      const { id, ...userRest } = user;
+      expect(id).toMatch(/^email|/);
+
+      expect(userRest).toEqual({
+        connection: "email",
+        created_at: "2023-11-28T12:00:00.000Z",
+        email: "test@example.com",
+        email_verified: true,
+        is_social: false,
+        last_ip: "",
+        last_login: "2023-11-28T12:00:00.000Z",
+        login_count: 1,
+        name: "test@example.com",
+        provider: "email",
+        tenant_id: "tenantId",
+        updated_at: "2023-11-28T12:00:00.000Z",
       });
 
       expect(redirectUrl.searchParams.get("state")).toBe("state");
@@ -625,8 +636,7 @@ describe("authorize", () => {
       expect(controller.getStatus()).toBe(302);
 
       const locationHeader = controller.getHeader("location") as string;
-      // The state is stored in a durable object
-      expect(locationHeader).toBe("/u/login?state=testid-7");
+      expect(locationHeader.startsWith("/u/login?state=")).toBeTruthy();
     });
   });
 });

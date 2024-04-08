@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { getClientLogoPngGreyBg } from "../../src/utils/clientLogos";
 
 const IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud";

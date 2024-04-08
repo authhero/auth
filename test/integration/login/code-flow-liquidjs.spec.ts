@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";

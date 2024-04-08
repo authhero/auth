@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   OAuth2Client,
   OAuthProviderParams,
@@ -14,8 +15,8 @@ const oauth2ClientParams: OAuthProviderParams = {
 const redirectUri = "https://your-redirect-uri.com/callback";
 
 // Mock the fetch function to return a successful response with a JSON body
-const mockFetch = (data: unknown, status = 200): jest.Mock => {
-  return jest.fn().mockImplementation(() =>
+const mockFetch = (data: unknown, status = 200) => {
+  return vi.fn().mockImplementation(() =>
     Promise.resolve({
       ok: status >= 200 && status < 300,
       status,
@@ -24,12 +25,14 @@ const mockFetch = (data: unknown, status = 200): jest.Mock => {
     }),
   );
 };
-(global as any).fetch = mockFetch({ access_token: "some_access_token" });
 
 describe("OAuth2Client", () => {
   let client: OAuth2Client;
 
   beforeEach(() => {
+    // Clear all mocks before each test
+    vi.clearAllMocks();
+
     client = new OAuth2Client(oauth2ClientParams, redirectUri);
   });
 
@@ -48,6 +51,8 @@ describe("OAuth2Client", () => {
 
   describe("exchangeCodeForTokenResponse", () => {
     it("exchanges an authorization code for an access token", async () => {
+      global.fetch = mockFetch({ access_token: "some_access_token" });
+
       const code = "some_authorization_code";
       const tokenResponse = await client.exchangeCodeForTokenResponse(code);
 
@@ -55,7 +60,8 @@ describe("OAuth2Client", () => {
     });
 
     it("throws an error if the token request fails", async () => {
-      (global as any).fetch = mockFetch("invalid_grant", 400);
+      // Setup global.fetch with the mock
+      global.fetch = mockFetch("invalid_grant", 400);
 
       const code = "some_authorization_code";
       await expect(client.exchangeCodeForTokenResponse(code)).rejects.toThrow(

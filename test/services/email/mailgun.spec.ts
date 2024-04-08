@@ -1,10 +1,12 @@
+import createFetchMock from "vitest-fetch-mock";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import send from "../../../src/services/email/mailgun";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
-import fetchMock from "jest-fetch-mock";
 
 describe("send", () => {
   beforeEach(() => {
-    fetchMock.resetMocks();
+    const fetchMocker = createFetchMock(vi);
+    fetchMocker.enableMocks();
   });
 
   it("should correctly call Mailgun API", async () => {

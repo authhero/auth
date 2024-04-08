@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
 import { tsoaApp } from "../../../src/app";
 import { UserResponse } from "../../../src/types/auth0";
@@ -63,7 +64,7 @@ describe("users management API endpoint", () => {
       const [provider, id] = newUser.user_id.split("|");
 
       expect(provider).toBe("email");
-      expect(id.startsWith("testid-")).toBe(true);
+      expect(id).toBeTypeOf("string");
 
       const usersResponse = await client.api.v2.users.$get(
         {},

@@ -1,3 +1,4 @@
+import { expect } from "vitest";
 import { testClient } from "hono/testing";
 import { getAdminToken } from "./token";
 import { UserResponse } from "../../../src/types/auth0";

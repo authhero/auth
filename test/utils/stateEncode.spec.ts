@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { stateEncode, stateDecode } from "../../src/utils/stateEncode";
 
 describe("stateEncode", () => {

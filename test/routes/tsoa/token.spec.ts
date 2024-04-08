@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect, vi } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { TokenRoutes } from "../../../src/routes/tsoa/token";
 import { CreateAccessTokenParams } from "../../../src/services/token-factory";
@@ -19,11 +20,11 @@ describe("token", () => {
   const date = new Date();
 
   beforeAll(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(date);
+    vi.useFakeTimers();
+    vi.setSystemTime(date);
   });
   afterAll(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   const tenant: Tenant = {

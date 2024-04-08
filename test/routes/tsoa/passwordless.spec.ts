@@ -1,4 +1,4 @@
-import fetchMock from "jest-fetch-mock";
+import { describe, beforeEach, it, expect, vi } from "vitest";
 import { contextFixture } from "../../fixtures";
 import {
   PasswordlessController,
@@ -16,14 +16,8 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 describe("Passwordless", () => {
   const date = new Date();
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(date);
-
-    fetchMock.resetMocks();
-    fetchMock.mockResponse(JSON.stringify({ message: "Queued. Thank you." }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
+    vi.useFakeTimers();
+    vi.setSystemTime(date);
   });
 
   describe(".start() should send a code to the user", () => {

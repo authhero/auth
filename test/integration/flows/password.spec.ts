@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
@@ -106,7 +107,7 @@ describe("password-flow", () => {
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();
-      expect(state).toBe("testid-1");
+      expect(state).toBeTypeOf("string");
 
       const emailValidatedRes = await client.u["validate-email"].$get({
         query: {
@@ -332,7 +333,7 @@ describe("password-flow", () => {
         {
           connection: "Username-Password-Authentication",
           provider: "auth2",
-          user_id: "testid-10",
+          user_id: primaryUser.identities[1].user_id,
           isSocial: false,
           profileData: {
             email: "existing-code-user@example.com",

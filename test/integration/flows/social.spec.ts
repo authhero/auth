@@ -1,3 +1,4 @@
+import { describe, it, expect, test } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types/auth0";

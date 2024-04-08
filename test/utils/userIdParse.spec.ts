@@ -1,8 +1,5 @@
+import { describe, it, expect } from "vitest";
 import userIdParse from "../../src/utils/userIdParse";
-
-// mock console.error just for this test suite
-// the second test will console.error
-jest.spyOn(console, "error").mockImplementation(() => {});
 
 describe("userIdParse", () => {
   it("should return the id part of the user_id if prefixed with provider and pipe", () => {

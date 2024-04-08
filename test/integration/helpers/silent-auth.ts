@@ -1,5 +1,6 @@
-import { parseJwt } from "../../../src/utils/parse-jwt";
+import { expect } from "vitest";
 import { testClient } from "hono/testing";
+import { parseJwt } from "../../../src/utils/parse-jwt";
 import { tsoaApp } from "../../../src/app";
 
 const client = testClient(tsoaApp, {});
