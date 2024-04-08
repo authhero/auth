@@ -1,17 +1,24 @@
-import { OpenIDConfiguration } from "../../src/routes/tsoa/jwks";
-import { Jwks, JwksKeys } from "../../src/types/jwks";
+import {
+  jwksKeySchema,
+  jwksSchema,
+  openIDConfigurationSchema,
+} from "../../src/types/jwks";
 import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
 import { tsoaApp } from "../../src/app";
+import { wellKnown } from "../../src/routes/oauth2/well-known";
 import { testClient } from "hono/testing";
+import { z } from "zod";
 
 describe("jwks", () => {
   it("should return a list with the test certificate", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(wellKnown, env);
 
-    const response = await client[".well-known"]["jwks.json"].$get(
-      {},
+    const response = await client["jwks.json"].$get(
+      {
+        param: {},
+      },
       {
         headers: {
           "tenant-id": "tenantId",
@@ -21,16 +28,20 @@ describe("jwks", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as Jwks[];
-    expect(body.keys.length).toBe(1);
+    const body = await response.json();
+    const jwks = jwksKeySchema.parse(body);
+    expect(jwks.keys.length).toBe(1);
   });
 
   it("should create a new rsa-key and return it", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const tsoaClient = testClient(tsoaApp, env);
+    const wellKnownClient = testClient(wellKnown, env);
 
-    const initialKey = await client[".well-known"]["jwks.json"].$get(
-      {},
+    const initialKey = await wellKnownClient["jwks.json"].$get(
+      {
+        param: {},
+      },
       {
         headers: {
           "tenant-id": "tenantId",
@@ -38,12 +49,12 @@ describe("jwks", () => {
       },
     );
 
-    const initialKeys = (await initialKey.json()) as JwksKeys;
+    const initialKeys = jwksKeySchema.parse(await initialKey.json());
     expect(initialKeys.keys[0].kid).not.toBe("testid-0");
 
     const token = await getAdminToken();
 
-    const createKeyResponse = await client.api.v2.keys.signing.rotate.$post(
+    const createKeyResponse = await tsoaClient.api.v2.keys.signing.rotate.$post(
       {},
       {
         headers: {
@@ -55,8 +66,10 @@ describe("jwks", () => {
 
     expect(createKeyResponse.status).toBe(201);
 
-    const response = await client[".well-known"]["jwks.json"].$get(
-      {},
+    const response = await wellKnownClient["jwks.json"].$get(
+      {
+        param: {},
+      },
       {
         headers: {
           "tenant-id": "tenantId",
@@ -66,7 +79,7 @@ describe("jwks", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as JwksKeys;
+    const body = jwksKeySchema.parse(await response.json());
 
     // this is correct because the above endpoint filters out any revoked certificates
     expect(body.keys.length).toBe(1);
@@ -77,10 +90,12 @@ describe("jwks", () => {
 
   it("should return an openid-configuration with the current issues", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(wellKnown, env);
 
-    const response = await client[".well-known"]["openid-configuration"].$get(
-      {},
+    const response = await client["openid-configuration"].$get(
+      {
+        param: {},
+      },
       {
         headers: {
           "tenant-id": "tenantId",
@@ -90,7 +105,7 @@ describe("jwks", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as OpenIDConfiguration;
+    const body = openIDConfigurationSchema.parse(await response.json());
     expect(body.issuer).toBe("https://example.com/");
   });
 });
