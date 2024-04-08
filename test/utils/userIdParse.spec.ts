@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import userIdParse from "../../src/utils/userIdParse";
 
-// mock console.error just for this test suite
 // the second test will console.error
 
 describe("userIdParse", () => {
