@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import userIdParse from "../../src/utils/userIdParse";
 
-
 describe("userIdParse", () => {
   it("should return the id part of the user_id if prefixed with provider and pipe", () => {
     const result = userIdParse("auth0|1234567890");
