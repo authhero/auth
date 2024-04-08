@@ -1,24 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import {
-  jwksKeySchema,
-  jwksSchema,
-  openIDConfigurationSchema,
-} from "../../src/types/jwks";
-// import { OpenIDConfiguration } from "../../src/routes/tsoa/jwks";
-// import { Jwks, JwksKeys } from "../../src/types/jwks";
+import { jwksKeySchema, openIDConfigurationSchema } from "../../src/types/jwks";
 import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
 import { tsoaApp } from "../../src/app";
-import { wellKnown } from "../../src/routes/oauth2/well-known";
-import { z } from "zod";
+import { loginApp } from "../../src/app";
 
 describe("jwks", () => {
   it("should return a list with the test certificate", async () => {
     const env = await getEnv();
-    const client = testClient(wellKnown, env);
+    const client = testClient(loginApp, env);
 
-    const response = await client["jwks.json"].$get(
+    const response = await client[".well-known"]["jwks.json"].$get(
       {
         param: {},
       },
@@ -39,9 +32,9 @@ describe("jwks", () => {
   it("should create a new rsa-key and return it", async () => {
     const env = await getEnv();
     const tsoaClient = testClient(tsoaApp, env);
-    const wellKnownClient = testClient(wellKnown, env);
+    const loginClient = testClient(loginApp, env);
 
-    const initialKey = await wellKnownClient["jwks.json"].$get(
+    const initialKey = await loginClient[".well-known"]["jwks.json"].$get(
       {
         param: {},
       },
@@ -69,7 +62,7 @@ describe("jwks", () => {
 
     expect(createKeyResponse.status).toBe(201);
 
-    const response = await wellKnownClient["jwks.json"].$get(
+    const response = await loginClient[".well-known"]["jwks.json"].$get(
       {
         param: {},
       },
@@ -92,9 +85,9 @@ describe("jwks", () => {
 
   it("should return an openid-configuration with the current issues", async () => {
     const env = await getEnv();
-    const client = testClient(wellKnown, env);
+    const client = testClient(loginApp, env);
 
-    const response = await client["openid-configuration"].$get(
+    const response = await client[".well-known"]["openid-configuration"].$get(
       {
         param: {},
       },
