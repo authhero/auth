@@ -87,7 +87,6 @@ describe("jwks", () => {
     // this is correct because the above endpoint filters out any revoked certificates
     expect(body.keys.length).toBe(1);
 
-    // this is a new key because the kid is different - note it's the first generation of our mock nanoid
     expect(body.keys[0].kid).toBeTypeOf("string");
   });
 
