@@ -5,7 +5,6 @@ import { UserResponse } from "../../../src/types/auth0";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
-import { headers } from "src/constants";
 
 describe("users management API endpoint", () => {
   describe("POST", () => {
@@ -672,11 +671,15 @@ describe("users management API endpoint", () => {
 
       const token = await getAdminToken();
       const response = await client.api.v2.users.$get(
-        {},
+        {
+          query: {},
+          header: {
+            "tenant-id": "otherTenant",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
           },
         },
       );
