@@ -20,6 +20,7 @@ route = { pattern = "auth2.sesamy.dev/*", zone_id = "b56a76d859fe2ed6a8d77270cd2
 IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"
 ISSUER = "https://auth2.sesamy.dev/"
 LOGIN2_URL = 'https://login2.sesamy.dev'
+AUTH_URL = 'https://token.sesamy.dev'
 JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
 READ_PERMISSION = "auth:read"
 WRITE_PERMISSION = "auth:write"
@@ -53,6 +54,7 @@ route = { pattern = "auth2.sesamy.com/*", zone_id = "b944b5871689ada6ce48e380968
 [env.production.vars]
 ISSUER = "https://auth2.sesamy.com/"
 LOGIN2_URL = 'https://login2.sesamy.com'
+AUTH_URL = 'https://token.sesamy.com'
 JWKS_URL = "https://token.sesamy.com/.well-known/jwks.json"
 READ_PERMISSION = 'auth:read'
 WRITE_PERMISSION = 'auth:write'
@@ -71,11 +73,3 @@ bucket_name = 'auth-templates'
 
 [env.production.triggers]
 crons = ["0 3 * * *"]
-
-[env.test.vars]
-ISSUER = "https://example.com/"
-LOGIN2_URL = 'https://login2.sesamy.com'
-JWKS_URL = "https://example.com/.well-known/jwks.json"
-READ_PERMISSION = 'auth:read'
-WRITE_PERMISSION = 'auth:write'
-IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"

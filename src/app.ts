@@ -14,6 +14,7 @@ import { Var } from "./types/Var";
 import { login } from "./routes/tsx/routes";
 import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
+import { registerComponent } from "./middlewares/register-component";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -28,6 +29,8 @@ const ALLOWED_ORIGINS = [
 ];
 
 const rootApp = new OpenAPIHono<{ Bindings: Env }>();
+
+registerComponent(rootApp);
 
 export const app = rootApp
   .onError((err, ctx) => {

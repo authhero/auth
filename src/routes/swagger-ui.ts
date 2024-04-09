@@ -49,7 +49,16 @@ function getSwaggerHtml() {
       window.onload = function () {
         // Begin Swagger UI call region
         const ui = SwaggerUIBundle({
-          url: "/spec",
+          urls: [
+            {
+              url: "/spec",
+              name: "TSOA Spec"
+            },
+            {
+              url: "/u/doc",
+              name: "OpenAPI Spec"
+            }
+          ],
           dom_id: "#swagger-ui",
           deepLinking: true,
           presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
