@@ -4,7 +4,7 @@ import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
-import { tsoaApp } from "../../../src/app";
+import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
 
@@ -172,6 +172,7 @@ describe("password-flow", () => {
       const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
       const token = await getAdminToken();
 
       // -------------------------------
@@ -305,12 +306,14 @@ describe("password-flow", () => {
 
       // -----------------------------
       // get user by id assert that the username-password user info is in the identities array
-      // -----------------------------
-
-      const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+      // --------------------
+      const primaryUserRes = await loginClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "email|codeUserId",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {

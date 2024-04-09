@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { tsoaApp } from "../../../src/app";
+import { loginApp, tsoaApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { UserResponse } from "../../../src/types/auth0";
@@ -84,6 +84,7 @@ describe("users by email", () => {
   it("should return multiple users for a simple get by email - no linked accounts", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const token = await getAdminToken();
 
@@ -91,7 +92,7 @@ describe("users by email", () => {
     // This assumes the POST endpoint doesn't do automatic account linking...
     // would be better if we could initialise the database with multiple accounts...
     // and different on different test runs... TBD another time
-    const createDuplicateUserResponse = await client.api.v2.users.$post(
+    const createDuplicateUserResponse = await loginClient.api.v2.users.$post(
       {
         json: {
           name: "Åkesson Þorsteinsson",
@@ -101,11 +102,13 @@ describe("users by email", () => {
           // maybe it's good we have to use the mgmt API for our test fixtures
           // provider: "auth2",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -165,13 +168,17 @@ describe("users by email", () => {
   it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const token = await getAdminToken();
-    const createBarEmailUser = await client.api.v2.users.$post(
+    const createBarEmailUser = await loginClient.api.v2.users.$post(
       {
         json: {
           email: "bar@example.com",
           connection: "email",
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       },
       {
@@ -226,18 +233,19 @@ describe("users by email", () => {
       json: {
         link_with: barEmailId,
       },
+      header: {
+        "tenant-id": "tenantId",
+      },
     };
 
-    const linkResponse = await client.api.v2.users[":user_id"].identities.$post(
-      params,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
-          "content-type": "application/json",
-        },
+    const linkResponse = await loginClient.api.v2.users[
+      ":user_id"
+    ].identities.$post(params, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
       },
-    );
+    });
     expect(linkResponse.status).toBe(201);
     const linkResponseData = (await linkResponse.json()) as Identity[];
     expect(linkResponseData).toHaveLength(2);

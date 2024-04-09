@@ -4,9 +4,10 @@ import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { tsoaApp } from "../../../src/app";
+import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
+import test from "node:test";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -490,6 +491,7 @@ describe("code-flow", () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/callback";
@@ -576,16 +578,18 @@ describe("code-flow", () => {
     // ----------------------------
     // now check the primary user has a new 'email' connection identity
     // ----------------------------
-    const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+    const primaryUserRes = await loginClient.api.v2.users[":user_id"].$get(
       {
         param: {
           user_id: "userId",
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -729,6 +733,7 @@ describe("code-flow", () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // create code user - the base user
@@ -767,16 +772,18 @@ describe("code-flow", () => {
       // sanity check these users are linked
       // -----------------
 
-      const baseUserRes = await client.api.v2.users[":user_id"].$get(
+      const baseUserRes = await loginClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "email|the-base-user",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -894,16 +901,18 @@ describe("code-flow", () => {
       // fetch the base user again now and check we have THREE identities in there
       //------------------------------------------------------------------------------------------------
 
-      const baseUserRes2 = await client.api.v2.users[":user_id"].$get(
+      const baseUserRes2 = await loginClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "email|the-base-user",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -1066,21 +1075,24 @@ describe("code-flow", () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     // -------------------------
     // Create new email user - all lower case email
     // -------------------------
-    const createUserResponse1 = await client.api.v2.users.$post(
+    const createUserResponse1 = await loginClient.api.v2.users.$post(
       {
         json: {
           email: "john-doe@example.com",
           connection: "email",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -1270,6 +1282,7 @@ describe("code-flow", () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // user fixtures
@@ -1302,16 +1315,18 @@ describe("code-flow", () => {
       });
 
       // sanity check - get base user and check identities
-      const baseUserRes = await client.api.v2.users[":user_id"].$get(
+      const baseUserRes = await loginClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "auth2|base-user",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );

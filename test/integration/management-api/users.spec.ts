@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { tsoaApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { UserResponse } from "../../../src/types/auth0";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
@@ -11,7 +11,7 @@ describe("users management API endpoint", () => {
     // this is different to Auth0 where user_id OR email is required
     it("should return a 400 if try and create a new user for a tenant without an email", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const token = await getAdminToken();
       const createUserResponse = await client.api.v2.users.$post(
@@ -20,11 +20,13 @@ describe("users management API endpoint", () => {
             username: "test@example.com",
             connection: "email",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -37,7 +39,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const createUserResponse = await client.api.v2.users.$post(
         {
@@ -45,11 +47,13 @@ describe("users management API endpoint", () => {
             email: "test@example.com",
             connection: "email",
           },
+          header: {
+            "tenant-id": "otherTenant",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
             "content-type": "application/json",
           },
         },
@@ -67,11 +71,15 @@ describe("users management API endpoint", () => {
       expect(id).toBeTypeOf("string");
 
       const usersResponse = await client.api.v2.users.$get(
-        {},
+        {
+          query: {},
+          header: {
+            "tenant-id": "otherTenant",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
           },
         },
       );
@@ -97,7 +105,7 @@ describe("users management API endpoint", () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+        const client = testClient(loginApp, env);
 
         const createUserResponse1 = await client.api.v2.users.$post(
           {
@@ -105,11 +113,13 @@ describe("users management API endpoint", () => {
               email: "test@example.com",
               connection: "email",
             },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -123,11 +133,13 @@ describe("users management API endpoint", () => {
               email: "test@example.com",
               connection: "email",
             },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -140,7 +152,7 @@ describe("users management API endpoint", () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+        const client = testClient(loginApp, env);
 
         // ----------------------
         // Inject fixtures for primary and linked users
@@ -177,11 +189,13 @@ describe("users management API endpoint", () => {
             param: {
               user_id: "auth2|primaryId",
             },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
             },
           },
         );
@@ -211,11 +225,13 @@ describe("users management API endpoint", () => {
               email: "existing-code-user@example.com",
               connection: "email",
             },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -228,7 +244,7 @@ describe("users management API endpoint", () => {
     it("should lowercase email when creating a user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       // ----------------------
       // Create user with uppercase email and check response is lower case
@@ -239,11 +255,14 @@ describe("users management API endpoint", () => {
             email: "FOOZ@BAR.COM",
             connection: "email",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+
             "content-type": "application/json",
           },
         },
@@ -268,11 +287,13 @@ describe("users management API endpoint", () => {
             // this is not correct! should be user_id... interesting
             user_id: user!.id,
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -287,7 +308,7 @@ describe("users management API endpoint", () => {
     it("should update a user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const createUserResponse = await client.api.v2.users.$post(
         {
@@ -295,11 +316,13 @@ describe("users management API endpoint", () => {
             email: "test@example.com",
             connection: "email",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -310,22 +333,22 @@ describe("users management API endpoint", () => {
       const newUser = (await createUserResponse.json()) as UserResponse;
       const [provider, id] = newUser.user_id.split("|");
 
-      const params = {
-        json: {
-          email_verified: true,
-        },
-        param: {
-          user_id: `${provider}|${id}`,
-        },
-      };
-
       const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
-        params,
+        {
+          json: {
+            email_verified: true,
+          },
+          param: {
+            user_id: `${provider}|${id}`,
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
             "content-type": "application/json",
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -337,11 +360,15 @@ describe("users management API endpoint", () => {
       expect(updateUserResponse.status).toBe(200);
 
       const usersResponse = await client.api.v2.users.$get(
-        {},
+        {
+          query: {},
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -355,22 +382,22 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
       const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
-      const params = {
-        param: { user_id: newUser1.id },
-        json: {
-          email: newUser2.email,
-        },
-      };
-
       const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
-        params,
+        {
+          param: { user_id: newUser1.id },
+          json: {
+            email: newUser2.email,
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -383,7 +410,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       // this could be a helper... create linked user for existing primary user... set up with two linked users?
       const createSecondaryUserResponse = await client.api.v2.users.$post(
@@ -393,11 +420,13 @@ describe("users management API endpoint", () => {
             connection: "email",
             name: "secondary user",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -415,13 +444,15 @@ describe("users management API endpoint", () => {
         json: {
           link_with: secondaryUser.user_id,
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       };
       const linkUserResponse = await client.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       });
@@ -445,6 +476,9 @@ describe("users management API endpoint", () => {
         json: {
           name: "new name",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       };
 
       const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
@@ -452,7 +486,6 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -465,7 +498,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const params2 = {
         param: {
@@ -473,6 +506,9 @@ describe("users management API endpoint", () => {
         },
         json: {
           name: "new name",
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       };
 
@@ -495,11 +531,10 @@ describe("users management API endpoint", () => {
     it("should delete secondary account if delete primary account", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const headers = {
         authorization: `Bearer ${token}`,
-        "tenant-id": "tenantId",
         "content-type": "application/json",
       };
 
@@ -508,6 +543,9 @@ describe("users management API endpoint", () => {
           json: {
             email: "test1@example.com",
             connection: "email",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
@@ -523,6 +561,9 @@ describe("users management API endpoint", () => {
             email: "test2@example.com",
             connection: "email",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers,
@@ -537,6 +578,9 @@ describe("users management API endpoint", () => {
         },
         json: {
           link_with: newUser1.id,
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       };
       const linkUserResponse = await client.api.v2.users[
@@ -563,7 +607,10 @@ describe("users management API endpoint", () => {
       // --------------------------------------------------
 
       await client.api.v2.users[":user_id"].$delete(
-        { param: { user_id: newUser2.id } },
+        {
+          param: { user_id: newUser2.id },
+          header: { "tenant-id": "tenantId" },
+        },
         {
           headers,
         },
@@ -587,7 +634,7 @@ describe("users management API endpoint", () => {
   it("should use email for name if not name is not passed", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(loginApp, env);
 
     const createUserResponse = await client.api.v2.users.$post(
       {
@@ -595,11 +642,13 @@ describe("users management API endpoint", () => {
           email: "foo@bar.com",
           connection: "email",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       },
@@ -618,15 +667,19 @@ describe("users management API endpoint", () => {
     // - pagination! What I've done won't work of course unless we overfetch...
     it("should return an empty list of users for a tenant", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const token = await getAdminToken();
       const response = await client.api.v2.users.$get(
-        {},
+        {
+          query: {},
+          header: {
+            "tenant-id": "otherTenant",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "otherTenant",
           },
         },
       );
@@ -639,7 +692,7 @@ describe("users management API endpoint", () => {
 
     it("should return linked users as identities in primary user, and not in list of results", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const token = await getAdminToken();
 
@@ -649,6 +702,9 @@ describe("users management API endpoint", () => {
             // use a different email here to make sure our implementation is not taking shortcuts
             email: "secondary-user@example.com",
             connection: "email",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
@@ -672,13 +728,15 @@ describe("users management API endpoint", () => {
         json: {
           link_with: secondaryUser.user_id,
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       };
       const linkUserResponse = await client.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       });
@@ -687,11 +745,15 @@ describe("users management API endpoint", () => {
 
       // Now we should only get one result from the get endpoint but with nested identities
       const response = await client.api.v2.users.$get(
-        {},
+        {
+          query: {},
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -727,7 +789,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const createUserResponse = await client.api.v2.users.$post(
         {
@@ -735,11 +797,13 @@ describe("users management API endpoint", () => {
             email: "test@example.com",
             connection: "email",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -750,14 +814,16 @@ describe("users management API endpoint", () => {
       const usersResponse = await client.api.v2.users.$get(
         {
           query: {
-            per_page: 2,
+            per_page: "2",
             q: "test",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -770,7 +836,7 @@ describe("users management API endpoint", () => {
     it("should be able to search on linked user's email address using profile data query", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       // -----------------
       // user fixtures
@@ -808,11 +874,13 @@ describe("users management API endpoint", () => {
           param: {
             user_id: "auth2|base-user",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -843,14 +911,16 @@ describe("users management API endpoint", () => {
       const usersResponse = await client.api.v2.users.$get(
         {
           query: {
-            per_page: 2,
+            per_page: "2",
             q: "identities.profileData.email=code-user@example.com",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -889,18 +959,20 @@ describe("users management API endpoint", () => {
       it("should search for a user by email when lucene query uses colon as separator", async () => {
         const token = await getAdminToken();
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+        const client = testClient(loginApp, env);
         const createUserResponse = await client.api.v2.users.$post(
           {
             json: {
               email: "test@example.com",
               connection: "email",
             },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -909,14 +981,16 @@ describe("users management API endpoint", () => {
         const usersResponse = await client.api.v2.users.$get(
           {
             query: {
-              per_page: 2,
+              per_page: "2",
               q: "email:test@example.com",
+            },
+            header: {
+              "tenant-id": "tenantId",
             },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
             },
           },
         );
@@ -928,18 +1002,20 @@ describe("users management API endpoint", () => {
       it("should search for a user by email when lucene query uses equal char as separator", async () => {
         const token = await getAdminToken();
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+        const client = testClient(loginApp, env);
         const createUserResponse = await client.api.v2.users.$post(
           {
             json: {
               email: "test@example.com",
               connection: "email",
             },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -948,14 +1024,16 @@ describe("users management API endpoint", () => {
         const usersResponse = await client.api.v2.users.$get(
           {
             query: {
-              per_page: 2,
+              per_page: "2",
               q: "email=test@example.com",
+            },
+            header: {
+              "tenant-id": "tenantId",
             },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
             },
           },
         );
@@ -967,7 +1045,7 @@ describe("users management API endpoint", () => {
       it("should search for a user by email and provider when lucene query uses equal char as separator", async () => {
         const token = await getAdminToken();
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+        const client = testClient(loginApp, env);
         const createUserResponse = await client.api.v2.users.$post(
           {
             json: {
@@ -975,11 +1053,13 @@ describe("users management API endpoint", () => {
               email: "foo@example.com",
               connection: "email",
             },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
               "content-type": "application/json",
             },
           },
@@ -989,14 +1069,16 @@ describe("users management API endpoint", () => {
         const usersResponse = await client.api.v2.users.$get(
           {
             query: {
-              per_page: 2,
+              per_page: "2",
               q: "provider=email",
+            },
+            header: {
+              "tenant-id": "tenantId",
             },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
             },
           },
         );
@@ -1017,7 +1099,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
       const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
       const params = {
@@ -1027,13 +1109,15 @@ describe("users management API endpoint", () => {
         json: {
           link_with: newUser1.id,
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       };
       const linkUserResponse = await client.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       });
@@ -1042,11 +1126,15 @@ describe("users management API endpoint", () => {
 
       // Fetch all users
       const listUsersResponse = await client.api.v2.users.$get(
-        {},
+        {
+          query: {},
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -1062,11 +1150,13 @@ describe("users management API endpoint", () => {
         // note we fetch with the user_id prefixed with provider as per the Auth0 standard
         {
           param: { user_id: newUser2.user_id },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -1101,11 +1191,13 @@ describe("users management API endpoint", () => {
       const unlinkUserResponse = await client.api.v2.users[
         ":user_id"
       ].identities.$delete(
-        { param: { user_id: newUser1.id } },
+        {
+          param: { user_id: newUser1.id },
+          header: { "tenant-id": "tenantId" },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -1118,7 +1210,10 @@ describe("users management API endpoint", () => {
 
       // now fetch user 2 again to check doesn't have user2 as identity
       const userResponse2 = await client.api.v2.users[":user_id"].$get(
-        { param: { user_id: newUser2.user_id } },
+        {
+          param: { user_id: newUser2.user_id },
+          header: { "tenant-id": "tenantId" },
+        },
         {
           headers: {
             authorization: `Bearer ${token}`,
@@ -1145,7 +1240,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
       const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
       const [provider] = newUser2.id.split("|");
@@ -1155,6 +1250,9 @@ describe("users management API endpoint", () => {
           provider,
           user_id: newUser1.id,
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       };
 
       const linkUserResponse = await client.api.v2.users[
@@ -1162,7 +1260,6 @@ describe("users management API endpoint", () => {
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       });
@@ -1176,11 +1273,13 @@ describe("users management API endpoint", () => {
             // note we fetch with the user_id prefixed with provider as per the Auth0 standard
             user_id: newUser2.user_id,
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -1218,7 +1317,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const createSecondaryUserResponse = await client.api.v2.users.$post(
         {
@@ -1227,11 +1326,14 @@ describe("users management API endpoint", () => {
             email: "secondary-user@example.com",
             connection: "email",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
+
             "content-type": "application/json",
           },
         },
@@ -1249,13 +1351,15 @@ describe("users management API endpoint", () => {
         json: {
           link_with: secondaryUser.user_id,
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       };
       const linkUserResponse = await client.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
           "content-type": "application/json",
         },
       });
@@ -1268,11 +1372,13 @@ describe("users management API endpoint", () => {
           param: {
             user_id: "userId",
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -1307,11 +1413,13 @@ describe("users management API endpoint", () => {
           param: {
             user_id: secondaryUser.user_id,
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );

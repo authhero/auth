@@ -4,7 +4,7 @@ import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { tsoaApp } from "../../../src/app";
+import { loginApp, tsoaApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 
 const LOGIN2_STATE = "client_id=clientId&connection=auth2";
@@ -108,6 +108,7 @@ describe("social sign on", () => {
         };
         const env = await getEnv();
         const client = testClient(tsoaApp, env);
+        const loginClient = testClient(loginApp, env);
 
         const socialCallbackResponse = await client.callback.$get({
           query: socialCallbackQuery,
@@ -162,14 +163,18 @@ describe("social sign on", () => {
         // ---------------------------------------------
         // now check that the user was created was properly in the data providers
         // ---------------------------------------------
-        const newSocialUserRes = await client.api.v2.users[":user_id"].$get(
+        const newSocialUserRes = await loginClient.api.v2.users[
+          ":user_id"
+        ].$get(
           {
             param: { user_id: "demo-social-provider|123456789012345678901" },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
             },
           },
         );
@@ -188,16 +193,21 @@ describe("social sign on", () => {
 
         const env = await getEnv();
         const client = testClient(tsoaApp, env);
+        const loginClient = testClient(loginApp, env);
 
         // check this user isn't already created from the previous test
-        const checkNoExistingUser = await client.api.v2.users[":user_id"].$get(
+        const checkNoExistingUser = await loginClient.api.v2.users[
+          ":user_id"
+        ].$get(
           {
             param: { user_id: "demo-social-provider|1234567890" },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
             },
           },
         );
@@ -262,14 +272,18 @@ describe("social sign on", () => {
         // ---------------------------------------------
         // now check that the user was created was properly in the data providers
         // ---------------------------------------------
-        const newSocialUserRes = await client.api.v2.users[":user_id"].$get(
+        const newSocialUserRes = await loginClient.api.v2.users[
+          ":user_id"
+        ].$get(
           {
             param: { user_id: "demo-social-provider|123456789012345678901" },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "tenant-id": "tenantId",
             },
           },
         );
@@ -293,8 +307,9 @@ describe("social sign on", () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
-      const createEmailUserResponse = await client.api.v2.users.$post(
+      const createEmailUserResponse = await loginClient.api.v2.users.$post(
         {
           json: {
             email: "örjan.lindström@example.com",
@@ -302,11 +317,13 @@ describe("social sign on", () => {
             // we are ignoring this for code logins
             email_verified: true,
           },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
             "content-type": "application/json",
           },
         },
@@ -360,14 +377,16 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now check that the new social user was created was properly in the data providers
       // ---------------------------------------------
-      const newSocialUserRes = await client.api.v2.users[":user_id"].$get(
+      const newSocialUserRes = await loginClient.api.v2.users[":user_id"].$get(
         {
           param: { user_id: createEmailUser.user_id },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -376,14 +395,16 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // check that the primary user has new identities
       // ---------------------------------------------
-      const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+      const primaryUserRes = await loginClient.api.v2.users[":user_id"].$get(
         {
           param: { user_id: createEmailUser.user_id },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -478,14 +499,16 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now check that the primary user has new identities
       // ---------------------------------------------
-      const primaryUserResAgain = await client.api.v2.users[":user_id"].$get(
+      const primaryUserResAgain = await loginClient.api.v2.users[
+        ":user_id"
+      ].$get(
         {
           param: { user_id: createEmailUser.user_id },
+          header: { "tenant-id": "tenantId" },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -535,6 +558,7 @@ describe("social sign on", () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // What I want here is for the linked social account to be returned FIRST!
       // so this is a bit synthetic by manually writing the users...
@@ -570,14 +594,16 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // fetch this email user to sanity check test
       // ---------------------------------------------
-      const emailUserRes = await client.api.v2.users[":user_id"].$get(
+      const emailUserRes = await loginClient.api.v2.users[":user_id"].$get(
         {
           param: { user_id: "email|7575757575757" },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );

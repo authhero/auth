@@ -13,6 +13,7 @@ import { validateUrl } from "./utils/validate-redirect-url";
 import { Var } from "./types/Var";
 import { login } from "./routes/tsx/routes";
 import { wellKnown } from "./routes/oauth2/well-known";
+import { users } from "./routes/management-api/users";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -74,7 +75,8 @@ export const app = rootApp
 
 export const loginApp = rootApp
   .route("/u", login)
-  .route("/.well-known", wellKnown);
+  .route("/.well-known", wellKnown)
+  .route("/api/v2/users", users);
 
 loginApp.doc("/u/doc", {
   openapi: "3.0.0",
