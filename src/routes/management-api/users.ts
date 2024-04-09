@@ -47,13 +47,13 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
     async (ctx) => {
       const { page, per_page, include_totals, sort, q } =
         ctx.req.valid("query");
-      const headers = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
       // ugly hardcoded switch for now!
       if (q?.includes("identities.profileData.email")) {
         // assuming no other query params here... could be stricter
         const linkedAccountEmail = q.split("=")[1];
-        const results = await ctx.env.data.users.list(headers["tenant-id"], {
+        const results = await ctx.env.data.users.list(tenant_id, {
           page,
           per_page,
           include_totals,
@@ -71,7 +71,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
 
         // get primary account
         const primaryAccount = await ctx.env.data.users.get(
-          headers["tenant-id"],
+          tenant_id,
           // we know linked_to is truthy here but typescript cannot read .filter() logic above
           // possible to fix!
           linkedAccount.linked_to!,
@@ -85,7 +85,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
 
         const primaryAccountEnriched = await enrichUser(
           ctx.env,
-          headers["tenant-id"],
+          tenant_id,
           primaryAccount,
         );
 
@@ -98,7 +98,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         query.push(q);
       }
 
-      const result = await ctx.env.data.users.list(headers["tenant-id"], {
+      const result = await ctx.env.data.users.list(tenant_id, {
         page,
         per_page,
         include_totals,
@@ -110,11 +110,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
 
       const users: UserResponse[] = await Promise.all(
         primarySqlUsers.map(async (primarySqlUser) => {
-          return await enrichUser(
-            ctx.env,
-            headers["tenant-id"],
-            primarySqlUser,
-          );
+          return await enrichUser(ctx.env, tenant_id, primarySqlUser);
         }),
       );
 
@@ -164,9 +160,9 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
     }),
     async (ctx) => {
       const { user_id } = ctx.req.valid("param");
-      const headers = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
-      const user = await ctx.env.data.users.get(headers["tenant-id"], user_id);
+      const user = await ctx.env.data.users.get(tenant_id, user_id);
 
       if (!user) {
         throw new HTTPException(404);
@@ -180,7 +176,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
 
       const userResponse: UserResponse = await enrichUser(
         ctx.env,
-        headers["tenant-id"],
+        tenant_id,
         user,
       );
 
@@ -216,12 +212,9 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
     }),
     async (ctx) => {
       const { user_id } = ctx.req.valid("param");
-      const headers = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
-      const result = await ctx.env.data.users.remove(
-        headers["tenant-id"],
-        user_id,
-      );
+      const result = await ctx.env.data.users.remove(tenant_id, user_id);
 
       if (!result) {
         throw new HTTPException(404);
@@ -262,7 +255,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const headers = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const body = ctx.req.valid("json");
 
       const { email: emailRaw } = body;
@@ -279,7 +272,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
 
       const email = emailRaw.toLowerCase();
 
-      const data = await ctx.env.data.users.create(headers["tenant-id"], {
+      const data = await ctx.env.data.users.create(tenant_id, {
         email,
         id: `email|${userIdGenerate()}`,
         name: body.name || email,
@@ -349,7 +342,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const headers = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const body = ctx.req.valid("json");
       const { user_id } = ctx.req.valid("param");
 
@@ -359,7 +352,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
       if (userFields.email) {
         const existingUser = await getUsersByEmail(
           ctx.env.data.users,
-          headers["tenant-id"],
+          tenant_id,
           userFields.email,
         );
 
@@ -371,10 +364,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         }
       }
 
-      const userToPatch = await ctx.env.data.users.get(
-        headers["tenant-id"],
-        user_id,
-      );
+      const userToPatch = await ctx.env.data.users.get(tenant_id, user_id);
 
       if (!userToPatch) {
         throw new HTTPException(404);
@@ -388,7 +378,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       const result = await ctx.env.data.users.update(
-        headers["tenant-id"],
+        tenant_id,
         user_id,
         userFields,
       );
@@ -398,10 +388,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(500);
       }
 
-      const patchedUser = await ctx.env.data.users.get(
-        headers["tenant-id"],
-        user_id,
-      );
+      const patchedUser = await ctx.env.data.users.get(tenant_id, user_id);
 
       if (!patchedUser) {
         // we should never reach here UNLESS there's some race condition where another service deletes the users after the update...
@@ -410,7 +397,7 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
 
       const userResponse: UserResponse = await enrichUser(
         ctx.env,
-        headers["tenant-id"],
+        tenant_id,
         patchedUser,
       );
 
@@ -459,24 +446,24 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const headers = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const body = ctx.req.valid("json");
       const { user_id } = ctx.req.valid("param");
 
       const link_with = "link_with" in body ? body.link_with : body.user_id;
 
-      const user = await ctx.env.data.users.get(headers["tenant-id"], user_id);
+      const user = await ctx.env.data.users.get(tenant_id, user_id);
       if (!user) {
         throw new HTTPException(400, {
           message: "Linking an inexistent identity is not allowed.",
         });
       }
 
-      await ctx.env.data.users.update(headers["tenant-id"], link_with, {
+      await ctx.env.data.users.update(tenant_id, link_with, {
         linked_to: user_id,
       });
 
-      const linkedusers = await ctx.env.data.users.list(headers["tenant-id"], {
+      const linkedusers = await ctx.env.data.users.list(tenant_id, {
         page: 0,
         per_page: 10,
         include_totals: false,
@@ -521,10 +508,10 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const headers = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { user_id } = ctx.req.valid("param");
 
-      await ctx.env.data.users.unlink(headers["tenant-id"], user_id);
+      await ctx.env.data.users.unlink(tenant_id, user_id);
 
       return ctx.text("OK");
     },
