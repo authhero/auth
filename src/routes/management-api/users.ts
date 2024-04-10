@@ -49,8 +49,6 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         ctx.req.valid("query");
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
-      console.log("sort", sort);
-
       // ugly hardcoded switch for now!
       if (q?.includes("identities.profileData.email")) {
         // assuming no other query params here... could be stricter
