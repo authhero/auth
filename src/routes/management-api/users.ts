@@ -49,6 +49,8 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         ctx.req.valid("query");
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
+      console.log("sort", sort);
+
       // ugly hardcoded switch for now!
       if (q?.includes("identities.profileData.email")) {
         // assuming no other query params here... could be stricter
@@ -264,20 +266,14 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Email is required" });
       }
 
-      if (body?.connection !== "email") {
-        throw new HTTPException(400, {
-          message: "Only email connections are supported",
-        });
-      }
-
       const email = emailRaw.toLowerCase();
 
       const data = await ctx.env.data.users.create(tenant_id, {
         email,
-        id: `email|${userIdGenerate()}`,
+        id: `${body.provider}|${userIdGenerate()}`,
         name: body.name || email,
-        provider: "email",
-        connection: body.connection || "email",
+        provider: body.provider,
+        connection: body.connection,
         // we need to be careful with this as the profile service was setting this true in places where I don't think it's correct
         // AND when does the account linking happen then? here? first login?
         email_verified: body.email_verified || false,
