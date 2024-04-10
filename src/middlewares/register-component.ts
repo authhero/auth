@@ -5,7 +5,7 @@ import { Env } from "../types/Env";
 let inititated = false;
 
 /**
- * This registers the security scheme for the application. As it uses an environment variable, it can only be registerd once the first request arrives.
+ * This registers the security scheme for the application. As it uses an environment variable, it can only be registered once the first request arrives.
  * @param app
  */
 export function registerComponent(app: OpenAPIHono<{ Bindings: Env }>) {
