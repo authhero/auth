@@ -1,4 +1,4 @@
-import { BaseUser, User } from "../../types";
+import { User } from "../../types";
 import { Totals } from "../../types/auth0/Totals";
 import { ListParams } from "./ListParams";
 
@@ -12,5 +12,10 @@ export interface UserDataAdapter {
   remove(tenantId: string, id: string): Promise<boolean>;
   list(tenantId: string, params: ListParams): Promise<ListUsersResponse>;
   update(tenantId: string, id: string, user: Partial<User>): Promise<boolean>;
-  unlink(tenantId: string, id: string): Promise<boolean>;
+  unlink(
+    tenantId: string,
+    id: string,
+    provider: string,
+    linked_user_id: string,
+  ): Promise<boolean>;
 }

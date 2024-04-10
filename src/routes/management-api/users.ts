@@ -481,19 +481,21 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // DELETE /users/:user_id/identities
+  // DELETE /api/v2/users/{user_id}/identities/{provider}/{linked_user_id}
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["users"],
       method: "delete",
-      path: "/{user_id}/identities",
+      path: "/{user_id}/identities/{provider}/{linked_user_id}",
       request: {
         headers: z.object({
           "tenant-id": z.string(),
         }),
         params: z.object({
           user_id: z.string(),
+          provider: z.string(),
+          linked_user_id: z.string(),
         }),
       },
       security: [
@@ -509,9 +511,14 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
     }),
     async (ctx) => {
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { user_id } = ctx.req.valid("param");
+      const { user_id, provider, linked_user_id } = ctx.req.valid("param");
 
-      await ctx.env.data.users.unlink(tenant_id, user_id);
+      await ctx.env.data.users.unlink(
+        tenant_id,
+        user_id,
+        provider,
+        linked_user_id,
+      );
 
       return ctx.text("OK");
     },

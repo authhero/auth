@@ -1187,12 +1187,18 @@ describe("users management API endpoint", () => {
         },
       ]);
 
+      const [provider, linked_user_id] = newUser1.id.split("|");
+
       // and now unlink!
       const unlinkUserResponse = await client.api.v2.users[
         ":user_id"
-      ].identities.$delete(
+      ].identities[":provider"][":linked_user_id"].$delete(
         {
-          param: { user_id: newUser1.id },
+          param: {
+            user_id: newUser2.id,
+            provider,
+            linked_user_id,
+          },
           header: { "tenant-id": "tenantId" },
         },
         {
