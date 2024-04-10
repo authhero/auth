@@ -27,7 +27,7 @@ describe("logs", () => {
     expect(body.length).toBe(0);
   });
 
-  it.skip("should return a log row for a created user", async () => {
+  it("should return a log row for a created user", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);

@@ -3,11 +3,18 @@ import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
 import { enrichUser } from "../../utils/enrichUser";
-import { Env, totalsSchema, userInsertSchema, userSchema } from "../../types";
+import {
+  Env,
+  Log,
+  totalsSchema,
+  userInsertSchema,
+  userSchema,
+} from "../../types";
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+import { createTypeLog } from "src/tsoa-middlewares/logger";
 
 export const usersWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(userSchema),
@@ -282,6 +289,9 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
+
+      const log: Log = createTypeLog("sapi", ctx, body, `Create a User`);
+      await ctx.env.data.logs.create(tenant_id, log);
 
       const userResponse: UserResponse = {
         ...data,
