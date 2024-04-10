@@ -8,14 +8,11 @@ export function parseSort(sort?: string):
     return undefined;
   }
 
-  if (sort.startsWith("-")) {
-    return {
-      sort_by: sort.slice(1),
-      sort_order: "desc",
-    };
-  }
+  const [sort_by, orderString] = sort.split(":");
+  const sort_order = orderString === "1" ? "asc" : "desc";
+
   return {
-    sort_by: sort,
-    sort_order: "asc",
+    sort_by,
+    sort_order,
   };
 }

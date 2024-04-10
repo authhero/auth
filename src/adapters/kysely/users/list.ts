@@ -39,7 +39,7 @@ export function listUsers(db: Kysely<Database>) {
         email_verified: u.email_verified === 1,
         is_social: u.is_social === 1,
       })),
-      start: (params.page - 1) * params.per_page,
+      start: params.page * params.per_page,
       limit: params.per_page,
       length: countInt,
     };
