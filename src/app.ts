@@ -34,6 +34,8 @@ registerComponent(rootApp);
 
 export const app = rootApp
   .onError((err, ctx) => {
+    console.error(err);
+
     if (err instanceof HTTPException) {
       // Get the custom response
       return err.getResponse();

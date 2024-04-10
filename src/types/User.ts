@@ -19,8 +19,8 @@ export const userInsertSchema = baseUserSchema.extend({
   email_verified: z.boolean().default(false),
   last_ip: z.string().optional(),
   last_login: z.string().optional(),
-  provider: z.string().optional(),
-  connection: z.string(),
+  provider: z.string().default("email"),
+  connection: z.string().default("email"),
 });
 
 export const userSchema = userInsertSchema
