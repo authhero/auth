@@ -15,6 +15,7 @@ import { login } from "./routes/tsx/routes";
 import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
+import { tenants } from "./routes/management-api/tenants";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -79,7 +80,8 @@ export const app = rootApp
 export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
-  .route("/api/v2/users", users);
+  .route("/api/v2/users", users)
+  .route("/api/v2/tenants", tenants);
 
 loginApp.doc("/u/doc", {
   openapi: "3.0.0",
