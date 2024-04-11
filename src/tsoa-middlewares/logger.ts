@@ -56,7 +56,7 @@ const DEFAULT_AUTH0_CLIENT = {
   },
 };
 
-function createTypeLog(
+export function createTypeLog(
   logType: LogType,
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   body: unknown,
