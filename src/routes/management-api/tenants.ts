@@ -88,7 +88,6 @@ export const tenants = new OpenAPIHono<{ Bindings: Env }>()
     async (ctx) => {
       const { id } = ctx.req.valid("param");
 
-      console.log("id", id);
       const tenant = await ctx.env.data.tenants.get(id);
 
       if (!tenant) {
