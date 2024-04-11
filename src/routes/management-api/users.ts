@@ -14,7 +14,7 @@ import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
-import { createTypeLog } from "src/tsoa-middlewares/logger";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
 
 export const usersWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(userSchema),
