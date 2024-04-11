@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { tsoaApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { Tenant } from "../../../src/types";
@@ -8,11 +8,13 @@ import { Tenant } from "../../../src/types";
 describe("tenants", () => {
   it("should add a new tenant", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(loginApp, env);
 
     const token = await getAdminToken();
     const tenantsResponse1 = await client.api.v2.tenants.$get(
-      {},
+      {
+        query: {},
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -49,7 +51,9 @@ describe("tenants", () => {
 
     // now fetch list of tenants again to assert tenant deleted
     const tenantsResponse2 = await client.api.v2.tenants.$get(
-      {},
+      {
+        query: {},
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -64,11 +68,11 @@ describe("tenants", () => {
 
   it("should remove a tenant", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(loginApp, env);
 
     const token = await getAdminToken();
     const tenantsResponse1 = await client.api.v2.tenants.$get(
-      {},
+      { query: {} },
       {
         headers: {
           authorization: `Bearer ${token}`,
@@ -98,7 +102,7 @@ describe("tenants", () => {
 
     // fetch list of tenants again - assert we are one down
     const tenantsResponse2 = await client.api.v2.tenants.$get(
-      {},
+      { query: {} },
       {
         headers: {
           authorization: `Bearer ${token}`,
