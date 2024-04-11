@@ -9,7 +9,7 @@ import { Identity } from "../../../src/types/auth0/Identity";
 describe("users by email", () => {
   it("should return empty list if there are no users with queried email address", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(loginApp, env);
 
     const token = await getAdminToken();
     const response = await client.api.v2["users-by-email"].$get(
@@ -17,11 +17,13 @@ describe("users by email", () => {
         query: {
           email: "i-do-not-exist@all.com",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -33,7 +35,7 @@ describe("users by email", () => {
 
   it("should return a single user for a simple get by email - no linked accounts", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(loginApp, env);
 
     const token = await getAdminToken();
 
@@ -42,11 +44,13 @@ describe("users by email", () => {
         query: {
           email: "foo@example.com",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -83,7 +87,6 @@ describe("users by email", () => {
 
   it("should return multiple users for a simple get by email - no linked accounts", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const token = await getAdminToken();
@@ -115,16 +118,18 @@ describe("users by email", () => {
     );
     expect(createDuplicateUserResponse.status).toBe(201);
 
-    const response = await client.api.v2["users-by-email"].$get(
+    const response = await loginClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "foo@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -167,11 +172,10 @@ describe("users by email", () => {
 
   it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-    const loginClient = testClient(loginApp, env);
+    const client = testClient(loginApp, env);
 
     const token = await getAdminToken();
-    const createBarEmailUser = await loginClient.api.v2.users.$post(
+    const createBarEmailUser = await client.api.v2.users.$post(
       {
         json: {
           email: "bar@example.com",
@@ -197,11 +201,13 @@ describe("users by email", () => {
         query: {
           email: "foo@example.com",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -214,11 +220,13 @@ describe("users by email", () => {
         query: {
           email: "bar@example.com",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -238,14 +246,15 @@ describe("users by email", () => {
       },
     };
 
-    const linkResponse = await loginClient.api.v2.users[
-      ":user_id"
-    ].identities.$post(params, {
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
+    const linkResponse = await client.api.v2.users[":user_id"].identities.$post(
+      params,
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
       },
-    });
+    );
     expect(linkResponse.status).toBe(201);
     const linkResponseData = (await linkResponse.json()) as Identity[];
     expect(linkResponseData).toHaveLength(2);
@@ -271,6 +280,9 @@ describe("users by email", () => {
       {
         query: {
           email: "foo@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       },
       {
@@ -310,11 +322,13 @@ describe("users by email", () => {
         query: {
           email: "bar@example.com",
         },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
