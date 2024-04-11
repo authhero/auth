@@ -14,13 +14,14 @@ import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
-import { createTypeLog } from "src/tsoa-middlewares/logger";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { Var } from "../../types/Var";
 
 export const usersWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(userSchema),
 });
 
-export const users = new OpenAPIHono<{ Bindings: Env }>()
+export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
   // GET /api/v2/users
   // --------------------------------
@@ -509,6 +510,11 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
       ],
       responses: {
         200: {
+          content: {
+            "tenant/json": {
+              schema: z.array(userSchema),
+            },
+          },
           description: "Status",
         },
       },
@@ -524,6 +530,17 @@ export const users = new OpenAPIHono<{ Bindings: Env }>()
         linked_user_id,
       );
 
-      return ctx.text("OK");
+      const user = await ctx.env.data.users.get(tenant_id, user_id);
+      if (!user) {
+        throw new HTTPException(404);
+      }
+
+      const userResponse: UserResponse = await enrichUser(
+        ctx.env,
+        tenant_id,
+        user,
+      );
+
+      return ctx.json([userResponse]);
     },
   );

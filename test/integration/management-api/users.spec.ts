@@ -1209,6 +1209,10 @@ describe("users management API endpoint", () => {
       );
 
       expect(unlinkUserResponse.status).toBe(200);
+      const unlinkUserBody =
+        (await unlinkUserResponse.json()) as UserResponse[];
+
+      expect(unlinkUserBody[0].user_id).toBe(newUser2.user_id);
 
       // manually check in the db that the linked_to field has been reset
       const user1Updated = await env.data.users.get("tenantId", newUser1.id);
