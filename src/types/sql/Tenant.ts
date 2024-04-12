@@ -1,3 +1,20 @@
+import { z } from "zod";
+import { baseEntitySchema } from "../BaseEntity";
+
+export const tenantInsertSchema = z.object({
+  name: z.string(),
+  audience: z.string(),
+  sender_email: z.string().email(),
+  sender_name: z.string(),
+  support_url: z.string().url().optional(),
+  logo: z.string().url().optional(),
+  primary_color: z.string().optional(),
+  secondary_color: z.string().optional(),
+  language: z.string().optional(),
+});
+
+export const tenantSchema = tenantInsertSchema.extend(baseEntitySchema.shape);
+
 export interface Tenant {
   id: string;
   name: string;

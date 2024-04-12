@@ -510,6 +510,11 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       ],
       responses: {
         200: {
+          content: {
+            "tenant/json": {
+              schema: z.array(userSchema),
+            },
+          },
           description: "Status",
         },
       },
@@ -525,6 +530,17 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         linked_user_id,
       );
 
-      return ctx.text("OK");
+      const user = await ctx.env.data.users.get(tenant_id, user_id);
+      if (!user) {
+        throw new HTTPException(404);
+      }
+
+      const userResponse: UserResponse = await enrichUser(
+        ctx.env,
+        tenant_id,
+        user,
+      );
+
+      return ctx.json([userResponse]);
     },
   );
