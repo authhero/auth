@@ -3,13 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
 import { enrichUser } from "../../utils/enrichUser";
-import {
-  Env,
-  Log,
-  totalsSchema,
-  userInsertSchema,
-  userSchema,
-} from "../../types";
+import { Env, totalsSchema, userInsertSchema, userSchema } from "../../types";
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
@@ -291,7 +285,7 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         updated_at: new Date().toISOString(),
       });
 
-      const log: Log = createTypeLog("sapi", ctx, body, `Create a User`);
+      const log = createTypeLog("sapi", ctx, body, `Create a User`);
       await ctx.env.data.logs.create(tenant_id, log);
 
       const userResponse: UserResponse = {

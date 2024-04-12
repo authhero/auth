@@ -2,29 +2,26 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getDbFromEnv } from "../../services/db";
 import { applicationSchema, applicationInsertSchema } from "../../types/sql";
 import { headers } from "../../constants";
-import { Env, totalsSchema } from "../../types";
+import { executeQuery } from "../../helpers/sql";
+import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { nanoid } from "nanoid";
-import { auth0QuerySchema } from "../../types/auth0/Query";
-import { parseSort } from "../../utils/sort";
 
-export const applicationsWithTotalsSchema = totalsSchema.extend({
-  applications: z.array(applicationSchema),
-});
-
-export const applications = new OpenAPIHono<{ Bindings: Env }>()
+export const applicationsFallback = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
-  // GET /applications
+  // GET /tenants/{tenant_id}/applications
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["applications"],
       method: "get",
-      path: "/",
+      path: "/{tenant_id}/applications",
       request: {
-        query: auth0QuerySchema,
+        params: z.object({
+          tenant_id: z.string(),
+        }),
         headers: z.object({
-          "tenant-id": z.string(),
+          range: z.string().optional(),
         }),
       },
       security: [
@@ -34,40 +31,48 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       ],
       responses: {
         200: {
+          content: {
+            "application/json": {
+              schema: z.array(applicationSchema),
+            },
+          },
           description: "List of applications",
         },
       },
     }),
     async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { page, per_page, include_totals, sort, q } =
-        ctx.req.valid("query");
+      const { range: rangeRequest } = ctx.req.valid("header");
+      const { tenant_id } = ctx.req.valid("param");
 
-      const result = await ctx.env.data.applications.list(tenant_id, {
-        page,
-        per_page,
-        include_totals,
-        sort: parseSort(sort),
-        q,
+      const db = getDbFromEnv(ctx.env);
+      const query = db
+        .selectFrom("applications")
+        .where("applications.tenant_id", "=", tenant_id);
+
+      const { data, range } = await executeQuery(query, rangeRequest);
+
+      const headers = new Headers();
+      if (range) {
+        headers.set("content-range", range);
+      }
+
+      return ctx.json(z.array(applicationSchema).parse(data), {
+        headers,
       });
-
-      return ctx.json(result);
     },
   )
   // --------------------------------
-  // GET /applications/:id
+  // GET /tenants/{tenant_id}/applications/:id
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["applications"],
       method: "get",
-      path: "/{id}",
+      path: "/{tenant_id}/applications/{id}",
       request: {
         params: z.object({
           id: z.string(),
-        }),
-        headers: z.object({
-          "tenant-id": z.string(),
+          tenant_id: z.string(),
         }),
       },
       security: [
@@ -87,8 +92,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { id } = ctx.req.valid("param");
+      const { tenant_id, id } = ctx.req.valid("param");
 
       const db = getDbFromEnv(ctx.env);
       const application = await db
@@ -108,19 +112,17 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // DELETE /applications/:id
+  // DELETE /tenants/{tenant_id}/applications/:id
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["applications"],
       method: "delete",
-      path: "/{id}",
+      path: "/{tenant_id}/applications/{id}",
       request: {
         params: z.object({
           id: z.string(),
-        }),
-        headers: z.object({
-          "tenant-id": z.string(),
+          tenant_id: z.string(),
         }),
       },
       security: [
@@ -135,8 +137,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { id } = ctx.req.valid("param");
+      const { tenant_id, id } = ctx.req.valid("param");
 
       const db = getDbFromEnv(ctx.env);
       await db
@@ -149,13 +150,13 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // PATCH /applications/:id
+  // PATCH /tenants/{tenant_id}/applications/:id
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["applications"],
       method: "patch",
-      path: "/{id}",
+      path: "/{tenant_id}/applications/{id}",
       request: {
         body: {
           content: {
@@ -166,9 +167,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
         },
         params: z.object({
           id: z.string(),
-        }),
-        headers: z.object({
-          "tenant-id": z.string(),
+          tenant_id: z.string(),
         }),
       },
       security: [
@@ -183,8 +182,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { id } = ctx.req.valid("param");
+      const { tenant_id, id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
       const db = getDbFromEnv(ctx.env);
@@ -204,13 +202,13 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // POST /applications
+  // POST /tenants/{tenant_id}/applications
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["applications"],
       method: "post",
-      path: "/",
+      path: "/{tenant_id}/applications/",
       request: {
         body: {
           content: {
@@ -219,8 +217,8 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
             },
           },
         },
-        headers: z.object({
-          "tenant-id": z.string(),
+        params: z.object({
+          tenant_id: z.string(),
         }),
       },
       security: [
@@ -240,7 +238,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const { tenant_id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
       const application = await ctx.env.data.applications.create(tenant_id, {
@@ -253,13 +251,13 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // PUT /applications/:id
+  // PUT /tenants/{tenant_id}/applications/:id
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["applications"],
       method: "put",
-      path: "/{:id}",
+      path: "/{tenant_id}/applications/{:id}",
       request: {
         body: {
           content: {
@@ -270,9 +268,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
         },
         params: z.object({
           id: z.string(),
-        }),
-        headers: z.object({
-          "tenant-id": z.string(),
+          tenant_id: z.string(),
         }),
       },
       security: [
@@ -292,8 +288,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { id } = ctx.req.valid("param");
+      const { tenant_id, id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
       const application = {

@@ -6,7 +6,7 @@ import instanceToJson from "../utils/instanceToJson";
 import { HTTPException } from "hono/http-exception";
 import {
   LogType,
-  Log,
+  // Log,
   SuccessApiOperation,
   SuccessCrossOriginAuthentication,
   FailedLoginIncorrectPassword,
@@ -61,7 +61,7 @@ export function createTypeLog(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   body: unknown,
   description?: string,
-): Log {
+) {
   switch (logType) {
     case "sapi":
       const successApiOperation: SuccessApiOperation = {
@@ -238,7 +238,7 @@ export function loggerMiddleware(
       }
 
       try {
-        const log: Log = createTypeLog(logType, ctx, body, description);
+        const log = createTypeLog(logType, ctx, body, description);
         await env.data.logs.create(ctx.var.tenantId || "", log);
       } catch (e: any) {
         console.error(e);
@@ -270,7 +270,7 @@ export function loggerMiddleware(
           const logType = ctx.var.logType || logTypeInitial;
           if (!logType) return e.getResponse();
 
-          const log: Log = createTypeLog(
+          const log = createTypeLog(
             logType,
             ctx,
             body,
