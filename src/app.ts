@@ -84,7 +84,7 @@ export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
   .route("/tenants", applicationsFallback)
-  .route("/applications", applications)
+  .route("/api/v2/applications", applications)
   .route("/api/v2/users", users)
   .route("/api/v2/tenants", tenants)
   .route("/api/v2/logs", logs);
