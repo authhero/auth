@@ -16,7 +16,10 @@ import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
 import { tenants } from "./routes/management-api/tenants";
-import { applications } from "./routes/management-api/applications";
+import {
+  applications,
+  applicationsFallback,
+} from "./routes/management-api/applications";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -81,7 +84,8 @@ export const app = rootApp
 export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
-  .route("/tenants", applications)
+  .route("/tenants", applicationsFallback)
+  .route("/applications", applications)
   .route("/api/v2/users", users)
   .route("/api/v2/tenants", tenants);
 
