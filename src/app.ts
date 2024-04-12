@@ -16,6 +16,7 @@ import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
 import { tenants } from "./routes/management-api/tenants";
+import { logs } from "./routes/management-api/logs";
 import { applications } from "./routes/management-api/applications";
 import { applicationsFallback } from "./routes/management-api/applications-fallback";
 
@@ -85,7 +86,8 @@ export const loginApp = rootApp
   .route("/tenants", applicationsFallback)
   .route("/applications", applications)
   .route("/api/v2/users", users)
-  .route("/api/v2/tenants", tenants);
+  .route("/api/v2/tenants", tenants)
+  .route("/api/v2/logs", logs);
 
 loginApp.doc("/u/doc", {
   openapi: "3.0.0",

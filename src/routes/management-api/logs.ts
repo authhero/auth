@@ -1,74 +1,106 @@
-import {
-  Controller,
-  Get,
-  Header,
-  Query,
-  Request,
-  Route,
-  Security,
-  Tags,
-  Path,
-} from "@tsoa/runtime";
-import { RequestWithContext } from "../../types";
-import { ListLogsResponse } from "../../adapters/interfaces/Logs";
+import { Env, logSchema, totalsSchema } from "../../types";
 import { HTTPException } from "hono/http-exception";
-@Route("api/v2/logs")
-@Tags("logs")
-@Security("oauth2managementApi", [""])
-export class LogsController extends Controller {
-  @Get("")
-  public async getLogs(
-    @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-    // Auth0
-    @Query() page = 0,
-    @Query() per_page = 20,
-    @Query() include_totals = false,
-    @Query() sort?: string,
-    @Query() fields?: string,
-    @Query() include_fields?: boolean,
-    @Query() q?: string,
-  ) {
-    const { ctx } = request;
-    const { env } = ctx;
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import { auth0QuerySchema } from "../../types/auth0/Query";
+import { parseSort } from "../../utils/sort";
 
-    const result = await env.data.logs.list(tenantId, {
-      page,
-      per_page,
-      include_totals,
-      // TODO - sorting!
-      // sort: parseSort(sort),
-      q,
-    });
+export const logsWithTotalsSchema = totalsSchema.extend({
+  tenants: z.array(logSchema),
+});
 
-    if (include_totals) {
-      const res: ListLogsResponse = {
-        logs: result.logs,
-        start: result.start,
-        length: result.length,
-        limit: result.limit,
-      };
-      return res;
-    }
+export const logs = new OpenAPIHono<{ Bindings: Env }>()
+  // --------------------------------
+  // GET /logs
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["logs"],
+      method: "get",
+      path: "/",
+      request: {
+        query: auth0QuerySchema,
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "tenant/json": {
+              schema: z.union([z.array(logSchema), logsWithTotalsSchema]),
+            },
+          },
+          description: "List of log rows",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { page, per_page, include_totals, sort, q } =
+        ctx.req.valid("query");
+      const { tenant_id } = ctx.req.valid("header");
 
-    return result.logs;
-  }
+      const result = await ctx.env.data.logs.list(tenant_id, {
+        page,
+        per_page,
+        include_totals,
+        sort: parseSort(sort),
+        q,
+      });
 
-  @Get("{log_id}")
-  public async getLog(
-    @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-    @Path() log_id: string,
-  ) {
-    const { ctx } = request;
-    const { env } = ctx;
+      if (include_totals) {
+        return ctx.json(result);
+      }
 
-    const log = await env.data.logs.get(tenantId, log_id);
+      return ctx.json(result.logs);
+    },
+  )
+  // --------------------------------
+  // GET /logs/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["logs"],
+      method: "get",
+      path: "/{id}",
+      request: {
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+        params: z.object({
+          id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "tenant/json": {
+              schema: logSchema,
+            },
+          },
+          description: "A log entry",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
 
-    if (!log) {
-      throw new HTTPException(404);
-    }
+      const log = await ctx.env.data.logs.get(tenant_id, id);
 
-    return log;
-  }
-}
+      if (!log) {
+        throw new HTTPException(404);
+      }
+
+      return ctx.json(log);
+    },
+  );

@@ -8,15 +8,19 @@ import { getEnv } from "../helpers/test-client";
 describe("logs", () => {
   it("should return an empty list of logs for a tenant", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(loginApp, env);
 
     const token = await getAdminToken();
     const response = await client.api.v2.logs.$get(
-      {},
+      {
+        query: {},
+        header: {
+          tenant_id: "tenantId",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -29,12 +33,11 @@ describe("logs", () => {
 
   it("should return a log row for a created user", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
-    const loginClient = testClient(loginApp, env);
+    const client = testClient(loginApp, env);
 
     const token = await getAdminToken();
 
-    const createUserResponse = await loginClient.api.v2.users.$post(
+    const createUserResponse = await client.api.v2.users.$post(
       {
         json: {
           email: "test@example.com",
@@ -57,11 +60,15 @@ describe("logs", () => {
     expect(createUserResponse.status).toBe(201);
 
     const response = await client.api.v2.logs.$get(
-      {},
+      {
+        query: {},
+        header: {
+          tenant_id: "tenantId",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -87,6 +94,7 @@ describe("logs", () => {
   it("should log a failed silent auth request", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const token = await getAdminToken();
 
@@ -115,12 +123,16 @@ describe("logs", () => {
 
     expect(silentAuthResponse.status).toBe(200);
 
-    const response = await client.api.v2.logs.$get(
-      {},
+    const response = await loginClient.api.v2.logs.$get(
+      {
+        query: {},
+        header: {
+          tenant_id: "tenantId",
+        },
+      },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
