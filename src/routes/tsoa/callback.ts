@@ -19,6 +19,18 @@ import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import { LogTypes } from "../../types";
 
+interface CallbackBody {
+  state: string;
+  code: string;
+  user?: {
+    email?: string;
+    name?: {
+      firstName?: string;
+      lastName?: string;
+    };
+  };
+}
+
 @Route("callback")
 @Tags("callback")
 export class CallbackController extends Controller {
@@ -105,7 +117,7 @@ export class CallbackController extends Controller {
   @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
   public async postCallback(
     @Request() request: RequestWithContext,
-    @Body() body: { state: string; code: string },
+    @Body() body: CallbackBody,
   ): Promise<string> {
     const { code, state } = body;
     const loginState: LoginState = stateDecode(state);
