@@ -10,7 +10,6 @@ import {
   SuccessSilentAuth,
   SqlLog,
   SuccessSignup,
-  Log,
   LogsResponse,
   FailedLogin,
 } from "../types";
@@ -26,7 +25,7 @@ function getCommonFields(log: SqlLog) {
   };
 }
 
-function getLog(log: SqlLog): Log {
+function getLog(log: SqlLog) {
   switch (log.type) {
     case "sapi": {
       const successApiOperation: SuccessApiOperation = {
