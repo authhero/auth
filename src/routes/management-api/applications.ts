@@ -1,204 +1,335 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Path,
-  Request,
-  Route,
-  Tags,
-  Body,
-  SuccessResponse,
-  Security,
-  Delete,
-  Header,
-  Put,
-} from "@tsoa/runtime";
-import { nanoid } from "nanoid";
-import { RequestWithContext } from "../../types/RequestWithContext";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getDbFromEnv } from "../../services/db";
-import { Application } from "../../types/sql";
+import { applicationSchema, applicationInsertSchema } from "../../types/sql";
 import { headers } from "../../constants";
 import { executeQuery } from "../../helpers/sql";
+import { Env } from "../../types";
+import { HTTPException } from "hono/http-exception";
+import { nanoid } from "nanoid";
 
-@Route("tenants/{tenantId}/applications")
-@Tags("applications")
-export class ApplicationsController extends Controller {
-  @Get("")
-  @Security("oauth2managementApi", [""])
-  public async listApplications(
-    @Request() request: RequestWithContext,
-    @Path() tenantId: string,
-    @Header("range") rangeRequest?: string,
-  ): Promise<Application[]> {
-    const { ctx } = request;
+export const applications = new OpenAPIHono<{ Bindings: Env }>()
+  // --------------------------------
+  // GET /applications
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["applications"],
+      method: "get",
+      path: "/",
+      request: {
+        headers: z.object({
+          tenant_id: z.string(),
+          range: z.string().optional(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.array(applicationSchema),
+            },
+          },
+          description: "List of applications",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { tenant_id, range: rangeRequest } = ctx.req.valid("header");
 
-    const db = getDbFromEnv(ctx.env);
-    const query = db
-      .selectFrom("applications")
-      .where("applications.tenant_id", "=", tenantId);
+      const db = getDbFromEnv(ctx.env);
+      const query = db
+        .selectFrom("applications")
+        .where("applications.tenant_id", "=", tenant_id);
 
-    const { data, range } = await executeQuery(query, rangeRequest);
+      const { data, range } = await executeQuery(query, rangeRequest);
 
-    if (range) {
-      this.setHeader(headers.contentRange, range);
-    }
-
-    return data;
-  }
-
-  @Get("{id}")
-  @Security("oauth2managementApi", [""])
-  public async getApplication(
-    @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
-  ): Promise<Application | string> {
-    const { ctx } = request;
-
-    const db = getDbFromEnv(ctx.env);
-    const application = await db
-      .selectFrom("applications")
-      .where("applications.tenant_id", "=", tenantId)
-      .where("applications.id", "=", id)
-      .selectAll()
-      .executeTakeFirst();
-
-    if (!application) {
-      this.setStatus(404);
-      return "Not found";
-    }
-
-    return application;
-  }
-
-  @Delete("{id}")
-  @Security("oauth2managementApi", [""])
-  public async deleteApplication(
-    @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-
-    const db = getDbFromEnv(env);
-
-    await db
-      .deleteFrom("applications")
-      .where("applications.tenant_id", "=", tenantId)
-      .where("applications.id", "=", id)
-      .execute();
-
-    return "OK";
-  }
-
-  @Patch("{id}")
-  @Security("oauth2managementApi", [""])
-  public async patchApplication(
-    @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
-    @Body()
-    body: Partial<
-      Omit<Application, "id" | "tenant_id" | "created_at" | "updated_at">
-    >,
-  ) {
-    const { env } = request.ctx;
-
-    const db = getDbFromEnv(env);
-
-    const application = {
-      ...body,
-      tenantId,
-      updated_at: new Date().toISOString(),
-    };
-
-    const results = await db
-      .updateTable("applications")
-      .set(application)
-      .where("id", "=", id)
-      .execute();
-
-    return Number(results[0].numUpdatedRows);
-  }
-
-  @Post("")
-  @Security("oauth2managementApi", [""])
-  @SuccessResponse(201, "Created")
-  public async postApplications(
-    @Request() request: RequestWithContext,
-    @Path() tenantId: string,
-    @Body()
-    body: {
-      id?: string;
-      name: string;
-      allowed_web_origins: string;
-      allowed_callback_urls: string;
-      allowed_logout_urls: string;
-      email_validation: "enabled" | "disabled" | "enforced";
-      client_secret?: string;
-    },
-  ): Promise<Application> {
-    const { ctx } = request;
-    const { env } = ctx;
-
-    const application = await env.data.applications.create(tenantId, {
-      ...body,
-      id: body.id || nanoid(),
-      client_secret: body.client_secret || nanoid(),
-    });
-
-    this.setStatus(201);
-    return application;
-  }
-
-  @Put("{id}")
-  @Security("oauth2managementApi", [""])
-  public async putApplication(
-    @Request() request: RequestWithContext,
-    @Path() tenantId: string,
-    @Path() id: string,
-    @Body()
-    body: Omit<Application, "id" | "tenant_id" | "created_at" | "updated_at">,
-  ): Promise<Application> {
-    const { ctx } = request;
-    const { env } = ctx;
-
-    const db = getDbFromEnv(env);
-
-    const application: Application = {
-      ...body,
-      tenant_id: tenantId,
-      id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    try {
-      await db
-        .insertInto("applications")
-        .values(application)
-        // .onConflict((oc) => oc.column("id").doUpdateSet(body))
-        .execute();
-    } catch (err: any) {
-      if (!err.message.includes("AlreadyExists")) {
-        throw err;
+      const headers = new Headers();
+      if (range) {
+        headers.set("content-range", range);
       }
 
-      const {
-        id,
-        created_at,
-        tenant_id: tenantId,
-        ...applicationUpdate
-      } = application;
-      await db
-        .updateTable("applications")
-        .set(applicationUpdate)
-        .where("id", "=", application.id)
-        .execute();
-    }
+      return ctx.json(z.array(applicationSchema).parse(data), {
+        headers,
+      });
+    },
+  )
+  // --------------------------------
+  // GET /applications/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["applications"],
+      method: "get",
+      path: "/{id}",
+      request: {
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: applicationSchema,
+            },
+          },
+          description: "An application",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
 
-    this.setStatus(200);
-    return application;
-  }
-}
+      const db = getDbFromEnv(ctx.env);
+      const application = await db
+        .selectFrom("applications")
+        .where("applications.tenant_id", "=", tenant_id)
+        .where("applications.id", "=", id)
+        .selectAll()
+        .executeTakeFirst();
+
+      if (!application) {
+        throw new HTTPException(404);
+      }
+
+      return ctx.json(applicationSchema.parse(application), {
+        headers,
+      });
+    },
+  )
+  // --------------------------------
+  // DELETE /applications/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["applications"],
+      method: "delete",
+      path: "/{id}",
+      request: {
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Status",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
+
+      const db = getDbFromEnv(ctx.env);
+      await db
+        .deleteFrom("applications")
+        .where("applications.tenant_id", "=", tenant_id)
+        .where("applications.id", "=", id)
+        .execute();
+
+      return ctx.text("OK");
+    },
+  )
+  // --------------------------------
+  // PATCH /applications/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["applications"],
+      method: "patch",
+      path: "/{id}",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: applicationInsertSchema.partial(),
+            },
+          },
+        },
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Status",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
+      const body = ctx.req.valid("json");
+
+      const db = getDbFromEnv(ctx.env);
+      const application = {
+        ...body,
+        tenant_id,
+        updated_at: new Date().toISOString(),
+      };
+
+      const results = await db
+        .updateTable("applications")
+        .set(application)
+        .where("id", "=", id)
+        .execute();
+
+      return ctx.text(results[0].numUpdatedRows.toString());
+    },
+  )
+  // --------------------------------
+  // POST /applications
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["applications"],
+      method: "post",
+      path: "/",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: applicationInsertSchema,
+            },
+          },
+        },
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: applicationSchema,
+            },
+          },
+          description: "An application",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { tenant_id } = ctx.req.valid("header");
+      const body = ctx.req.valid("json");
+
+      const application = await ctx.env.data.applications.create(tenant_id, {
+        ...body,
+        id: body.id || nanoid(),
+        client_secret: body.client_secret || nanoid(),
+      });
+
+      return ctx.json(application);
+    },
+  )
+  // --------------------------------
+  // PUT /applications/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["applications"],
+      method: "put",
+      path: "/{:id}",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: applicationInsertSchema,
+            },
+          },
+        },
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: applicationSchema,
+            },
+          },
+          description: "An application",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
+      const body = ctx.req.valid("json");
+
+      const application = {
+        ...body,
+        tenant_id,
+        id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const db = getDbFromEnv(ctx.env);
+
+      try {
+        await db.insertInto("applications").values(application).execute();
+      } catch (err: any) {
+        if (!err.message.includes("AlreadyExists")) {
+          throw err;
+        }
+
+        const {
+          id,
+          created_at,
+          tenant_id: tenantId,
+          ...applicationUpdate
+        } = application;
+        await db
+          .updateTable("applications")
+          .set(applicationUpdate)
+          .where("id", "=", application.id)
+          .execute();
+      }
+
+      return ctx.json(application);
+    },
+  );
