@@ -7,7 +7,6 @@ import { testClient } from "hono/testing";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
-import test from "node:test";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -22,20 +21,23 @@ describe("code-flow", () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     // -----------------
     // Doing a new signup here, so expect this email not to exist
     // -----------------
-    const resInitialQuery = await client.api.v2["users-by-email"].$get(
+    const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "test@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -260,6 +262,7 @@ describe("code-flow", () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     // -----------------
     // Create the user to log in with the code
@@ -279,16 +282,18 @@ describe("code-flow", () => {
       updated_at: new Date().toISOString(),
     });
 
-    const resInitialQuery = await client.api.v2["users-by-email"].$get(
+    const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "bar@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
         },
       },
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );

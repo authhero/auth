@@ -4,7 +4,7 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
-import { tsoaApp } from "../../../src/app";
+import { loginApp, tsoaApp } from "../../../src/app";
 import { UserResponse } from "../../../src/types";
 
 const AUTH_PARAMS = {
@@ -21,20 +21,23 @@ describe("magic link flow", () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // Doing a new signup here, so expect this email not to exist
       // -----------------
-      const resInitialQuery = await client.api.v2["users-by-email"].$get(
+      const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
         {
           query: {
             email: "new-user@example.com",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
@@ -144,6 +147,7 @@ describe("magic link flow", () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // Create the user to log in with the magic link
@@ -163,10 +167,13 @@ describe("magic link flow", () => {
         updated_at: new Date().toISOString(),
       });
 
-      const resInitialQuery = await client.api.v2["users-by-email"].$get(
+      const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
         {
           query: {
             email: "bar@example.com",
+          },
+          header: {
+            "tenant-id": "tenantId",
           },
         },
         {

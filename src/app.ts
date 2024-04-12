@@ -15,6 +15,7 @@ import { login } from "./routes/tsx/routes";
 import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
+import { usersByEmail } from "./routes/management-api/users-by-email";
 import { tenants } from "./routes/management-api/tenants";
 import { logs } from "./routes/management-api/logs";
 import { applications } from "./routes/management-api/applications";
@@ -83,11 +84,12 @@ export const app = rootApp
 export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
-  .route("/tenants", applicationsFallback)
-  .route("/api/v2/applications", applications)
   .route("/api/v2/users", users)
+  .route("/api/v2/users-by-email", usersByEmail)
+  .route("/api/v2/applications", applications)
   .route("/api/v2/tenants", tenants)
-  .route("/api/v2/logs", logs);
+  .route("/api/v2/logs", logs)
+  .route("/tenants", applicationsFallback);
 
 loginApp.doc("/u/doc", {
   openapi: "3.0.0",
