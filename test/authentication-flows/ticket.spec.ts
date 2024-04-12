@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeAll, vi, afterAll } from "vitest";
 import { contextFixture, controllerFixture } from "../fixtures";
 
 import { ticketAuth } from "../../src/authentication-flows";
@@ -10,6 +10,14 @@ import { parseJwt } from "../../src/utils/parse-jwt";
 
 describe("passwordlessAuth", () => {
   const date = new Date();
+
+  beforeAll(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(date);
+  });
+  afterAll(() => {
+    vi.useRealTimers();
+  });
 
   it("should redirect with implicit flow as anchor links", async () => {
     const ctx = await contextFixture({
