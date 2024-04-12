@@ -7,7 +7,7 @@ import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { nanoid } from "nanoid";
 
-export const applicationsFallback = new OpenAPIHono<{ Bindings: Env }>()
+export const applications = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /applications
   // --------------------------------

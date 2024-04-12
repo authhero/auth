@@ -16,10 +16,8 @@ import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
 import { tenants } from "./routes/management-api/tenants";
-import {
-  applications,
-  applicationsFallback,
-} from "./routes/management-api/applications";
+import { applications } from "./routes/management-api/applications";
+import { applicationsFallback } from "./routes/management-api/applications-fallback";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
