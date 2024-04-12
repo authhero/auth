@@ -81,7 +81,7 @@ export const app = rootApp
 export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
-  .route("/api/v2/applications", applications)
+  .route("/tenants", applications)
   .route("/api/v2/users", users)
   .route("/api/v2/tenants", tenants);
 

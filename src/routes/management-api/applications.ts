@@ -9,16 +9,18 @@ import { nanoid } from "nanoid";
 
 export const applications = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
-  // GET /applications
+  // GET /vendors/{vendor_id}/applications
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["applications"],
       method: "get",
-      path: "/",
+      path: "/{tenant_id}/applications",
       request: {
-        headers: z.object({
+        params: z.object({
           tenant_id: z.string(),
+        }),
+        headers: z.object({
           range: z.string().optional(),
         }),
       },
@@ -39,7 +41,9 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id, range: rangeRequest } = ctx.req.valid("header");
+      console.log("got here");
+      const { range: rangeRequest } = ctx.req.valid("header");
+      const { tenant_id } = ctx.req.valid("param");
 
       const db = getDbFromEnv(ctx.env);
       const query = db
@@ -65,7 +69,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     createRoute({
       tags: ["applications"],
       method: "get",
-      path: "/{id}",
+      path: "/{tenant_id}/applications/{id}",
       request: {
         params: z.object({
           id: z.string(),
@@ -118,7 +122,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     createRoute({
       tags: ["applications"],
       method: "delete",
-      path: "/{id}",
+      path: "/{tenant_id}/applications/{id}",
       request: {
         params: z.object({
           id: z.string(),
@@ -159,7 +163,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     createRoute({
       tags: ["applications"],
       method: "patch",
-      path: "/{id}",
+      path: "/{tenant_id}/applications/{id}",
       request: {
         body: {
           content: {
@@ -214,7 +218,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     createRoute({
       tags: ["applications"],
       method: "post",
-      path: "/",
+      path: "/{tenant_id}/applications/",
       request: {
         body: {
           content: {
@@ -263,7 +267,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
     createRoute({
       tags: ["applications"],
       method: "put",
-      path: "/{:id}",
+      path: "/{tenant_id}/applications/{:id}",
       request: {
         body: {
           content: {
