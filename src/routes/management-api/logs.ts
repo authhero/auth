@@ -20,7 +20,7 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
       request: {
         query: auth0QuerySchema,
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       security: [
@@ -42,7 +42,7 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
     async (ctx) => {
       const { page, per_page, include_totals, sort, q } =
         ctx.req.valid("query");
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
       const result = await ctx.env.data.logs.list(tenant_id, {
         page,
@@ -69,7 +69,7 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
       path: "/{id}",
       request: {
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
         params: z.object({
           id: z.string(),
@@ -92,7 +92,7 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
 
       const log = await ctx.env.data.logs.get(tenant_id, id);

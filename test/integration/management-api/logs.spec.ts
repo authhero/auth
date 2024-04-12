@@ -15,7 +15,7 @@ describe("logs", () => {
       {
         query: {},
         header: {
-          tenant_id: "tenantId",
+          "tenant-id": "tenantId",
         },
       },
       {
@@ -63,7 +63,7 @@ describe("logs", () => {
       {
         query: {},
         header: {
-          tenant_id: "tenantId",
+          "tenant-id": "tenantId",
         },
       },
       {
@@ -127,7 +127,7 @@ describe("logs", () => {
       {
         query: {},
         header: {
-          tenant_id: "tenantId",
+          "tenant-id": "tenantId",
         },
       },
       {
