@@ -2,10 +2,15 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getDbFromEnv } from "../../services/db";
 import { applicationSchema, applicationInsertSchema } from "../../types/sql";
 import { headers } from "../../constants";
-import { executeQuery } from "../../helpers/sql";
-import { Env } from "../../types";
+import { Env, totalsSchema } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { nanoid } from "nanoid";
+import { auth0QuerySchema } from "../../types/auth0/Query";
+import { parseSort } from "../../utils/sort";
+
+export const applicationsWithTotalsSchema = totalsSchema.extend({
+  applications: z.array(applicationSchema),
+});
 
 export const applications = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
@@ -17,8 +22,8 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       method: "get",
       path: "/",
       request: {
+        query: auth0QuerySchema,
         headers: z.object({
-          range: z.string().optional(),
           tenant_id: z.string(),
         }),
       },
@@ -29,33 +34,24 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       ],
       responses: {
         200: {
-          content: {
-            "application/json": {
-              schema: z.array(applicationSchema),
-            },
-          },
           description: "List of applications",
         },
       },
     }),
     async (ctx) => {
-      const { tenant_id, range: rangeRequest } = ctx.req.valid("header");
+      const { tenant_id } = ctx.req.valid("header");
+      const { page, per_page, include_totals, sort, q } =
+        ctx.req.valid("query");
 
-      const db = getDbFromEnv(ctx.env);
-      const query = db
-        .selectFrom("applications")
-        .where("applications.tenant_id", "=", tenant_id);
-
-      const { data, range } = await executeQuery(query, rangeRequest);
-
-      const headers = new Headers();
-      if (range) {
-        headers.set("content-range", range);
-      }
-
-      return ctx.json(z.array(applicationSchema).parse(data), {
-        headers,
+      const result = await ctx.env.data.applications.list(tenant_id, {
+        page,
+        per_page,
+        include_totals,
+        sort: parseSort(sort),
+        q,
       });
+
+      return ctx.json(result);
     },
   )
   // --------------------------------
