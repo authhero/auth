@@ -16,7 +16,7 @@ import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
 import { usersByEmail } from "./routes/management-api/users-by-email";
-´import { tenants } from "./routes/management-api/tenants";
+import { tenants } from "./routes/management-api/tenants";
 import { applications } from "./routes/management-api/applications";
 
 const ALLOWED_ORIGINS = [
@@ -84,7 +84,7 @@ export const loginApp = rootApp
   .route("/.well-known", wellKnown)
   .route("/api/v2/users", users)
   .route("/api/v2/users-by-email", usersByEmail)
-  .route("/api/v2/applications", applications)  
+  .route("/api/v2/applications", applications)
   .route("/api/v2/tenants", tenants);
 
 loginApp.doc("/u/doc", {
