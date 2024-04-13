@@ -1,14 +1,15 @@
-import { CreateDomainParams } from "../../interfaces/Domains";
-import { Database, SqlDomain } from "../../../types";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { Domain, DomainInsert } from "../../../types/Domain";
+import { nanoid } from "nanoid";
 
 export function create(db: Kysely<Database>) {
-  return async (
-    tenant_id: string,
-    params: CreateDomainParams,
-  ): Promise<SqlDomain> => {
-    const domain: SqlDomain = {
+  return async (tenant_id: string, params: DomainInsert): Promise<Domain> => {
+    const domain = {
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       tenant_id,
+      id: nanoid(),
       ...params,
     };
 
