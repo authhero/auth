@@ -1,18 +1,17 @@
-import { CreateConnectionParams } from "../../interfaces/Connections";
-import { SqlConnection, Database } from "../../../types";
+import { Database } from "../../../types";
+import { Connection, ConnectionInsert } from "../../../types/Connection";
 import { Kysely } from "kysely";
 
 export function create(db: Kysely<Database>) {
   return async (
     tenant_id: string,
-    params: CreateConnectionParams,
-  ): Promise<SqlConnection> => {
-    const connection: SqlConnection = {
-      // inconsistency - some adapters add these fields, others already receive them...
-      //   created_at: new Date().toISOString(),
-      //   updated_at: new Date().toISOString(),
-      tenant_id,
+    params: ConnectionInsert,
+  ): Promise<Connection> => {
+    const connection = {
       ...params,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      tenant_id,
     };
 
     await db.insertInto("connections").values(connection).execute();

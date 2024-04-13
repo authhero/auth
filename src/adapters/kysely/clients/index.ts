@@ -1,5 +1,6 @@
 import { Kysely } from "kysely";
-import { Database, PartialClient, SqlConnectionSchema } from "../../../types";
+import { Database, PartialClient } from "../../../types";
+import { connectionSchema } from "../../../types/Connection";
 import { HTTPException } from "hono/http-exception";
 
 function removeNullProperties<T = any>(obj: Record<string, any>) {
@@ -60,7 +61,7 @@ export function createClientsAdapter(db: Kysely<Database>) {
         id: application.id,
         name: application.name,
         connections: connections.map((connection) =>
-          SqlConnectionSchema.parse(removeNullProperties(connection)),
+          connectionSchema.parse(removeNullProperties(connection)),
         ),
         domains,
         tenant_id: tenant.id,

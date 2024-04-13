@@ -10,11 +10,11 @@ import {
   RequestWithContext,
   ClientCredentialGrantTypeParams,
   Tenant,
-  SqlConnection,
   Application,
 } from "../../../src/types";
 import { GrantType } from "../../../src/types";
 import { contextFixture } from "../../fixtures/context";
+import { ConnectionInsert } from "../../../src/types/Connection";
 
 describe("token", () => {
   const date = new Date();
@@ -38,10 +38,9 @@ describe("token", () => {
     updated_at: "updated_at",
   };
 
-  const connection: SqlConnection = {
+  const connection: ConnectionInsert = {
     id: "connectionId",
     name: "google-oauth2",
-    tenant_id: "tenantId",
     client_id: "googleClientId",
     client_secret: "googleClientSecret",
     authorization_endpoint: "https://accounts.google.com/o/oauth2/v2/auth",
@@ -49,8 +48,6 @@ describe("token", () => {
     response_mode: AuthorizationResponseMode.QUERY,
     response_type: AuthorizationResponseType.CODE,
     scope: "openid email profile",
-    created_at: "created_at",
-    updated_at: "updated_at",
   };
 
   const application: Application = {

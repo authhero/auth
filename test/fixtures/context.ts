@@ -5,7 +5,6 @@ import {
   PasswordParams,
   Tenant,
   User,
-  SqlConnection,
   SqlDomain,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
@@ -28,6 +27,7 @@ import { migrateToLatest } from "../../migrate/migrate";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
+import { ConnectionInsert } from "../../src/types/Connection";
 interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
@@ -44,7 +44,7 @@ interface ContextFixtureParams {
   logs?: any[];
   applications?: Application[];
   tenants?: Tenant[];
-  connections?: SqlConnection[];
+  connections?: ConnectionInsert[];
   domains?: SqlDomain[];
 }
 
@@ -113,7 +113,7 @@ export async function contextFixture(
     }
     if (connections) {
       connections.forEach((connection) => {
-        data.connections.create(connection.tenant_id, connection);
+        data.connections.create("tenantId", connection);
       });
     }
     if (domains) {

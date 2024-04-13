@@ -8,12 +8,13 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
   Application,
-  SqlConnection,
   Tenant,
 } from "../../../src/types";
+
 import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 import type { Email } from "../../../src/types/Email";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
+import { Connection } from "../../../src/types/Connection";
 
 export async function getEnv() {
   const dialect = new SqliteDialect({
@@ -97,8 +98,6 @@ export async function getEnv() {
     response_mode: AuthorizationResponseMode.QUERY,
     response_type: AuthorizationResponseType.CODE,
     scope: "openid profile email",
-    created_at: "created_at",
-    updated_at: "updated_at",
   });
   await data.connections.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CONNECTION2",
@@ -110,8 +109,6 @@ export async function getEnv() {
     response_mode: AuthorizationResponseMode.QUERY,
     response_type: AuthorizationResponseType.CODE,
     scope: "openid profile email",
-    created_at: "created_at",
-    updated_at: "updated_at",
   });
 
   // Create fixtures----------------------------------------
@@ -153,20 +150,18 @@ export async function getEnv() {
     updated_at: "updated_at",
   };
 
-  const testConnection1: SqlConnection = {
+  const testConnection1: Connection = {
     id: "connectionId1",
     name: "demo-social-provider",
     created_at: "created_at",
     updated_at: "updated_at",
-    tenant_id: "tenantId",
   };
 
-  const testConnection2: SqlConnection = {
+  const testConnection2: Connection = {
     id: "connectionId2",
     name: "other-social-provider",
     created_at: "created_at",
     updated_at: "updated_at",
-    tenant_id: "tenantId",
   };
 
   const anotherTenant: Tenant = {

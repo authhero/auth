@@ -1,9 +1,9 @@
+import { Connection } from "../../src/types/Connection";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
   Application,
   Tenant,
-  SqlConnection,
   SqlDomain,
 } from "../../src/types";
 
@@ -30,7 +30,7 @@ export const TENANT_FIXTURE: Tenant = {
   updated_at: "updated_at",
 };
 
-export const CONNECTIONS_FIXTURE: SqlConnection[] = [
+export const CONNECTIONS_FIXTURE: Connection[] = [
   {
     id: "connectionId1",
     name: "google-oauth2",
@@ -43,7 +43,6 @@ export const CONNECTIONS_FIXTURE: SqlConnection[] = [
     scope: "openid profile email",
     created_at: "created_at",
     updated_at: "updated_at",
-    tenant_id: "tenantId",
   },
   {
     id: "connectionId2",
@@ -57,7 +56,6 @@ export const CONNECTIONS_FIXTURE: SqlConnection[] = [
     scope: "email public_profile",
     created_at: "created_at",
     updated_at: "updated_at",
-    tenant_id: "tenantId",
   },
 ];
 
