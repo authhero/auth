@@ -1,146 +1,197 @@
-import {
-  Controller,
-  Get,
-  Body,
-  Query,
-  Request,
-  Route,
-  Tags,
-  SuccessResponse,
-  Middlewares,
-  Post,
-} from "@tsoa/runtime";
 import { socialAuthCallback } from "../../authentication-flows";
-import { LoginState, RequestWithContext } from "../../types";
+import { Env, LoginState } from "../../types";
 import { stateDecode } from "../../utils/stateEncode";
-import { headers } from "../../constants";
-import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
-import { LogTypes } from "../../types";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import { Var } from "../../types/Var";
 
-interface CallbackBody {
-  state: string;
-  code: string;
-  user?: {
-    email?: string;
-    name?: {
-      firstName?: string;
-      lastName?: string;
-    };
-  };
-}
+const callbackBodySchema = z.object({
+  state: z.string(),
+  code: z.string(),
+  user: z
+    .object({
+      email: z.string().optional(),
+      name: z
+        .object({
+          firstName: z.string(),
+          lastName: z.string(),
+        })
+        .optional(),
+    })
+    .optional(),
+});
 
-@Route("callback")
-@Tags("callback")
-export class CallbackController extends Controller {
-  /**
-   * A callback endpoint used for oauth2 providers such as google.
-   */
-  @Get("")
-  @SuccessResponse("302", "Redirect")
-  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
-  public async getCallback(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-    @Query("code") code?: string,
-    @Query("scope") scope?: string,
-    @Query("prompt") prompt?: string,
-    @Query("authuser") authUser?: string,
-    @Query("hd") hd?: string,
-    // optional error params
-    @Query("error") error?: string,
-    @Query("error_description") errorDescription?: string,
-    @Query("error_code") errorCode?: string,
-    @Query("error_reason") errorReason?: string,
-  ): Promise<string> {
-    const loginState: LoginState = stateDecode(state);
-    if (!loginState) {
-      throw new Error("State not found");
-    }
-    request.ctx.set("client_id", loginState.authParams.client_id);
-    const client = await getClient(
-      request.ctx.env,
-      loginState.authParams.client_id,
-    );
-    if (!client) {
-      throw new HTTPException(400, { message: "Client not found" });
-    }
-    request.ctx.set("tenantId", client.tenant_id);
-
-    if (error) {
-      request.ctx.set("logType", LogTypes.FAILED_LOGIN);
-      const { redirect_uri } = loginState.authParams;
-
-      if (!redirect_uri) {
-        throw new Error("Redirect uri not found");
-      }
-
-      const redirectUri = new URL(redirect_uri);
-
-      redirectUri.searchParams.set("error", error);
-      if (errorDescription) {
-        redirectUri.searchParams.set("error_description", errorDescription);
-      }
-      if (errorCode) {
-        redirectUri.searchParams.set("error_code", errorCode);
-      }
-      if (errorReason) {
-        redirectUri.searchParams.set("error_reason", errorReason);
-      }
-      if (loginState.authParams.state) {
-        redirectUri.searchParams.set("state", loginState.authParams.state);
-      }
-
-      this.setStatus(302);
-      this.setHeader(headers.location, redirectUri.href);
-      return "Redirecting";
-    }
-
-    if (code) {
-      return socialAuthCallback({
-        ctx: request.ctx,
-        controller: this,
-        state: loginState,
+export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
+  // --------------------------------
+  // GET /.well-known/jwks.json
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["oauth2"],
+      method: "get",
+      path: "/",
+      request: {
+        query: z.object({
+          state: z.string(),
+          code: z.string().optional(),
+          scope: z.string().optional(),
+          hd: z.string().optional(),
+          error: z.string().optional(),
+          error_description: z.string().optional(),
+          error_code: z.string().optional(),
+          error_reason: z.string().optional(),
+        }),
+      },
+      responses: {
+        302: {
+          description: "Redirect to the client's redirect uri",
+        },
+      },
+    }),
+    async (ctx) => {
+      const {
+        state,
         code,
-      });
-    }
+        error,
+        error_description,
+        error_code,
+        error_reason,
+      } = ctx.req.valid("query");
 
-    throw new Error("Invalid request");
-  }
+      const loginState: LoginState = stateDecode(state);
+      if (!loginState) {
+        throw new Error("State not found");
+      }
 
-  /**
-   * A callback endpoint with post used for some oauth2 providers such as apple.
-   */
-  @Post("")
-  @SuccessResponse("302", "Redirect")
-  @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
-  public async postCallback(
-    @Request() request: RequestWithContext,
-    @Body() body: CallbackBody,
-  ): Promise<string> {
-    const { code, state } = body;
-    const loginState: LoginState = stateDecode(state);
+      const client = await getClient(ctx.env, loginState.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
 
-    if (!loginState) {
-      throw new Error("State not found");
-    }
+      if (error) {
+        const { redirect_uri } = loginState.authParams;
 
-    request.ctx.set("client_id", loginState.authParams.client_id);
-    const client = await getClient(
-      request.ctx.env,
-      loginState.authParams.client_id,
-    );
-    if (!client) {
-      throw new HTTPException(400, { message: "Client not found" });
-    }
-    request.ctx.set("tenantId", client.tenant_id);
+        if (!redirect_uri) {
+          throw new Error("Redirect uri not found");
+        }
 
-    return socialAuthCallback({
-      ctx: request.ctx,
-      controller: this,
-      state: loginState,
-      code,
-    });
-  }
-}
+        const redirectUri = new URL(redirect_uri);
+
+        redirectUri.searchParams.set("error", error);
+        if (error_description) {
+          redirectUri.searchParams.set("error_description", error_description);
+        }
+        if (error_code) {
+          redirectUri.searchParams.set("error_code", error_code);
+        }
+        if (error_reason) {
+          redirectUri.searchParams.set("error_reason", error_reason);
+        }
+        if (loginState.authParams.state) {
+          redirectUri.searchParams.set("state", loginState.authParams.state);
+        }
+
+        return ctx.redirect(redirectUri.href);
+      }
+
+      if (code) {
+        return socialAuthCallback({
+          ctx,
+          state: loginState,
+          code,
+        });
+      }
+
+      throw new HTTPException(400, { message: "State and code are required" });
+    },
+  )
+  // --------------------------------
+  // GET /.well-known/jwks.json
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["oauth2"],
+      method: "post",
+      path: "/",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                state: z.string(),
+                code: z.string().optional(),
+                scope: z.string().optional(),
+                hd: z.string().optional(),
+                error: z.string().optional(),
+                error_description: z.string().optional(),
+                error_code: z.string().optional(),
+                error_reason: z.string().optional(),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        302: {
+          description: "Redirect to the client's redirect uri",
+        },
+      },
+    }),
+    async (ctx) => {
+      const {
+        state,
+        code,
+        error,
+        error_description,
+        error_code,
+        error_reason,
+      } = ctx.req.valid("json");
+
+      const loginState: LoginState = stateDecode(state);
+      if (!loginState) {
+        throw new Error("State not found");
+      }
+
+      const client = await getClient(ctx.env, loginState.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      if (error) {
+        const { redirect_uri } = loginState.authParams;
+
+        if (!redirect_uri) {
+          throw new Error("Redirect uri not found");
+        }
+
+        const redirectUri = new URL(redirect_uri);
+
+        redirectUri.searchParams.set("error", error);
+        if (error_description) {
+          redirectUri.searchParams.set("error_description", error_description);
+        }
+        if (error_code) {
+          redirectUri.searchParams.set("error_code", error_code);
+        }
+        if (error_reason) {
+          redirectUri.searchParams.set("error_reason", error_reason);
+        }
+        if (loginState.authParams.state) {
+          redirectUri.searchParams.set("state", loginState.authParams.state);
+        }
+
+        return ctx.redirect(redirectUri.href);
+      }
+
+      if (code) {
+        return socialAuthCallback({
+          ctx,
+          state: loginState,
+          code,
+        });
+      }
+
+      throw new HTTPException(400, { message: "State and code are required" });
+    },
+  );

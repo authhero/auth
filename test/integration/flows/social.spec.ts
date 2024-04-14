@@ -110,7 +110,7 @@ describe("social sign on", () => {
         const client = testClient(tsoaApp, env);
         const loginClient = testClient(loginApp, env);
 
-        const socialCallbackResponse = await client.callback.$get({
+        const socialCallbackResponse = await loginClient.callback.$get({
           query: socialCallbackQuery,
         });
         expect(socialCallbackResponse.status).toBe(302);
@@ -213,7 +213,7 @@ describe("social sign on", () => {
         );
         // this checks that the integration test persistence is correctly reset every test
         expect(checkNoExistingUser.status).toBe(404);
-        const socialCallbackResponse = await client.callback.$post(
+        const socialCallbackResponse = await loginClient.callback.$post(
           {
             json: {
               state: SOCIAL_STATE_PARAM,
@@ -349,7 +349,7 @@ describe("social sign on", () => {
         code: "code",
       };
 
-      const socialCallbackResponse = await client.callback.$get({
+      const socialCallbackResponse = await loginClient.callback.$get({
         query: socialCallbackQuery,
       });
 
@@ -457,7 +457,7 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now sign in same social user again and check we get the same primary user back
       // ---------------------------------------------
-      const socialCallbackResponse2 = await client.callback.$get({
+      const socialCallbackResponse2 = await loginClient.callback.$get({
         query: socialCallbackQuery,
       });
 
@@ -479,7 +479,7 @@ describe("social sign on", () => {
         ).replace("==", ""),
         code: "code",
       };
-      const socialCallbackResponseAnotherSSO = await client.callback.$get({
+      const socialCallbackResponseAnotherSSO = await loginClient.callback.$get({
         query: socialCallbackQueryAnotherSSO,
       });
 
@@ -557,8 +557,7 @@ describe("social sign on", () => {
     it("should return existing primary account when logging in with new social sign on with same email address AND there is already another linked social account", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
-      const loginClient = testClient(loginApp, env);
+      const client = testClient(loginApp, env);
 
       // What I want here is for the linked social account to be returned FIRST!
       // so this is a bit synthetic by manually writing the users...
@@ -594,7 +593,7 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // fetch this email user to sanity check test
       // ---------------------------------------------
-      const emailUserRes = await loginClient.api.v2.users[":user_id"].$get(
+      const emailUserRes = await client.api.v2.users[":user_id"].$get(
         {
           param: { user_id: "email|7575757575757" },
           header: {
@@ -669,6 +668,7 @@ describe("social sign on", () => {
     it("should ignore un-verified password account when signing up with social account", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // signup new user
@@ -702,7 +702,7 @@ describe("social sign on", () => {
         code: "code",
       };
 
-      const socialCallbackResponse = await client.callback.$get({
+      const socialCallbackResponse = await loginClient.callback.$get({
         query: socialCallbackQuery,
       });
       expect(socialCallbackResponse.status).toBe(302);
@@ -724,7 +724,7 @@ describe("social sign on", () => {
     describe("auth2 should not create a new user if callback from non-existing social provider", () => {
       it("should not when GET /callback", async () => {
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+        const client = testClient(loginApp, env);
 
         const socialCallbackQuery = {
           // this is the only difference from the other tests
@@ -753,7 +753,7 @@ describe("social sign on", () => {
       });
       it("should not when POST /callback", async () => {
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
+        const client = testClient(loginApp, env);
 
         const socialCallbackResponse = await client.callback.$post(
           {
@@ -795,7 +795,7 @@ describe("social sign on", () => {
       // e.g. Facebook hit "not now" button
 
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const client = testClient(loginApp, env);
 
       const errorCallbackResponse = await client.callback.$get({
         query: {
