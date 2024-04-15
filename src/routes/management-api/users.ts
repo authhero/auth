@@ -16,6 +16,7 @@ import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import { createTypeLog } from "../../tsoa-middlewares/logger";
 import { Var } from "../../types/Var";
+import { waitUntil } from "../../utils/wait-until";
 
 export const usersWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(userSchema),
@@ -295,7 +296,7 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       ctx.set("tenantId", tenant_id);
 
       const log: Log = createTypeLog("sapi", ctx, body, `Create a User`);
-      await ctx.env.data.logs.create(tenant_id, log);
+      waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
       const userResponse: UserResponse = {
         ...data,
