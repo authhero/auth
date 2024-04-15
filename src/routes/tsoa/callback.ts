@@ -6,22 +6,6 @@ import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Var } from "../../types/Var";
 
-const callbackBodySchema = z.object({
-  state: z.string(),
-  code: z.string(),
-  user: z
-    .object({
-      email: z.string().optional(),
-      name: z
-        .object({
-          firstName: z.string(),
-          lastName: z.string(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
-
 export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
   // GET /.well-known/jwks.json
