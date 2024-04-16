@@ -6,9 +6,9 @@ import {
   AuthorizationResponseMode,
   Application,
   Tenant,
-  SqlDomain,
 } from "../../src/types";
 import { Connection } from "../../src/types/Connection";
+import { Domain } from "../../src/types/Domain";
 
 const TENANT_FIXTURE: Tenant = {
   id: "tenantId",
@@ -48,12 +48,11 @@ const CONNECTION_FIXTURE: Connection = {
   updated_at: "updated_at",
 };
 
-const DOMAIN_FIXTURE: SqlDomain = {
+const DOMAIN_FIXTURE: Domain = {
   id: "domainId",
   domain: "example2.com",
   email_api_key: "",
   email_service: "mailgun",
-  tenant_id: "tenantId",
   created_at: "created_at",
   updated_at: "updated_at",
   dkim_private_key: "",
@@ -105,9 +104,9 @@ describe("getClient", () => {
       domains: [
         {
           id: "defaultDomain1",
-          tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
           dkim_private_key: "",
+          dkim_public_key: "",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
@@ -119,19 +118,20 @@ describe("getClient", () => {
 
     const client = await getClient(ctx.env, "testClient");
 
-    expect(client!.domains).toEqual([
+    expect(client!.domains.sort()).toEqual([
+      {
+        domain: "example.com",
+        dkim_private_key: "",
+        email_service: "mailchannels",
+        email_api_key: "",
+        dkim_public_key: "",
+      },
       {
         email_api_key: "",
         domain: "example2.com",
         email_service: "mailgun",
         dkim_private_key: "",
         dkim_public_key: "",
-      },
-      {
-        domain: "example.com",
-        dkim_private_key: "",
-        email_service: "mailchannels",
-        email_api_key: "",
       },
     ]);
   });
@@ -144,9 +144,9 @@ describe("getClient", () => {
       domains: [
         {
           id: "defaultDomain1",
-          tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
           dkim_private_key: "",
+          dkim_public_key: "",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
@@ -158,19 +158,20 @@ describe("getClient", () => {
 
     const client = await getClient(ctx.env, "testClient");
 
-    expect(client!.domains).toEqual([
+    expect(client!.domains.sort()).toEqual([
+      {
+        domain: "example.com",
+        dkim_private_key: "",
+        email_service: "mailchannels",
+        email_api_key: "",
+        dkim_public_key: "",
+      },
       {
         domain: "example2.com",
         email_api_key: "",
         email_service: "mailgun",
         dkim_private_key: "",
         dkim_public_key: "",
-      },
-      {
-        domain: "example.com",
-        dkim_private_key: "",
-        email_service: "mailchannels",
-        email_api_key: "",
       },
     ]);
   });

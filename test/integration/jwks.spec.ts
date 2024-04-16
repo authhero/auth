@@ -31,7 +31,6 @@ describe("jwks", () => {
 
   it("should create a new rsa-key and return it", async () => {
     const env = await getEnv();
-    const tsoaClient = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const initialKey = await loginClient[".well-known"]["jwks.json"].$get(
@@ -50,15 +49,19 @@ describe("jwks", () => {
 
     const token = await getAdminToken();
 
-    const createKeyResponse = await tsoaClient.api.v2.keys.signing.rotate.$post(
-      {},
-      {
-        headers: {
-          "tenant-id": "tenantId",
-          authorization: `Bearer ${token}`,
+    const createKeyResponse =
+      await loginClient.api.v2.keys.signing.rotate.$post(
+        {
+          header: {
+            tenant_id: "tenantId",
+          },
         },
-      },
-    );
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
     expect(createKeyResponse.status).toBe(201);
 

@@ -5,7 +5,6 @@ import {
   PasswordParams,
   Tenant,
   User,
-  SqlDomain,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
@@ -28,6 +27,8 @@ import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
 import { ConnectionInsert } from "../../src/types/Connection";
+import { Domain } from "../../src/types/Domain";
+
 interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
@@ -45,7 +46,7 @@ interface ContextFixtureParams {
   applications?: Application[];
   tenants?: Tenant[];
   connections?: ConnectionInsert[];
-  domains?: SqlDomain[];
+  domains?: Domain[];
 }
 
 export async function contextFixture(
@@ -108,24 +109,24 @@ export async function contextFixture(
     }
     if (applications) {
       applications.forEach((application) => {
-        data.applications.create(application.tenant_id, application);
+        data.applications.create(TENANT_FIXTURE.id, application);
       });
     }
     if (connections) {
       connections.forEach((connection) => {
-        data.connections.create("tenantId", connection);
+        data.connections.create(TENANT_FIXTURE.id, connection);
       });
     }
     if (domains) {
       domains.forEach((domain) => {
-        data.domains.create(domain.tenant_id, domain);
+        data.domains.create(TENANT_FIXTURE.id, domain);
       });
     }
   }
 
   if (users) {
     users.forEach((user) => {
-      data.users.create("tenantId", user);
+      data.users.create(TENANT_FIXTURE.id, user);
     });
   }
 
