@@ -1,112 +1,173 @@
-import {
-  Controller,
-  Get,
-  Path,
-  Post,
-  Put,
-  Request,
-  Route,
-  Security,
-  SuccessResponse,
-  Tags,
-  Header,
-} from "@tsoa/runtime";
-import { RequestWithContext } from "../../types/RequestWithContext";
-import { SigningKey } from "../../types";
+import { Env, certificateSchema, signingKeySchema } from "../../types";
 import { create } from "../../services/rsa-key";
 import { HTTPException } from "hono/http-exception";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 
 const DAY = 1000 * 60 * 60 * 24;
 
-@Route("api/v2/keys/signing")
-@Tags("keys")
-@Security("oauth2managementApi", [""])
-export class KeysController extends Controller {
-  @Get("")
-  public async list(
-    @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-  ): Promise<SigningKey[]> {
-    const { ctx } = request;
-    const { env } = ctx;
+export const keys = new OpenAPIHono<{ Bindings: Env }>()
+  // --------------------------------
+  // GET /keys
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["keys"],
+      method: "get",
+      path: "/",
+      request: {
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.array(signingKeySchema),
+            },
+          },
+          description: "List of keys",
+        },
+      },
+    }),
+    async (ctx) => {
+      const keys = await ctx.env.data.keys.list();
 
-    const keys = await env.data.keys.list();
+      return ctx.json(
+        keys.map((key) => ({
+          kid: key.kid,
+          cert: key.public_key,
+          revoked_at: key.revoked_at,
+          revoked: !!key.revoked_at,
+          fingerprint: "fingerprint",
+          thumbprint: "thumbprint",
+        })),
+      );
+    },
+  )
+  // --------------------------------
+  // GET /keys/:kid
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["keys"],
+      method: "get",
+      path: "/{kid}",
+      request: {
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+        params: z.object({
+          kid: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: certificateSchema,
+            },
+          },
+          description: "A key",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { kid } = ctx.req.valid("param");
 
-    return keys.map((key) => ({
-      kid: key.kid,
-      cert: key.public_key,
-      revoked_at: key.revoked_at,
-      revoked: !!key.revoked_at,
-      fingerprint: "fingerprint",
-      thumbprint: "thumbprint",
-    }));
-  }
+      const keys = await ctx.env.data.keys.list();
+      const key = keys.find((k) => k.kid === kid);
+      if (!key) {
+        throw new HTTPException(404, { message: "Key not found" });
+      }
 
-  @Get("{kid}")
-  public async get(
-    @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-    @Path() kid: string,
-  ): Promise<SigningKey> {
-    const { ctx } = request;
-    const { env } = ctx;
+      return ctx.json(key);
+    },
+  )
+  // --------------------------------
+  // POST /rotate
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["keys"],
+      method: "post",
+      path: "/rotate",
+      request: {
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        201: {
+          description: "Status",
+        },
+      },
+    }),
+    async (ctx) => {
+      const keys = await ctx.env.data.keys.list();
+      for await (const key of keys) {
+        await ctx.env.data.keys.revoke(key.kid, new Date(Date.now() + DAY));
+      }
 
-    const keys = await env.data.keys.list();
-    const key = keys.find((k) => k.kid === kid);
-    if (!key) {
-      throw new HTTPException(404, { message: "Key not found" });
-    }
+      const newCertificate = await create();
+      await ctx.env.data.keys.create(newCertificate);
 
-    return {
-      kid: key.kid,
-      cert: key.public_key,
-      revoked_at: key.revoked_at,
-      revoked: !!key.revoked_at,
-      fingerprint: "fingerprint",
-      thumbprint: "thumbprint",
-    };
-  }
+      return ctx.text("OK", { status: 201 });
+    },
+  )
+  // --------------------------------
+  // PUT /:kid/revoke
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["keys"],
+      method: "put",
+      path: "/{kid}/revoke",
+      request: {
+        headers: z.object({
+          tenant_id: z.string(),
+        }),
+        params: z.object({
+          kid: z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        201: {
+          description: "Status",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { kid } = ctx.req.valid("param");
 
-  @Post("rotate")
-  @SuccessResponse(201, "Created")
-  public async rotate(
-    @Request() request: RequestWithContext,
-    @Header("tenant-id") tenantId: string,
-  ): Promise<string> {
-    const { ctx } = request;
-    const { env } = ctx;
+      const revoked = await ctx.env.data.keys.revoke(kid, new Date(Date.now()));
+      if (!revoked) {
+        throw new HTTPException(404, { message: "Key not found" });
+      }
 
-    const keys = await env.data.keys.list();
-    for await (const key of keys) {
-      await env.data.keys.revoke(key.kid, new Date(Date.now() + DAY));
-    }
+      const newCertificate = await create();
+      await ctx.env.data.keys.create(newCertificate);
 
-    const newCertificate = await create();
-    await env.data.keys.create(newCertificate);
-
-    this.setStatus(201);
-    return "OK";
-  }
-
-  @Put("{kid}/revoke")
-  @SuccessResponse(201, "Created")
-  public async revoke(
-    @Request() request: RequestWithContext,
-    @Header() tenant_id: string,
-    @Path() kid: string,
-  ): Promise<string> {
-    const { ctx } = request;
-    const { env } = ctx;
-
-    const revoked = await env.data.keys.revoke(kid, new Date(Date.now()));
-    if (!revoked) {
-      throw new HTTPException(404, { message: "Key not found" });
-    }
-
-    const newCertificate = await create();
-    await env.data.keys.create(newCertificate);
-
-    this.setStatus(201);
-    return "OK";
-  }
-}
+      return ctx.text("OK", { status: 201 });
+    },
+  );

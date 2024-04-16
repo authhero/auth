@@ -20,6 +20,7 @@ import { tenants } from "./routes/management-api/tenants";
 import { logs } from "./routes/management-api/logs";
 import { applications } from "./routes/management-api/applications";
 import { domains } from "./routes/management-api/domains";
+import { keys } from "./routes/management-api/keys";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -86,6 +87,7 @@ export const loginApp = rootApp
   .route("/.well-known", wellKnown)
   .route("/api/v2/domains", domains)
   .route("/api/v2/users", users)
+  .route("/api/v2/keys/signing", keys)
   .route("/api/v2/users-by-email", usersByEmail)
   .route("/api/v2/applications", applications)
   .route("/api/v2/tenants", tenants)
