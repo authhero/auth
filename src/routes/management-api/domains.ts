@@ -56,11 +56,10 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
         q,
       });
 
-      if (result.totals) {
-        return ctx.json({
-          domains: result.domains,
-          ...result.totals,
-        });
+      console.log("result", result);
+
+      if (include_totals) {
+        return ctx.json(result);
       }
 
       return ctx.json(result.domains);

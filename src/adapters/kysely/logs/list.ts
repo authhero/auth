@@ -1,4 +1,4 @@
-import { Database, LogsResponse, SqlLog } from "../../../types";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
