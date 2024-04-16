@@ -66,7 +66,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // GET /connections/:id
+  // GET /api/v2/connections/:id
   // --------------------------------
   .openapi(
     createRoute({
@@ -119,7 +119,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // DELETE /connections/:id
+  // DELETE /api/v2/connections/:id
   // --------------------------------
   .openapi(
     createRoute({
@@ -160,7 +160,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // PATCH /connections/:id
+  // PATCH /api/v2/connections/:id
   // --------------------------------
   .openapi(
     createRoute({
@@ -215,7 +215,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // POST /connections
+  // POST /api/v2/connections
   // --------------------------------
   .openapi(
     createRoute({
@@ -263,7 +263,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
-  // PUT /connections/:id
+  // PUT /api/v2/connections/:id
   // --------------------------------
   .openapi(
     createRoute({
