@@ -6,9 +6,9 @@ import {
   AuthorizationResponseMode,
   Application,
   Tenant,
-  SqlConnection,
-  SqlDomain,
 } from "../../src/types";
+import { Connection } from "../../src/types/Connection";
+import { Domain } from "../../src/types/Domain";
 
 const TENANT_FIXTURE: Tenant = {
   id: "tenantId",
@@ -34,7 +34,7 @@ const APPLICATION_FIXTURE: Application = {
   updated_at: "updated_at",
 };
 
-const CONNECTION_FIXTURE: SqlConnection = {
+const CONNECTION_FIXTURE: Connection = {
   id: "connectionId",
   name: "facebook",
   client_id: "facebookClientId",
@@ -46,15 +46,13 @@ const CONNECTION_FIXTURE: SqlConnection = {
   scope: "email public_profile openid",
   created_at: "created_at",
   updated_at: "updated_at",
-  tenant_id: "tenantId",
 };
 
-const DOMAIN_FIXTURE: SqlDomain = {
+const DOMAIN_FIXTURE: Domain = {
   id: "domainId",
   domain: "example2.com",
   email_api_key: "",
   email_service: "mailgun",
-  tenant_id: "tenantId",
   created_at: "created_at",
   updated_at: "updated_at",
   dkim_private_key: "",
@@ -69,7 +67,6 @@ describe("getClient", () => {
       connections: [
         {
           id: "defaultConnection1",
-          tenant_id: "DEFAULT_SETTINGS",
           name: "facebook",
           client_id: "facebookClientId",
           client_secret: "facebookClientSecret",
@@ -78,16 +75,11 @@ describe("getClient", () => {
           token_endpoint: "https://graph.facebook.com/oauth/access_token",
           response_mode: AuthorizationResponseMode.QUERY,
           response_type: AuthorizationResponseType.CODE,
-          created_at: "created_at",
-          updated_at: "updated_at",
         },
         {
           // only has minimal specified so we are getting the rest from default settings
           id: "connectionId",
           name: "facebook",
-          tenant_id: "tenantId",
-          created_at: "created_at",
-          updated_at: "updated_at",
         },
       ],
       domains: [DOMAIN_FIXTURE],
@@ -112,9 +104,9 @@ describe("getClient", () => {
       domains: [
         {
           id: "defaultDomain1",
-          tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
           dkim_private_key: "",
+          dkim_public_key: "",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
@@ -126,19 +118,20 @@ describe("getClient", () => {
 
     const client = await getClient(ctx.env, "testClient");
 
-    expect(client!.domains).toEqual([
+    expect(client!.domains.sort()).toEqual([
+      {
+        domain: "example.com",
+        dkim_private_key: "",
+        email_service: "mailchannels",
+        email_api_key: "",
+        dkim_public_key: "",
+      },
       {
         email_api_key: "",
         domain: "example2.com",
         email_service: "mailgun",
         dkim_private_key: "",
         dkim_public_key: "",
-      },
-      {
-        domain: "example.com",
-        dkim_private_key: "",
-        email_service: "mailchannels",
-        email_api_key: "",
       },
     ]);
   });
@@ -151,9 +144,9 @@ describe("getClient", () => {
       domains: [
         {
           id: "defaultDomain1",
-          tenant_id: "DEFAULT_SETTINGS",
           domain: "example.com",
           dkim_private_key: "",
+          dkim_public_key: "",
           email_service: "mailchannels",
           created_at: "created_at",
           updated_at: "updated_at",
@@ -165,19 +158,20 @@ describe("getClient", () => {
 
     const client = await getClient(ctx.env, "testClient");
 
-    expect(client!.domains).toEqual([
+    expect(client!.domains.sort()).toEqual([
+      {
+        domain: "example.com",
+        dkim_private_key: "",
+        email_service: "mailchannels",
+        email_api_key: "",
+        dkim_public_key: "",
+      },
       {
         domain: "example2.com",
         email_api_key: "",
         email_service: "mailgun",
         dkim_private_key: "",
         dkim_public_key: "",
-      },
-      {
-        domain: "example.com",
-        dkim_private_key: "",
-        email_service: "mailchannels",
-        email_api_key: "",
       },
     ]);
   });

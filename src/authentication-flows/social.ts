@@ -41,13 +41,13 @@ export async function socialAuth(
 
   const state = stateEncode({ authParams, connection });
 
-  const oauthLoginUrl = new URL(connectionInstance.authorization_endpoint);
+  const oauthLoginUrl = new URL(connectionInstance.authorization_endpoint!);
   if (connectionInstance.scope) {
     oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
   }
   oauthLoginUrl.searchParams.set("state", state);
   oauthLoginUrl.searchParams.set("redirect_uri", `${ctx.env.ISSUER}callback`);
-  oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id);
+  oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id!);
   if (connectionInstance.response_type) {
     oauthLoginUrl.searchParams.set(
       "response_type",
@@ -131,7 +131,14 @@ export async function socialAuthCallback({
   }
 
   const oauth2Client = env.oauth2ClientFactory.create(
-    connection,
+    {
+      // TODO: The types here are optional which isn't correct..
+      ...connection,
+      client_id: connection.client_id!,
+      authorization_endpoint: connection.authorization_endpoint!,
+      token_endpoint: connection.token_endpoint!,
+      scope: connection.scope!,
+    },
     `${env.ISSUER}callback`,
   );
 

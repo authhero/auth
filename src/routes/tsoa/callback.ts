@@ -8,7 +8,7 @@ import { Var } from "../../types/Var";
 
 export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
-  // GET /.well-known/jwks.json
+  // GET /callback
   // --------------------------------
   .openapi(
     createRoute({
@@ -91,7 +91,7 @@ export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     },
   )
   // --------------------------------
-  // GET /.well-known/jwks.json
+  // GET /callback
   // --------------------------------
   .openapi(
     createRoute({

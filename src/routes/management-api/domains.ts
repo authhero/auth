@@ -1,209 +1,336 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Path,
-  Request,
-  Route,
-  Tags,
-  Body,
-  SuccessResponse,
-  Security,
-  Delete,
-  Header,
-  Put,
-} from "@tsoa/runtime";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { nanoid } from "nanoid";
-
 import { getDbFromEnv } from "../../services/db";
-import { RequestWithContext } from "../../types/RequestWithContext";
-import { parseRange } from "../../helpers/content-range";
-import { headers } from "../../constants";
-import { SqlDomain } from "../../types/sql/Domain";
+import { Env, totalsSchema } from "../../types";
+import { HTTPException } from "hono/http-exception";
+import { domainInsertSchema, domainSchema } from "../../types/Domain";
+import { auth0QuerySchema } from "../../types/auth0/Query";
+import { parseSort } from "../../utils/sort";
 
-@Route("tenants/{tenantId}/domains")
-@Tags("domains")
-export class DomainsController extends Controller {
-  @Get("")
-  @Security("oauth2managementApi", [""])
-  public async listDomains(
-    @Request() request: RequestWithContext,
-    @Path() tenantId: string,
-    @Header("range") range?: string,
-  ): Promise<SqlDomain[]> {
-    const { ctx } = request;
+export const domainWithTotalsSchema = totalsSchema.extend({
+  domains: z.array(domainSchema),
+});
 
-    const parsedRange = parseRange(range);
+export const domains = new OpenAPIHono<{ Bindings: Env }>()
+  // --------------------------------
+  // GET /domains
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["domains"],
+      method: "get",
+      path: "/",
+      request: {
+        query: auth0QuerySchema,
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.union([z.array(domainSchema), domainWithTotalsSchema]),
+            },
+          },
+          description: "List of domains",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
-    const db = getDbFromEnv(ctx.env);
-    const query = db
-      .selectFrom("domains")
-      .where("domains.tenant_id", "=", tenantId);
+      const { page, per_page, include_totals, sort, q } =
+        ctx.req.valid("query");
 
-    const domains = await query
-      .selectAll()
-      .offset(parsedRange.from)
-      .limit(parsedRange.limit)
-      .execute();
+      const result = await ctx.env.data.domains.list(tenant_id, {
+        page,
+        per_page,
+        include_totals,
+        sort: parseSort(sort),
+        q,
+      });
 
-    if (parsedRange.entity) {
-      const [{ count }] = await query
-        .select((eb) => eb.fn.countAll().as("count"))
-        .execute();
+      console.log("result", result);
 
-      this.setHeader(
-        headers.contentRange,
-        `${parsedRange.entity}=${parsedRange.from}-${parsedRange.to}/${count}`,
-      );
-    }
-
-    return domains;
-  }
-
-  @Get("{id}")
-  @Security("oauth2managementApi", [""])
-  public async getDomain(
-    @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
-  ): Promise<SqlDomain | string> {
-    const { ctx } = request;
-
-    const db = getDbFromEnv(ctx.env);
-    const domain = await db
-      .selectFrom("domains")
-      .where("domains.id", "=", id)
-      .where("domains.tenant_id", "=", tenantId)
-      .selectAll()
-      .executeTakeFirst();
-
-    if (!domain) {
-      this.setStatus(404);
-      return "Not found";
-    }
-
-    return domain;
-  }
-
-  @Delete("{id}")
-  @Security("oauth2managementApi", [""])
-  public async deleteDomain(
-    @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-
-    const db = getDbFromEnv(env);
-    await db
-      .deleteFrom("domains")
-      .where("domains.tenant_id", "=", tenantId)
-      .where("domains.id", "=", id)
-      .execute();
-
-    return "OK";
-  }
-
-  @Patch("{id}")
-  @Security("oauth2managementApi", [""])
-  public async patchDomain(
-    @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
-    @Body()
-    body: Partial<
-      Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "updated_at">
-    >,
-  ) {
-    const { env } = request.ctx;
-
-    const db = getDbFromEnv(env);
-    const domain = {
-      ...body,
-      tenant_id: tenantId,
-      updated_at: new Date().toISOString(),
-    };
-
-    const results = await db
-      .updateTable("domains")
-      .set(domain)
-      .where("id", "=", id)
-      .execute();
-
-    return Number(results[0].numUpdatedRows);
-  }
-
-  @Post("")
-  @Security("oauth2managementApi", [""])
-  @SuccessResponse(201, "Created")
-  public async postDomain(
-    @Request() request: RequestWithContext,
-    @Path() tenantId: string,
-    @Body()
-    body: { domain: string },
-  ): Promise<SqlDomain> {
-    const { ctx } = request;
-    const { env } = ctx;
-
-    const db = getDbFromEnv(env);
-
-    const domain: SqlDomain = {
-      ...body,
-      tenant_id: tenantId,
-      id: nanoid(),
-      // TODO: generate keys
-      dkim_public_key: "",
-      dkim_private_key: "",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    await db.insertInto("domains").values(domain).execute();
-
-    this.setStatus(201);
-    return domain;
-  }
-
-  @Put("{id}")
-  @Security("oauth2managementApi", [""])
-  @SuccessResponse(201, "Created")
-  public async putDomain(
-    @Request() request: RequestWithContext,
-    @Path() id: string,
-    @Path() tenantId: string,
-    @Body()
-    body: Omit<SqlDomain, "id" | "tenant_id" | "created_at" | "updated_at">,
-  ): Promise<SqlDomain> {
-    const { ctx } = request;
-    const { env } = ctx;
-
-    const db = getDbFromEnv(env);
-
-    const domain: SqlDomain = {
-      ...body,
-      tenant_id: tenantId,
-      id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    try {
-      await db.insertInto("domains").values(domain).execute();
-    } catch (err: any) {
-      if (!err.message.includes("AlreadyExists")) {
-        throw err;
+      if (include_totals) {
+        return ctx.json(result);
       }
 
-      const { id, created_at, tenant_id: tenantId, ...domainUpdate } = domain;
-      await db
-        .updateTable("domains")
-        .set(domainUpdate)
-        .where("id", "=", domain.id)
-        .execute();
-    }
+      return ctx.json(result.domains);
+    },
+  )
+  // --------------------------------
+  // GET /domains/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["domains"],
+      method: "get",
+      path: "/{id}",
+      request: {
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "domain/json": {
+              schema: domainSchema,
+            },
+          },
+          description: "A domain",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
 
-    this.setStatus(200);
-    return domain;
-  }
-}
+      const db = getDbFromEnv(ctx.env);
+      const domain = await db
+        .selectFrom("domains")
+        .where("domains.tenant_id", "=", tenant_id)
+        .where("domains.id", "=", id)
+        .selectAll()
+        .executeTakeFirst();
+
+      if (!domain) {
+        throw new HTTPException(404);
+      }
+
+      return ctx.json(domainSchema.parse(domain));
+    },
+  )
+  // --------------------------------
+  // DELETE /domains/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["domains"],
+      method: "delete",
+      path: "/{id}",
+      request: {
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Status",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
+
+      const db = getDbFromEnv(ctx.env);
+      await db
+        .deleteFrom("domains")
+        .where("domains.tenant_id", "=", tenant_id)
+        .where("domains.id", "=", id)
+        .execute();
+
+      return ctx.text("OK");
+    },
+  )
+  // --------------------------------
+  // PATCH /domains/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["domains"],
+      method: "patch",
+      path: "/{id}",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: domainInsertSchema.partial(),
+            },
+          },
+        },
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Status",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
+      const body = ctx.req.valid("json");
+
+      const db = getDbFromEnv(ctx.env);
+      const domain = {
+        ...body,
+        tenant_id,
+        updated_at: new Date().toISOString(),
+      };
+
+      const results = await db
+        .updateTable("domains")
+        .set(domain)
+        .where("id", "=", id)
+        .execute();
+
+      return ctx.text(results[0].numUpdatedRows.toString());
+    },
+  )
+  // --------------------------------
+  // POST /domains
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["domains"],
+      method: "post",
+      path: "/",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: domainInsertSchema,
+            },
+          },
+        },
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "domain/json": {
+              schema: domainSchema,
+            },
+          },
+          description: "An domain",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const body = ctx.req.valid("json");
+
+      const domain = await ctx.env.data.domains.create(tenant_id, {
+        ...body,
+        id: nanoid(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      return ctx.json(domain);
+    },
+  )
+  // --------------------------------
+  // PUT /domains/:id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["domains"],
+      method: "put",
+      path: "/{:id}",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: domainInsertSchema,
+            },
+          },
+        },
+        params: z.object({
+          id: z.string(),
+        }),
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "domain/json": {
+              schema: domainSchema,
+            },
+          },
+          description: "An domain",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const { id } = ctx.req.valid("param");
+      const body = ctx.req.valid("json");
+
+      const domain = {
+        ...body,
+        tenant_id,
+        id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const db = getDbFromEnv(ctx.env);
+
+      try {
+        await db.insertInto("domains").values(domain).execute();
+      } catch (err: any) {
+        if (!err.message.includes("AlreadyExists")) {
+          throw err;
+        }
+
+        const { id, created_at, tenant_id: tenantId, ...domainUpdate } = domain;
+        await db
+          .updateTable("domains")
+          .set(domainUpdate)
+          .where("id", "=", domain.id)
+          .execute();
+      }
+
+      return ctx.json(domain);
+    },
+  );

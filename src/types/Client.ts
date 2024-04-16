@@ -3,6 +3,8 @@ import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
 } from "./AuthParams";
+import { connectionSchema } from "./Connection";
+import { Connection } from "@planetscale/database";
 
 const ClientDomainSchema = z.object({
   domain: z.string(),
@@ -12,44 +14,6 @@ const ClientDomainSchema = z.object({
   email_service: z
     .union([z.literal("mailgun"), z.literal("mailchannels")])
     .optional(),
-});
-
-const PartialConnectionSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  // All these properties are optional as they can use the settings from the default settings
-  client_id: z.string().optional(),
-  client_secret: z.string().optional(),
-  private_key: z.string().optional(),
-  kid: z.string().optional(),
-  team_id: z.string().optional(),
-  scope: z.string().optional(),
-  authorization_endpoint: z.string().optional(),
-  token_endpoint: z.string().optional(),
-  userinfo_endpoint: z.string().optional(),
-  response_type: z.custom<AuthorizationResponseType>().optional(),
-  response_mode: z.custom<AuthorizationResponseMode>().optional(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
-
-export const ConnectionSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  client_id: z.string(),
-  client_secret: z.string().optional(),
-  private_key: z.string().optional(),
-  kid: z.string().optional(),
-  team_id: z.string().optional(),
-  scope: z.string(),
-  authorization_endpoint: z.string(),
-  token_endpoint: z.string(),
-  userinfo_endpoint: z.string().optional(),
-  token_exchange_basic_auth: z.boolean().optional(),
-  response_type: z.custom<AuthorizationResponseType>().optional(),
-  response_mode: z.custom<AuthorizationResponseMode>().optional(),
-  created_at: z.string(),
-  updated_at: z.string(),
 });
 
 const BaseClientSchema = z.object({
@@ -80,11 +44,11 @@ const BaseClientSchema = z.object({
 });
 
 export const ClientSchema = BaseClientSchema.extend({
-  connections: z.array(ConnectionSchema),
+  connections: z.array(connectionSchema),
 });
 
 export const PartialClientSchema = BaseClientSchema.extend({
-  connections: z.array(PartialConnectionSchema),
+  connections: z.array(connectionSchema.partial()),
 });
 
 export type Client = z.infer<typeof ClientSchema>;
