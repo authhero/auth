@@ -23,7 +23,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       request: {
         query: auth0QuerySchema,
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       security: [
@@ -43,7 +43,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
       const { page, per_page, include_totals, sort, q } =
         ctx.req.valid("query");
@@ -79,7 +79,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       security: [
@@ -99,7 +99,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
 
       const db = getDbFromEnv(ctx.env);
@@ -130,7 +130,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       security: [
@@ -145,7 +145,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
 
       const db = getDbFromEnv(ctx.env);
@@ -178,7 +178,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       security: [
@@ -193,7 +193,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
@@ -230,7 +230,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
           },
         },
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       security: [
@@ -250,7 +250,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const body = ctx.req.valid("json");
 
       const domain = await ctx.env.data.domains.create(tenant_id, {
@@ -283,7 +283,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       security: [
@@ -303,7 +303,7 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
