@@ -1,10 +1,10 @@
+import { Domain } from "../../src/types/Domain";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
   Application,
   Tenant,
   SqlConnection,
-  SqlDomain,
 } from "../../src/types";
 
 export const APPLICATION_FIXTURE: Application = {
@@ -61,13 +61,12 @@ export const CONNECTIONS_FIXTURE: SqlConnection[] = [
   },
 ];
 
-export const DOMAINS_FIXTURE: SqlDomain[] = [
+export const DOMAINS_FIXTURE: Domain[] = [
   {
     id: "domainId",
     domain: "example2.com",
     email_api_key: "",
     email_service: "mailgun",
-    tenant_id: "tenantId",
     created_at: "created_at",
     updated_at: "updated_at",
     dkim_private_key: "dkimPrivateKey",

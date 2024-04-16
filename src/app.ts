@@ -19,6 +19,7 @@ import { usersByEmail } from "./routes/management-api/users-by-email";
 import { tenants } from "./routes/management-api/tenants";
 import { logs } from "./routes/management-api/logs";
 import { applications } from "./routes/management-api/applications";
+import { domains } from "./routes/management-api/domains";
 import { keys } from "./routes/management-api/keys";
 
 const ALLOWED_ORIGINS = [
@@ -84,6 +85,7 @@ export const app = rootApp
 export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
+  .route("/api/v2/domains", domains)
   .route("/api/v2/users", users)
   .route("/api/v2/keys/signing", keys)
   .route("/api/v2/users-by-email", usersByEmail)

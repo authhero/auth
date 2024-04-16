@@ -1,3 +1,4 @@
+import { Domain } from "../Domain";
 import {
   Tenant,
   Application,
@@ -8,7 +9,6 @@ import {
   SqlSession,
   SqlUser,
   SqlCode,
-  SqlDomain,
   SqlTicket,
   SqlOTP,
   SqlPassword,
@@ -19,7 +19,7 @@ import {
 // Keys of this interface are table names.
 export interface Database {
   codes: SqlCode;
-  domains: SqlDomain;
+  domains: Domain & { tenant_id: string };
   keys: Certificate;
   users: SqlUser;
   members: Member;
