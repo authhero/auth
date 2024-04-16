@@ -37,6 +37,14 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
       ],
       responses: {
         200: {
+          content: {
+            "application/json": {
+              schema: z.union([
+                z.array(connectionSchema),
+                connectionsWithTotalsSchema,
+              ]),
+            },
+          },
           description: "List of connectionss",
         },
       },
