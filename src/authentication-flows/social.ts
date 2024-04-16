@@ -8,10 +8,10 @@ import {
   LoginState,
 } from "../types";
 import { headers } from "../constants";
-import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
+import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
-import { applyTokenResponse } from "../helpers/apply-token-response";
+import { applyTokenResponse } from "../helpers/apply-token-response-new";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
 import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
@@ -22,6 +22,7 @@ import {
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
+import { serializeStateInCookie } from "../services/cookies";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -66,7 +67,6 @@ export async function socialAuth(
 
 interface socialAuthCallbackParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
-  controller: Controller;
   state: LoginState;
   code: string;
 }
@@ -92,7 +92,6 @@ function getProfileData(profile: any) {
 
 export async function socialAuthCallback({
   ctx,
-  controller,
   state,
   code,
 }: socialAuthCallbackParams) {
@@ -212,13 +211,8 @@ export async function socialAuthCallback({
     }
   }
 
-  ctx.set("tenantId", client.tenant_id);
-  ctx.set("userName", email);
-  ctx.set("userId", user.id);
-
   const sessionId = await setSilentAuthCookies(
     env,
-    controller,
     client.tenant_id,
     client.id,
     user,
@@ -236,5 +230,15 @@ export async function socialAuthCallback({
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 
-  return applyTokenResponse(controller, tokenResponse, state.authParams);
+  const redirectUrl = applyTokenResponse(tokenResponse, state.authParams);
+
+  const sessionCookie = serializeStateInCookie(sessionId);
+
+  return new Response("Redirecting...", {
+    status: 302,
+    headers: {
+      Location: redirectUrl,
+      "Set-Cookie": sessionCookie[0],
+    },
+  });
 }
