@@ -1,11 +1,15 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { nanoid } from "nanoid";
 import { getDbFromEnv } from "../../services/db";
-import { Env } from "../../types";
+import { Env, totalsSchema } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { domainInsertSchema, domainSchema } from "../../types/Domain";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+
+export const domainWithTotalsSchema = totalsSchema.extend({
+  domains: z.array(domainSchema),
+});
 
 export const domains = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
@@ -30,8 +34,8 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
       responses: {
         200: {
           content: {
-            "domain/json": {
-              schema: z.array(domainSchema),
+            "application/json": {
+              schema: z.union([z.array(domainSchema), domainWithTotalsSchema]),
             },
           },
           description: "List of domains",
@@ -52,7 +56,14 @@ export const domains = new OpenAPIHono<{ Bindings: Env }>()
         q,
       });
 
-      return ctx.json(result);
+      if (result.totals) {
+        return ctx.json({
+          domains: result.domains,
+          ...result.totals,
+        });
+      }
+
+      return ctx.json(result.domains);
     },
   )
   // --------------------------------
