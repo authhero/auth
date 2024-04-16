@@ -1,11 +1,7 @@
 import { Env } from "../types";
-import {
-  Client,
-  ClientSchema,
-  ConnectionSchema,
-  PartialClientSchema,
-} from "../types/Client";
+import { Client, ClientSchema, PartialClientSchema } from "../types/Client";
 import { DefaultSettings, getDefaultSettings } from "../models/DefaultSettings";
+import { connectionSchema } from "../types/Connection";
 
 // Thsese default settings are static and don't contain any keys
 const defaultSettings: DefaultSettings = {
@@ -68,7 +64,7 @@ export async function getClient(
       };
 
       try {
-        return ConnectionSchema.parse(mergedConnection);
+        return connectionSchema.parse(mergedConnection);
       } catch (err) {
         if (err instanceof Error) {
           console.log(err.message);

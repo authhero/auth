@@ -5,7 +5,6 @@ import {
   PasswordParams,
   Tenant,
   User,
-  SqlConnection,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { mockedR2Bucket } from "./mocked-r2-bucket";
@@ -27,7 +26,9 @@ import { migrateToLatest } from "../../migrate/migrate";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
+import { ConnectionInsert } from "../../src/types/Connection";
 import { Domain } from "../../src/types/Domain";
+
 interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
@@ -44,7 +45,7 @@ interface ContextFixtureParams {
   logs?: any[];
   applications?: Application[];
   tenants?: Tenant[];
-  connections?: SqlConnection[];
+  connections?: ConnectionInsert[];
   domains?: Domain[];
 }
 

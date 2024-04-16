@@ -2,12 +2,11 @@ import { z } from "zod";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
-} from "../AuthParams";
+} from "./AuthParams";
 
-export const SqlConnectionSchema = z.object({
-  id: z.string(),
+export const connectionInsertSchema = z.object({
+  id: z.string().optional(),
   name: z.string(),
-  tenant_id: z.string(),
   client_id: z.string().optional(),
   client_secret: z.string().optional(),
   authorization_endpoint: z.string().optional(),
@@ -17,27 +16,18 @@ export const SqlConnectionSchema = z.object({
   kid: z.string().optional(),
   team_id: z.string().optional(),
   token_endpoint: z.string().optional(),
+  token_exchange_basic_auth: z.boolean().optional(),
   userinfo_endpoint: z.string().optional(),
   scope: z.string().optional(),
-  created_at: z.string(),
-  updated_at: z.string(),
 });
+export type ConnectionInsert = z.infer<typeof connectionInsertSchema>;
 
-export interface SqlConnection {
-  id: string;
-  name: string;
-  tenant_id: string;
-  client_id?: string;
-  client_secret?: string;
-  authorization_endpoint?: string;
-  response_type?: string;
-  response_mode?: string;
-  private_key?: string;
-  kid?: string;
-  team_id?: string;
-  token_endpoint?: string;
-  userinfo_endpoint?: string;
-  scope?: string;
-  created_at: string;
-  updated_at: string;
-}
+export const connectionSchema = z
+  .object({
+    id: z.string(),
+    created_at: z.string().transform((val) => (val === null ? "" : val)),
+    updated_at: z.string().transform((val) => (val === null ? "" : val)),
+  })
+  .extend(connectionInsertSchema.shape);
+
+export type Connection = z.infer<typeof connectionSchema>;

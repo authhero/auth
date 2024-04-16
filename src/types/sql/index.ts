@@ -1,6 +1,5 @@
 export * from "./Application";
 export * from "./Code";
-export * from "./Connection";
 export * from "./Tenant";
 export * from "./User";
 export * from "./Member";
