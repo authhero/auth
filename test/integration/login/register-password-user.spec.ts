@@ -37,7 +37,9 @@ describe("Register password user", () => {
 
     // Open login page
     const loginFormResponse = await loginClient.u.login.$get({
-      query,
+      query: {
+        state: query.state,
+      },
     });
 
     expect(loginFormResponse.status).toBe(200);
