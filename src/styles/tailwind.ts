@@ -1,4 +1,5 @@
-export const tailwindCss = `@font-face {
+export const tailwindCss = `
+    @font-face {
   font-display: swap;
 
   font-family: "KHTeka";
