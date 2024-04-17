@@ -79,7 +79,7 @@ describe("users by email", () => {
       {
         connection: "Username-Password-Authentication",
         provider: "auth2",
-        user_id: "auth2|userId",
+        user_id: "userId",
         isSocial: false,
       },
     ]);
@@ -155,7 +155,7 @@ describe("users by email", () => {
       {
         connection: "Username-Password-Authentication",
         provider: "auth2",
-        user_id: "auth2|userId",
+        user_id: "userId",
         isSocial: false,
       },
     ]);
@@ -170,7 +170,7 @@ describe("users by email", () => {
     });
   });
 
-  it.only("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
+  it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
     const env = await getEnv();
     const client = testClient(loginApp, env);
 
@@ -259,82 +259,82 @@ describe("users by email", () => {
     const linkResponseData = (await linkResponse.json()) as Identity[];
     expect(linkResponseData).toHaveLength(2);
 
-    // expect(linkResponseData[0]).toEqual({
-    //   connection: "Username-Password-Authentication",
-    //   provider: "auth2",
-    //   user_id: fooEmailId,
-    //   isSocial: false,
-    // });
-    // expect(linkResponseData[1]).toEqual({
-    //   connection: "email",
-    //   provider: "email",
-    //   // this user_id correctly has provider prefixed
-    //   user_id: barEmailId.split("|")[1],
-    //   isSocial: false,
-    // });
-    // // TODO - have open PR for adding profileData in
-    // // we can then assert that we have a profileData key on the bar sub account
+    expect(linkResponseData[0]).toEqual({
+      connection: "Username-Password-Authentication",
+      provider: "auth2",
+      user_id: fooEmailId.split("|")[1],
+      isSocial: false,
+    });
+    expect(linkResponseData[1]).toEqual({
+      connection: "email",
+      provider: "email",
+      // this user_id correctly has provider prefixed
+      user_id: barEmailId.split("|")[1],
+      isSocial: false,
+    });
+    // TODO - have open PR for adding profileData in
+    // we can then assert that we have a profileData key on the bar sub account
 
-    // // foo@example.com should exist with bar as an identity
-    // const fooEmailAfterLink = await client.api.v2["users-by-email"].$get(
-    //   {
-    //     query: {
-    //       email: "foo@example.com",
-    //     },
-    //     header: {
-    //       "tenant-id": "tenantId",
-    //     },
-    //   },
-    //   {
-    //     headers: {
-    //       authorization: `Bearer ${token}`,
-    //       "tenant-id": "tenantId",
-    //     },
-    //   },
-    // );
-    // const fooEmailAfterLinkUsers =
-    //   (await fooEmailAfterLink.json()) as UserResponse[];
-    // expect(fooEmailAfterLinkUsers).toHaveLength(1);
+    // foo@example.com should exist with bar as an identity
+    const fooEmailAfterLink = await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "foo@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    const fooEmailAfterLinkUsers =
+      (await fooEmailAfterLink.json()) as UserResponse[];
+    expect(fooEmailAfterLinkUsers).toHaveLength(1);
 
-    // expect(fooEmailAfterLinkUsers[0].identities).toEqual([
-    //   {
-    //     connection: "Username-Password-Authentication",
-    //     provider: "auth2",
-    //     user_id: fooEmailId,
-    //     isSocial: false,
-    //   },
-    //   // this is correct. we have bar's identity here
-    //   {
-    //     connection: "email",
-    //     provider: "email",
-    //     user_id: barEmailId.split("|")[1],
-    //     isSocial: false,
-    //     profileData: {
-    //       email: "bar@example.com",
-    //       email_verified: false,
-    //     },
-    //   },
-    // ]);
+    expect(fooEmailAfterLinkUsers[0].identities).toEqual([
+      {
+        connection: "Username-Password-Authentication",
+        provider: "auth2",
+        user_id: fooEmailId.split("|")[1],
+        isSocial: false,
+      },
+      // this is correct. we have bar's identity here
+      {
+        connection: "email",
+        provider: "email",
+        user_id: barEmailId.split("|")[1],
+        isSocial: false,
+        profileData: {
+          email: "bar@example.com",
+          email_verified: false,
+        },
+      },
+    ]);
 
-    // // bar@example.com should not be searchable by email
-    // const barEmailAfterLink = await await client.api.v2["users-by-email"].$get(
-    //   {
-    //     query: {
-    //       email: "bar@example.com",
-    //     },
-    //     header: {
-    //       "tenant-id": "tenantId",
-    //     },
-    //   },
-    //   {
-    //     headers: {
-    //       authorization: `Bearer ${token}`,
-    //     },
-    //   },
-    // );
-    // const barEmailAfterLinkUsers =
-    //   (await barEmailAfterLink.json()) as UserResponse[];
-    // expect(barEmailAfterLinkUsers).toHaveLength(0);
+    // bar@example.com should not be searchable by email
+    const barEmailAfterLink = await await client.api.v2["users-by-email"].$get(
+      {
+        query: {
+          email: "bar@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    const barEmailAfterLinkUsers =
+      (await barEmailAfterLink.json()) as UserResponse[];
+    expect(barEmailAfterLinkUsers).toHaveLength(0);
 
     // ALSO TO TEST
     // - unlink accounts
