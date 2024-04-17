@@ -268,7 +268,7 @@ describe("code-flow", () => {
     // Create the user to log in with the code
     // -----------------
     env.data.users.create("tenantId", {
-      id: "userId2",
+      id: "email|userId2",
       email: "bar@example.com",
       email_verified: true,
       name: "",
@@ -362,7 +362,7 @@ describe("code-flow", () => {
     const accessToken = searchParams.get("access_token");
 
     const accessTokenPayload = parseJwt(accessToken!);
-    expect(accessTokenPayload.sub).toBe("userId2");
+    expect(accessTokenPayload.sub).toBe("email|userId2");
 
     const idToken = searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
@@ -379,7 +379,7 @@ describe("code-flow", () => {
         "clientId",
       );
 
-    expect(silentAuthIdTokenPayload.sub).toBe("userId2");
+    expect(silentAuthIdTokenPayload.sub).toBe("email|userId2");
   });
   it("is an existing linked user", async () => {
     const token = await getAdminToken();
@@ -390,7 +390,7 @@ describe("code-flow", () => {
     // Create the linked user to log in with the magic link
     // -----------------
     env.data.users.create("tenantId", {
-      id: "userId2",
+      id: "email|userId2",
       // same email address as existing primary user... but this isn't needed
       // do we need more tests where this is different? In case I've taken shortcuts looking up by email address...
       email: "foo@example.com",
