@@ -12,6 +12,9 @@ import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import { renderMessageInner as renderMessage } from "../../templates/render";
+import { Liquid } from "liquidjs";
+import { layout, login as loginTemplate } from "../../templates/universal";
+import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -22,6 +25,58 @@ function initI18n(lng: string) {
       nb: { translation: nb },
       sv: { translation: sv },
     },
+  });
+}
+
+const engine = new Liquid();
+
+// same here not really an ideal solution
+export async function renderLogin(
+  env: Env,
+  context: UniversalLoginSession,
+  state: string,
+  errorMessage?: string,
+) {
+  const layoutTemplate = engine.parse(layout);
+
+  const template = engine.parse(loginTemplate);
+
+  const socialLoginQuery = new URLSearchParams({
+    ...context.authParams,
+  });
+
+  // TODO: pull from client instead
+  const connections = [
+    {
+      connection: "apple",
+      href: `/authorize?connection=apple&${socialLoginQuery.toString()}`,
+      icon_class: "apple",
+      bg_class: "bg1",
+    },
+    {
+      connection: "facebook",
+      href: `/authorize?connection=facebook&${socialLoginQuery.toString()}`,
+      icon_class: "facebook",
+      bg_class: "bg2",
+    },
+    {
+      connection: "google-oauth2",
+      href: `/authorize?connection=google-oauth2&${socialLoginQuery.toString()}`,
+      icon_class: "google",
+      bg_class: "bg3",
+    },
+  ];
+
+  const content = await engine.render(template, {
+    ...context,
+    connections,
+    errorMessage,
+    state,
+  });
+
+  return engine.render(layoutTemplate, {
+    context,
+    content,
   });
 }
 
@@ -191,12 +246,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         });
 
         if (!valid) {
-          return renderLogin(env, this, session, state, "Invalid password");
+          return renderLogin(env, session, state, "Invalid password");
         }
 
-        return handleLogin(env, this, user, session);
+        return handleLogin(env, user, session);
       } catch (err: any) {
-        return renderLogin(env, this, session, err.message);
+        return renderLogin(env, session, err.message);
       }
     },
   )
