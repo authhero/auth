@@ -10,6 +10,7 @@ import en from "../../localesLogin2/en/default.json";
 import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
+import LoginPage from "../../utils/components/LoginPage";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -25,6 +26,65 @@ function initI18n(lng: string) {
 }
 
 export const login = new OpenAPIHono<{ Bindings: Env }>()
+  // --------------------------------
+  // GET /u/login
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/login",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+
+      const { env } = ctx;
+
+      const vendorSettings = {
+        name: "Kvartal",
+        companyName: "Kvartal",
+        logoUrl: "https://checkout.sesamy.com/images/kvartal-logo.svg",
+        style: {
+          primaryColor: "#4F3985",
+          buttonTextColor: "#ffffff",
+          primaryHoverColor: "#5F44A0",
+        },
+        loginBackgroundImage:
+          "https://assets.sesamy.com/vendors/kvartal/kvartal-bg.jpg",
+        checkoutHideSocial: true,
+        supportEmail: "support@kvartal.se",
+        supportUrl: "https://kvartal.se/kundtjanst",
+        siteUrl: "https://kvartal.se",
+        termsAndConditionsUrl: "https://kvartal.se/kopvillkor/",
+      };
+
+      initI18n("sv");
+
+      return ctx.html(
+        <LoginPage
+          vendorSettings={vendorSettings}
+          email={"test@example.com"}
+        />,
+      );
+    },
+  )
   // --------------------------------
   // GET /u/reset-password
   // --------------------------------

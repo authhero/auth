@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp } from "../../../src/app";
+import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 
 describe("Login with password user", () => {
   it("should login with password", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const searchParams = {
       client_id: "clientId",
@@ -33,8 +34,10 @@ describe("Login with password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    const loginFormResponse = await client.u.login.$get({
-      query,
+    const loginFormResponse = await loginClient.u.login.$get({
+      query: {
+        state: query.state,
+      },
     });
 
     expect(loginFormResponse.status).toBe(200);
