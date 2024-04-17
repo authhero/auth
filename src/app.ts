@@ -23,6 +23,7 @@ import { callback } from "./routes/tsoa/callback";
 import { connections } from "./routes/management-api/connections";
 import { domains } from "./routes/management-api/domains";
 import { keys } from "./routes/management-api/keys";
+import { tailwindCss } from "./styles/tailwind";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -112,17 +113,9 @@ app.get("/spec", async () => {
 app.get(
   "/css/tailwind.css",
   async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
-    const response = await ctx.env.AUTH_TEMPLATES.get(
-      "templates/static/stylesheets/tailwind.css",
-    );
+    const css = tailwindCss;
 
-    if (!response) {
-      throw new Error("Template not found");
-    }
-
-    const templateString = await response.text();
-
-    return ctx.text(templateString, 200, {
+    return ctx.text(css, 200, {
       "content-type": "text/css",
     });
   },

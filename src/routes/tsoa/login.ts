@@ -17,12 +17,10 @@ import { getClient } from "../../services/clients";
 import {
   renderMessage,
   renderForgotPassword,
-  renderResetPassword,
   renderSignup,
   renderLogin,
   renderLoginWithCode,
   renderEnterCode,
-  renderEmailValidation,
 } from "../../templates/render";
 import { AuthorizationResponseType, Env, User } from "../../types";
 import { headers } from "../../constants";
@@ -79,25 +77,6 @@ async function handleLogin(
 @Route("u")
 @Tags("login ui")
 export class LoginController extends Controller {
-  /**
-   * Renders a login form
-   * @param request
-   */
-  @Get("login")
-  public async getLogin(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    return renderLogin(env, this, session, state);
-  }
-
   /**
    * Renders a code login form
    * @param request
