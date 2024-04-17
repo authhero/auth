@@ -82,6 +82,125 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
     },
   )
   // --------------------------------
+  // POST /u/login
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/login",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+        // is this not specified? I can't see an example...
+        // body: z.object({
+        //   username: z.string().openapi({
+        //     description: "The username",
+        //   }),
+        //   password: z.string().openapi({
+        //     description: "The password",
+        //   }),
+        // }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { env } = ctx;
+      const { state } = ctx.req.valid("query");
+
+      // i've copied this off my reset password route... is this really the best way?
+      const contentType = ctx.req.header("content-type");
+
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      if (
+        contentType !== "application/json" &&
+        contentType !== "application/x-www-form-urlencoded"
+      ) {
+        throw new HTTPException(400, {
+          message:
+            "Content-Type must be application/json or application/x-www-form-urlencoded",
+        });
+      }
+
+      let username = "";
+      let password = "";
+
+      if (contentType === "application/json") {
+        // copy-pasted: this is just for the tests
+        const json = await ctx.req.json();
+        username = json.username;
+        password = json.password;
+      }
+
+      if (contentType === "application/x-www-form-urlencoded") {
+        // but in the browser we are doing a POST with form data
+        const body = await ctx.req.parseBody();
+
+        const bodyUsername = body.username;
+        const bodyPassword = body.password;
+        if (
+          typeof bodyPassword !== "string" ||
+          typeof bodyUsername !== "string"
+        ) {
+          // this should be dealt with in zod-open API! TBD
+          throw new HTTPException(400, {
+            message: "Username/password must be a string",
+          });
+        }
+
+        password = bodyPassword;
+      }
+
+      const user = await getUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email: username,
+        provider: "auth2",
+      });
+
+      if (!user) {
+        throw new HTTPException(400, { message: "User not found" });
+      }
+
+      try {
+        const { valid } = await env.data.passwords.validate(client.tenant_id, {
+          user_id: user.id,
+          password: password,
+        });
+
+        if (!valid) {
+          return renderLogin(env, this, session, state, "Invalid password");
+        }
+
+        return handleLogin(env, this, user, session);
+      } catch (err: any) {
+        return renderLogin(env, this, session, err.message);
+      }
+    },
+  )
+  // --------------------------------
   // GET /u/reset-password
   // --------------------------------
   .openapi(
