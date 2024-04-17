@@ -15,6 +15,10 @@ import { renderMessageInner as renderMessage } from "../../templates/render";
 import { Liquid } from "liquidjs";
 import { layout, login as loginTemplate } from "../../templates/universal";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { nanoid } from "nanoid";
+import type { User } from "../../types";
+import { AuthorizationResponseType } from "../../types";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -77,6 +81,36 @@ export async function renderLogin(
   return engine.render(layoutTemplate, {
     context,
     content,
+  });
+}
+// throw another one in
+async function handleLogin(
+  env: Env,
+  user: User,
+  session: UniversalLoginSession,
+) {
+  if (session.authParams.redirect_uri) {
+    const responseType =
+      session.authParams.response_type ||
+      AuthorizationResponseType.TOKEN_ID_TOKEN;
+
+    const authResponse = await generateAuthResponse({
+      env,
+      userId: user.id,
+      sid: nanoid(),
+      responseType,
+      authParams: session.authParams,
+      user,
+    });
+
+    return applyTokenResponse(authResponse, session.authParams);
+  }
+
+  // This is just a fallback in case no redirect was present
+  return renderMessage(env, {
+    ...session,
+    page_title: "Logged in",
+    message: "You are logged in",
   });
 }
 
