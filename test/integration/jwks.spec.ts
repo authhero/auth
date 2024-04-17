@@ -3,7 +3,6 @@ import { testClient } from "hono/testing";
 import { jwksKeySchema, openIDConfigurationSchema } from "../../src/types/jwks";
 import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
-import { tsoaApp } from "../../src/app";
 import { loginApp } from "../../src/app";
 
 describe("jwks", () => {

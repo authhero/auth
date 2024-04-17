@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { tsoaApp } from "../../../src/app";
+import { tsoaApp, loginApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 
@@ -7,6 +7,7 @@ describe("Register password user", () => {
   it("should register a new user with password", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const searchParams = {
       client_id: "clientId",
@@ -35,7 +36,7 @@ describe("Register password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    const loginFormResponse = await client.u.login.$get({
+    const loginFormResponse = await loginClient.u.login.$get({
       query,
     });
 
