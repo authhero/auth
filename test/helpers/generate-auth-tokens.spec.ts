@@ -14,7 +14,7 @@ describe("generateTokens", () => {
     const options: GenerateAuthResponseParamsForToken = {
       env: ctx.env,
       responseType: AuthorizationResponseType.TOKEN,
-      userId: "userId",
+      userId: "auth2|userId",
       sid: "sessionId",
       authParams: {
         audience: "audience",

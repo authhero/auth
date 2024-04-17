@@ -439,7 +439,7 @@ describe("users management API endpoint", () => {
       // link the accounts
       const params = {
         param: {
-          user_id: "userId",
+          user_id: "auth2|userId",
         },
         json: {
           link_with: secondaryUser.user_id,
@@ -464,7 +464,7 @@ describe("users management API endpoint", () => {
         "tenantId",
         secondaryUser.user_id,
       );
-      expect(linkedUser!.linked_to).toBe("userId");
+      expect(linkedUser!.linked_to).toBe("auth2|userId");
 
       // ----------------------
       // now try and patch the linked user
@@ -723,7 +723,7 @@ describe("users management API endpoint", () => {
       // link the accounts
       const params = {
         param: {
-          user_id: "userId",
+          user_id: "auth2|userId",
         },
         json: {
           link_with: secondaryUser.user_id,
@@ -1356,7 +1356,7 @@ describe("users management API endpoint", () => {
       // link the accounts
       const params = {
         param: {
-          user_id: "userId",
+          user_id: "auth2|userId",
         },
         json: {
           link_with: secondaryUser.user_id,
@@ -1380,7 +1380,7 @@ describe("users management API endpoint", () => {
       const userResponse = await client.api.v2.users[":user_id"].$get(
         {
           param: {
-            user_id: "userId",
+            user_id: "auth2|userId",
           },
           header: {
             "tenant-id": "tenantId",

@@ -24,7 +24,7 @@ describe("Authenticated", () => {
       const logs: SqlLog[] = [];
 
       const user: User = {
-        id: "userId",
+        id: "auth2|userId",
         email: "test@example.com",
         last_ip: "1.1.1.1",
         login_count: 0,
@@ -38,7 +38,7 @@ describe("Authenticated", () => {
       };
 
       const password: PasswordParams = {
-        user_id: "userId",
+        user_id: "auth2|userId",
         password: "Test1234!",
       };
 

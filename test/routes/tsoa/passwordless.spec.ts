@@ -82,7 +82,7 @@ describe("Passwordless", () => {
         ],
         users: [
           {
-            id: "userId",
+            id: "auth2|userId",
             email: "test@example.com",
             last_ip: "1.1.1.1",
             login_count: 0,
@@ -129,7 +129,7 @@ describe("Passwordless", () => {
         iat: Math.floor(date.getTime() / 1000),
         exp: Math.floor(date.getTime() / 1000) + 86400,
         iss: "https://auth.example.com/",
-        sub: "userId",
+        sub: "auth2|userId",
         scope: "",
       });
     });

@@ -468,6 +468,8 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
       }
 
+      console.log("user ", user);
+
       await ctx.env.data.users.update(tenant_id, link_with, {
         linked_to: user_id,
       });
@@ -478,6 +480,8 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         include_totals: false,
         q: `linked_to:${user_id}`,
       });
+
+      console.log("linkedusers: ", linkedusers);
 
       const identities = [user, ...linkedusers.users].map((u) => ({
         connection: u.connection,

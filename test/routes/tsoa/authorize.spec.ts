@@ -42,7 +42,7 @@ describe("authorize", () => {
 
       const session: Session = {
         id: "sessionId",
-        user_id: "userId",
+        user_id: "auth2|userId",
         tenant_id: "tenantId",
         client_id: "clientId",
         created_at: new Date(),
@@ -51,7 +51,7 @@ describe("authorize", () => {
       };
 
       const user: User = {
-        id: "userId",
+        id: "auth2|userId",
         email: "",
         last_ip: "1.1.1.1",
         login_count: 0,
@@ -100,7 +100,7 @@ describe("authorize", () => {
       const response = JSON.parse(responseBody.replace("response: ", ""));
 
       const expectedCode = {
-        userId: "userId",
+        userId: "auth2|userId",
         authParams: {
           client_id: "clientId",
           audience: "audience",
@@ -112,7 +112,7 @@ describe("authorize", () => {
         state: "state",
         sid: "sessionId",
         user: {
-          id: "userId",
+          id: "auth2|userId",
           email: "",
           tenant_id: "tenantId",
           last_ip: "1.1.1.1",
@@ -154,7 +154,7 @@ describe("authorize", () => {
 
       const session: Session = {
         id: "sessionId",
-        user_id: "userId",
+        user_id: "auth2|userId",
         tenant_id: "tenantId",
         client_id: "clientId",
         created_at: new Date(),
@@ -207,7 +207,7 @@ describe("authorize", () => {
 
       expect(accessToken.aud).toBe("audience");
       expect(accessToken.scope).toBe("openid profile email");
-      expect(accessToken.sub).toBe("userId");
+      expect(accessToken.sub).toBe("auth2|userId");
       expect(accessToken.iss).toBe("https://auth.example.com/");
       expect(accessToken.iat).toBeDefined();
       expect(accessToken.exp).toBeDefined();
@@ -215,7 +215,7 @@ describe("authorize", () => {
       const idToken = parseJwt(response.id_token);
 
       expect(idToken.aud).toBe("clientId");
-      expect(idToken.sub).toBe("userId");
+      expect(idToken.sub).toBe("auth2|userId");
       expect(idToken.nonce).toBe("nonce");
       expect(idToken.iss).toBe("https://auth.example.com/");
       expect(idToken.iat).toBeDefined();
