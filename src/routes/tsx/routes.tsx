@@ -11,6 +11,7 @@ import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
+import { code } from "../../templates/universal";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -336,5 +337,39 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       // need JSX success here
       return ctx.text("The password has been reset", 200);
+    },
+  )
+  // --------------------------------
+  // GET /u/info
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/info",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+          code: z.string().openapi({
+            description: "The code parameter from the authorization request",
+          }),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+
+    async (ctx) => {
+      return ctx.text("not implemented");
     },
   );
