@@ -1,3 +1,3 @@
 yarn tailwind
-node build-typescript
+node build-tailwind
 yarn format # could be more targeted and just do tailwind.ts
