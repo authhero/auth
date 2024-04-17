@@ -268,7 +268,7 @@ describe("code-flow", () => {
     // Create the user to log in with the code
     // -----------------
     env.data.users.create("tenantId", {
-      id: "userId2",
+      id: "email|userId2",
       email: "bar@example.com",
       email_verified: true,
       name: "",
@@ -362,7 +362,7 @@ describe("code-flow", () => {
     const accessToken = searchParams.get("access_token");
 
     const accessTokenPayload = parseJwt(accessToken!);
-    expect(accessTokenPayload.sub).toBe("userId2");
+    expect(accessTokenPayload.sub).toBe("email|userId2");
 
     const idToken = searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
@@ -379,7 +379,7 @@ describe("code-flow", () => {
         "clientId",
       );
 
-    expect(silentAuthIdTokenPayload.sub).toBe("userId2");
+    expect(silentAuthIdTokenPayload.sub).toBe("email|userId2");
   });
   it("is an existing linked user", async () => {
     const token = await getAdminToken();
@@ -390,7 +390,7 @@ describe("code-flow", () => {
     // Create the linked user to log in with the magic link
     // -----------------
     env.data.users.create("tenantId", {
-      id: "userId2",
+      id: "email|userId2",
       // same email address as existing primary user... but this isn't needed
       // do we need more tests where this is different? In case I've taken shortcuts looking up by email address...
       email: "foo@example.com",
@@ -404,7 +404,7 @@ describe("code-flow", () => {
       is_social: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      linked_to: "userId",
+      linked_to: "auth2|userId",
     });
 
     // -----------------
@@ -471,7 +471,7 @@ describe("code-flow", () => {
 
     const accessTokenPayload = parseJwt(accessToken!);
     // this shows we are getting the primary user
-    expect(accessTokenPayload.sub).toBe("userId");
+    expect(accessTokenPayload.sub).toBe("auth2|userId");
 
     const idToken = searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
@@ -489,7 +489,7 @@ describe("code-flow", () => {
       );
 
     // getting the primary user back again
-    expect(silentAuthIdTokenPayload.sub).toBe("userId");
+    expect(silentAuthIdTokenPayload.sub).toBe("auth2|userId");
   });
 
   it("should return existing username-primary account when logging in with new code sign on with same email address", async () => {
@@ -573,12 +573,12 @@ describe("code-flow", () => {
     const accessTokenPayload = parseJwt(accessToken!);
 
     // this is the id of the primary account
-    expect(accessTokenPayload.sub).toBe("userId");
+    expect(accessTokenPayload.sub).toBe("auth2|userId");
 
     const idToken = searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
 
-    expect(idTokenPayload.sub).toBe("userId");
+    expect(idTokenPayload.sub).toBe("auth2|userId");
 
     // ----------------------------
     // now check the primary user has a new 'email' connection identity
@@ -586,7 +586,7 @@ describe("code-flow", () => {
     const primaryUserRes = await loginClient.api.v2.users[":user_id"].$get(
       {
         param: {
-          user_id: "userId",
+          user_id: "auth2|userId",
         },
         header: {
           "tenant-id": "tenantId",
@@ -631,7 +631,7 @@ describe("code-flow", () => {
     } = silentAuthIdTokenPayload;
 
     // this is the id of the primary account
-    expect(sub).toBe("userId");
+    expect(sub).toBe("auth2|userId");
 
     expect(restOfIdTokenPayload).toEqual({
       aud: "clientId",
@@ -716,7 +716,7 @@ describe("code-flow", () => {
     );
 
     // this is the id of the primary account
-    expect(accessToken2.sub).toBe("userId");
+    expect(accessToken2.sub).toBe("auth2|userId");
 
     // ----------------------------
     // now check silent auth again!
@@ -730,7 +730,7 @@ describe("code-flow", () => {
         "clientId",
       );
     // second time round make sure we get the primary userid again
-    expect(silentAuthIdTokenPayload2.sub).toBe("userId");
+    expect(silentAuthIdTokenPayload2.sub).toBe("auth2|userId");
   });
 
   describe("most complex linking flow I can think of", () => {

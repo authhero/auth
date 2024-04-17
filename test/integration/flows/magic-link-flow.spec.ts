@@ -299,7 +299,7 @@ describe("magic link flow", () => {
         is_social: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        linked_to: "userId",
+        linked_to: "auth2|userId",
       });
 
       // -----------------
@@ -360,13 +360,13 @@ describe("magic link flow", () => {
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
       // this id shows we are fetching the primary user
-      expect(accessTokenPayload.sub).toBe("userId");
+      expect(accessTokenPayload.sub).toBe("auth2|userId");
 
       const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
-      expect(idTokenPayload.sub).toBe("userId");
+      expect(idTokenPayload.sub).toBe("auth2|userId");
 
       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
@@ -385,7 +385,7 @@ describe("magic link flow", () => {
         silentAuthIdTokenPayload;
 
       expect(restOfIdTokenPayload).toEqual({
-        sub: "userId",
+        sub: "auth2|userId",
         aud: "clientId",
         name: "Åkesson Þorsteinsson",
         nickname: "Åkesson Þorsteinsson",
@@ -460,13 +460,13 @@ describe("magic link flow", () => {
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
       // this should we are fetching the primary user
-      expect(accessTokenPayload.sub).toBe("userId");
+      expect(accessTokenPayload.sub).toBe("auth2|userId");
 
       const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
-      expect(idTokenPayload.sub).toBe("userId");
+      expect(idTokenPayload.sub).toBe("auth2|userId");
 
       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
@@ -485,7 +485,7 @@ describe("magic link flow", () => {
         silentAuthIdTokenPayload;
 
       expect(restOfIdTokenPayload).toEqual({
-        sub: "userId",
+        sub: "auth2|userId",
         aud: "clientId",
         name: "Åkesson Þorsteinsson",
         nickname: "Åkesson Þorsteinsson",

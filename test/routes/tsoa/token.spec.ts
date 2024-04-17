@@ -66,7 +66,7 @@ describe("token", () => {
   describe("code grant with PKCE", () => {
     it("should return tokens as querystring for a valid code and response_type query using actual params", async () => {
       const stateParams = {
-        userId: "userId",
+        userId: "auth2|userId",
         authParams: {
           client_id: "publisherClientId",
           redirect_uri: "https://example.com",
@@ -79,7 +79,7 @@ describe("token", () => {
           response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
         },
         user: {
-          sub: "userId",
+          sub: "auth2|userId",
           email: "email",
         },
         sid: "sid",
@@ -115,7 +115,7 @@ describe("token", () => {
 
       expect(tokenData.iss).toBe("https://auth.example.com/");
       expect(tokenData.scope).toEqual("profile");
-      expect(tokenData.sub).toBe("userId");
+      expect(tokenData.sub).toBe("auth2|userId");
 
       expect(body.id_token).toBeDefined();
 
@@ -123,7 +123,7 @@ describe("token", () => {
       const idToken: any = parseJwt(body.id_token!);
 
       expect(idToken.aud).toBe("publisherClientId");
-      expect(idToken.sub).toBe("userId");
+      expect(idToken.sub).toBe("auth2|userId");
       expect(idToken.email).toBe("email");
       expect(idToken.iss).toBe("https://auth.example.com/");
       expect(idToken.sid).toBe("sid");
@@ -144,7 +144,7 @@ describe("token", () => {
         grant_type: GrantType.AuthorizationCode,
         code: btoa(
           JSON.stringify({
-            userId: "userId",
+            userId: "auth2|userId",
             authParams: {
               client_id: "publisherClientId",
               redirect_uri: "https://example.com",
@@ -155,7 +155,7 @@ describe("token", () => {
               code_challenge_method: CodeChallengeMethod.S265,
             },
             user: {
-              sub: "userId",
+              sub: "auth2|userId",
               email: "email",
             },
             sid: "sid",
@@ -235,7 +235,7 @@ describe("token", () => {
         grant_type: GrantType.AuthorizationCode,
         code: btoa(
           JSON.stringify({
-            userId: "userId",
+            userId: "auth2|userId",
             authParams: {
               client_id: "clientId2",
               redirect_uri: "https://example.com",
@@ -244,7 +244,7 @@ describe("token", () => {
               vendorId: "vendorId2",
             },
             user: {
-              sub: "userId",
+              sub: "auth2|userId",
               email: "email",
             },
             sid: "sid",

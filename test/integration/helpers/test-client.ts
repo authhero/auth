@@ -195,7 +195,7 @@ export async function getEnv() {
   await data.connections.create("tenantId", testConnection2);
 
   await data.users.create("tenantId", {
-    id: "userId",
+    id: "auth2|userId",
     email: "foo@example.com",
     email_verified: true,
     name: "Åkesson Þorsteinsson",
@@ -210,7 +210,7 @@ export async function getEnv() {
   });
 
   await data.passwords.create("tenantId", {
-    user_id: "userId",
+    user_id: "auth2|userId",
     password: "Test1234!",
   });
 

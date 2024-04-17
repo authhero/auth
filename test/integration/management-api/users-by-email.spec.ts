@@ -72,7 +72,7 @@ describe("users by email", () => {
       connection: "Username-Password-Authentication",
       provider: "auth2",
       is_social: false,
-      user_id: "userId",
+      user_id: "auth2|userId",
     });
 
     expect(users[0].identities).toEqual([
@@ -149,7 +149,7 @@ describe("users by email", () => {
       connection: "Username-Password-Authentication",
       provider: "auth2",
       is_social: false,
-      user_id: "userId",
+      user_id: "auth2|userId",
     });
     expect(users[0].identities).toEqual([
       {
@@ -262,7 +262,7 @@ describe("users by email", () => {
     expect(linkResponseData[0]).toEqual({
       connection: "Username-Password-Authentication",
       provider: "auth2",
-      user_id: fooEmailId,
+      user_id: fooEmailId.split("|")[1],
       isSocial: false,
     });
     expect(linkResponseData[1]).toEqual({
@@ -300,7 +300,7 @@ describe("users by email", () => {
       {
         connection: "Username-Password-Authentication",
         provider: "auth2",
-        user_id: fooEmailId,
+        user_id: fooEmailId.split("|")[1],
         isSocial: false,
       },
       // this is correct. we have bar's identity here

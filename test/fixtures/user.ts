@@ -1,7 +1,7 @@
 import { User } from "../../src/types";
 
 export const testUser: User = {
-  id: "userId",
+  id: "auth2|userId",
   email: "test@example.com",
   last_ip: "1.1.1.1",
   login_count: 0,
