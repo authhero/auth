@@ -24,6 +24,7 @@ import { connections } from "./routes/management-api/connections";
 import { domains } from "./routes/management-api/domains";
 import { keys } from "./routes/management-api/keys";
 import { tailwindCss } from "./styles/tailwind";
+import authenticationMiddleware from "./middlewares/authentication";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -76,6 +77,8 @@ export const app = rootApp
     }),
   )
   .use(loggerMiddleware)
+  .use("/api/*", authenticationMiddleware)
+  .use("/userinfo", authenticationMiddleware)
   .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
     const url = new URL(ctx.req.url);
     const tenantId = url.hostname.split(".")[0];

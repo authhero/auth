@@ -19,6 +19,7 @@ describe("generateTokens", () => {
       authParams: {
         audience: "audience",
         client_id: "clientid",
+        scope: "auth:write",
       },
     };
 

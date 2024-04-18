@@ -15,6 +15,7 @@ import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
 import type { Email } from "../../../src/types/Email";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
+import { ok } from "assert";
 
 export async function getEnv() {
   const dialect = new SqliteDialect({
@@ -69,7 +70,8 @@ export async function getEnv() {
   await migrateToLatest(dialect, false, db);
 
   const data = createAdapters(db);
-  await data.keys.create(getCertificate());
+  const certificate = getCertificate();
+  await data.keys.create(certificate);
 
   // Create Default Settings----------------------------------------
   await data.tenants.create({
@@ -224,6 +226,16 @@ export async function getEnv() {
       },
     },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
+    TOKEN_SERVICE: {
+      fetch: async () => ({
+        ok: true,
+        json: async () => ({
+          keys: [
+            { ...JSON.parse(certificate.public_key), kid: certificate.kid },
+          ],
+        }),
+      }),
+    },
     ISSUER: "https://example.com/",
     READ_PERMISSION: "auth:read",
     WRITE_PERMISSION: "auth:write",
