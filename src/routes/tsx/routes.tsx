@@ -11,8 +11,7 @@ import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
-import { Liquid } from "liquidjs";
-import { layout, message } from "../../templates/universal";
+import { renderMessageInner as renderMessage } from "../../templates/render";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -23,29 +22,6 @@ function initI18n(lng: string) {
       nb: { translation: nb },
       sv: { translation: sv },
     },
-  });
-}
-
-const engine = new Liquid();
-
-// temp cloned
-async function renderMessage(
-  env: Env,
-  // controller: Controller,
-  // context: UniversalLoginSession | { page_title: string; message: string },
-  context: { page_title: string; message: string },
-) {
-  const layoutTemplate = engine.parse(layout);
-
-  const template = engine.parse(message);
-
-  // controller.setHeader("content-type", "text/html");
-  // controller.setStatus(200);
-
-  const content = await engine.render(template, context);
-  return engine.render(layoutTemplate, {
-    ...context,
-    content,
   });
 }
 
@@ -394,7 +370,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
     async (ctx) => {
       return ctx.text(
-        await renderMessage(ctx.env, {
+        await renderMessage({
           page_title: "User info",
           message: `Not implemented`,
         }),

@@ -182,12 +182,18 @@ export async function renderMessage(
   controller: Controller,
   context: UniversalLoginSession | { page_title: string; message: string },
 ) {
+  controller.setHeader("content-type", "text/html");
+  controller.setStatus(200);
+
+  return renderMessageInner(context);
+}
+
+export async function renderMessageInner(
+  context: UniversalLoginSession | { page_title: string; message: string },
+) {
   const layoutTemplate = engine.parse(layout);
 
   const template = engine.parse(message);
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
 
   const content = await engine.render(template, context);
   return engine.render(layoutTemplate, {
