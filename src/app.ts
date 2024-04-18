@@ -77,6 +77,8 @@ export const app = rootApp
     }),
   )
   .use(loggerMiddleware)
+  .use("/api/*", authenticationMiddleware)
+  .use("/userinfo", authenticationMiddleware)
   .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
     const url = new URL(ctx.req.url);
     const tenantId = url.hostname.split(".")[0];
@@ -87,8 +89,6 @@ export const app = rootApp
   });
 
 export const loginApp = rootApp
-  .use("/api/*", authenticationMiddleware)
-  .use("/userinfo", authenticationMiddleware)
   .route("/u", login)
   .route("/.well-known", wellKnown)
   .route("/callback", callback)
