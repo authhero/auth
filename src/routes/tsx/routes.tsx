@@ -17,7 +17,6 @@ import { layout, message } from "../../templates/universal";
 function initI18n(lng: string) {
   i18next.init({
     lng,
-    debug: true,
     resources: {
       en: { translation: en },
       it: { translation: it },

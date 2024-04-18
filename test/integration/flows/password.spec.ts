@@ -574,7 +574,7 @@ describe("password-flow", () => {
       const { exp, iat, sid, ...restOfIdTokenPayload } =
         silentAuthIdTokenPayload;
       expect(restOfIdTokenPayload).toEqual({
-        sub: "userId",
+        sub: "auth2|userId",
         aud: "clientId",
         email: "foo@example.com",
         email_verified: true,
