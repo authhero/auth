@@ -561,22 +561,4 @@ export class LoginController extends Controller {
       return renderLogin(env, this, session, err.message);
     }
   }
-
-  /**
-   * Renders a info page for the user
-   * @param request
-   */
-  @Get("info")
-  public async info(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-    @Query("code") code: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-
-    return renderMessage(env, this, {
-      page_title: "User info",
-      message: `Not implemented`,
-    });
-  }
 }

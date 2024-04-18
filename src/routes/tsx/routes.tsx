@@ -11,6 +11,8 @@ import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
+import { Liquid } from "liquidjs";
+import { layout, message } from "../../templates/universal";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -22,6 +24,29 @@ function initI18n(lng: string) {
       nb: { translation: nb },
       sv: { translation: sv },
     },
+  });
+}
+
+const engine = new Liquid();
+
+// temp cloned
+async function renderMessage(
+  env: Env,
+  // controller: Controller,
+  // context: UniversalLoginSession | { page_title: string; message: string },
+  context: { page_title: string; message: string },
+) {
+  const layoutTemplate = engine.parse(layout);
+
+  const template = engine.parse(message);
+
+  // controller.setHeader("content-type", "text/html");
+  // controller.setStatus(200);
+
+  const content = await engine.render(template, context);
+  return engine.render(layoutTemplate, {
+    ...context,
+    content,
   });
 }
 
@@ -336,5 +361,44 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       // need JSX success here
       return ctx.text("The password has been reset", 200);
+    },
+  )
+  // --------------------------------
+  // GET /u/info
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/info",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+          code: z.string().openapi({
+            description: "The code parameter from the authorization request",
+          }),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+
+    async (ctx) => {
+      return ctx.text(
+        await renderMessage(ctx.env, {
+          page_title: "User info",
+          message: `Not implemented`,
+        }),
+      );
     },
   );
