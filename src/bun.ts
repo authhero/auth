@@ -19,6 +19,7 @@ const server = {
 
     return app.fetch(request, {
       ...process.env,
+      TOKEN_SERVICE: { fetch },
       oauth2ClientFactory: { create: oAuth2ClientFactory },
       data: {
         ...createEmailAdapter(),

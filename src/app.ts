@@ -24,6 +24,7 @@ import { connections } from "./routes/management-api/connections";
 import { domains } from "./routes/management-api/domains";
 import { keys } from "./routes/management-api/keys";
 import { tailwindCss } from "./styles/tailwind";
+import authenticationMiddleware from "./middlewares/authentication";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -86,6 +87,8 @@ export const app = rootApp
   });
 
 export const loginApp = rootApp
+  .use("/api/*", authenticationMiddleware)
+  .use("/userinfo", authenticationMiddleware)
   .route("/u", login)
   .route("/.well-known", wellKnown)
   .route("/callback", callback)
