@@ -28,7 +28,7 @@ describe("jwks", () => {
     expect(jwks.keys.length).toBe(1);
   });
 
-  it.only("should create a new rsa-key and return it", async () => {
+  it("should create a new rsa-key and return it", async () => {
     const env = await getEnv();
     const loginClient = testClient(loginApp, env);
 
