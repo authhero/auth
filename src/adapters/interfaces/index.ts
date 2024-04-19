@@ -1,6 +1,5 @@
 import { ClientsAdapter } from "./Clients";
 import { CodesAdapter } from "./Codes";
-import { EmailAdapter } from "./Email";
 import { MembersDataAdapter } from "./Members";
 import { OTPAdapter } from "./OTP";
 import { PasswordsAdapter } from "./Passwords";
@@ -20,7 +19,6 @@ export interface DataAdapters {
   applications: ApplicationsAdapter;
   codes: CodesAdapter;
   clients: ClientsAdapter;
-  email: EmailAdapter;
   members: MembersDataAdapter;
   OTP: OTPAdapter;
   passwords: PasswordsAdapter;
