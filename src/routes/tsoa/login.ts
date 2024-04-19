@@ -30,6 +30,7 @@ import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
+import { sendLink } from "../../controllers/email";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -179,13 +180,7 @@ export class LoginController extends Controller {
     magicLink.searchParams.set("email", session.authParams.username);
     magicLink.searchParams.set("verification_code", code);
 
-    await env.data.email.sendLink(
-      env,
-      client,
-      params.username,
-      code,
-      magicLink.href,
-    );
+    await sendLink(env, client, params.username, code, magicLink.href);
 
     this.setHeader(
       headers.location,

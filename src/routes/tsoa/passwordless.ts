@@ -23,6 +23,7 @@ import { validateCode } from "../../authentication-flows/passwordless";
 import { getClient } from "../../services/clients";
 import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { LogTypes } from "../../types";
+import { sendCode, sendLink } from "../../controllers/email";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -106,9 +107,9 @@ export class PasswordlessController extends Controller {
       magicLink.searchParams.set("email", email);
       magicLink.searchParams.set("verification_code", code);
 
-      await env.data.email.sendLink(env, client, email, code, magicLink.href);
+      await sendLink(env, client, email, code, magicLink.href);
     } else {
-      await env.data.email.sendCode(env, client, email, code);
+      await sendCode(env, client, email, code);
     }
 
     return "OK";
