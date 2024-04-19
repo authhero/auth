@@ -676,10 +676,11 @@ describe("magic link flow", () => {
         },
       );
 
-      // this should tot be called code....
-      const [, { code }] = env.data.emails;
+      const linkEmailBody = env.data.emails[1].content[0].value;
 
-      const magicLink = code.match(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"/)![1];
+      const magicLink = linkEmailBody.match(
+        /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
+      )![1];
 
       console.log("magicLink - ", magicLink);
 

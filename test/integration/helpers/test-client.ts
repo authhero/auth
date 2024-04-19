@@ -10,7 +10,6 @@ import {
   Application,
   Tenant,
 } from "../../../src/types";
-import type { Email } from "../../../src/types/Email";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
@@ -21,13 +20,10 @@ export async function getEnv() {
     database: new SQLite(":memory:"),
   });
 
-  const emails: Email[] = [];
+  const emails: EmailOptions[] = [];
 
   function sendEmailAdapter(client: Client, emailOptions: EmailOptions) {
-    emails.push({
-      to: emailOptions.to[0].email,
-      code: emailOptions.content[0].value,
-    });
+    emails.push(emailOptions);
 
     return "ok";
   }
