@@ -269,7 +269,7 @@ describe("code-flow", () => {
       iss: "https://example.com/",
     });
   });
-  it.skip("is an existing primary user", async () => {
+  it("is an existing primary user", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -330,7 +330,8 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.emails;
+    // const [{ code: otp }] = await env.data.emails;
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
