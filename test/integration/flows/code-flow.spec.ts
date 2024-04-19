@@ -29,7 +29,7 @@ function getOTP(email: EmailOptions) {
 }
 
 describe("code-flow", () => {
-  it.only("should create new user when email does not exist", async () => {
+  it("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
