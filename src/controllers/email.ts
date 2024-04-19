@@ -1,7 +1,6 @@
 import { Liquid } from "liquidjs";
 import { translate } from "../utils/i18n";
 import { Client, Env } from "../types";
-import sendEmail from "../services/email";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
@@ -71,7 +70,7 @@ export async function sendCode(
     buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
-  await sendEmail(client, {
+  await env.sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
       email: client.tenant.sender_email,
@@ -129,7 +128,7 @@ export async function sendLink(
     buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
-  await sendEmail(client, {
+  await env.sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
       email: client.tenant.sender_email,
@@ -190,7 +189,7 @@ export async function sendResetPassword(
     buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
-  await sendEmail(client, {
+  await env.sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
       email: client.tenant.sender_email,
@@ -255,7 +254,7 @@ export async function sendValidateEmailAddress(
     buttonColor: client.tenant.primary_color || "#7d68f4",
   });
 
-  await sendEmail(client, {
+  await env.sendEmail(client, {
     to: [{ email: to, name: to }],
     from: {
       email: client.tenant.sender_email,
