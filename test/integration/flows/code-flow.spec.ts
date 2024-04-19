@@ -1294,7 +1294,7 @@ describe("code-flow", () => {
   // - do not allow code from a different account: we should be fine without this but I can see a way we could mess this up!
 
   describe("edge cases", () => {
-    it.skip("should login correctly for a code account linked to another account with a different email, when a password account has been registered but not verified", async () => {
+    it("should login correctly for a code account linked to another account with a different email, when a password account has been registered but not verified", async () => {
       // create a new user with a password
       const token = await getAdminToken();
       const env = await getEnv();
@@ -1415,7 +1415,7 @@ describe("code-flow", () => {
       expect(response.status).toBe(200);
 
       // first email is email validation from sign up above
-      const [, { code: otp }] = await env.data.emails;
+      const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
@@ -1479,7 +1479,7 @@ describe("code-flow", () => {
       expect(idTokenPayload.email).toBe("base-user@example.com");
     });
 
-    it.skip("should ignore un-verified password account when signing up with code account", async () => {
+    it("should ignore un-verified password account when signing up with code account", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -1533,7 +1533,7 @@ describe("code-flow", () => {
       }
 
       // first email will be email verification
-      const [, { code: otp }] = await env.data.emails;
+      const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
