@@ -66,9 +66,12 @@ describe("magic link flow", () => {
         throw new Error(await response.text());
       }
 
-      const [{ to, magicLink }] = env.data.emails;
+      const linkEmailBody = env.data.emails[0].content[0].value;
+      const magicLink = linkEmailBody.match(
+        /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
+      )![1];
 
-      expect(to).toBe("new-user@example.com");
+      expect(env.data.emails[0].to[0].email).toBe("new-user@example.com");
 
       const link = magicLink!;
 
@@ -206,9 +209,12 @@ describe("magic link flow", () => {
         },
       );
 
-      const [{ to, magicLink }] = env.data.emails;
+      const linkEmailBody = env.data.emails[0].content[0].value;
+      const magicLink = linkEmailBody.match(
+        /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
+      )![1];
 
-      expect(to).toBe("bar@example.com");
+      expect(env.data.emails[0].to[0].email).toBe("bar@example.com");
 
       const link = magicLink!;
 
@@ -323,9 +329,12 @@ describe("magic link flow", () => {
         },
       );
 
-      const [{ to, magicLink }] = env.data.emails;
+      const linkEmailBody = env.data.emails[0].content[0].value;
+      const magicLink = linkEmailBody.match(
+        /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
+      )![1];
 
-      expect(to).toBe("foo@example.com");
+      expect(env.data.emails[0].to[0].email).toBe("foo@example.com");
 
       const link = magicLink!;
 
@@ -423,9 +432,12 @@ describe("magic link flow", () => {
         },
       );
 
-      const [{ to, magicLink }] = env.data.emails;
+      const linkEmailBody = env.data.emails[0].content[0].value;
+      const magicLink = linkEmailBody.match(
+        /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
+      )![1];
 
-      expect(to).toBe("foo@example.com");
+      expect(env.data.emails[0].to[0].email).toBe("foo@example.com");
 
       const link = magicLink!;
 
@@ -521,7 +533,11 @@ describe("magic link flow", () => {
       },
     );
 
-    const [{ magicLink }] = env.data.emails;
+    const linkEmailBody = env.data.emails[0].content[0].value;
+
+    const magicLink = linkEmailBody.match(
+      /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
+    )![1];
 
     const link = magicLink!;
 
@@ -577,7 +593,11 @@ describe("magic link flow", () => {
       },
     );
 
-    const [{ magicLink }] = env.data.emails;
+    const linkEmailBody = env.data.emails[0].content[0].value;
+
+    const magicLink = linkEmailBody.match(
+      /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
+    )![1];
 
     const link = magicLink!;
     // ------------
@@ -681,8 +701,6 @@ describe("magic link flow", () => {
       const magicLink = linkEmailBody.match(
         /<a\s+(?:[^>]*?\s+)?href="([^"]*)"/,
       )![1];
-
-      console.log("magicLink - ", magicLink);
 
       const authenticatePath = magicLink!?.split("https://example.com")[1];
 
