@@ -7,6 +7,12 @@ import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
 import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
+import {
+  codev2,
+  linkv2,
+  passwordReset,
+  verifyEmail,
+} from "../templates/email/ts";
 
 const SUPPORTED_LOCALES: { [key: string]: object } = {
   en,
@@ -30,14 +36,10 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get(
-    "templates/email/code-v2.liquid",
-  );
-  if (!response) {
-    throw new Error("Code template not found");
-  }
-
-  const templateString = await response.text();
+  // FINAL STEP! these need to be read straight from in here!
+  // A. generate these in E6 strings... just do manually for now right! like M did with tailwind
+  // B. IF WORKS - new PR to generate these. EASY!
+  // C. start asserting and testing... would be good to release but NOT ON FRIDAY lol
 
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
@@ -48,7 +50,7 @@ export async function sendCode(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeUniversalTemplate = engine.parse(templateString);
+  const sendCodeUniversalTemplate = engine.parse(codev2);
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
@@ -94,15 +96,6 @@ export async function sendLink(
   code: string,
   magicLink: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get(
-    "templates/email/link-v2.liquid",
-  );
-  if (!response) {
-    throw new Error("Code template not found");
-  }
-
-  const templateString = await response.text();
-
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
 
@@ -112,7 +105,7 @@ export async function sendLink(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeUniversalTemplate = engine.parse(templateString);
+  const sendCodeUniversalTemplate = engine.parse(linkv2);
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
@@ -162,16 +155,6 @@ export async function sendResetPassword(
   code: string,
   state: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get(
-    "templates/email/password-reset.liquid",
-  );
-
-  if (!response) {
-    throw new Error("Password reset template not found");
-  }
-
-  const templateString = await response.text();
-
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
 
@@ -184,7 +167,7 @@ export async function sendResetPassword(
   // the auth0 link looks like this:  https://auth.sesamy.dev/u/reset-verify?ticket={ticket}#
   const passwordResetUrl = `${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
 
-  const sendPasswordResetUniversalTemplate = engine.parse(templateString);
+  const sendPasswordResetUniversalTemplate = engine.parse(passwordReset);
   const sendPasswordResetTemplateString = await engine.render(
     sendPasswordResetUniversalTemplate,
     {
@@ -233,15 +216,9 @@ export async function sendValidateEmailAddress(
   code: string,
   state: string,
 ) {
-  const response = await env.AUTH_TEMPLATES.get(
-    "templates/email/verify-email.liquid",
-  );
-
-  if (!response) {
-    throw new Error("Email address validation template not found");
-  }
-
-  const templateString = await response.text();
+  // const response = await env.AUTH_TEMPLATES.get(
+  //   "templates/email/verify-email.liquid",
+  // );
 
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
@@ -255,7 +232,7 @@ export async function sendValidateEmailAddress(
   // we have not checked the route name that auth0 uses
   const emailValidationUrl = `${env.ISSUER}u/validate-email?state=${state}&code=${code}`;
 
-  const sendEmailValidationUniversalTemplate = engine.parse(templateString);
+  const sendEmailValidationUniversalTemplate = engine.parse(verifyEmail);
   const sendEmailValidationTemplateString = await engine.render(
     sendEmailValidationUniversalTemplate,
     {
