@@ -9,6 +9,7 @@ import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 
+// can snapshot the body here... maybe return it
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
   // this gets the space before so we don't match CSS colours
