@@ -442,7 +442,7 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
     });
 
-    it.skip("should not allow a new sign up to overwrite the password of an existing signup", async () => {
+    it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
       const aNewPassword = "A-new-valid-password-1234!";
@@ -487,7 +487,7 @@ describe("password-flow", () => {
       );
       expect(loginResponse.status).toBe(403);
     });
-    it.skip("should reject signups for weak passwords", async () => {
+    it("should reject signups for weak passwords", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -516,7 +516,7 @@ describe("password-flow", () => {
     // same username-password user but a different tenant
   });
   describe("Login with password", () => {
-    it.skip("should login with existing user", async () => {
+    it("should login with existing user", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
       // foo@example.com is an existing username-password user, with password - Test!
@@ -600,7 +600,7 @@ describe("password-flow", () => {
         picture: "https://example.com/foo.png",
       });
     });
-    it.skip("should reject login of existing user with incorrect password", async () => {
+    it("should reject login of existing user with incorrect password", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -623,7 +623,7 @@ describe("password-flow", () => {
       // no body returned
       expect(loginResponse.status).toBe(403);
     });
-    it.skip("should not allow password of a different user to be used", async () => {
+    it("should not allow password of a different user to be used", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -693,7 +693,7 @@ describe("password-flow", () => {
 
       expect(rejectedLoginResponse.status).toBe(403);
     });
-    it.skip("should not allow non-existent user & password to login", async () => {
+    it("should not allow non-existent user & password to login", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -715,7 +715,7 @@ describe("password-flow", () => {
       );
       expect(loginResponse.status).toBe(403);
     });
-    it.skip("should not allow login to username-password but on different tenant", async () => {
+    it("should not allow login to username-password but on different tenant", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -743,7 +743,7 @@ describe("password-flow", () => {
     // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
   describe("Password reset", () => {
-    it.skip("should send password reset email for existing user, and allow password to be changed", async () => {
+    it("should send password reset email for existing user, and allow password to be changed", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -774,7 +774,7 @@ describe("password-flow", () => {
         "We've just sent you an email to reset your password.",
       );
 
-      const [{ to, code, state }] = env.data.emails;
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       expect(to).toBe("foo@example.com");
       expect(code).toBeDefined();
@@ -848,7 +848,7 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
     });
-    it.skip("should reject weak passwords", async () => {
+    it("should reject weak passwords", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -872,7 +872,7 @@ describe("password-flow", () => {
           },
         },
       );
-      const [{ code, state }] = env.data.emails;
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
       // reject when try to set weak password
@@ -893,7 +893,7 @@ describe("password-flow", () => {
 
       expect(resetPassword.status).toBe(400);
     });
-    it.skip("should reject non-matching confirmation password", async () => {
+    it("should reject non-matching confirmation password", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -917,7 +917,7 @@ describe("password-flow", () => {
           },
         },
       );
-      const [{ code, state }] = env.data.emails;
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
       // reject when confrimation password does not match!
@@ -938,7 +938,7 @@ describe("password-flow", () => {
 
       expect(resetPassword.status).toBe(400);
     });
-    it.skip("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
+    it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
@@ -982,7 +982,8 @@ describe("password-flow", () => {
       expect(await passwordResetSendResponse.text()).toBe(
         "We've just sent you an email to reset your password.",
       );
-      const [{ to, code, state }] = env.data.emails;
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+
       expect(to).toBe("reset-new-user@example.com");
       expect(code).toBeDefined();
       expect(state).toBeDefined();
