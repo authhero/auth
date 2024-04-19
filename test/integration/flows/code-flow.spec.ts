@@ -9,7 +9,11 @@ import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { chromium } from "playwright";
+// remove this dep as this won't work!
 import { test, expect as playwrightExpect } from "@playwright/test";
+import { toMatchImageSnapshot } from "jest-image-snapshot";
+// maybe we can do this in a vite config
+expect.extend({ toMatchImageSnapshot });
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -101,6 +105,10 @@ describe("code-flow", () => {
     // console.log(buffer.toString('base64'));
     // and then load the saved image... and compare it... but then it gets very manual
     // at this point we may as well have separate playwright tests
+
+    const image = await page.screenshot();
+
+    expect(image).toMatchImageSnapshot();
 
     await browser.close();
 
