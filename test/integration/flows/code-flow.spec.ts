@@ -95,6 +95,12 @@ describe("code-flow", () => {
     // probably need to do all the logo loading waiting here...
     // await page.screenshot({ path: "screenshot.png" });
 
+    // set code to the same so snapshots match
+    const codeToChange = page.locator("#code");
+    await codeToChange.evaluate((element) => {
+      element.textContent = "123456";
+    });
+
     // does not work unless we're inside the playwright runner...
     // playwrightExpect(await page.screenshot()).toMatchSnapshot("code-flow.png", {
     //   threshold: 0.1,
@@ -108,6 +114,7 @@ describe("code-flow", () => {
 
     const image = await page.screenshot();
 
+    // TODO - how can patch types? vitest isn't jest
     expect(image).toMatchImageSnapshot();
 
     await browser.close();
