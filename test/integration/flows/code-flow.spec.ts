@@ -9,6 +9,7 @@ import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { chromium } from "playwright";
+import { test, expect as playwrightExpect } from "@playwright/test";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -88,7 +89,19 @@ describe("code-flow", () => {
     const page = await browser.newPage();
     await page.setContent(codeEmailBody);
     // probably need to do all the logo loading waiting here...
-    await page.screenshot({ path: "screenshot.png" });
+    // await page.screenshot({ path: "screenshot.png" });
+
+    // does not work unless we're inside the playwright runner...
+    // playwrightExpect(await page.screenshot()).toMatchSnapshot("code-flow.png", {
+    //   threshold: 0.1,
+    // });
+
+    // maybe we need to load the current snapshot into a buffer e.g
+    // const buffer = await page.screenshot();
+    // console.log(buffer.toString('base64'));
+    // and then load the saved image... and compare it... but then it gets very manual
+    // at this point we may as well have separate playwright tests
+
     await browser.close();
 
     // Authenticate using the code
