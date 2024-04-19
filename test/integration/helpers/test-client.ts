@@ -16,21 +16,21 @@ import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 
-const emails: Email[] = [];
-
-function sendEmailAdapter(client: Client, emailOptions: EmailOptions) {
-  emails.push({
-    to: emailOptions.to[0].email,
-    code: emailOptions.content[0].value,
-  });
-
-  return "ok";
-}
-
 export async function getEnv() {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
+
+  const emails: Email[] = [];
+
+  function sendEmailAdapter(client: Client, emailOptions: EmailOptions) {
+    emails.push({
+      to: emailOptions.to[0].email,
+      code: emailOptions.content[0].value,
+    });
+
+    return "ok";
+  }
 
   // Don't use getDb here as it will reuse the connection
   const db = new Kysely<Database>({ dialect: dialect });

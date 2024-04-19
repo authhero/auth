@@ -676,8 +676,12 @@ describe("magic link flow", () => {
         },
       );
 
-      // first email will be email verification
-      const [, { magicLink }] = env.data.emails;
+      // this should tot be called code....
+      const [, { code }] = env.data.emails;
+
+      const magicLink = code.match(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"/)![1];
+
+      console.log("magicLink - ", magicLink);
 
       const authenticatePath = magicLink!?.split("https://example.com")[1];
 
