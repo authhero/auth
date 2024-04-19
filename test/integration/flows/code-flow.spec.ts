@@ -746,7 +746,7 @@ describe("code-flow", () => {
   });
 
   describe("most complex linking flow I can think of", () => {
-    it.skip("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
+    it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -848,7 +848,7 @@ describe("code-flow", () => {
       );
       expect(passwordlessStartRes.status).toBe(200);
 
-      const [{ code: otp }] = await env.data.emails;
+      const otp = getOTP(env.data.emails[0]);
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
@@ -967,7 +967,7 @@ describe("code-flow", () => {
     });
   });
 
-  it.skip("should accept the same code multiple times", async () => {
+  it("should accept the same code multiple times", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
@@ -996,7 +996,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.emails;
+    const otp = getOTP(env.data.emails[0]);
 
     const authRes = await client.co.authenticate.$post(
       {
@@ -1037,7 +1037,7 @@ describe("code-flow", () => {
     expect(authRes2.status).toBe(200);
   });
 
-  it.skip("should not accept an invalid code", async () => {
+  it("should not accept an invalid code", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
@@ -1088,7 +1088,7 @@ describe("code-flow", () => {
     expect(authRes.status).toBe(403);
   });
 
-  it.skip("should be case insensitive with email address", async () => {
+  it("should be case insensitive with email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -1148,7 +1148,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.emails;
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -1203,7 +1203,7 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("john-doe@example.com");
   });
 
-  it.skip("should store new user email in lowercase", async () => {
+  it("should store new user email in lowercase", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
@@ -1235,7 +1235,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.emails;
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
