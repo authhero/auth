@@ -5,7 +5,7 @@ import { testClient } from "hono/testing";
 import { chromium } from "playwright";
 
 describe("Login with password user", () => {
-  it.only("should login with password", async () => {
+  it("should login with password", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
