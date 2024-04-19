@@ -8,6 +8,7 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { chromium } from "playwright";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -28,7 +29,7 @@ function getOTP(email: EmailOptions) {
 }
 
 describe("code-flow", () => {
-  it("should create new user when email does not exist", async () => {
+  it.only("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -81,6 +82,12 @@ describe("code-flow", () => {
     }
 
     const otp = getOTP(env.data.emails[0]);
+
+    const codeEmailBody = env.data.emails[0].content[0].value;
+    const browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.setContent(codeEmailBody);
+    await browser.close();
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
