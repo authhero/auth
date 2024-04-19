@@ -87,6 +87,8 @@ describe("code-flow", () => {
     const browser = await chromium.launch();
     const page = await browser.newPage();
     await page.setContent(codeEmailBody);
+    // probably need to do all the logo loading waiting here...
+    await page.screenshot({ path: "screenshot.png" });
     await browser.close();
 
     // Authenticate using the code
