@@ -10,7 +10,7 @@ import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { chromium } from "playwright";
 // remove this dep as this won't work!
-import { test, expect as playwrightExpect } from "@playwright/test";
+// import { test, expect as playwrightExpect } from "@playwright/test";
 import { toMatchImageSnapshot } from "jest-image-snapshot";
 // maybe we can do this in a vite config
 expect.extend({ toMatchImageSnapshot });
