@@ -10,7 +10,6 @@ import {
   connectionInsertSchema,
   connectionSchema,
 } from "../../types/Connection";
-import { t } from "i18next";
 
 export const connectionsWithTotalsSchema = totalsSchema.extend({
   connections: z.array(connectionSchema),
