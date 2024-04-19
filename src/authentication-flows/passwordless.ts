@@ -11,6 +11,7 @@ import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSess
 import { nanoid } from "nanoid";
 import generateOTP from "../utils/otp";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../constants";
+import { sendValidateEmailAddress } from "../controllers/email";
 
 // de-dupe
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
@@ -122,11 +123,5 @@ export async function sendEmailVerificationEmail({
     expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
   });
 
-  await env.data.email.sendValidateEmailAddress(
-    env,
-    client,
-    user.email,
-    code,
-    state,
-  );
+  await sendValidateEmailAddress(env, client, user.email, code, state);
 }
