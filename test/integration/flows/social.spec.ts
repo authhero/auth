@@ -213,19 +213,12 @@ describe("social sign on", () => {
         );
         // this checks that the integration test persistence is correctly reset every test
         expect(checkNoExistingUser.status).toBe(404);
-        const socialCallbackResponse = await loginClient.callback.$post(
-          {
-            json: {
-              state: SOCIAL_STATE_PARAM,
-              code: "code",
-            },
+        const socialCallbackResponse = await loginClient.callback.$post({
+          form: {
+            state: SOCIAL_STATE_PARAM,
+            code: "code",
           },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+        });
         expect(socialCallbackResponse.status).toBe(302);
         const location2 = new URL(
           socialCallbackResponse.headers.get("location")!,
@@ -755,31 +748,24 @@ describe("social sign on", () => {
         const env = await getEnv();
         const client = testClient(loginApp, env);
 
-        const socialCallbackResponse = await client.callback.$post(
-          {
-            json: {
-              state: btoa(
-                JSON.stringify({
-                  authParams: {
-                    redirect_uri: "https://login2.sesamy.dev/callback",
-                    scope: "openid profile email",
-                    state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-                    client_id: "clientId",
-                    nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-                    response_type: "token id_token",
-                  },
-                  connection: "evil-social-provider",
-                }),
-              ).replace("==", ""),
-              code: "code",
-            },
+        const socialCallbackResponse = await client.callback.$post({
+          form: {
+            state: btoa(
+              JSON.stringify({
+                authParams: {
+                  redirect_uri: "https://login2.sesamy.dev/callback",
+                  scope: "openid profile email",
+                  state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+                  client_id: "clientId",
+                  nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+                  response_type: "token id_token",
+                },
+                connection: "evil-social-provider",
+              }),
+            ).replace("==", ""),
+            code: "code",
           },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+        });
 
         expect(socialCallbackResponse.status).toBe(403);
         expect(await socialCallbackResponse.text()).toBe(
