@@ -1,3 +1,4 @@
+import { HTTPException } from "hono/http-exception";
 import { createToken } from "../utils/jwt";
 
 export interface TokenResponse {
@@ -124,9 +125,9 @@ export class OAuth2Client implements IOAuth2Client {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `Error exchanging code for token: ${await response.text()}`,
-      );
+      throw new HTTPException(400, {
+        message: `Error exchanging code for token: ${await response.text()}`,
+      });
     }
 
     return response.json();
