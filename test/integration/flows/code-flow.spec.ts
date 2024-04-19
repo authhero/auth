@@ -21,7 +21,7 @@ function getOTP(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
   // this gets the space before so we don't match CSS colours
   const otps = codeEmailBody.match(/(?!#).[0-9]{6}/g)!;
-  const otp = otps[0].trim();
+  const otp = otps[0].slice(1);
 
   return otp;
 }
@@ -393,7 +393,7 @@ describe("code-flow", () => {
 
     expect(silentAuthIdTokenPayload.sub).toBe("email|userId2");
   });
-  it.skip("is an existing linked user", async () => {
+  it("is an existing linked user", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -439,7 +439,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.emails;
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -504,7 +504,7 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload.sub).toBe("auth2|userId");
   });
 
-  it.skip("should return existing username-primary account when logging in with new code sign on with same email address", async () => {
+  it("should return existing username-primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
@@ -540,7 +540,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.emails;
+    const otp = getOTP(env.data.emails[0]);
 
     const authenticateResponse = await client.co.authenticate.$post(
       {
@@ -683,7 +683,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{}, { code: otp2 }] = await env.data.emails;
+    const otp2 = getOTP(env.data.emails[1]);
 
     const authenticateResponse2 = await client.co.authenticate.$post(
       {
