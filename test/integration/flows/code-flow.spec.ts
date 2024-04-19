@@ -329,7 +329,6 @@ describe("code-flow", () => {
       },
     );
 
-    // const [{ code: otp }] = await env.data.emails;
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
