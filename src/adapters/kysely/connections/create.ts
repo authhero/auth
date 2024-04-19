@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { Database } from "../../../types";
 import { Connection, ConnectionInsert } from "../../../types/Connection";
 import { Kysely } from "kysely";
@@ -8,6 +9,7 @@ export function create(db: Kysely<Database>) {
     params: ConnectionInsert,
   ): Promise<Connection> => {
     const connection = {
+      id: nanoid(),
       ...params,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

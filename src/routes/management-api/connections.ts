@@ -10,6 +10,7 @@ import {
   connectionInsertSchema,
   connectionSchema,
 } from "../../types/Connection";
+import { t } from "i18next";
 
 export const connectionsWithTotalsSchema = totalsSchema.extend({
   connections: z.array(connectionSchema),
@@ -51,6 +52,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
     }),
     async (ctx) => {
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
+
       const { page, per_page, include_totals, sort, q } =
         ctx.req.valid("query");
 
