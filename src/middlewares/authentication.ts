@@ -141,8 +141,15 @@ export default async function authenticationMiddleware(
     const permissions = token.payload.permissions || [];
 
     if (
-      !permissions.includes("auth:read") &&
-      (!permissions.includes("auth:write") || ctx.req.method !== "POST")
+      ["POST", "PATCH", "DELETE", "PUT"].includes(ctx.req.method) &&
+      !permissions.includes("auth:write")
+    ) {
+      throw new HTTPException(403, { message: "Unauthorized" });
+    }
+
+    if (
+      !permissions.includes("auth:read") ||
+      !permissions.includes("auth:write")
     ) {
       throw new HTTPException(403, { message: "Unauthorized" });
     }

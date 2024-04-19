@@ -51,6 +51,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
     }),
     async (ctx) => {
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
+
       const { page, per_page, include_totals, sort, q } =
         ctx.req.valid("query");
 
