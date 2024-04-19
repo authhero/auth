@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
+import { chromium } from "playwright";
 
 describe("Login with password user", () => {
-  it("should login with password", async () => {
+  it.only("should login with password", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
@@ -45,6 +46,15 @@ describe("Login with password user", () => {
     const loginSearchParamsQuery = Object.fromEntries(
       loginSearchParams.entries(),
     );
+
+    // get the body and put it into playwright!
+    const loginFormResponseText = await loginFormResponse.text();
+    console.log(loginFormResponseText);
+    const browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.setContent(loginFormResponseText);
+    await page.screenshot({ path: "login-page.png" });
+    await browser.close();
 
     const postLoginResponse = await client.u.login.$post({
       query: loginSearchParamsQuery,
