@@ -12,7 +12,7 @@
     "format": "prettier --write '**/*.{ts,css,json,md}'",
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
-    "test": "vitest",
+    "test": "vitest --pool=forks",
     "semantic-release": "semantic-release",
     "prepare": "husky install",
     "type-check": "tsc",
