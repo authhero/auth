@@ -2,6 +2,18 @@ import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
+import { EmailOptions } from "../../../src/services/email/EmailOptions";
+
+function getCodeAndTo(email: EmailOptions) {
+  const codeEmailBody = email.content[0].value;
+  // this gets the space before so we don't match CSS colours
+  const codes = codeEmailBody.match(/(?!#).[0-9]{6}/g)!;
+  const code = codes[0].slice(1);
+
+  const to = email.to[0].email;
+
+  return { code, to };
+}
 
 describe("Login with code on liquidjs template", () => {
   it("should login with code", async () => {
@@ -54,7 +66,7 @@ describe("Login with code on liquidjs template", () => {
       throw new Error("No login location header found");
     }
 
-    const [{ to, code }] = env.data.emails;
+    const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
 
     // Authenticate using the code
