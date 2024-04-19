@@ -19,7 +19,7 @@ const AUTH_PARAMS = {
 
 function getOTP(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
-  // this gets the space before so we don't match CSS colours
+  // this ignores number prefixed by hashes so we don't match CSS colours
   const otps = codeEmailBody.match(/(?!#).[0-9]{6}/g)!;
   const otp = otps[0].slice(1);
 
