@@ -1,6 +1,8 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { DataAdapters } from "../adapters/interfaces";
 import { VendorSettings } from "./sql";
+import type { Client } from "./Client";
+import type { Email } from "./Email";
 
 export type Env = {
   ISSUER: string;
@@ -19,5 +21,6 @@ export type Env = {
   WRITE_PERMISSION?: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   data: DataAdapters;
+  sendEmail: (client: Client, email: Email) => Promise<void>;
   fetchVendorSettings: (tenantName: string) => Promise<VendorSettings>;
 };
