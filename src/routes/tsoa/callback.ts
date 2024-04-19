@@ -101,7 +101,7 @@ export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       request: {
         body: {
           content: {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               schema: z.object({
                 state: z.string(),
                 code: z.string().optional(),
@@ -130,11 +130,11 @@ export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         error_description,
         error_code,
         error_reason,
-      } = ctx.req.valid("json");
+      } = ctx.req.valid("form");
 
       const loginState: LoginState = stateDecode(state);
       if (!loginState) {
-        throw new Error("State not found");
+        throw new HTTPException(400, { message: "State not found" });
       }
 
       const client = await getClient(ctx.env, loginState.authParams.client_id);
