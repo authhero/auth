@@ -5,8 +5,8 @@ import * as bunSqlite from "bun:sqlite";
 import app from "../src/app";
 import { oAuth2ClientFactory } from "../src/services/oauth2-client";
 import createAdapters from "./adapters/kysely";
-import createEmailAdapter from "./adapters/email";
 import { getDb } from "./services/db";
+import sendEmail from "./services/email";
 
 app.use("/static/*", serveStatic({ root: "./" }));
 
@@ -21,10 +21,8 @@ const server = {
       ...process.env,
       TOKEN_SERVICE: { fetch },
       oauth2ClientFactory: { create: oAuth2ClientFactory },
-      data: {
-        ...createEmailAdapter(),
-        ...createAdapters(db),
-      },
+      data: createAdapters(db),
+      sendEmail,
     });
   },
 };
