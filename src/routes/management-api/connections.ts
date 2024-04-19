@@ -114,7 +114,7 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(404);
       }
 
-      return ctx.json(connectionSchema.parse(connection), {
+      return ctx.json(connection, {
         headers,
       });
     },
