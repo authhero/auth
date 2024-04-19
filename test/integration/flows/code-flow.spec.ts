@@ -69,7 +69,7 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const [{ code: otp }] = await env.data.emails;
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -186,7 +186,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{}, { code: otpLogin }] = await env.data.email.list!();
+    const [{}, { code: otpLogin }] = await env.data.emails;
 
     const authRes2 = await client.co.authenticate.$post(
       {
@@ -319,7 +319,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const [{ code: otp }] = await env.data.emails;
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -427,7 +427,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const [{ code: otp }] = await env.data.emails;
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -528,7 +528,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const [{ code: otp }] = await env.data.emails;
 
     const authenticateResponse = await client.co.authenticate.$post(
       {
@@ -671,7 +671,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{}, { code: otp2 }] = await env.data.email.list!();
+    const [{}, { code: otp2 }] = await env.data.emails;
 
     const authenticateResponse2 = await client.co.authenticate.$post(
       {
@@ -836,7 +836,7 @@ describe("code-flow", () => {
       );
       expect(passwordlessStartRes.status).toBe(200);
 
-      const [{ code: otp }] = await env.data.email.list!();
+      const [{ code: otp }] = await env.data.emails;
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
@@ -984,7 +984,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const [{ code: otp }] = await env.data.emails;
 
     const authRes = await client.co.authenticate.$post(
       {
@@ -1136,7 +1136,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const [{ code: otp }] = await env.data.emails;
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -1223,7 +1223,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const [{ code: otp }] = await env.data.emails;
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -1403,7 +1403,7 @@ describe("code-flow", () => {
       expect(response.status).toBe(200);
 
       // first email is email validation from sign up above
-      const [, { code: otp }] = await env.data.email.list!();
+      const [, { code: otp }] = await env.data.emails;
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
@@ -1521,7 +1521,7 @@ describe("code-flow", () => {
       }
 
       // first email will be email verification
-      const [, { code: otp }] = await env.data.email.list!();
+      const [, { code: otp }] = await env.data.emails;
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(

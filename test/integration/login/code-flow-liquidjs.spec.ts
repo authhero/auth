@@ -54,7 +54,7 @@ describe("Login with code on liquidjs template", () => {
       throw new Error("No login location header found");
     }
 
-    const [{ to, code }] = await env.data.email.list!();
+    const [{ to, code }] = env.data.emails;
     expect(to).toBe("foo@example.com");
 
     // Authenticate using the code

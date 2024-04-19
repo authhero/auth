@@ -103,7 +103,7 @@ describe("password-flow", () => {
       expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
       expect(await loginBlockedRes.text()).toBe("Redirecting");
 
-      const [{ to, code, state }] = await env.data.email.list!();
+      const [{ to, code, state }] = env.data.emails;
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();
@@ -211,7 +211,7 @@ describe("password-flow", () => {
       // -----------------------------
       // validate email
       // -----------------------------
-      const [{ to, code, state }] = await env.data.email.list!();
+      const [{ to, code, state }] = env.data.emails;
 
       expect(to).toBe("existing-code-user@example.com");
       expect(code).toBeDefined();
@@ -400,7 +400,7 @@ describe("password-flow", () => {
 
       await client.authorize.$get({ query });
 
-      const emailList = await env.data.email.list!();
+      const emailList = env.data.emails;
       // this is the change! get the second email
       const { to, code, state } = emailList[1];
 
@@ -759,7 +759,7 @@ describe("password-flow", () => {
         "We've just sent you an email to reset your password.",
       );
 
-      const [{ to, code, state }] = await env.data.email.list!();
+      const [{ to, code, state }] = env.data.emails;
 
       expect(to).toBe("foo@example.com");
       expect(code).toBeDefined();
@@ -857,7 +857,7 @@ describe("password-flow", () => {
           },
         },
       );
-      const [{ code, state }] = await env.data.email.list!();
+      const [{ code, state }] = env.data.emails;
 
       //-------------------
       // reject when try to set weak password
@@ -902,7 +902,7 @@ describe("password-flow", () => {
           },
         },
       );
-      const [{ code, state }] = await env.data.email.list!();
+      const [{ code, state }] = env.data.emails;
 
       //-------------------
       // reject when confrimation password does not match!
@@ -967,7 +967,7 @@ describe("password-flow", () => {
       expect(await passwordResetSendResponse.text()).toBe(
         "We've just sent you an email to reset your password.",
       );
-      const [{ to, code, state }] = await env.data.email.list!();
+      const [{ to, code, state }] = env.data.emails;
       expect(to).toBe("reset-new-user@example.com");
       expect(code).toBeDefined();
       expect(state).toBeDefined();

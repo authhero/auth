@@ -66,7 +66,7 @@ describe("magic link flow", () => {
         throw new Error(await response.text());
       }
 
-      const [{ to, magicLink }] = await env.data.email.list!();
+      const [{ to, magicLink }] = env.data.emails;
 
       expect(to).toBe("new-user@example.com");
 
@@ -206,7 +206,7 @@ describe("magic link flow", () => {
         },
       );
 
-      const [{ to, magicLink }] = await env.data.email.list!();
+      const [{ to, magicLink }] = env.data.emails;
 
       expect(to).toBe("bar@example.com");
 
@@ -323,7 +323,7 @@ describe("magic link flow", () => {
         },
       );
 
-      const [{ to, magicLink }] = await env.data.email.list!();
+      const [{ to, magicLink }] = env.data.emails;
 
       expect(to).toBe("foo@example.com");
 
@@ -423,7 +423,7 @@ describe("magic link flow", () => {
         },
       );
 
-      const [{ to, magicLink }] = await env.data.email.list!();
+      const [{ to, magicLink }] = env.data.emails;
 
       expect(to).toBe("foo@example.com");
 
@@ -521,7 +521,7 @@ describe("magic link flow", () => {
       },
     );
 
-    const [{ magicLink }] = await env.data.email.list!();
+    const [{ magicLink }] = env.data.emails;
 
     const link = magicLink!;
 
@@ -577,7 +577,7 @@ describe("magic link flow", () => {
       },
     );
 
-    const [{ magicLink }] = await env.data.email.list!();
+    const [{ magicLink }] = env.data.emails;
 
     const link = magicLink!;
     // ------------
@@ -677,7 +677,7 @@ describe("magic link flow", () => {
       );
 
       // first email will be email verification
-      const [, { magicLink }] = await env.data.email.list!();
+      const [, { magicLink }] = env.data.emails;
 
       const authenticatePath = magicLink!?.split("https://example.com")[1];
 
