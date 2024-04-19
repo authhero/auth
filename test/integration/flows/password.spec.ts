@@ -7,6 +7,22 @@ import { testClient } from "hono/testing";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
+import type { EmailOptions } from "../../../src/services/email/EmailOptions";
+
+function getCodeStateTo(email: EmailOptions) {
+  const verifyEmailBody = email.content[0].value;
+  // this gets the space before so we don't match CSS colours
+  const codes = verifyEmailBody.match(/(?!#).[0-9]{6}/g)!;
+
+  const code = codes[0].slice(1);
+
+  const to = email.to[0].email;
+
+  // this is a param on the verify email magic link
+  const state = verifyEmailBody.match(/state=([^&]+)/)![1];
+
+  return { code, state, to };
+}
 
 describe("password-flow", () => {
   describe("Register password", () => {
@@ -35,7 +51,7 @@ describe("password-flow", () => {
       expect(response.status).toBe(404);
     });
 
-    it("should create a new user with a password and only allow login after email validation", async () => {
+    it.only("should create a new user with a password and only allow login after email validation", async () => {
       const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
@@ -103,7 +119,8 @@ describe("password-flow", () => {
       expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
       expect(await loginBlockedRes.text()).toBe("Redirecting");
 
-      const [{ to, code, state }] = env.data.emails;
+      // const [{ to, code, state }] = env.data.emails;
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();

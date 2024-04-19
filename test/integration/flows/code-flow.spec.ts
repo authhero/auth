@@ -79,7 +79,6 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    const codeEmailBody = env.data.emails[0].content[0].value;
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
