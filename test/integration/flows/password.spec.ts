@@ -7,6 +7,22 @@ import { testClient } from "hono/testing";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
+import type { EmailOptions } from "../../../src/services/email/EmailOptions";
+
+function getCodeStateTo(email: EmailOptions) {
+  const verifyEmailBody = email.content[0].value;
+  // this gets the space before so we don't match CSS colours
+  const codes = verifyEmailBody.match(/(?!#).[0-9]{6}/g)!;
+
+  const code = codes[0].slice(1);
+
+  const to = email.to[0].email;
+
+  // this is a param on the verify email magic link
+  const state = verifyEmailBody.match(/state=([^&]+)/)![1];
+
+  return { code, state, to };
+}
 
 describe("password-flow", () => {
   describe("Register password", () => {
@@ -103,7 +119,7 @@ describe("password-flow", () => {
       expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
       expect(await loginBlockedRes.text()).toBe("Redirecting");
 
-      const [{ to, code, state }] = await env.data.email.list!();
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();
@@ -211,7 +227,7 @@ describe("password-flow", () => {
       // -----------------------------
       // validate email
       // -----------------------------
-      const [{ to, code, state }] = await env.data.email.list!();
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       expect(to).toBe("existing-code-user@example.com");
       expect(code).toBeDefined();
@@ -400,9 +416,8 @@ describe("password-flow", () => {
 
       await client.authorize.$get({ query });
 
-      const emailList = await env.data.email.list!();
       // this is the change! get the second email
-      const { to, code, state } = emailList[1];
+      const { to, code, state } = getCodeStateTo(env.data.emails[1]);
 
       expect(to).toBe("password-login-test@example.com");
 
@@ -759,7 +774,7 @@ describe("password-flow", () => {
         "We've just sent you an email to reset your password.",
       );
 
-      const [{ to, code, state }] = await env.data.email.list!();
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       expect(to).toBe("foo@example.com");
       expect(code).toBeDefined();
@@ -857,7 +872,7 @@ describe("password-flow", () => {
           },
         },
       );
-      const [{ code, state }] = await env.data.email.list!();
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
       // reject when try to set weak password
@@ -902,7 +917,7 @@ describe("password-flow", () => {
           },
         },
       );
-      const [{ code, state }] = await env.data.email.list!();
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
       // reject when confrimation password does not match!
@@ -967,7 +982,8 @@ describe("password-flow", () => {
       expect(await passwordResetSendResponse.text()).toBe(
         "We've just sent you an email to reset your password.",
       );
-      const [{ to, code, state }] = await env.data.email.list!();
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+
       expect(to).toBe("reset-new-user@example.com");
       expect(code).toBeDefined();
       expect(state).toBeDefined();

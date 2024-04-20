@@ -7,6 +7,7 @@ import { testClient } from "hono/testing";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
+import { EmailOptions } from "../../../src/services/email/EmailOptions";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -15,6 +16,15 @@ const AUTH_PARAMS = {
   scope: "openid profile email",
   state: "state",
 };
+
+function getOTP(email: EmailOptions) {
+  const codeEmailBody = email.content[0].value;
+  // this ignores number prefixed by hashes so we don't match CSS colours
+  const otps = codeEmailBody.match(/(?!#).[0-9]{6}/g)!;
+  const otp = otps[0].slice(1);
+
+  return otp;
+}
 
 describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
@@ -69,7 +79,7 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -186,7 +196,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{}, { code: otpLogin }] = await env.data.email.list!();
+    const otpLogin = getOTP(env.data.emails[1]);
 
     const authRes2 = await client.co.authenticate.$post(
       {
@@ -319,7 +329,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -427,7 +437,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -528,7 +538,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const otp = getOTP(env.data.emails[0]);
 
     const authenticateResponse = await client.co.authenticate.$post(
       {
@@ -671,7 +681,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{}, { code: otp2 }] = await env.data.email.list!();
+    const otp2 = getOTP(env.data.emails[1]);
 
     const authenticateResponse2 = await client.co.authenticate.$post(
       {
@@ -836,7 +846,7 @@ describe("code-flow", () => {
       );
       expect(passwordlessStartRes.status).toBe(200);
 
-      const [{ code: otp }] = await env.data.email.list!();
+      const otp = getOTP(env.data.emails[0]);
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
@@ -984,7 +994,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const otp = getOTP(env.data.emails[0]);
 
     const authRes = await client.co.authenticate.$post(
       {
@@ -1136,7 +1146,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -1223,7 +1233,7 @@ describe("code-flow", () => {
       },
     );
 
-    const [{ code: otp }] = await env.data.email.list!();
+    const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
@@ -1403,7 +1413,7 @@ describe("code-flow", () => {
       expect(response.status).toBe(200);
 
       // first email is email validation from sign up above
-      const [, { code: otp }] = await env.data.email.list!();
+      const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(
@@ -1521,7 +1531,7 @@ describe("code-flow", () => {
       }
 
       // first email will be email verification
-      const [, { code: otp }] = await env.data.email.list!();
+      const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await client.co.authenticate.$post(

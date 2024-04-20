@@ -20,6 +20,7 @@ import { AuthParams } from "../../types";
 import generateOTP from "../../utils/otp";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import validatePassword from "../../utils/validatePassword";
+import { sendResetPassword } from "../../controllers/email";
 
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -183,7 +184,7 @@ export class DbConnectionsController extends Controller {
       expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
     });
 
-    await env.data.email.sendPasswordReset(env, client, email, code, state);
+    await sendResetPassword(env, client, email, code, state);
 
     return "We've just sent you an email to reset your password.";
   }

@@ -10,59 +10,23 @@ import {
   Application,
   Tenant,
 } from "../../../src/types";
-
-import { EmailAdapter } from "../../../src/adapters/interfaces/Email";
-import type { Email } from "../../../src/types/Email";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
-import { ok } from "assert";
+import type { Client } from "../../../src/types";
+import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 
 export async function getEnv() {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
 
-  const emails: Email[] = [];
-  const emailAdapter: EmailAdapter = {
-    //@ts-ignore
-    sendLink: (env, client, to, code, magicLink) => {
-      emails.push({
-        to,
-        code,
-        magicLink,
-      });
-      return Promise.resolve();
-    },
-    //@ts-ignore
-    sendCode: (env, client, to, code) => {
-      emails.push({
-        to,
-        code,
-      });
-      return Promise.resolve();
-    },
-    //@ts-ignore
-    sendPasswordReset: (env, client, to, code, state) => {
-      emails.push({
-        to,
-        code,
-        state,
-      });
-      return Promise.resolve();
-    },
-    //@ts-ignore
-    sendValidateEmailAddress: (env, client, to, code, state) => {
-      emails.push({
-        to,
-        code,
-        state,
-      });
-      return Promise.resolve();
-    },
-    list: async () => {
-      return emails;
-    },
-  };
+  const emails: EmailOptions[] = [];
+
+  function sendEmailAdapter(client: Client, emailOptions: EmailOptions) {
+    emails.push(emailOptions);
+
+    return "ok";
+  }
 
   // Don't use getDb here as it will reuse the connection
   const db = new Kysely<Database>({ dialect: dialect });
@@ -219,7 +183,7 @@ export async function getEnv() {
   return {
     data: {
       ...data,
-      email: emailAdapter,
+      emails,
       templates: {
         get: async (...inputs: any[]) =>
           `<div>${JSON.stringify(inputs, null, 2)}</div>`,
@@ -236,6 +200,7 @@ export async function getEnv() {
         }),
       }),
     },
+    sendEmail: sendEmailAdapter,
     ISSUER: "https://example.com/",
     READ_PERMISSION: "auth:read",
     WRITE_PERMISSION: "auth:write",
