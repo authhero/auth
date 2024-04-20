@@ -38,6 +38,8 @@ export async function validateCode(
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
+  await env.data.OTP.remove(client.tenant_id, otp.id);
+
   const emailUser = await getPrimaryUserByEmailAndProvider({
     userAdapter: env.data.users,
     tenant_id: client.tenant_id,

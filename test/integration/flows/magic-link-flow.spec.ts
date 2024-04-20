@@ -507,7 +507,7 @@ describe("magic link flow", () => {
       });
     });
   });
-  it("should log in with the same magic link multiple times", async () => {
+  it("should only allow a magic link to be used once", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
@@ -545,7 +545,7 @@ describe("magic link flow", () => {
     const query = Object.fromEntries(querySearchParams.entries());
 
     // ------------
-    // Authenticate using the magic link the first time
+    // Use the magic link
     // ----------------
     const authenticateResponse = await client.passwordless.verify_redirect.$get(
       {
@@ -554,13 +554,19 @@ describe("magic link flow", () => {
     );
     expect(authenticateResponse.status).toBe(302);
     // ------------
-    // Authenticate using the magic link the second time
+    // Try using the magic link twice
     // ----------------
     const authenticateResponse2 =
       await client.passwordless.verify_redirect.$get({
         query,
       });
     expect(authenticateResponse2.status).toBe(302);
+    const redirectUri2 = new URL(
+      authenticateResponse2.headers.get("location")!,
+    );
+    expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
+    // we also show this page if the code is incorrect
+    expect(redirectUri2.pathname).toBe("/expired-code");
   });
 
   it("should not accept any invalid params on the magic link", async () => {

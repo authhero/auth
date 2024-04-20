@@ -11,6 +11,7 @@ export function list(db: Kysely<Database>) {
       .where("otps.email", "=", email)
       .where("otps.used_at", "is", null)
       .where("otps.expires_at", ">", now)
+      .where("otps.used_at", "is", null)
       .selectAll()
       .execute();
 
