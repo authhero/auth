@@ -112,6 +112,9 @@ export class AuthenticateController extends Controller {
         });
       }
 
+      // TODO - use validateCode() helper common code here
+      await env.data.OTP.remove(client.tenant_id, otp.id);
+
       ticket.authParams = otp.authParams;
     } else {
       request.ctx.set("connection", "Username-Password-Authentication");

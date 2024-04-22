@@ -965,7 +965,7 @@ describe("code-flow", () => {
     });
   });
 
-  it("should accept the same code multiple times", async () => {
+  it("should only allow a code to be used once", async () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
@@ -1014,7 +1014,7 @@ describe("code-flow", () => {
     );
     expect(authRes.status).toBe(200);
 
-    // now use the same code again
+    // now try to use the same code again
     const authRes2 = await client.co.authenticate.$post(
       {
         json: {
@@ -1032,7 +1032,12 @@ describe("code-flow", () => {
       },
     );
 
-    expect(authRes2.status).toBe(200);
+    expect(authRes2.status).toBe(403);
+    // this message isn't exactly true! We could check what auth0 does
+    expect(await authRes2.json()).toEqual({
+      error: "access_denied",
+      error_description: "Wrong email or verification code.",
+    });
   });
 
   it("should not accept an invalid code", async () => {
