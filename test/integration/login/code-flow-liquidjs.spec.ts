@@ -35,14 +35,10 @@ describe("Login with code on liquidjs template", () => {
     expect(response.status).toBe(302);
     const location = response.headers.get("location");
 
-    if (!location) {
-      throw new Error("No location header found");
-    }
-
-    expect(location.startsWith("/u/login")).toBeTruthy;
+    expect(location!.startsWith("/u/login")).toBeTruthy;
 
     // Open send code page - would be cool to get the URL from the login page template to test that we're passing in the state correctly
-    const stateParam = new URLSearchParams(location.split("?")[1]);
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
     const postSendCodeResponse = await client.u.code.$post(
@@ -62,15 +58,11 @@ describe("Login with code on liquidjs template", () => {
     expect(postSendCodeResponse.status).toBe(302);
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
-    if (!enterCodeLocation) {
-      throw new Error("No login location header found");
-    }
-
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
 
     // Authenticate using the code
-    const enterCodeParams = enterCodeLocation.split("?")[1];
+    const enterCodeParams = enterCodeLocation!.split("?")[1];
     const enterCodeQuery = Object.fromEntries(
       new URLSearchParams(enterCodeParams).entries(),
     );
@@ -90,10 +82,7 @@ describe("Login with code on liquidjs template", () => {
     );
 
     const codeLoginRedirectUri = authenticateResponse.headers.get("location");
-    if (!codeLoginRedirectUri) {
-      throw new Error("No code login redirect uri found");
-    }
-    const redirectUrl = new URL(codeLoginRedirectUri);
+    const redirectUrl = new URL(codeLoginRedirectUri!);
     expect(redirectUrl.pathname).toBe("/callback");
     const hash = new URLSearchParams(redirectUrl.hash.slice(1));
     const accessToken = hash.get("access_token");
