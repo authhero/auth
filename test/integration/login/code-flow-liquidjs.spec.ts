@@ -3,6 +3,9 @@ import { getEnv } from "../helpers/test-client";
 import { tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { chromium } from "playwright";
+import { toMatchImageSnapshot } from "jest-image-snapshot";
+expect.extend({ toMatchImageSnapshot });
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
@@ -36,6 +39,27 @@ describe("Login with code on liquidjs template", () => {
     const location = response.headers.get("location");
 
     expect(location!.startsWith("/u/login")).toBeTruthy;
+
+    // @ts-ignore
+    if (import.meta.env.TEST_SNAPSHOTS === "true") {
+      console.log("TESTING LOGIN FORM SNAPSHOT");
+
+      // I do not think this is correct... need to actually follow the redirect... can we do this?
+      const codeInputFormResponseText = await response.text();
+      // CSS hack - we are not serving the CSS on this PR though
+      const codeInputFormBody = codeInputFormResponseText.replace(
+        "/css/tailwind.css",
+        "http://auth2.sesamy.dev/css/tailwind.css",
+      );
+      const browser = await chromium.launch();
+      const page = await browser.newPage();
+      await page.setContent(codeInputFormBody);
+
+      const snapshot = await page.screenshot();
+      expect(snapshot).toMatchImageSnapshot();
+
+      await browser.close();
+    }
 
     // Open send code page - would be cool to get the URL from the login page template to test that we're passing in the state correctly
     const stateParam = new URLSearchParams(location!.split("?")[1]);
