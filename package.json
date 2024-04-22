@@ -22,7 +22,8 @@
     "knip": "knip",
     "tailwind": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css",
     "tailwind:watch": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css --watch",
-    "sort-translations": "sort-json src/locales/*/*.json src/localesLogin2/*/*.json"
+    "sort-translations": "sort-json src/locales/*/*.json src/localesLogin2/*/*.json",
+    "e2e:open-docker": "docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.43.1-focal /bin/bash"
   },
   "author": "",
   "license": "MIT",
