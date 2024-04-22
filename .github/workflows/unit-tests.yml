@@ -8,6 +8,7 @@ on: pull_request
 jobs:
   node-test:
     runs-on: buildjet-4vcpu-ubuntu-2204
+    container: mcr.microsoft.com/playwright:v1.43.1-focal
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - name: Setup Node.js
