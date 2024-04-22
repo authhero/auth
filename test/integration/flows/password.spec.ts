@@ -876,6 +876,22 @@ describe("password-flow", () => {
       expect(code).toBeDefined();
       expect(state).toBeDefined();
 
+      const passwordResetEmailBody = env.data.emails[0].content[0].value;
+
+      // @ts-ignore
+      if (import.meta.env.TEST_SNAPSHOTS === "true") {
+        // leaving this in to prove this working on the CI/CD for now
+        console.log("TESTING SNAPSHOT");
+        const browser = await chromium.launch();
+        const page = await browser.newPage();
+        await page.setContent(passwordResetEmailBody);
+
+        const image = await page.screenshot();
+        expect(image).toMatchImageSnapshot();
+
+        await browser.close();
+      }
+
       //-------------------
       // reset password
       //-------------------
