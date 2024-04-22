@@ -119,6 +119,7 @@ describe("password-flow", () => {
       expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
       expect(await loginBlockedRes.text()).toBe("Redirecting");
 
+      // this is the original email sent after signing up
       const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       expect(to).toBe("password-login-test@example.com");
@@ -457,6 +458,8 @@ describe("password-flow", () => {
         "https://login2.sesamy.dev/unverified-email?email=password-login-test%2540example.com&lang=sv",
       );
 
+      // this is the difference to the previous test - we are using the verified email that is sent after a failed login
+      // either of these two emails would work
       const { to, code, state } = getCodeStateTo(env.data.emails[1]);
 
       expect(to).toBe("password-login-test@example.com");
