@@ -2,6 +2,11 @@ import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
+import { chromium } from "playwright";
+import { toMatchImageSnapshot } from "jest-image-snapshot";
+
+// TODO - try this globally in vite config - the issue is the types!
+expect.extend({ toMatchImageSnapshot });
 
 describe("Login with password user", () => {
   it("should login with password", async () => {
@@ -45,6 +50,26 @@ describe("Login with password user", () => {
     const loginSearchParamsQuery = Object.fromEntries(
       loginSearchParams.entries(),
     );
+
+    // @ts-ignore
+    if (import.meta.env.TEST_SNAPSHOTS === "true") {
+      console.log("TESTING LOGIN FORM SNAPSHOT");
+
+      const loginFormResponseText = await loginFormResponse.text();
+      // CSS hack - we are not serving the CSS on this PR though
+      const loginFormBody = loginFormResponseText.replace(
+        "/css/tailwind.css",
+        "http://auth2.sesamy.dev/css/tailwind.css",
+      );
+      const browser = await chromium.launch();
+      const page = await browser.newPage();
+      await page.setContent(loginFormBody);
+
+      const snapshot = await page.screenshot();
+      expect(snapshot).toMatchImageSnapshot();
+
+      await browser.close();
+    }
 
     const postLoginResponse = await client.u.login.$post({
       query: loginSearchParamsQuery,
