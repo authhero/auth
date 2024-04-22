@@ -53,7 +53,7 @@ describe("Login with code on liquidjs template", () => {
 
     // @ts-ignore
     if (import.meta.env.TEST_SNAPSHOTS === "true") {
-      console.log("TESTING LOGIN FORM SNAPSHOT");
+      console.log("TESTING SEND CODE FORM SNAPSHOT");
 
       const codeInputFormResponseText = await codeInputFormResponse.text();
       const codeInputFormBody = codeInputFormResponseText.replace(
@@ -95,6 +95,29 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeQuery = Object.fromEntries(
       new URLSearchParams(enterCodeParams).entries(),
     );
+
+    const enterCodeForm = await client.u["enter-code"].$get({
+      query: enterCodeQuery,
+    });
+    expect(codeInputFormResponse.status).toBe(200);
+    // @ts-ignore
+    if (import.meta.env.TEST_SNAPSHOTS === "true") {
+      console.log("TESTING ENTER CODE FORM SNAPSHOT");
+
+      const enterCodeFormResponseText = await enterCodeForm.text();
+      const enterCodeFormBody = enterCodeFormResponseText.replace(
+        "/css/tailwind.css",
+        "http://auth2.sesamy.dev/css/tailwind.css",
+      );
+      const browser = await chromium.launch();
+      const page = await browser.newPage();
+      await page.setContent(enterCodeFormBody);
+
+      const snapshot = await page.screenshot();
+      expect(snapshot).toMatchImageSnapshot();
+
+      await browser.close();
+    }
 
     const authenticateResponse = await client.u["enter-code"].$post(
       {
