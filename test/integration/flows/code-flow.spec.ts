@@ -8,6 +8,10 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { chromium } from "playwright";
+import { toMatchImageSnapshot } from "jest-image-snapshot";
+// can do this in a vite config
+expect.extend({ toMatchImageSnapshot });
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -80,6 +84,29 @@ describe("code-flow", () => {
     }
 
     const otp = getOTP(env.data.emails[0]);
+
+    const codeEmailBody = env.data.emails[0].content[0].value;
+
+    // type this if happy with this approach
+    // @ts-ignore
+    if (import.meta.env.TEST_SNAPSHOTS === "true") {
+      // leaving this in to prove this working on the CI/CD for now
+      console.log("TESTING SNAPSHOT");
+      const browser = await chromium.launch();
+      const page = await browser.newPage();
+      await page.setContent(codeEmailBody);
+
+      // set code to the same so snapshots match
+      const codeToChange = page.locator("#code");
+      await codeToChange.evaluate((element) => {
+        element.textContent = "123456";
+      });
+
+      const image = await page.screenshot();
+      expect(image).toMatchImageSnapshot();
+
+      await browser.close();
+    }
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(

@@ -13,6 +13,8 @@
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
     "test": "vitest --pool=forks",
+    "test:snapshots": "TEST_SNAPSHOTS=true vitest --pool=forks",
+    "test:update-snapshots": "TEST_SNAPSHOTS=true vitest --pool=forks -u",
     "semantic-release": "semantic-release",
     "prepare": "husky install",
     "type-check": "tsc",
@@ -22,7 +24,8 @@
     "knip": "knip",
     "tailwind": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css",
     "tailwind:watch": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css --watch",
-    "sort-translations": "sort-json src/locales/*/*.json src/localesLogin2/*/*.json"
+    "sort-translations": "sort-json src/locales/*/*.json src/localesLogin2/*/*.json",
+    "e2e:open-docker": "docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.43.1-focal /bin/bash"
   },
   "author": "",
   "license": "MIT",
@@ -64,6 +67,7 @@
     "liquidjs": "^10.9.2",
     "mime": "4.0.1",
     "nanoid": "5.0.7",
+    "playwright": "^1.43.1",
     "tsoa": "^6.1.4",
     "tsoa-hono": "^1.2.2",
     "zod": "^3.22.4"
@@ -75,6 +79,7 @@
     "@types/bcryptjs": "2.4.6",
     "@types/better-sqlite3": "7.6.9",
     "@types/cookie": "0.6.0",
+    "@types/jest-image-snapshot": "^6.4.0",
     "@types/node": "20.11.1",
     "@types/service-worker-mock": "2.0.4",
     "@types/validator": "^13.11.9",
@@ -84,6 +89,7 @@
     "husky": "9.0.11",
     "i18next": "^23.10.1",
     "i18nexus-cli": "3.4.0",
+    "jest-image-snapshot": "^6.4.0",
     "knip": "5.9.4",
     "lint-staged": "15.2.2",
     "mjml": "4.15.3",
