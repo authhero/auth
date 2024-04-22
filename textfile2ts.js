@@ -16,7 +16,7 @@ const srcContent = fs.readFileSync(src, "utf8");
 const contentCleaned = srcContent.replaceAll("`", "'");
 
 const tsContent = `export const ${name} = \`
-    ${contentCleaned}\`
+${contentCleaned}\`
 `;
 
 fs.writeFileSync(dest, tsContent);
