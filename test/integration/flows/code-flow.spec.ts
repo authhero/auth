@@ -86,20 +86,27 @@ describe("code-flow", () => {
     const otp = getOTP(env.data.emails[0]);
 
     const codeEmailBody = env.data.emails[0].content[0].value;
-    const browser = await chromium.launch();
-    const page = await browser.newPage();
-    await page.setContent(codeEmailBody);
 
-    // set code to the same so snapshots match
-    const codeToChange = page.locator("#code");
-    await codeToChange.evaluate((element) => {
-      element.textContent = "123456";
-    });
+    // type this if happy with this approach
+    // @ts-ignore
+    if (import.meta.env.TEST_SNAPSHOTS === "true") {
+      // leaving this in to prove this working on the CI/CD for now
+      console.log("TESTING SNAPSHOT");
+      const browser = await chromium.launch();
+      const page = await browser.newPage();
+      await page.setContent(codeEmailBody);
 
-    const image = await page.screenshot();
-    expect(image).toMatchImageSnapshot();
+      // set code to the same so snapshots match
+      const codeToChange = page.locator("#code");
+      await codeToChange.evaluate((element) => {
+        element.textContent = "123456";
+      });
 
-    await browser.close();
+      const image = await page.screenshot();
+      expect(image).toMatchImageSnapshot();
+
+      await browser.close();
+    }
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(
