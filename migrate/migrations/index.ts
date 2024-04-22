@@ -27,6 +27,7 @@ import * as n26_logsTableExtraFields from "./2024-02-08T12:45:00_logs-table-extr
 import * as n27_usersTableNameIndex from "./2024-02-13T11:25:00_users-table-name-index";
 import * as n28_usersEmailConstrain from "./2024-02-19T20:14:00_users-email-constrain";
 import * as n29_increaseOtpStateLength from "./2024-03-11T12:45:00_increase-otp-state-length";
+import * as n30_increaseTicketStateLength from "./2024-04-22T14:48:00_increase-ticket-state-length";
 
 // These need to be in alphabetic order
 export default {
@@ -59,4 +60,5 @@ export default {
   n27_usersTableNameIndex,
   n28_usersEmailConstrain,
   n29_increaseOtpStateLength,
+  n30_increaseTicketStateLength,
 };
