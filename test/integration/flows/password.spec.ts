@@ -395,6 +395,7 @@ describe("password-flow", () => {
       ]);
     });
 
+    // this test looks like a duplicate of "should create a new user with a password and only allow login after email validation"
     it("should resend email validation email after login attempts, and this should work", async () => {
       const password = "Password1234!";
       const env = await getEnv();
@@ -447,9 +448,15 @@ describe("password-flow", () => {
         realm: "Username-Password-Authentication",
       };
 
-      await client.authorize.$get({ query });
+      // ---------------------------
+      // this will not work because email not validated
+      // the user is redirected to a page informing them that they need to validate their email
+      // ---------------------------
+      const res = await client.authorize.$get({ query });
+      expect(res.headers.get("location")).toBe(
+        "https://login2.sesamy.dev/unverified-email?email=password-login-test%2540example.com&lang=sv",
+      );
 
-      // this is the change! get the second email
       const { to, code, state } = getCodeStateTo(env.data.emails[1]);
 
       expect(to).toBe("password-login-test@example.com");
@@ -463,7 +470,41 @@ describe("password-flow", () => {
 
       expect(emailValidatedRes.status).toBe(200);
 
-      const tokenResponse = await client.authorize.$get({ query });
+      // -----------------------------------------
+      // do the login flow again
+      // -----------------------------------------
+
+      const loginResponse2 = await client.co.authenticate.$post(
+        {
+          json: {
+            client_id: "clientId",
+            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+            realm: "Username-Password-Authentication",
+            password,
+            username: "password-login-test@example.com",
+          },
+        },
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+
+      const { login_ticket: loginTicket2 } =
+        (await loginResponse2.json()) as LoginTicket;
+      const query2 = {
+        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket: loginTicket2,
+        referrer: "https://login.example.com",
+        response_type: "token id_token",
+        redirect_uri: "http://login.example.com",
+        state: "state",
+        realm: "Username-Password-Authentication",
+      };
+
+      const tokenResponse = await client.authorize.$get({ query: query2 });
 
       expect(tokenResponse.status).toBe(302);
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
