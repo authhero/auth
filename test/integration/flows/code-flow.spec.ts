@@ -21,7 +21,6 @@ const AUTH_PARAMS = {
   state: "state",
 };
 
-// same here - snapshots can be done
 function getOTP(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
   // this ignores number prefixed by hashes so we don't match CSS colours
