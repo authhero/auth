@@ -163,7 +163,7 @@ describe("magic link flow", () => {
       // Create the user to log in with the magic link
       // -----------------
       env.data.users.create("tenantId", {
-        id: "userId2",
+        id: "email|userId2",
         email: "bar@example.com",
         email_verified: true,
         name: "",
@@ -252,13 +252,13 @@ describe("magic link flow", () => {
       expect(accessTokenPayload.aud).toBe("default");
       expect(accessTokenPayload.iss).toBe("https://example.com/");
       expect(accessTokenPayload.scope).toBe("openid profile email");
-      expect(accessTokenPayload.sub).toBe("userId2");
+      expect(accessTokenPayload.sub).toBe("email|userId2");
 
       const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("bar@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
-      expect(idTokenPayload.sub).toBe("userId2");
+      expect(idTokenPayload.sub).toBe("email|userId2");
 
       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
 
@@ -277,7 +277,7 @@ describe("magic link flow", () => {
         silentAuthIdTokenPayload;
 
       expect(restOfIdTokenPayload).toEqual({
-        sub: "userId2",
+        sub: "email|userId2",
         aud: "clientId",
         name: "",
         nickname: "",
