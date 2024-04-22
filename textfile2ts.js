@@ -6,9 +6,9 @@ if (process.argv.length !== 3) {
   process.exit(1);
 }
 
-const src = process.argv[0];
-const dest = process.argv[1];
-const name = process.argv[2];
+const src = process.argv[2];
+const dest = process.argv[3];
+const name = process.argv[4];
 
 const srcContent = fs.readFileSync(src, "utf8");
 

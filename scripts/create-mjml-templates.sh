@@ -12,6 +12,9 @@ npx mjml email-templates/link-v2.mjml -o templates/email/link-v2.liquid
 # npx wrangler r2 object put auth-templates/templates/email/code-v2.liquid -f templates/email/code-v2.liquid
 # npx wrangler r2 object put auth-templates/templates/email/link-v2.liquid -f templates/email/link-v2.liquid
 
-node build-liquid-ts
+node build-liquid-ts auth-templates/templates/email/verify-email.liquid src/templates/email/ts/verify-email.ts verifyEmail
+node build-liquid-ts auth-templates/templates/email/password-reset.liquid src/templates/email/ts/password-reset.ts passwordReset
+node build-liquid-ts auth-templates/templates/email/code-v2.liquid src/templates/email/ts/code-v2.ts codeV2
+node build-liquid-ts auth-templates/templates/email/link-v2.liquid src/templates/email/ts/link-v2.ts linkV2
 
 yarn format # could be more targeted and just do liquid ts files
