@@ -55,9 +55,7 @@ describe("Login with code on liquidjs template", () => {
     if (import.meta.env.TEST_SNAPSHOTS === "true") {
       console.log("TESTING LOGIN FORM SNAPSHOT");
 
-      // I do not think this is correct... need to actually follow the redirect... can we do this?
       const codeInputFormResponseText = await codeInputFormResponse.text();
-      // CSS hack - we are not serving the CSS on this PR though
       const codeInputFormBody = codeInputFormResponseText.replace(
         "/css/tailwind.css",
         "http://auth2.sesamy.dev/css/tailwind.css",
@@ -71,8 +69,6 @@ describe("Login with code on liquidjs template", () => {
 
       await browser.close();
     }
-
-    // Open send code page - would be cool to get the URL from the login page template to test that we're passing in the state correctly
 
     const postSendCodeResponse = await client.u.code.$post(
       {
