@@ -13,6 +13,7 @@
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
     "test": "vitest --pool=forks",
+    "test:update-snapshots": "vitest --pool=forks -u",
     "semantic-release": "semantic-release",
     "prepare": "husky install",
     "type-check": "tsc",
