@@ -47,12 +47,19 @@ describe("Login with password user", () => {
       loginSearchParams.entries(),
     );
 
+    // TODO! same jest-image-snapshot changes from previous PR!
+
     // get the body and put it into playwright!
     const loginFormResponseText = await loginFormResponse.text();
     console.log(loginFormResponseText);
+    // CSS change hack
+    const loginFormBody = loginFormResponseText.replace(
+      "/css/tailwind.css",
+      "http://auth2.sesamy.dev/css/tailwind.css",
+    );
     const browser = await chromium.launch();
     const page = await browser.newPage();
-    await page.setContent(loginFormResponseText);
+    await page.setContent(loginFormBody);
     await page.screenshot({ path: "login-page.png" });
     await browser.close();
 
