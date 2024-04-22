@@ -7,8 +7,8 @@ import sv from "../locales/sv/default.json";
 import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
 import {
-  codev2,
-  linkv2,
+  codeV2,
+  linkV2,
   passwordReset,
   verifyEmail,
 } from "../templates/email/ts";
