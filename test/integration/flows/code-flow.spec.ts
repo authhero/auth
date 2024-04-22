@@ -9,10 +9,8 @@ import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { chromium } from "playwright";
-// remove this dep as this won't work!
-// import { test, expect as playwrightExpect } from "@playwright/test";
 import { toMatchImageSnapshot } from "jest-image-snapshot";
-// maybe we can do this in a vite config
+// can do this in a vite config
 expect.extend({ toMatchImageSnapshot });
 
 const AUTH_PARAMS = {
@@ -23,7 +21,6 @@ const AUTH_PARAMS = {
   state: "state",
 };
 
-// same here - snapshots can be done
 function getOTP(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
   // this ignores number prefixed by hashes so we don't match CSS colours
@@ -92,8 +89,6 @@ describe("code-flow", () => {
     const browser = await chromium.launch();
     const page = await browser.newPage();
     await page.setContent(codeEmailBody);
-    // probably need to do all the logo loading waiting here...
-    // await page.screenshot({ path: "screenshot.png" });
 
     // set code to the same so snapshots match
     const codeToChange = page.locator("#code");
@@ -101,20 +96,7 @@ describe("code-flow", () => {
       element.textContent = "123456";
     });
 
-    // does not work unless we're inside the playwright runner...
-    // playwrightExpect(await page.screenshot()).toMatchSnapshot("code-flow.png", {
-    //   threshold: 0.1,
-    // });
-
-    // maybe we need to load the current snapshot into a buffer e.g
-    // const buffer = await page.screenshot();
-    // console.log(buffer.toString('base64'));
-    // and then load the saved image... and compare it... but then it gets very manual
-    // at this point we may as well have separate playwright tests
-
     const image = await page.screenshot();
-
-    // TODO - how can patch types? vitest isn't jest
     expect(image).toMatchImageSnapshot();
 
     await browser.close();

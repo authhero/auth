@@ -16,7 +16,6 @@ const AUTH_PARAMS = {
   state: "state",
 };
 
-// same here - snapshots can be done
 function getMagicLinkFromEmailBody(email: EmailOptions) {
   const linkEmailBody = email.content[0].value;
   const magicLink = linkEmailBody.match(
