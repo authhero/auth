@@ -1619,7 +1619,8 @@ describe("code-flow", () => {
           },
         },
       );
-      const [{ code: otp }] = await env.data.email.list!();
+      const otp = getOTP(env.data.emails[0]);
+
       const authenticateResponse = await client.co.authenticate.$post(
         {
           json: {
