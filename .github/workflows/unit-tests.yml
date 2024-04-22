@@ -30,5 +30,4 @@ jobs:
       - run: yarn format:ci-cd
       - run: yarn build
       - run: yarn type-check
-      - run: yarn playwright install --with-deps chromium
       - run: yarn test
