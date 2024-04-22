@@ -38,14 +38,25 @@ describe("Login with code on liquidjs template", () => {
     expect(response.status).toBe(302);
     const location = response.headers.get("location");
 
+    // this redirects to the password entry page... TBD
     expect(location!.startsWith("/u/login")).toBeTruthy;
+
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+
+    const query = Object.fromEntries(stateParam.entries());
+
+    const codeInputFormResponse = await client.u.code.$get({
+      query,
+    });
+
+    expect(codeInputFormResponse.status).toBe(200);
 
     // @ts-ignore
     if (import.meta.env.TEST_SNAPSHOTS === "true") {
       console.log("TESTING LOGIN FORM SNAPSHOT");
 
       // I do not think this is correct... need to actually follow the redirect... can we do this?
-      const codeInputFormResponseText = await response.text();
+      const codeInputFormResponseText = await codeInputFormResponse.text();
       // CSS hack - we are not serving the CSS on this PR though
       const codeInputFormBody = codeInputFormResponseText.replace(
         "/css/tailwind.css",
@@ -62,8 +73,6 @@ describe("Login with code on liquidjs template", () => {
     }
 
     // Open send code page - would be cool to get the URL from the login page template to test that we're passing in the state correctly
-    const stateParam = new URLSearchParams(location!.split("?")[1]);
-    const query = Object.fromEntries(stateParam.entries());
 
     const postSendCodeResponse = await client.u.code.$post(
       {
