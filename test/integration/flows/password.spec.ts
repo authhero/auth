@@ -868,6 +868,32 @@ describe("password-flow", () => {
 
       const anyClient = client as any;
 
+      const resetPasswordForm = await anyClient.u["reset-password"].$get({
+        query: {
+          state,
+          code,
+        },
+      });
+
+      // @ts-ignore
+      if (import.meta.env.TEST_SNAPSHOTS === "true") {
+        console.log("TESTING RESET PASSWORD FORM SNAPSHOT");
+
+        const codeInputFormResponseText = await resetPasswordForm.text();
+        const codeInputFormBody = codeInputFormResponseText.replace(
+          "/css/tailwind.css",
+          "http://auth2.sesamy.dev/css/tailwind.css",
+        );
+        const browser = await chromium.launch();
+        const page = await browser.newPage();
+        await page.setContent(codeInputFormBody);
+
+        const snapshot = await page.screenshot();
+        expect(snapshot).toMatchImageSnapshot();
+
+        await browser.close();
+      }
+
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
       const resetPassword = await anyClient.u["reset-password"].$post({
         json: {
