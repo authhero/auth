@@ -2,9 +2,7 @@ import { describe, it, expect } from "vitest";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
-import { chromium } from "playwright";
-import { toMatchImageSnapshot } from "jest-image-snapshot";
-expect.extend({ toMatchImageSnapshot });
+import { snapshotResponse } from "../helpers/playwrightSnapshots";
 
 describe("Register password user", () => {
   it("should register a new user with password", async () => {
@@ -63,24 +61,7 @@ describe("Register password user", () => {
       signupSearchParams.entries(),
     );
 
-    // @ts-ignore
-    if (import.meta.env.TEST_SNAPSHOTS === "true") {
-      console.log("TESTING SIGN UP PASSWORD FORM SNAPSHOT");
-
-      const signUpFormResponseText = await getSignupResponse.text();
-      const signUpFormBody = signUpFormResponseText.replace(
-        "/css/tailwind.css",
-        "http://auth2.sesamy.dev/css/tailwind.css",
-      );
-      const browser = await chromium.launch();
-      const page = await browser.newPage();
-      await page.setContent(signUpFormBody);
-
-      const snapshot = await page.screenshot();
-      expect(snapshot).toMatchImageSnapshot();
-
-      await browser.close();
-    }
+    await snapshotResponse(getSignupResponse);
 
     // Signup
     const postSignupResponse = await client.u.signup.$post(
