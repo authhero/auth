@@ -132,15 +132,18 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
             description: "The state parameter from the authorization request",
           }),
         }),
-        // is this not specified? I can't see an example...
-        // body: z.object({
-        //   username: z.string().openapi({
-        //     description: "The username",
-        //   }),
-        //   password: z.string().openapi({
-        //     description: "The password",
-        //   }),
-        // }),
+        body: {
+          content: {
+            // content: z.({
+            //   username: z.string().openapi({
+            //     description: "The username",
+            //   }),
+            //   password: z.string().openapi({
+            //     description: "The password",
+            //   }),
+            // }),
+          },
+        },
       },
       security: [
         {
