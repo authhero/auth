@@ -892,6 +892,8 @@ describe("password-flow", () => {
 
       expect(resetPassword.status).toBe(200);
 
+      await snapshotResponse(resetPassword);
+
       // ------------------
       // now check we can login with the new password
       // ------------------
@@ -984,6 +986,8 @@ describe("password-flow", () => {
       });
 
       expect(resetPassword.status).toBe(400);
+
+      await snapshotResponse(resetPassword);
     });
     it("should reject non-matching confirmation password", async () => {
       const env = await getEnv();
@@ -1029,6 +1033,8 @@ describe("password-flow", () => {
       });
 
       expect(resetPassword.status).toBe(400);
+
+      await snapshotResponse(resetPassword);
     });
     it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
