@@ -106,4 +106,64 @@ describe("Login with code on liquidjs template", () => {
     const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
   });
+
+  it("should reject bad code", async () => {
+    const env = await getEnv();
+    const client = testClient(tsoaApp, env);
+
+    const searchParams = {
+      client_id: "clientId",
+      response_type: "token id_token",
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+    };
+
+    const response = await client.authorize.$get({
+      query: searchParams,
+    });
+
+    const location = response.headers.get("location");
+
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+
+    const query = Object.fromEntries(stateParam.entries());
+
+    const postSendCodeResponse = await client.u.code.$post(
+      {
+        query,
+        json: {
+          username: "foo@example.com",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+    const enterCodeLocation = postSendCodeResponse.headers.get("location");
+
+    const enterCodeParams = enterCodeLocation!.split("?")[1];
+    const enterCodeQuery = Object.fromEntries(
+      new URLSearchParams(enterCodeParams).entries(),
+    );
+
+    const incorrectCodeResponse = await client.u["enter-code"].$post(
+      {
+        query: enterCodeQuery,
+        json: {
+          // clearly wrong!
+          code: "123456",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    await snapshotResponse(incorrectCodeResponse);
+  });
 });
