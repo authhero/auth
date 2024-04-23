@@ -8,9 +8,7 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { chromium } from "playwright";
-import { toMatchImageSnapshot } from "jest-image-snapshot";
-expect.extend({ toMatchImageSnapshot });
+import { snapshotEmail } from "../../helpers/snapshotEmailsPlaywright";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -125,21 +123,7 @@ describe("password-flow", () => {
       // this is the original email sent after signing up
       const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
-      const verifyEmailBody = env.data.emails[0].content[0].value;
-
-      // @ts-ignore
-      if (import.meta.env.TEST_SNAPSHOTS === "true") {
-        // leaving this in to prove this working on the CI/CD for now
-        console.log("TESTING SNAPSHOT");
-        const browser = await chromium.launch();
-        const page = await browser.newPage();
-        await page.setContent(verifyEmailBody);
-
-        const image = await page.screenshot();
-        expect(image).toMatchImageSnapshot();
-
-        await browser.close();
-      }
+      await snapshotEmail(env.data.emails[0]);
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();
@@ -876,21 +860,7 @@ describe("password-flow", () => {
       expect(code).toBeDefined();
       expect(state).toBeDefined();
 
-      const passwordResetEmailBody = env.data.emails[0].content[0].value;
-
-      // @ts-ignore
-      if (import.meta.env.TEST_SNAPSHOTS === "true") {
-        // leaving this in to prove this working on the CI/CD for now
-        console.log("TESTING SNAPSHOT");
-        const browser = await chromium.launch();
-        const page = await browser.newPage();
-        await page.setContent(passwordResetEmailBody);
-
-        const image = await page.screenshot();
-        expect(image).toMatchImageSnapshot();
-
-        await browser.close();
-      }
+      await snapshotEmail(env.data.emails[0]);
 
       //-------------------
       // reset password
