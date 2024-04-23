@@ -81,7 +81,7 @@ describe("Login with code on liquidjs template", () => {
       query: enterCodeQuery,
     });
     expect(enterCodeForm.status).toBe(200);
-    await snapshotResponse(codeInputFormResponse);
+    await snapshotResponse(enterCodeForm);
 
     const authenticateResponse = await client.u["enter-code"].$post(
       {
