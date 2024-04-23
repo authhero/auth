@@ -3,6 +3,9 @@ import { getEnv } from "../helpers/test-client";
 import { tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { chromium } from "playwright";
+import { toMatchImageSnapshot } from "jest-image-snapshot";
+expect.extend({ toMatchImageSnapshot });
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
@@ -35,15 +38,37 @@ describe("Login with code on liquidjs template", () => {
     expect(response.status).toBe(302);
     const location = response.headers.get("location");
 
-    if (!location) {
-      throw new Error("No location header found");
-    }
+    // this redirects to the password entry page... TBD
+    expect(location!.startsWith("/u/login")).toBeTruthy;
 
-    expect(location.startsWith("/u/login")).toBeTruthy;
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
 
-    // Open send code page - would be cool to get the URL from the login page template to test that we're passing in the state correctly
-    const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
+
+    const codeInputFormResponse = await client.u.code.$get({
+      query,
+    });
+
+    expect(codeInputFormResponse.status).toBe(200);
+
+    // @ts-ignore
+    if (import.meta.env.TEST_SNAPSHOTS === "true") {
+      console.log("TESTING LOGIN FORM SNAPSHOT");
+
+      const codeInputFormResponseText = await codeInputFormResponse.text();
+      const codeInputFormBody = codeInputFormResponseText.replace(
+        "/css/tailwind.css",
+        "http://auth2.sesamy.dev/css/tailwind.css",
+      );
+      const browser = await chromium.launch();
+      const page = await browser.newPage();
+      await page.setContent(codeInputFormBody);
+
+      const snapshot = await page.screenshot();
+      expect(snapshot).toMatchImageSnapshot();
+
+      await browser.close();
+    }
 
     const postSendCodeResponse = await client.u.code.$post(
       {
@@ -62,15 +87,11 @@ describe("Login with code on liquidjs template", () => {
     expect(postSendCodeResponse.status).toBe(302);
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
-    if (!enterCodeLocation) {
-      throw new Error("No login location header found");
-    }
-
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
 
     // Authenticate using the code
-    const enterCodeParams = enterCodeLocation.split("?")[1];
+    const enterCodeParams = enterCodeLocation!.split("?")[1];
     const enterCodeQuery = Object.fromEntries(
       new URLSearchParams(enterCodeParams).entries(),
     );
@@ -90,10 +111,7 @@ describe("Login with code on liquidjs template", () => {
     );
 
     const codeLoginRedirectUri = authenticateResponse.headers.get("location");
-    if (!codeLoginRedirectUri) {
-      throw new Error("No code login redirect uri found");
-    }
-    const redirectUrl = new URL(codeLoginRedirectUri);
+    const redirectUrl = new URL(codeLoginRedirectUri!);
     expect(redirectUrl.pathname).toBe("/callback");
     const hash = new URLSearchParams(redirectUrl.hash.slice(1));
     const accessToken = hash.get("access_token");
