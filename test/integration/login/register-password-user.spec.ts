@@ -150,7 +150,6 @@ describe("Register password user", () => {
       },
     );
 
-    // seems odd
     expect(postSignupResponse.status).toBe(200);
 
     await snapshotResponse(postSignupResponse);
