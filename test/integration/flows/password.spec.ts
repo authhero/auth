@@ -9,6 +9,7 @@ import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/snapshotEmailsPlaywright";
+import { snapshotResponse } from "../helpers/playwrightSnapshots";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -875,24 +876,7 @@ describe("password-flow", () => {
         },
       });
 
-      // @ts-ignore
-      if (import.meta.env.TEST_SNAPSHOTS === "true") {
-        console.log("TESTING RESET PASSWORD FORM SNAPSHOT");
-
-        const codeInputFormResponseText = await resetPasswordForm.text();
-        const codeInputFormBody = codeInputFormResponseText.replace(
-          "/css/tailwind.css",
-          "http://auth2.sesamy.dev/css/tailwind.css",
-        );
-        const browser = await chromium.launch();
-        const page = await browser.newPage();
-        await page.setContent(codeInputFormBody);
-
-        const snapshot = await page.screenshot();
-        expect(snapshot).toMatchImageSnapshot();
-
-        await browser.close();
-      }
+      await snapshotResponse(resetPasswordForm);
 
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
       const resetPassword = await anyClient.u["reset-password"].$post({
