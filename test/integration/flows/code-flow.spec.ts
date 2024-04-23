@@ -339,7 +339,7 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    const response = await client.passwordless.start.$post(
+    await client.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -419,7 +419,6 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload.sub).toBe("email|userId2");
   });
   it("is an existing linked user", async () => {
-    const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
 
@@ -447,7 +446,7 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    const response = await client.passwordless.start.$post(
+    await client.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
