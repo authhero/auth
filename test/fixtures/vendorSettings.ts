@@ -1,4 +1,6 @@
-export const fokus = {
+import { VendorSettings } from "../../src/types";
+
+export const FOKUS_VENDOR_SETTINGS: VendorSettings = {
   name: "Fokus",
   logoUrl:
     "https://cdn.fokus.se/app/uploads/fokus/2022/05/12214931/fokus-logo.svg",
@@ -16,7 +18,7 @@ export const fokus = {
   termsAndConditionsUrl: null,
 };
 
-export const breakit = {
+export const BREAKIT_VENDOR_SETTINGS: VendorSettings = {
   name: "Breaking Media AB",
   companyName: "Breaking Media AB",
   logoUrl: "https://assets.sesamy.com/logos/breakit.svg",
@@ -44,7 +46,7 @@ export const breakit = {
   },
 };
 
-export const kvartal = {
+export const KVARTAL_VENDOR_SETTINGS: VendorSettings = {
   name: "Kvartal",
   companyName: "Kvartal",
   logoUrl: "https://checkout.sesamy.com/images/kvartal-logo.svg",
@@ -62,7 +64,7 @@ export const kvartal = {
   termsAndConditionsUrl: "https://kvartal.se/kopvillkor/",
 };
 
-export const sesamy = {
+export const SESAMY_VENDOR_SETTINGS: VendorSettings = {
   name: "sesamy",
   logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
   style: {
