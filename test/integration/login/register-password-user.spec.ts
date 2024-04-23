@@ -9,6 +9,7 @@ describe("Register password user", () => {
   it("should register a new user with password", async () => {
     const env = await getEnv({
       vendorSettings: BREAKIT_VENDOR_SETTINGS,
+      testTenantLanguage: "it",
     });
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
