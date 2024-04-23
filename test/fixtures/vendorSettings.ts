@@ -1,0 +1,80 @@
+export const fokus = {
+  name: "Fokus",
+  logoUrl:
+    "https://cdn.fokus.se/app/uploads/fokus/2022/05/12214931/fokus-logo.svg",
+  style: {
+    primaryColor: "#D62802",
+    buttonTextColor: "#ffffff",
+    primaryHoverColor: "#FD3307",
+  },
+  loginBackgroundImage:
+    "https://cdn.fokus.se/app/uploads/fokus/2021/04/06160810/egenannons-digital.jpg",
+  checkoutHideSocial: false,
+  supportEmail: null,
+  supportUrl: null,
+  siteUrl: null,
+  termsAndConditionsUrl: null,
+};
+
+export const breakit = {
+  name: "Breaking Media AB",
+  companyName: "Breaking Media AB",
+  logoUrl: "https://assets.sesamy.com/logos/breakit.svg",
+  style: {
+    primaryColor: "#045747",
+    buttonTextColor: "#ffffff",
+    primaryHoverColor: "#056855",
+  },
+  loginBackgroundImage:
+    "https://assets.sesamy.com/static/vendors/breakit/breakit_bg.jpg",
+  checkoutHideSocial: false,
+  supportEmail: "premium@breakit.se",
+  supportUrl: "https://www.breakit.se/kontakta-oss",
+  siteUrl: "https://www.breakit.se/",
+  termsAndConditionsUrl: "https://www.breakit.se/anvandarvillkor",
+  invoiceInfo: {
+    selfHandlesVat: true,
+    invoiceAddress: {
+      country: "SE",
+      zipCode: "113 59",
+      city: "Stockholm",
+      street: "TEGNÉRGATAN 28",
+    },
+    taxId: "SE556994782201",
+  },
+};
+
+export const kvartal = {
+  name: "Kvartal",
+  companyName: "Kvartal",
+  logoUrl: "https://checkout.sesamy.com/images/kvartal-logo.svg",
+  style: {
+    primaryColor: "#4F3985",
+    buttonTextColor: "#ffffff",
+    primaryHoverColor: "#5F44A0",
+  },
+  loginBackgroundImage:
+    "https://assets.sesamy.com/vendors/kvartal/kvartal-bg.jpg",
+  checkoutHideSocial: true,
+  supportEmail: "support@kvartal.se",
+  supportUrl: "https://kvartal.se/kundtjanst",
+  siteUrl: "https://kvartal.se",
+  termsAndConditionsUrl: "https://kvartal.se/kopvillkor/",
+};
+
+export const sesamy = {
+  name: "sesamy",
+  logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
+  style: {
+    primaryColor: "#7D68F4",
+    buttonTextColor: "#7D68F4",
+    primaryHoverColor: "#7D68F4",
+  },
+  loginBackgroundImage: "",
+  checkoutHideSocial: false,
+  supportEmail: "support@sesamy.com",
+  supportUrl: "https://support.sesamy.com",
+  siteUrl: "https://sesamy.com",
+  termsAndConditionsUrl: "https://store.sesamy.com/pages/terms-of-service",
+  manageSubscriptionsUrl: "https://account.sesamy.com/manage-subscriptions",
+};
