@@ -20,6 +20,23 @@ function applyTokenResponseAsQuery(
 
   const redirectUri = new URL(redirect_uri);
 
+  controller.setStatus(302);
+  controller.setHeader(headers.location, redirectUri.href);
+  return applyTokenResponseAsQueryInner(tokenResponse, authParams);
+}
+
+function applyTokenResponseAsQueryInner(
+  tokenResponse: TokenResponse | CodeResponse,
+  authParams: AuthParams,
+) {
+  const { redirect_uri } = authParams;
+
+  if (!redirect_uri) {
+    throw new Error("redirect_uri required");
+  }
+
+  const redirectUri = new URL(redirect_uri);
+
   if ("code" in tokenResponse) {
     redirectUri.searchParams.set("code", tokenResponse.code);
     if (authParams.state) {
@@ -45,13 +62,28 @@ function applyTokenResponseAsQuery(
     );
   }
 
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectUri.href);
   return "Redirecting";
 }
 
 function applyTokenResponseAsFragment(
   controller: Controller,
+  tokenResponse: TokenResponse | CodeResponse,
+  authParams: AuthParams,
+) {
+  const { redirect_uri } = authParams;
+
+  if (!redirect_uri) {
+    throw new Error("redirect_uri required");
+  }
+
+  const redirectUri = new URL(redirect_uri);
+  controller.setStatus(302);
+  controller.setHeader(headers.location, redirectUri.href);
+
+  return applyTokenResponseAsFragmentInner(tokenResponse, authParams);
+}
+
+function applyTokenResponseAsFragmentInner(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
@@ -86,8 +118,6 @@ function applyTokenResponseAsFragment(
 
   redirectUri.hash = anchorLinks.toString();
 
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectUri.href);
   return "Redirecting";
 }
 
@@ -115,5 +145,27 @@ export function applyTokenResponse(
         tokenResponse,
         authParams,
       );
+  }
+}
+
+export function applyTokenResponseHono(
+  tokenResponse: TokenResponse | CodeResponse,
+  authParams: AuthParams,
+) {
+  if (authParams.response_type?.includes("token")) {
+    return applyTokenResponseAsFragmentInner(tokenResponse, authParams);
+  }
+
+  if (authParams.response_type?.includes("code")) {
+    return applyTokenResponseAsQueryInner(tokenResponse, authParams);
+  }
+
+  switch (authParams.response_mode) {
+    // Auth0 does not allow query if response_type is token
+    case AuthorizationResponseMode.QUERY:
+      return applyTokenResponseAsQueryInner(tokenResponse, authParams);
+    case AuthorizationResponseMode.FRAGMENT:
+    default:
+      return applyTokenResponseAsFragmentInner(tokenResponse, authParams);
   }
 }
