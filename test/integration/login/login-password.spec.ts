@@ -25,13 +25,9 @@ describe("Login with password user", () => {
     expect(response.status).toBe(302);
     const location = response.headers.get("location");
 
-    if (!location) {
-      throw new Error("No location header found");
-    }
+    expect(location!.startsWith("/u/login")).toBeTruthy;
 
-    expect(location.startsWith("/u/login")).toBeTruthy;
-
-    const stateParam = new URLSearchParams(location.split("?")[1]);
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
@@ -42,7 +38,7 @@ describe("Login with password user", () => {
     });
 
     expect(loginFormResponse.status).toBe(200);
-    const loginSearchParams = new URLSearchParams(location.split("?")[1]);
+    const loginSearchParams = new URLSearchParams(location!.split("?")[1]);
     const loginSearchParamsQuery = Object.fromEntries(
       loginSearchParams.entries(),
     );
