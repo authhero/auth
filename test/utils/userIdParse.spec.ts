@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vitest } from "vitest";
 import userIdParse from "../../src/utils/userIdParse";
 
 describe("userIdParse", () => {
@@ -8,8 +8,15 @@ describe("userIdParse", () => {
   });
 
   it("should return the id if user_id only only contains the id", () => {
+    // mock console.error
+    const error = console.error;
+    console.error = vitest.fn();
+
     // this is the defensive programming
     const result = userIdParse("1234567890");
     expect(result).toEqual("1234567890");
+
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledWith("Invalid user_id format");
   });
 });
