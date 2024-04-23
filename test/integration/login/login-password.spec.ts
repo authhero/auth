@@ -82,11 +82,7 @@ describe("Login with password user", () => {
     expect(postLoginResponse.status).toBe(302);
     const loginLocation = postLoginResponse.headers.get("location");
 
-    if (!loginLocation) {
-      throw new Error("No login location header found");
-    }
-
-    const redirectUrl = new URL(loginLocation);
+    const redirectUrl = new URL(loginLocation!);
     expect(redirectUrl.pathname).toBe("/callback");
 
     const hash = new URLSearchParams(redirectUrl.hash.slice(1));
