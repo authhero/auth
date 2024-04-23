@@ -7,8 +7,8 @@ import sv from "../locales/sv/default.json";
 import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
 import {
-  codev2,
-  linkv2,
+  codeV2,
+  linkV2,
   passwordReset,
   verifyEmail,
 } from "../templates/email/ts";
@@ -49,7 +49,7 @@ export async function sendCode(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeUniversalTemplate = engine.parse(codev2);
+  const sendCodeUniversalTemplate = engine.parse(codeV2);
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
@@ -104,7 +104,7 @@ export async function sendLink(
     env.IMAGE_PROXY_URL,
   );
 
-  const sendCodeUniversalTemplate = engine.parse(linkv2);
+  const sendCodeUniversalTemplate = engine.parse(linkV2);
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {

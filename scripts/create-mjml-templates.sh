@@ -6,8 +6,11 @@ npx mjml email-templates/password-reset.mjml -o templates/email/password-reset.l
 npx mjml email-templates/code-v2.mjml -o templates/email/code-v2.liquid
 npx mjml email-templates/link-v2.mjml -o templates/email/link-v2.liquid
 
-# also upload to wrangler in this script for now so we can quickly upload new email templates
-npx wrangler r2 object put auth-templates/templates/email/verify-email.liquid -f templates/email/verify-email.liquid
-npx wrangler r2 object put auth-templates/templates/email/password-reset.liquid -f templates/email/password-reset.liquid
-npx wrangler r2 object put auth-templates/templates/email/code-v2.liquid -f templates/email/code-v2.liquid
-npx wrangler r2 object put auth-templates/templates/email/link-v2.liquid -f templates/email/link-v2.liquid
+cd ..
+
+node textfile2ts src/templates/email/verify-email.liquid src/templates/email/ts/verify-email.ts verifyEmail
+node textfile2ts src/templates/email/password-reset.liquid src/templates/email/ts/password-reset.ts passwordReset
+node textfile2ts src/templates/email/code-v2.liquid src/templates/email/ts/code-v2.ts codeV2
+node textfile2ts src/templates/email/link-v2.liquid src/templates/email/ts/link-v2.ts linkV2
+
+yarn format # could be more targeted and just do liquid ts files
