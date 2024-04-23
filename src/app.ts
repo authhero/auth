@@ -129,29 +129,6 @@ app.get(
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
 
-app.get("/test", async (ctx: Context<{ Bindings: Env }>) => {
-  const response = await ctx.env.data.applications.list(
-    // This is the tenant id in dev
-    "VpE9qtb4Gt_iCahTM0FYg",
-    {
-      per_page: 1,
-      page: 1,
-      include_totals: true,
-    },
-  );
-
-  const [application] = response.applications;
-
-  const url = new URL(ctx.req.url);
-
-  return new Response("Test redirect", {
-    status: 302,
-    headers: {
-      location: `/authorize?client_id=${application?.id}&redirect_uri=${url.protocol}//${url.host}/u/info&scope=profile%20email%20openid&state=1234&response_type=code`,
-    },
-  });
-});
-
 export const tsoaApp = RegisterRoutes(app as unknown as Hono);
 
 export default app;
