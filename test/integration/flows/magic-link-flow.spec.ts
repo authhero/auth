@@ -7,6 +7,9 @@ import { testClient } from "hono/testing";
 import { loginApp, tsoaApp } from "../../../src/app";
 import { UserResponse } from "../../../src/types";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { chromium } from "playwright";
+import { toMatchImageSnapshot } from "jest-image-snapshot";
+expect.extend({ toMatchImageSnapshot });
 
 const AUTH_PARAMS = {
   nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
@@ -77,6 +80,28 @@ describe("magic link flow", () => {
       }
 
       const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+
+      const magicLinkEmailBody = env.data.emails[0].content[0].value;
+
+      // @ts-ignore
+      if (import.meta.env.TEST_SNAPSHOTS === "true") {
+        // leaving this in to prove this working on the CI/CD for now
+        console.log("TESTING SNAPSHOT");
+        const browser = await chromium.launch();
+        const page = await browser.newPage();
+        await page.setContent(magicLinkEmailBody);
+
+        // set code to the same so snapshots match
+        const codeToChange = page.locator("#code");
+        await codeToChange.evaluate((element) => {
+          element.textContent = "123456";
+        });
+
+        const image = await page.screenshot();
+        expect(image).toMatchImageSnapshot();
+
+        await browser.close();
+      }
 
       expect(env.data.emails[0].to[0].email).toBe("new-user@example.com");
 
