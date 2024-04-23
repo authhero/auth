@@ -82,7 +82,7 @@ describe("code-flow", () => {
 
     const otp = getOTP(env.data.emails[0]);
 
-    await snapshotEmail(env.data.emails[0]);
+    await snapshotEmail(env.data.emails[0], true);
 
     // Authenticate using the code
     const authenticateResponse = await client.co.authenticate.$post(

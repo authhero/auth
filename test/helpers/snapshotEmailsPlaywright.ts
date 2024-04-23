@@ -6,7 +6,10 @@ import { EmailOptions } from "../../src/services/email/EmailOptions";
 // TODO - try this globally in vite config - the issue is the types!
 expect.extend({ toMatchImageSnapshot });
 
-export async function snapshotEmail(email: EmailOptions) {
+export async function snapshotEmail(
+  email: EmailOptions,
+  fixCode: boolean = false,
+) {
   // @ts-ignore
   if (import.meta.env.TEST_SNAPSHOTS === "true") {
     const emailBody = email.content[0].value;
@@ -15,11 +18,16 @@ export async function snapshotEmail(email: EmailOptions) {
     const page = await browser.newPage();
     await page.setContent(emailBody);
 
-    // set code to the same so snapshots match
-    const codeToChange = page.locator("#code");
-    await codeToChange.evaluate((element) => {
-      element.textContent = "123456";
-    });
+    if (fixCode) {
+      // set code to the same so snapshots match
+      const codeToChange = page.locator("#code");
+
+      if (codeToChange) {
+        await codeToChange.evaluate((element) => {
+          element.textContent = "123456";
+        });
+      }
+    }
 
     const image = await page.screenshot();
     expect(image).toMatchImageSnapshot();
