@@ -12,6 +12,11 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
+import {
+  FOKUS_VENDOR_SETTINGS,
+  KVARTAL_VENDOR_SETTINGS,
+  BREAKIT_VENDOR_SETTINGS,
+} from "../../fixtures/vendorSettings";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -827,7 +832,9 @@ describe("password-flow", () => {
   });
   describe("Password reset", () => {
     it("should send password reset email for existing user, and allow password to be changed", async () => {
-      const env = await getEnv();
+      const env = await getEnv({
+        vendorSettings: FOKUS_VENDOR_SETTINGS,
+      });
       const client = testClient(tsoaApp, env);
 
       // foo@example.com is an existing username-password user
@@ -945,7 +952,9 @@ describe("password-flow", () => {
       expect(idTokenPayload.aud).toBe("clientId");
     });
     it("should reject weak passwords", async () => {
-      const env = await getEnv();
+      const env = await getEnv({
+        vendorSettings: KVARTAL_VENDOR_SETTINGS,
+      });
       const client = testClient(tsoaApp, env);
 
       // foo@example.com is an existing username-password user
@@ -992,7 +1001,9 @@ describe("password-flow", () => {
       await snapshotResponse(resetPassword);
     });
     it("should reject non-matching confirmation password", async () => {
-      const env = await getEnv();
+      const env = await getEnv({
+        vendorSettings: BREAKIT_VENDOR_SETTINGS,
+      });
       const client = testClient(tsoaApp, env);
 
       // foo@example.com is an existing username-password user
