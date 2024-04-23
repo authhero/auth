@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env } from "../../types";
+import { Env, User, AuthorizationResponseType } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import { getUserByEmailAndProvider } from "../../utils/users";
@@ -15,6 +15,10 @@ import {
   renderMessageInner as renderMessage,
   renderLoginInner as renderLogin,
 } from "../../templates/render";
+import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { nanoid } from "nanoid";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { applyTokenResponse } from "../../helpers/apply-token-response";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -25,6 +29,36 @@ function initI18n(lng: string) {
       nb: { translation: nb },
       sv: { translation: sv },
     },
+  });
+}
+
+async function handleLogin(
+  env: Env,
+  user: User,
+  session: UniversalLoginSession,
+) {
+  if (session.authParams.redirect_uri) {
+    const responseType =
+      session.authParams.response_type ||
+      AuthorizationResponseType.TOKEN_ID_TOKEN;
+
+    const authResponse = await generateAuthResponse({
+      env,
+      userId: user.id,
+      sid: nanoid(),
+      responseType,
+      authParams: session.authParams,
+      user,
+    });
+
+    return applyTokenResponse(controller, authResponse, session.authParams);
+  }
+
+  // This is just a fallback in case no redirect was present
+  return renderMessage({
+    ...session,
+    page_title: "Logged in",
+    message: "You are logged in",
   });
 }
 
