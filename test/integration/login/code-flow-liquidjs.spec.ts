@@ -3,9 +3,7 @@ import { getEnv } from "../helpers/test-client";
 import { tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { chromium } from "playwright";
-import { toMatchImageSnapshot } from "jest-image-snapshot";
-expect.extend({ toMatchImageSnapshot });
+import { snapshotResponse } from "../helpers/playwrightSnapshots";
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
@@ -51,24 +49,7 @@ describe("Login with code on liquidjs template", () => {
 
     expect(codeInputFormResponse.status).toBe(200);
 
-    // @ts-ignore
-    if (import.meta.env.TEST_SNAPSHOTS === "true") {
-      console.log("TESTING SEND CODE FORM SNAPSHOT");
-
-      const codeInputFormResponseText = await codeInputFormResponse.text();
-      const codeInputFormBody = codeInputFormResponseText.replace(
-        "/css/tailwind.css",
-        "http://auth2.sesamy.dev/css/tailwind.css",
-      );
-      const browser = await chromium.launch();
-      const page = await browser.newPage();
-      await page.setContent(codeInputFormBody);
-
-      const snapshot = await page.screenshot();
-      expect(snapshot).toMatchImageSnapshot();
-
-      await browser.close();
-    }
+    await snapshotResponse(codeInputFormResponse);
 
     const postSendCodeResponse = await client.u.code.$post(
       {
@@ -99,25 +80,8 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeForm = await client.u["enter-code"].$get({
       query: enterCodeQuery,
     });
-    expect(codeInputFormResponse.status).toBe(200);
-    // @ts-ignore
-    if (import.meta.env.TEST_SNAPSHOTS === "true") {
-      console.log("TESTING ENTER CODE FORM SNAPSHOT");
-
-      const enterCodeFormResponseText = await enterCodeForm.text();
-      const enterCodeFormBody = enterCodeFormResponseText.replace(
-        "/css/tailwind.css",
-        "http://auth2.sesamy.dev/css/tailwind.css",
-      );
-      const browser = await chromium.launch();
-      const page = await browser.newPage();
-      await page.setContent(enterCodeFormBody);
-
-      const snapshot = await page.screenshot();
-      expect(snapshot).toMatchImageSnapshot();
-
-      await browser.close();
-    }
+    expect(enterCodeForm.status).toBe(200);
+    await snapshotResponse(codeInputFormResponse);
 
     const authenticateResponse = await client.u["enter-code"].$post(
       {
