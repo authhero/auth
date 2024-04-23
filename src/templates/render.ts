@@ -169,11 +169,10 @@ export async function renderSignup(
   controller.setHeader("content-type", "text/html");
   controller.setStatus(200);
 
-  const content = await engine.render(template, { ...context, state });
+  const content = await engine.render(template, { ...context, errorMessage });
   return engine.render(layoutTemplate, {
     ...context,
     content,
-    errorMessage,
   });
 }
 
