@@ -26,13 +26,10 @@ export function serializeClearCookie() {
     maxAge: 0,
   };
 
-  return [
-    serialize(COOKIE_NAME, "", {
-      ...options,
-      sameSite: "none",
-    }),
-    // serialize(`${COOKIE_NAME}_compat`, payload, options),
-  ];
+  return serialize(COOKIE_NAME, "", {
+    ...options,
+    sameSite: "none",
+  });
 }
 
 export function serializeStateInCookie(payload: string) {

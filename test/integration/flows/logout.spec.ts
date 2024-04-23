@@ -5,13 +5,14 @@ import {
   doSilentAuthRequestAndReturnTokens,
 } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp } from "../../../src/app";
+import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const loginResponse = await client.co.authenticate.$post(
       {
@@ -65,7 +66,7 @@ describe("logout", () => {
     const cookies = setCookieHeader.split(";").map((c) => c.trim());
     const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
-    const logoutResponse = await client.v2.logout.$get(
+    const logoutResponse = await loginClient.v2.logout.$get(
       {
         query: {
           client_id: "clientId",
