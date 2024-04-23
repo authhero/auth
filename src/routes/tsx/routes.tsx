@@ -18,7 +18,7 @@ import {
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { applyTokenResponse } from "../../helpers/apply-token-response";
+import { applyTokenResponseHono } from "../../helpers/apply-token-response";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -51,7 +51,7 @@ async function handleLogin(
       user,
     });
 
-    return applyTokenResponse(controller, authResponse, session.authParams);
+    return applyTokenResponseHono(authResponse, session.authParams);
   }
 
   // This is just a fallback in case no redirect was present
