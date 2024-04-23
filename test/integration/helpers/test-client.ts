@@ -14,8 +14,15 @@ import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { SESAMY_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 
-export async function getEnv() {
+type getEnvParams = {
+  vendorSettings?: VendorSettings;
+};
+
+export async function getEnv({
+  vendorSettings = SESAMY_VENDOR_SETTINGS,
+}: getEnvParams) {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
@@ -208,21 +215,7 @@ export async function getEnv() {
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
     fetchVendorSettings: async (tenantName: string) => {
-      const mockVendorSettings: VendorSettings = {
-        name: "sesamy",
-        logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
-        style: {
-          primaryColor: "#7D68F4",
-          buttonTextColor: "#FFFFFF",
-          primaryHoverColor: "#7D68F4",
-        },
-        loginBackgroundImage: "",
-        supportEmail: "support@sesamy.com",
-        supportUrl: "https://support.sesamy.com",
-        termsAndConditionsUrl:
-          "https://store.sesamy.com/pages/terms-of-service",
-      };
-      return mockVendorSettings;
+      return vendorSettings;
     },
   };
 }

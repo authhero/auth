@@ -4,7 +4,7 @@ import { tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
-import { fokus } from "../../fixtures/vendorSettings";
+import { FOKUS_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
@@ -19,7 +19,9 @@ function getCodeAndTo(email: EmailOptions) {
 
 describe("Login with code on liquidjs template", () => {
   it("should login with code", async () => {
-    const env = await getEnv();
+    const env = await getEnv({
+      vendorSettings: FOKUS_VENDOR_SETTINGS,
+    });
     const client = testClient(tsoaApp, env);
 
     const searchParams = {

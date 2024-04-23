@@ -40,9 +40,23 @@ export type VendorSettings = {
   logoUrl: string;
   loginBackgroundImage?: string;
   style: StyleType;
-  supportEmail: string;
-  supportUrl: string;
+  supportEmail?: string | null;
+  supportUrl?: string | null;
   name: string;
   showGreyishBackground?: boolean;
-  termsAndConditionsUrl?: string;
+  termsAndConditionsUrl?: string | null;
+  companyName?: string;
+  checkoutHideSocial?: boolean;
+  siteUrl?: string | null;
+  invoiceInfo?: {
+    selfHandlesVat: boolean;
+    invoiceAddress: {
+      country: string;
+      zipCode: string;
+      city: string;
+      street: string;
+    };
+    taxId: string;
+  };
+  manageSubscriptionsUrl?: string;
 };
