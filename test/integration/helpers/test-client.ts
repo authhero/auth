@@ -213,7 +213,7 @@ export async function getEnv() {
         logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
         style: {
           primaryColor: "#7D68F4",
-          buttonTextColor: "#7D68F4",
+          buttonTextColor: "#FFFFFF",
           primaryHoverColor: "#7D68F4",
         },
         loginBackgroundImage: "",
