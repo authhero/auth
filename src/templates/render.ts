@@ -43,12 +43,21 @@ export async function renderLogin(
   state: string,
   errorMessage?: string,
 ) {
+  controller.setHeader("content-type", "text/html");
+  controller.setStatus(200);
+
+  return renderLoginInner(env, context, state, errorMessage);
+}
+
+export async function renderLoginInner(
+  env: Env,
+  context: UniversalLoginSession,
+  state: string,
+  errorMessage?: string,
+) {
   const layoutTemplate = engine.parse(layout);
 
   const template = engine.parse(login);
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
 
   const socialLoginQuery = new URLSearchParams({
     ...context.authParams,

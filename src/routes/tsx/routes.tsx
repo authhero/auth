@@ -11,14 +11,10 @@ import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
-import { renderMessageInner as renderMessage } from "../../templates/render";
-import { Liquid } from "liquidjs";
-import { layout, login as loginTemplate } from "../../templates/universal";
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
-import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { nanoid } from "nanoid";
-import type { User } from "../../types";
-import { AuthorizationResponseType } from "../../types";
+import {
+  renderMessageInner as renderMessage,
+  renderLoginInner as renderLogin,
+} from "../../templates/render";
 
 function initI18n(lng: string) {
   i18next.init({
