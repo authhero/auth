@@ -6,14 +6,9 @@ import { VendorSettings } from "../../types";
 type ResetPasswordPageProps = {
   error?: string;
   vendorSettings: VendorSettings;
-  email: string;
 };
 
-const LoginPage: FC<ResetPasswordPageProps> = ({
-  error,
-  vendorSettings,
-  email,
-}) => {
+const LoginPage: FC<ResetPasswordPageProps> = ({ error, vendorSettings }) => {
   return (
     <Layout title="Login" vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">Login</div>
