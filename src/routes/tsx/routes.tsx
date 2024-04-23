@@ -76,18 +76,9 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.client_id,
       );
 
-      if (!session.authParams.username) {
-        throw new HTTPException(400, { message: "Username required" });
-      }
+      initI18n(tenant.language || "sv");
 
-      initI18n("sv");
-
-      return ctx.html(
-        <LoginPage
-          vendorSettings={vendorSettings}
-          email={session.authParams.username}
-        />,
-      );
+      return ctx.html(<LoginPage vendorSettings={vendorSettings} />);
     },
   )
   // --------------------------------
