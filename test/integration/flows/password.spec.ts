@@ -8,7 +8,7 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { snapshotEmail } from "../../helpers/snapshotEmailsPlaywright";
+import { snapshotEmail } from "../helpers/snapshotEmailsPlaywright";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;

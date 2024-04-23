@@ -8,7 +8,7 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { snapshotEmail } from "../../helpers/snapshotEmailsPlaywright";
+import { snapshotEmail } from "../helpers/snapshotEmailsPlaywright";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",

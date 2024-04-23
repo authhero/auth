@@ -7,7 +7,7 @@ import { testClient } from "hono/testing";
 import { loginApp, tsoaApp } from "../../../src/app";
 import { UserResponse } from "../../../src/types";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { snapshotEmail } from "../../helpers/snapshotEmailsPlaywright";
+import { snapshotEmail } from "../helpers/snapshotEmailsPlaywright";
 
 const AUTH_PARAMS = {
   nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
