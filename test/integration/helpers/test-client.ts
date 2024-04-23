@@ -20,9 +20,9 @@ type getEnvParams = {
   vendorSettings?: VendorSettings;
 };
 
-export async function getEnv({
-  vendorSettings = SESAMY_VENDOR_SETTINGS,
-}: getEnvParams) {
+export async function getEnv(args?: getEnvParams) {
+  const vendorSettings = args?.vendorSettings ?? SESAMY_VENDOR_SETTINGS;
+
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });

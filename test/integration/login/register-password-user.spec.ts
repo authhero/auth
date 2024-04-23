@@ -3,10 +3,13 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
+import { BREAKIT_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 
 describe("Register password user", () => {
   it("should register a new user with password", async () => {
-    const env = await getEnv();
+    const env = await getEnv({
+      vendorSettings: BREAKIT_VENDOR_SETTINGS,
+    });
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
