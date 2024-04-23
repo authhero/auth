@@ -57,30 +57,35 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const vendorSettings = {
-        name: "Kvartal",
-        companyName: "Kvartal",
-        logoUrl: "https://checkout.sesamy.com/images/kvartal-logo.svg",
-        style: {
-          primaryColor: "#4F3985",
-          buttonTextColor: "#ffffff",
-          primaryHoverColor: "#5F44A0",
-        },
-        loginBackgroundImage:
-          "https://assets.sesamy.com/vendors/kvartal/kvartal-bg.jpg",
-        checkoutHideSocial: true,
-        supportEmail: "support@kvartal.se",
-        supportUrl: "https://kvartal.se/kundtjanst",
-        siteUrl: "https://kvartal.se",
-        termsAndConditionsUrl: "https://kvartal.se/kopvillkor/",
-      };
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+
+      const vendorSettings = await env.fetchVendorSettings(
+        session.authParams.client_id,
+      );
+
+      if (!session.authParams.username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
 
       initI18n("sv");
 
       return ctx.html(
         <LoginPage
           vendorSettings={vendorSettings}
-          email={"test@example.com"}
+          email={session.authParams.username}
         />,
       );
     },
