@@ -8,7 +8,8 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { snapshotEmail } from "../../helpers/snapshotEmailsPlaywright";
+import { snapshotEmail } from "../helpers/snapshotEmailsPlaywright";
+import { snapshotResponse } from "../helpers/playwrightSnapshots";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -867,6 +868,15 @@ describe("password-flow", () => {
       //-------------------
 
       const anyClient = client as any;
+
+      const resetPasswordForm = await anyClient.u["reset-password"].$get({
+        query: {
+          state,
+          code,
+        },
+      });
+
+      await snapshotResponse(resetPasswordForm);
 
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
       const resetPassword = await anyClient.u["reset-password"].$post({

@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 import { toMatchImageSnapshot } from "jest-image-snapshot";
 import { expect } from "vitest";
-import { EmailOptions } from "../../src/services/email/EmailOptions";
+import { EmailOptions } from "../../../src/services/email/EmailOptions";
 
 // TODO - try this globally in vite config - the issue is the types!
 expect.extend({ toMatchImageSnapshot });
