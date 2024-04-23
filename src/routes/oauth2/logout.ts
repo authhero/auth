@@ -28,7 +28,7 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
       responses: {
         302: {
-          description: "List of tenants",
+          description: "Log the user out",
         },
       },
     }),
