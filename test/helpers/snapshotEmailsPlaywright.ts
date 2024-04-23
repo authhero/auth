@@ -15,6 +15,12 @@ export async function snapshotEmail(email: EmailOptions) {
     const page = await browser.newPage();
     await page.setContent(emailBody);
 
+    // set code to the same so snapshots match
+    const codeToChange = page.locator("#code");
+    await codeToChange.evaluate((element) => {
+      element.textContent = "123456";
+    });
+
     const image = await page.screenshot();
     expect(image).toMatchImageSnapshot();
 
