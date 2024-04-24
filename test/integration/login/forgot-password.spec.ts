@@ -59,17 +59,15 @@ describe("Forgot password", () => {
       },
     );
 
-    console.log(await forgotPasswordEmailResponse.text());
-
     expect(forgotPasswordEmailResponse.status).toBe(200);
 
-    // await snapshotResponse(forgotPasswordEmailResponse);
+    await snapshotResponse(forgotPasswordEmailResponse);
 
     // ---------------------
     // check the email
     // ---------------------
 
-    // await snapshotEmail(env.data.emails[0]);
+    await snapshotEmail(env.data.emails[0]);
 
     // TODO
     // follow the links in this email and actually reset the password?
