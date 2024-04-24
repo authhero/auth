@@ -68,22 +68,15 @@ describe("password-flow", () => {
       });
       expect(createUserResponse.status).toBe(200);
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password,
-            username: "password-login-test@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password,
+          username: "password-login-test@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       // this will not work! need to validate the email before allowing a login
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
@@ -136,22 +129,15 @@ describe("password-flow", () => {
       // login again now to check that it works
       //-------------------
 
-      const loginResponse2 = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password,
-            username: "password-login-test@example.com",
-          },
+      const loginResponse2 = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password,
+          username: "password-login-test@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       const { login_ticket: loginTicket2 } =
         (await loginResponse2.json()) as LoginTicket;
@@ -285,22 +271,15 @@ describe("password-flow", () => {
       // login with password
       // -----------------------------
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password,
-            username: "existing-code-user@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password,
+          username: "existing-code-user@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(loginResponse.status).toBe(200);
 
@@ -401,22 +380,15 @@ describe("password-flow", () => {
       });
       expect(createUserResponse.status).toBe(200);
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password,
-            username: "password-login-test@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password,
+          username: "password-login-test@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       const query = {
@@ -458,22 +430,15 @@ describe("password-flow", () => {
       // do the login flow again
       // -----------------------------------------
 
-      const loginResponse2 = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password,
-            username: "password-login-test@example.com",
-          },
+      const loginResponse2 = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password,
+          username: "password-login-test@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       const { login_ticket: loginTicket2 } =
         (await loginResponse2.json()) as LoginTicket;
@@ -520,22 +485,15 @@ describe("password-flow", () => {
       const body = await createUserResponse.text();
       expect(body).toBe("Invalid sign up");
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: aNewPassword,
-            username: "foo@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: aNewPassword,
+          username: "foo@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(loginResponse.status).toBe(403);
     });
     it("should reject signups for weak passwords", async () => {
@@ -566,22 +524,15 @@ describe("password-flow", () => {
       const client = testClient(tsoaApp, env);
       // foo@example.com is an existing username-password user, with password - Test!
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "Test1234!",
-            username: "foo@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "Test1234!",
+          username: "foo@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
@@ -649,22 +600,15 @@ describe("password-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "wrong-password",
-            username: "foo@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "wrong-password",
+          username: "foo@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       // no body returned
       expect(loginResponse.status).toBe(403);
     });
@@ -683,23 +627,15 @@ describe("password-flow", () => {
       });
       expect(signupResponse.status).toBe(200);
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "Password1234!",
-            username: "new-username-password-user@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "Password1234!",
+          username: "new-username-password-user@example.com",
         },
-
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       // ------------------
       // is this enough to be sure the user is created? OR should we exchange the ticket...
@@ -710,23 +646,16 @@ describe("password-flow", () => {
       // now check we cannot use the wrong user's password
       // ------------------
 
-      const rejectedLoginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            // this is the password of foo@example.com
-            password: "Test1234!",
-            username: "new-username-password-user@example.com",
-          },
+      const rejectedLoginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          // this is the password of foo@example.com
+          password: "Test1234!",
+          username: "new-username-password-user@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(rejectedLoginResponse.status).toBe(403);
     });
@@ -734,44 +663,30 @@ describe("password-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "any-password",
-            username: "non-existent-user@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "any-password",
+          username: "non-existent-user@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(loginResponse.status).toBe(403);
     });
     it("should not allow login to username-password but on different tenant", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "otherClientIdOnOtherTenant",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "Test1234!",
-            username: "foo@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "otherClientIdOnOtherTenant",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "Test1234!",
+          username: "foo@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(loginResponse.status).toBe(403);
     });
@@ -849,22 +764,15 @@ describe("password-flow", () => {
       // now check we can login with the new password
       // ------------------
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "New-password-1234!",
-            username: "foo@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "New-password-1234!",
+          username: "foo@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
@@ -1030,22 +938,15 @@ describe("password-flow", () => {
       // ------------------
       // now check we can login with the new password, and we are not told to verify our email
       // ------------------
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "New-password-1234!",
-            username: "reset-new-user@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "New-password-1234!",
+          username: "reset-new-user@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
       const query = {
