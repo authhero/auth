@@ -49,16 +49,16 @@ describe("Forgot password", () => {
     // now send the password reset email
     // ---------------------
 
-    const forgotPasswordEmailResponse = await client.u["forgot-password"].$post(
-      {
-        query: {
-          state: query.state,
-        },
-        json: {
-          username: "foo@example.com",
-        },
+    const forgotPasswordEmailResponse = await loginClient.u[
+      "forgot-password"
+    ].$post({
+      query: {
+        state: query.state,
       },
-    );
+      form: {
+        username: "foo@example.com",
+      },
+    });
 
     expect(forgotPasswordEmailResponse.status).toBe(200);
 
