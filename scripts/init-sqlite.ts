@@ -51,6 +51,6 @@ const data = createAdapters(db);
 
   await data.passwords.create(tenant.id, {
     user_id: user.id,
-    password: "admin",
+    password: "Password1!",
   });
 })();
