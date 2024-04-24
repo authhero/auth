@@ -18,10 +18,12 @@ import { SESAMY_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 
 type getEnvParams = {
   vendorSettings?: VendorSettings;
+  testTenantLanguage?: string;
 };
 
 export async function getEnv(args?: getEnvParams) {
   const vendorSettings = args?.vendorSettings ?? SESAMY_VENDOR_SETTINGS;
+  const testTenantLanguage = args?.testTenantLanguage;
 
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
@@ -95,6 +97,7 @@ export async function getEnv(args?: getEnvParams) {
     support_url: "https://example.com/support",
     created_at: "created_at",
     updated_at: "updated_at",
+    language: testTenantLanguage,
   };
 
   const testApplication: Application = {

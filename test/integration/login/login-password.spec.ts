@@ -9,6 +9,7 @@ describe("Login with password user", () => {
   it("should login with password", async () => {
     const env = await getEnv({
       vendorSettings: KVARTAL_VENDOR_SETTINGS,
+      testTenantLanguage: "en",
     });
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);

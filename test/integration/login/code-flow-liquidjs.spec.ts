@@ -21,6 +21,7 @@ describe("Login with code on liquidjs template", () => {
   it("should login with code", async () => {
     const env = await getEnv({
       vendorSettings: FOKUS_VENDOR_SETTINGS,
+      testTenantLanguage: "nb",
     });
     const client = testClient(tsoaApp, env);
 
