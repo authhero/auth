@@ -12,20 +12,17 @@ function applyTokenResponseAsQuery(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
-  const { redirect_uri } = authParams;
-
-  if (!redirect_uri) {
-    throw new Error("redirect_uri required");
-  }
-
-  const redirectUri = new URL(redirect_uri);
+  const redirectUri = getTokenResponseAsQueryRedirectUri(
+    tokenResponse,
+    authParams,
+  );
 
   controller.setStatus(302);
   controller.setHeader(headers.location, redirectUri.href);
-  return applyTokenResponseAsQueryInner(tokenResponse, authParams);
+  return "Redirecting";
 }
 
-function applyTokenResponseAsQueryInner(
+function getTokenResponseAsQueryRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
@@ -62,7 +59,7 @@ function applyTokenResponseAsQueryInner(
     );
   }
 
-  return "Redirecting";
+  return redirectUri;
 }
 
 function applyTokenResponseAsFragment(
@@ -70,20 +67,17 @@ function applyTokenResponseAsFragment(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
-  const { redirect_uri } = authParams;
-
-  if (!redirect_uri) {
-    throw new Error("redirect_uri required");
-  }
-
-  const redirectUri = new URL(redirect_uri);
+  const redirectUri = getTokenResponseAsFragmentRedirectUri(
+    tokenResponse,
+    authParams,
+  );
   controller.setStatus(302);
   controller.setHeader(headers.location, redirectUri.href);
 
-  return applyTokenResponseAsFragmentInner(tokenResponse, authParams);
+  return "Redirecting";
 }
 
-function applyTokenResponseAsFragmentInner(
+function getTokenResponseAsFragmentRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
@@ -118,7 +112,7 @@ function applyTokenResponseAsFragmentInner(
 
   redirectUri.hash = anchorLinks.toString();
 
-  return "Redirecting";
+  return redirectUri;
 }
 
 export function applyTokenResponse(
@@ -148,24 +142,25 @@ export function applyTokenResponse(
   }
 }
 
+// what should actually happen here? how to do hono redirects?
 export function applyTokenResponseHono(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
 ) {
   if (authParams.response_type?.includes("token")) {
-    return applyTokenResponseAsFragmentInner(tokenResponse, authParams);
+    return getTokenResponseAsFragmentRedirectUri(tokenResponse, authParams);
   }
 
   if (authParams.response_type?.includes("code")) {
-    return applyTokenResponseAsQueryInner(tokenResponse, authParams);
+    return getTokenResponseAsQueryRedirectUri(tokenResponse, authParams);
   }
 
   switch (authParams.response_mode) {
     // Auth0 does not allow query if response_type is token
     case AuthorizationResponseMode.QUERY:
-      return applyTokenResponseAsQueryInner(tokenResponse, authParams);
+      return getTokenResponseAsQueryRedirectUri(tokenResponse, authParams);
     case AuthorizationResponseMode.FRAGMENT:
     default:
-      return applyTokenResponseAsFragmentInner(tokenResponse, authParams);
+      return getTokenResponseAsFragmentRedirectUri(tokenResponse, authParams);
   }
 }
