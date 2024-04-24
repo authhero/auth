@@ -16,17 +16,12 @@ import {
 const engine = new Liquid();
 
 export async function renderForgotPassword(
-  env: Env,
-  controller: Controller,
   context: UniversalLoginSession,
   state: string,
-) {
+): Promise<string> {
   const layoutTemplate = engine.parse(layout);
 
   const template = engine.parse(forgotPassword);
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
 
   const content = await engine.render(template, { ...context, state });
   return engine.render(layoutTemplate, {
@@ -37,20 +32,6 @@ export async function renderForgotPassword(
 }
 
 export async function renderLogin(
-  env: Env,
-  controller: Controller,
-  context: UniversalLoginSession,
-  state: string,
-  errorMessage?: string,
-) {
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
-
-  return renderLoginInner(env, context, state, errorMessage);
-}
-
-export async function renderLoginInner(
-  env: Env,
   context: UniversalLoginSession,
   state: string,
   errorMessage?: string,

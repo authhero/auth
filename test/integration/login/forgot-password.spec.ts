@@ -12,6 +12,7 @@ describe("Forgot password", () => {
     const env = await getEnv();
 
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const searchParams = {
       client_id: "clientId",
@@ -34,7 +35,7 @@ describe("Forgot password", () => {
     // Open forgot password page
     // ---------------------
 
-    const forgotPasswordResponse = await client.u["forgot-password"].$get({
+    const forgotPasswordResponse = await loginClient.u["forgot-password"].$get({
       query: {
         state: query.state,
       },
