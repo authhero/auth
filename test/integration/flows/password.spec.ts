@@ -68,22 +68,15 @@ describe("password-flow", () => {
       });
       expect(createUserResponse.status).toBe(200);
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password,
-            username: "password-login-test@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password,
+          username: "password-login-test@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       // this will not work! need to validate the email before allowing a login
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
@@ -849,22 +842,15 @@ describe("password-flow", () => {
       // now check we can login with the new password
       // ------------------
 
-      const loginResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-            realm: "Username-Password-Authentication",
-            password: "New-password-1234!",
-            username: "foo@example.com",
-          },
+      const loginResponse = await client.co.authenticate.$post({
+        json: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+          realm: "Username-Password-Authentication",
+          password: "New-password-1234!",
+          username: "foo@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = (await loginResponse.json()) as LoginTicket;
