@@ -38,10 +38,6 @@ interface LoginParams {
   password: string;
 }
 
-interface PasswordResetParams {
-  username: string;
-}
-
 async function handleLogin(
   env: Env,
   controller: Controller,
@@ -423,66 +419,5 @@ export class LoginController extends Controller {
     } catch (err: any) {
       return renderSignup(env, this, session, state, err.message);
     }
-  }
-
-  /**
-   * Renders a forgot password form
-   * @param request
-   */
-  @Post("forgot-password")
-  public async postForgotPassword(
-    @Request() request: RequestWithContext,
-    @Body() params: PasswordResetParams,
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    const client = await getClient(env, session.client_id);
-
-    if (!client) {
-      throw new HTTPException(400, { message: "Client not found" });
-    }
-
-    if (session.authParams.username !== params.username) {
-      session.authParams.username = params.username;
-      await env.data.universalLoginSessions.update(session.id, session);
-    }
-
-    const user = await getUserByEmailAndProvider({
-      userAdapter: env.data.users,
-      tenant_id: client.tenant_id,
-      email: params.username,
-      provider: "auth2",
-    });
-
-    if (user) {
-      const code = generateOTP();
-
-      await env.data.codes.create(client.tenant_id, {
-        id: nanoid(),
-        code,
-        type: "password_reset",
-        user_id: user.id,
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-      });
-
-      request.ctx.set("log", `Code: ${code}`);
-
-      await sendResetPassword(env, client, params.username, code, state);
-    } else {
-      console.log("User not found");
-    }
-
-    return renderMessage(env, this, {
-      ...session,
-      page_title: "Password reset",
-      message: "A code has been sent to your email address",
-    });
   }
 }
