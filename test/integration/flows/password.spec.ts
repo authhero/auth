@@ -820,26 +820,24 @@ describe("password-flow", () => {
       // reset password
       //-------------------
 
-      const anyClient = client as any;
-
-      const resetPasswordForm = await anyClient.u["reset-password"].$get({
+      const resetPasswordForm = await loginClient.u["reset-password"].$get({
         query: {
           state,
-          code,
+          // code,
         },
       });
 
       await snapshotResponse(resetPasswordForm);
 
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
-      const resetPassword = await anyClient.u["reset-password"].$post({
-        json: {
+      const resetPassword = await loginClient.u["reset-password"].$post({
+        form: {
           password: "New-password-1234!",
           "re-enter-password": "New-password-1234!",
+          code,
         },
         query: {
           state,
-          code,
         },
       });
 
@@ -921,17 +919,15 @@ describe("password-flow", () => {
       //-------------------
       // reject when try to set weak password
       //-------------------
-      const anyClient = client as any;
-
-      const resetPassword = await anyClient.u["reset-password"].$post({
-        json: {
+      const resetPassword = await loginClient.u["reset-password"].$post({
+        form: {
           // we have unit tests for the util function we use so just doing one unhappy path
           password: "weak-password",
           "re-enter-password": "weak-password",
+          code,
         },
         query: {
           state,
-          code,
         },
       });
 
@@ -965,17 +961,15 @@ describe("password-flow", () => {
       //-------------------
       // reject when confrimation password does not match!
       //-------------------
-      const anyClient = client as any;
-
-      const resetPassword = await anyClient.u["reset-password"].$post({
-        json: {
+      const resetPassword = await loginClient.u["reset-password"].$post({
+        form: {
           password: "StrongPassword1234!",
           // this is also strong but does match the previous line
           "re-enter-password": "AnotherStrongPassword1234!",
+          code,
         },
         query: {
           state,
-          code,
         },
       });
 
@@ -1021,15 +1015,14 @@ describe("password-flow", () => {
       //-------------------
       // reset password
       //-------------------
-      const anyClient = client as any;
-      const resetPassword = await anyClient.u["reset-password"].$post({
-        json: {
+      const resetPassword = await loginClient.u["reset-password"].$post({
+        form: {
           password: "New-password-1234!",
           "re-enter-password": "New-password-1234!",
+          code,
         },
         query: {
           state,
-          code,
         },
       });
       expect(resetPassword.status).toBe(200);
