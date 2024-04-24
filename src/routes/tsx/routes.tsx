@@ -559,7 +559,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         console.log("User not found");
       }
 
-      return renderMessage(env, this, {
+      return renderMessage({
         ...session,
         page_title: "Password reset",
         message: "A code has been sent to your email address",
