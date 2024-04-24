@@ -2,17 +2,16 @@ import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import { snapshotResponse } from "../helpers/playwrightSnapshots";
-import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import {
+  snapshotResponse,
+  snapshotEmail,
+} from "../helpers/playwrightSnapshots";
 
 describe("Forgot password", () => {
   it("should send forgot password email", async () => {
-    const env = await getEnv({
-      vendorSettings: KVARTAL_VENDOR_SETTINGS,
-    });
+    const env = await getEnv();
 
     const client = testClient(tsoaApp, env);
-    const loginClient = testClient(loginApp, env);
 
     const searchParams = {
       client_id: "clientId",
@@ -44,5 +43,40 @@ describe("Forgot password", () => {
     expect(forgotPasswordResponse.status).toBe(200);
 
     await snapshotResponse(forgotPasswordResponse);
+
+    // ---------------------
+    // now send the password reset email
+    // ---------------------
+
+    const forgotPasswordEmailResponse = await client.u["forgot-password"].$post(
+      {
+        query: {
+          state: query.state,
+        },
+        json: {
+          username: "foo@example.com",
+        },
+      },
+    );
+
+    console.log(await forgotPasswordEmailResponse.text());
+
+    expect(forgotPasswordEmailResponse.status).toBe(200);
+
+    // await snapshotResponse(forgotPasswordEmailResponse);
+
+    // ---------------------
+    // check the email
+    // ---------------------
+
+    // await snapshotEmail(env.data.emails[0]);
+
+    // TODO
+    // follow the links in this email and actually reset the password?
+    // we are testing that flow in test/integration/flows/password.spec.ts
+    // BUT this email is sent from dbconnections.change_password e.g. the auth0.js method
   });
 });
+
+// TO TEST
+// what happens when send to a non-existent password user? maybe the user exists as an email user
