@@ -38,10 +38,6 @@ interface LoginParams {
   password: string;
 }
 
-interface PasswordResetParams {
-  username: string;
-}
-
 async function handleLogin(
   env: Env,
   controller: Controller,

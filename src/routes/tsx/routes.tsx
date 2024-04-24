@@ -21,6 +21,11 @@ import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
 import { Context } from "hono";
 import { renderForgotPassword } from "../../templates/render";
+import generateOTP from "../../utils/otp";
+import { sendResetPassword } from "../../controllers/email";
+
+// duplicated from /passwordless route
+const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 function initI18n(lng: string) {
   i18next.init({
@@ -468,6 +473,97 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       return ctx.html(renderForgotPassword(session, state));
+    },
+  )
+  // -------------------------------
+  // POST /u/forgot-password
+  // -------------------------------
+
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/forgot-password",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                username: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { username } = ctx.req.valid("form");
+
+      const { env } = ctx;
+
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      if (session.authParams.username !== username) {
+        session.authParams.username = username;
+        await env.data.universalLoginSessions.update(session.id, session);
+      }
+
+      const user = await getUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email: username,
+        provider: "Username-Password-Authentication",
+      });
+
+      if (user) {
+        const code = generateOTP();
+
+        await env.data.codes.create(client.tenant_id, {
+          id: nanoid(),
+          code,
+          type: "password_reset",
+          user_id: user.id,
+          created_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+        });
+
+        // Get typescript errors here but works on the mgmt api users route...
+        // ctx.set("log", `Code: ${code}`);
+
+        await sendResetPassword(env, client, username, code, state);
+      } else {
+        console.log("User not found");
+      }
+
+      return renderMessage(env, this, {
+        ...session,
+        page_title: "Password reset",
+        message: "A code has been sent to your email address",
+      });
     },
   )
 
