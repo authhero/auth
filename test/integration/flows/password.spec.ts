@@ -56,23 +56,16 @@ describe("password-flow", () => {
       const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "password-login-test@example.com",
           password,
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(createUserResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(

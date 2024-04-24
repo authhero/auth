@@ -1496,8 +1496,7 @@ describe("code-flow", () => {
 
       expect(createUserResponse.status).toBe(200);
 
-      const unverifiedPasswordUser =
-        (await createUserResponse.json()) as UserResponse;
+      const unverifiedPasswordUser = await createUserResponse.json();
 
       //-----------------
       // sign up new code user that has same email address
