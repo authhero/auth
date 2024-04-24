@@ -108,12 +108,14 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
 
               <div class="flex w-full items-center px-6 pb-8 pt-4 justify-between">
                 <div class="flex justify-center space-x-2 text-xs text-white sm:justify-normal md:text-xs">
-                  <a
-                    class="text-xs text-white hover:underline md:text-xs"
-                    href={vendorSettings.supportUrl}
-                  >
-                    {i18next.t("contact_support")}
-                  </a>
+                  {vendorSettings.supportUrl && (
+                    <a
+                      class="text-xs text-white hover:underline md:text-xs"
+                      href={vendorSettings.supportUrl}
+                    >
+                      {i18next.t("contact_support")}
+                    </a>
+                  )}
                   <span class="text-gray-300">|</span>{" "}
                   <span>{i18next.t("copyright_sesamy")}</span>
                 </div>

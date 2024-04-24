@@ -3,10 +3,13 @@ import { getEnv } from "../helpers/test-client";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
+import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 
 describe("Login with password user", () => {
   it("should login with password", async () => {
-    const env = await getEnv();
+    const env = await getEnv({
+      vendorSettings: KVARTAL_VENDOR_SETTINGS,
+    });
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
