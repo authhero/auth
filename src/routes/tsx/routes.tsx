@@ -13,13 +13,14 @@ import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import {
   renderMessageInner as renderMessage,
-  renderLoginInner as renderLogin,
+  renderLogin,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
 import { Context } from "hono";
+import { renderForgotPassword } from "../../templates/render";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -196,7 +197,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         if (!valid) {
           const errorLoginPage = await renderLogin(
-            env,
             session,
             state,
             "Invalid password",
@@ -206,7 +206,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
-        return renderLogin(env, session, err.message);
+        return renderLogin(session, err.message);
       }
     },
   )
@@ -432,6 +432,49 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       return ctx.text("The password has been reset", 200);
     },
   )
+  // --------------------------------
+  // GET /u/forgot-password
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/forgot-password",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+          // interesting this route doesn't have a code...
+          // code: z.string().openapi({
+          //   description: "The code parameter from the authorization request",
+          // }),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderForgotPassword(session, state));
+    },
+  )
+
   // --------------------------------
   // GET /u/info
   // --------------------------------

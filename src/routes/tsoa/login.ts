@@ -16,9 +16,7 @@ import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import {
   renderMessage,
-  renderForgotPassword,
   renderSignup,
-  renderLogin,
   renderLoginWithCode,
   renderEnterCode,
 } from "../../templates/render";
@@ -429,24 +427,6 @@ export class LoginController extends Controller {
 
   /**
    * Renders a forgot password form
-   * @param request
-   */
-  @Get("forgot-password")
-  public async getForgotPassword(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    return renderForgotPassword(env, this, session, state);
-  }
-
-  /**
-   * Sends the forgot password email
    * @param request
    */
   @Post("forgot-password")
