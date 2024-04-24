@@ -142,7 +142,6 @@ export function applyTokenResponse(
   }
 }
 
-// what should actually happen here? how to do hono redirects?
 export function getTokenResponseRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
