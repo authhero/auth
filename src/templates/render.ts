@@ -92,10 +92,13 @@ export async function renderLoginInner(
     state,
   });
 
-  return engine.render(layoutTemplate, {
+  // Liquid JS returns any here! typeScript did not pick up the issue
+  const renderedLogin: string = await engine.render(layoutTemplate, {
     context,
     content,
   });
+
+  return renderedLogin;
 }
 
 export async function renderLoginWithCode(

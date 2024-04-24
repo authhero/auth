@@ -195,7 +195,13 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         });
 
         if (!valid) {
-          return renderLogin(env, session, state, "Invalid password");
+          const errorLoginPage = await renderLogin(
+            env,
+            session,
+            state,
+            "Invalid password",
+          );
+          return ctx.html(errorLoginPage);
         }
 
         return handleLogin(env, user, session, ctx);
