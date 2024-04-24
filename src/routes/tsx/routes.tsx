@@ -94,6 +94,9 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
+          code: z.string().openapi({
+            description: "The code parameter from the authorization request",
+          }),
         }),
       },
       security: [
@@ -160,12 +163,14 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
+          code: z.string().openapi({
+            description: "The code parameter from the authorization request",
+          }),
         }),
         body: {
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                code: z.string(),
                 password: z.string(),
                 "re-enter-password": z.string(),
               }),
@@ -185,12 +190,9 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { state } = ctx.req.valid("query");
-      const {
-        code,
-        password,
-        "re-enter-password": reEnterPassword,
-      } = ctx.req.valid("form");
+      const { state, code } = ctx.req.valid("query");
+      const { password, "re-enter-password": reEnterPassword } =
+        ctx.req.valid("form");
 
       const { env } = ctx;
 
