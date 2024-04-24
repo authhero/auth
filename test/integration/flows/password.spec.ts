@@ -37,24 +37,16 @@ describe("password-flow", () => {
   describe("Register password", () => {
     it("should return a 400 if an invalid client is passed", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const response = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "invalidClientId",
           connection: "Username-Password-Authentication",
           email: "test@example.com",
           password: "Password1234!",
         },
-      };
-      const response = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(await response.text()).toBe("Client not found");
 
       expect(response.status).toBe(404);
@@ -64,23 +56,16 @@ describe("password-flow", () => {
       const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "password-login-test@example.com",
           password,
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(createUserResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(
@@ -251,22 +236,14 @@ describe("password-flow", () => {
         login_count: 0,
       });
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "existing-code-user@example.com",
           password,
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(createUserResponse.status).toBe(200);
 
       // -----------------------------
@@ -412,23 +389,16 @@ describe("password-flow", () => {
       const password = "Password1234!";
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "password-login-test@example.com",
           password,
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(createUserResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(
@@ -534,8 +504,9 @@ describe("password-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
       const aNewPassword = "A-new-valid-password-1234!";
+      const loginClient = testClient(loginApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -543,15 +514,7 @@ describe("password-flow", () => {
           email: "foo@example.com",
           password: aNewPassword,
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(createUserResponse.status).toBe(400);
       const body = await createUserResponse.text();
@@ -579,22 +542,16 @@ describe("password-flow", () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const loginClient = testClient(loginApp, env);
+
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "weak-password@example.com",
           password: "password",
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(createUserResponse.status).toBe(400);
     });
@@ -714,24 +671,16 @@ describe("password-flow", () => {
     it("should not allow password of a different user to be used", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const signupResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "new-username-password-user@example.com",
           password: "Password1234!",
         },
-      };
-
-      const signupResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(signupResponse.status).toBe(200);
 
       const loginResponse = await client.co.authenticate.$post(
@@ -837,6 +786,7 @@ describe("password-flow", () => {
         testTenantLanguage: "sv",
       });
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -846,20 +796,13 @@ describe("password-flow", () => {
       //-------------------
 
       const passwordResetSendResponse =
-        await client.dbconnections.change_password.$post(
-          {
-            json: {
-              client_id: "clientId",
-              email: "foo@example.com",
-              connection: "Username-Password-Authentication",
-            },
+        await loginClient.dbconnections.change_password.$post({
+          json: {
+            client_id: "clientId",
+            email: "foo@example.com",
+            connection: "Username-Password-Authentication",
           },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+        });
       expect(passwordResetSendResponse.status).toBe(200);
       expect(await passwordResetSendResponse.text()).toBe(
         "We've just sent you an email to reset your password.",
@@ -958,6 +901,7 @@ describe("password-flow", () => {
         testTenantLanguage: "nb",
       });
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -965,20 +909,13 @@ describe("password-flow", () => {
       //-------------------
       // get code to call password reset endpoint
       //-------------------
-      await client.dbconnections.change_password.$post(
-        {
-          json: {
-            client_id: "clientId",
-            email: "foo@example.com",
-            connection: "Username-Password-Authentication",
-          },
+      await loginClient.dbconnections.change_password.$post({
+        json: {
+          client_id: "clientId",
+          email: "foo@example.com",
+          connection: "Username-Password-Authentication",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
@@ -1008,6 +945,7 @@ describe("password-flow", () => {
         testTenantLanguage: "it",
       });
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -1015,20 +953,13 @@ describe("password-flow", () => {
       //-------------------
       // get code to call password reset endpoint
       //-------------------
-      await client.dbconnections.change_password.$post(
-        {
-          json: {
-            client_id: "clientId",
-            email: "foo@example.com",
-            connection: "Username-Password-Authentication",
-          },
+      await loginClient.dbconnections.change_password.$post({
+        json: {
+          client_id: "clientId",
+          email: "foo@example.com",
+          connection: "Username-Password-Authentication",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
@@ -1055,43 +986,29 @@ describe("password-flow", () => {
     it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "reset-new-user@example.com",
           password: "Password1234!",
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(createUserResponse.status).toBe(200);
 
       //-------------------
       // send password reset email even though have never logged in
       //-------------------
       const passwordResetSendResponse =
-        await client.dbconnections.change_password.$post(
-          {
-            json: {
-              client_id: "clientId",
-              email: "reset-new-user@example.com",
-              connection: "Username-Password-Authentication",
-            },
+        await loginClient.dbconnections.change_password.$post({
+          json: {
+            client_id: "clientId",
+            email: "reset-new-user@example.com",
+            connection: "Username-Password-Authentication",
           },
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          },
-        );
+        });
       expect(passwordResetSendResponse.status).toBe(200);
       expect(await passwordResetSendResponse.text()).toBe(
         "We've just sent you an email to reset your password.",

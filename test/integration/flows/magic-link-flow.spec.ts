@@ -649,31 +649,23 @@ describe("magic link flow", () => {
     it("should ignore un-verified password account when signing up with magic link", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // signup new user
       // -----------------
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
           email: "same-user-signin@example.com",
           password: "Password1234!",
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(createUserResponse.status).toBe(200);
 
-      const unverifiedPasswordUser =
-        (await createUserResponse.json()) as UserResponse;
+      const unverifiedPasswordUser = await createUserResponse.json();
 
       //-----------------
       // sign up new code user that has same email address

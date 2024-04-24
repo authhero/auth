@@ -667,7 +667,7 @@ describe("social sign on", () => {
       // signup new user
       // -----------------
 
-      const typesDoNotWorkWithThisSetup___PARAMS = {
+      const createUserResponse = await loginClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -675,15 +675,7 @@ describe("social sign on", () => {
           email: "örjan.lindström@example.com",
           password: "Password1234!",
         },
-      };
-      const createUserResponse = await client.dbconnections.signup.$post(
-        typesDoNotWorkWithThisSetup___PARAMS,
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(createUserResponse.status).toBe(200);
 
       //-----------------
