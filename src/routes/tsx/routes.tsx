@@ -134,14 +134,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         }),
         body: {
           content: {
-            // content: z.({
-            //   username: z.string().openapi({
-            //     description: "The username",
-            //   }),
-            //   password: z.string().openapi({
-            //     description: "The password",
-            //   }),
-            // }),
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                username: z.string(),
+                password: z.string(),
+              }),
+            },
           },
         },
       },
