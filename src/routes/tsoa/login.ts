@@ -446,7 +446,7 @@ export class LoginController extends Controller {
   }
 
   /**
-   * Renders a forgot password form
+   * Sends the forgot password email
    * @param request
    */
   @Post("forgot-password")
