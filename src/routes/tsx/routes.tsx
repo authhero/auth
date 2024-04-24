@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env } from "../../types";
+import { Env, User, AuthorizationResponseType } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import { getUserByEmailAndProvider } from "../../utils/users";
@@ -11,7 +11,15 @@ import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
-import { renderMessageInner as renderMessage } from "../../templates/render";
+import {
+  renderMessageInner as renderMessage,
+  renderLoginInner as renderLogin,
+} from "../../templates/render";
+import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { nanoid } from "nanoid";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
+import { Context } from "hono";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -22,6 +30,42 @@ function initI18n(lng: string) {
       nb: { translation: nb },
       sv: { translation: sv },
     },
+  });
+}
+
+async function handleLogin(
+  env: Env,
+  user: User,
+  session: UniversalLoginSession,
+  ctx: Context<{ Bindings: Env }>,
+) {
+  if (session.authParams.redirect_uri) {
+    const responseType =
+      session.authParams.response_type ||
+      AuthorizationResponseType.TOKEN_ID_TOKEN;
+
+    const authResponse = await generateAuthResponse({
+      env,
+      userId: user.id,
+      sid: nanoid(),
+      responseType,
+      authParams: session.authParams,
+      user,
+    });
+
+    const redirectUrl = getTokenResponseRedirectUri(
+      authResponse,
+      session.authParams,
+    );
+
+    return ctx.redirect(redirectUrl.href);
+  }
+
+  // This is just a fallback in case no redirect was present
+  return renderMessage({
+    ...session,
+    page_title: "Logged in",
+    message: "You are logged in",
   });
 }
 
@@ -79,6 +123,91 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       initI18n(tenant.language || "sv");
 
       return ctx.html(<LoginPage vendorSettings={vendorSettings} />);
+    },
+  )
+  // --------------------------------
+  // POST /u/login
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/login",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                username: z.string(),
+                password: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { env } = ctx;
+      const { state } = ctx.req.valid("query");
+      const { username, password } = ctx.req.valid("form");
+
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const user = await getUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email: username,
+        provider: "auth2",
+      });
+
+      if (!user) {
+        throw new HTTPException(400, { message: "User not found" });
+      }
+
+      try {
+        const { valid } = await env.data.passwords.validate(client.tenant_id, {
+          user_id: user.id,
+          password: password,
+        });
+
+        if (!valid) {
+          const errorLoginPage = await renderLogin(
+            env,
+            session,
+            state,
+            "Invalid password",
+          );
+          return ctx.html(errorLoginPage);
+        }
+
+        return handleLogin(env, user, session, ctx);
+      } catch (err: any) {
+        return renderLogin(env, session, err.message);
+      }
     },
   )
   // --------------------------------

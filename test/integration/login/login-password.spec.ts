@@ -49,9 +49,12 @@ describe("Login with password user", () => {
 
     await snapshotResponse(loginFormResponse);
 
-    const postLoginResponse = await client.u.login.$post({
-      query: loginSearchParamsQuery,
-      json: {
+    const postLoginResponse = await loginClient.u.login.$post({
+      query: {
+        state: loginSearchParamsQuery.state,
+      },
+
+      form: {
         username: "foo@example.com",
         password: "Test1234!",
       },
@@ -105,9 +108,11 @@ describe("Login with password user", () => {
       loginSearchParams.entries(),
     );
 
-    const incorrectPasswordResponse = await client.u.login.$post({
-      query: loginSearchParamsQuery,
-      json: {
+    const incorrectPasswordResponse = await loginClient.u.login.$post({
+      query: {
+        state: loginSearchParamsQuery.state,
+      },
+      form: {
         username: "foo@example.com",
         password: "THIS-IS-THE-WRONG-PASSWORD",
       },
