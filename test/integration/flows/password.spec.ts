@@ -957,6 +957,7 @@ describe("password-flow", () => {
         testTenantLanguage: "nb",
       });
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -984,14 +985,14 @@ describe("password-flow", () => {
       // reject when try to set weak password
       //-------------------
       const resetPassword = await loginClient.u["reset-password"].$post({
-        json: {
+        form: {
           // we have unit tests for the util function we use so just doing one unhappy path
           password: "weak-password",
           "re-enter-password": "weak-password",
+          code,
         },
         query: {
           state,
-          code,
         },
       });
 
@@ -1005,6 +1006,7 @@ describe("password-flow", () => {
         testTenantLanguage: "it",
       });
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -1031,15 +1033,15 @@ describe("password-flow", () => {
       //-------------------
       // reject when confrimation password does not match!
       //-------------------
-      const resetPassword = await anyClient.u["reset-password"].$post({
-        json: {
+      const resetPassword = await loginClient.u["reset-password"].$post({
+        form: {
           password: "StrongPassword1234!",
           // this is also strong but does match the previous line
           "re-enter-password": "AnotherStrongPassword1234!",
+          code,
         },
         query: {
           state,
-          code,
         },
       });
 
@@ -1101,7 +1103,7 @@ describe("password-flow", () => {
       // reset password
       //-------------------
       const resetPassword = await loginClient.u["reset-password"].$post({
-        json: {
+        form: {
           password: "New-password-1234!",
           "re-enter-password": "New-password-1234!",
           code,
