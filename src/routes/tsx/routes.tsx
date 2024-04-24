@@ -18,7 +18,8 @@ import {
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { applyTokenResponseHono } from "../../helpers/apply-token-response";
+import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
+import { Context } from "hono";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -36,6 +37,7 @@ async function handleLogin(
   env: Env,
   user: User,
   session: UniversalLoginSession,
+  ctx: Context<{ Bindings: Env }>,
 ) {
   if (session.authParams.redirect_uri) {
     const responseType =
@@ -51,7 +53,12 @@ async function handleLogin(
       user,
     });
 
-    return applyTokenResponseHono(authResponse, session.authParams);
+    const redirectUrl = getTokenResponseRedirectUri(
+      authResponse,
+      session.authParams,
+    );
+
+    return ctx.redirect(redirectUrl.href);
   }
 
   // This is just a fallback in case no redirect was present
@@ -191,7 +198,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           return renderLogin(env, session, state, "Invalid password");
         }
 
-        return handleLogin(env, user, session);
+        return handleLogin(env, user, session, ctx);
       } catch (err: any) {
         return renderLogin(env, session, err.message);
       }

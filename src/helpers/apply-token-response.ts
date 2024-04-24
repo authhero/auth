@@ -143,10 +143,10 @@ export function applyTokenResponse(
 }
 
 // what should actually happen here? how to do hono redirects?
-export function applyTokenResponseHono(
+export function getTokenResponseRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
-) {
+): URL {
   if (authParams.response_type?.includes("token")) {
     return getTokenResponseAsFragmentRedirectUri(tokenResponse, authParams);
   }
