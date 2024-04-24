@@ -823,7 +823,7 @@ describe("password-flow", () => {
       const resetPasswordForm = await loginClient.u["reset-password"].$get({
         query: {
           state,
-          // code,
+          code,
         },
       });
 
@@ -834,9 +834,9 @@ describe("password-flow", () => {
         form: {
           password: "New-password-1234!",
           "re-enter-password": "New-password-1234!",
-          code,
         },
         query: {
+          code,
           state,
         },
       });
@@ -924,9 +924,9 @@ describe("password-flow", () => {
           // we have unit tests for the util function we use so just doing one unhappy path
           password: "weak-password",
           "re-enter-password": "weak-password",
-          code,
         },
         query: {
+          code,
           state,
         },
       });
@@ -966,10 +966,10 @@ describe("password-flow", () => {
           password: "StrongPassword1234!",
           // this is also strong but does match the previous line
           "re-enter-password": "AnotherStrongPassword1234!",
-          code,
         },
         query: {
           state,
+          code,
         },
       });
 
@@ -1019,10 +1019,10 @@ describe("password-flow", () => {
         form: {
           password: "New-password-1234!",
           "re-enter-password": "New-password-1234!",
-          code,
         },
         query: {
           state,
+          code,
         },
       });
       expect(resetPassword.status).toBe(200);
