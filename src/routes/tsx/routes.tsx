@@ -161,6 +161,13 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
             description: "The state parameter from the authorization request",
           }),
         }),
+        "application/x-www-form-urlencoded": {
+          schema: z.object({
+            code: z.string(),
+            password: z.string(),
+            "re-enter-password": z.string(),
+          }),
+        },
       },
       security: [
         {
@@ -174,8 +181,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const contentType = ctx.req.header("content-type");
       const { state } = ctx.req.valid("query");
+      const {
+        code,
+        password,
+        "re-enter-password": reEnterPassword,
+      } = ctx.req.valid("form");
 
       const { env } = ctx;
 
@@ -201,54 +212,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const vendorSettings = await env.fetchVendorSettings(
         tenantNameInVendorStyles,
       );
-
-      if (
-        contentType !== "application/json" &&
-        contentType !== "application/x-www-form-urlencoded"
-      ) {
-        throw new HTTPException(400, {
-          message:
-            "Content-Type must be application/json or application/x-www-form-urlencoded",
-        });
-      }
-
-      let password = "";
-      let reEnterPassword = "";
-
-      if (contentType === "application/json") {
-        // in our tests we are POSTing up JSON, which previously worked
-        const json = await ctx.req.json();
-        password = json.password;
-        reEnterPassword = json["re-enter-password"];
-      }
-
-      if (contentType === "application/x-www-form-urlencoded") {
-        // but in the browser we are doing a POST with form data
-        const body = await ctx.req.parseBody();
-
-        const bodyPassword = body.password;
-        const bodyReEnterPassword = body["re-enter-password"];
-        if (
-          typeof bodyPassword !== "string" ||
-          typeof bodyReEnterPassword !== "string"
-        ) {
-          throw new HTTPException(400, {
-            message: "Password must be a string",
-          });
-        }
-
-        password = bodyPassword;
-        reEnterPassword = bodyReEnterPassword;
-      }
-
-      const code = ctx.req.query("code");
-
-      if (!password) {
-        throw new HTTPException(400, { message: "Password required" });
-      }
-      if (!code) {
-        throw new HTTPException(400, { message: "Code required" });
-      }
 
       if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
