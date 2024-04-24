@@ -91,7 +91,7 @@ export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     },
   )
   // --------------------------------
-  // GET /callback
+  // POST /callback
   // --------------------------------
   .openapi(
     createRoute({

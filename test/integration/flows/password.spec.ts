@@ -915,7 +915,9 @@ describe("password-flow", () => {
       expect(await passwordResetSendResponse.text()).toBe(
         "We've just sent you an email to reset your password.",
       );
-      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+
+      // first email is the verify email email sent after sign up
+      const { to, code, state } = getCodeStateTo(env.data.emails[1]);
 
       expect(to).toBe("reset-new-user@example.com");
       expect(code).toBeDefined();
