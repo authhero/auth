@@ -445,10 +445,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          // interesting this route doesn't have a code...
-          // code: z.string().openapi({
-          //   description: "The code parameter from the authorization request",
-          // }),
         }),
       },
       security: [
