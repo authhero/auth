@@ -536,7 +536,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         userAdapter: env.data.users,
         tenant_id: client.tenant_id,
         email: username,
-        provider: "Username-Password-Authentication",
+        provider: "auth2",
       });
 
       if (user) {
