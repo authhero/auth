@@ -135,6 +135,7 @@ describe("code-flow", () => {
 
     const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
 
+    // but why?
     expect(searchParams.get("state")).toBe("state");
 
     const accessToken = searchParams.get("access_token");
