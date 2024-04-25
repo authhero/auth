@@ -620,9 +620,7 @@ describe("magic link flow", () => {
     const redirectUri = new URL(authenticateResponse.headers.get("location")!);
     expect(redirectUri.hostname).toBe("login2.sesamy.dev");
     expect(redirectUri.pathname).toBe("/expired-code");
-    expect(redirectUri.searchParams.get("email")).toBe(
-      encodeURIComponent("test@example.com"),
-    );
+    expect(redirectUri.searchParams.get("email")).toBe("test@example.com");
     // ------------
     // Overwrite the magic link with a bad email, and try and use it
     // ----------------
@@ -639,9 +637,7 @@ describe("magic link flow", () => {
     );
     expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
     expect(redirectUri2.pathname).toBe("/expired-code");
-    expect(redirectUri2.searchParams.get("email")).toBe(
-      encodeURIComponent("another@email.com"),
-    );
+    expect(redirectUri2.searchParams.get("email")).toBe("another@email.com");
     expect(redirectUri2.searchParams.get("lang")).toBe("sv");
   });
 
