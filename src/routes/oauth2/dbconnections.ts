@@ -15,27 +15,6 @@ import { Var } from "../../types/Var";
 
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
-interface SignupParams {
-  client_id: string;
-  connection: string;
-  email: string;
-  password: string;
-}
-
-interface SignupResponse {
-  _id: string;
-  email: string;
-  email_verified: boolean;
-  app_metadata: {};
-  user_metadata: {};
-}
-
-interface ChangePasswordParams {
-  client_id: string;
-  connection: string;
-  email: string;
-}
-
 export const dbConnectionRoutes = new OpenAPIHono<{
   Bindings: Env;
   Variables: Var;

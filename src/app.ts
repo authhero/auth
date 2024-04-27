@@ -27,6 +27,7 @@ import { tailwindCss } from "./styles/tailwind";
 import authenticationMiddleware from "./middlewares/authentication";
 import { logoutRoutes } from "./routes/oauth2/logout";
 import { dbConnectionRoutes } from "./routes/oauth2/dbconnections";
+import { passwordlessRoutes } from "./routes/oauth2/passwordless";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -95,6 +96,7 @@ export const loginApp = rootApp
   .route("/.well-known", wellKnown)
   .route("/callback", callback)
   .route("/dbconnections", dbConnectionRoutes)
+  .route("/passwordless", passwordlessRoutes)
   .route("/v2/logout", logoutRoutes)
   .route("/api/v2/domains", domains)
   .route("/api/v2/users", users)
