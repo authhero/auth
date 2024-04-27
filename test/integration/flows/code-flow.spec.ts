@@ -1090,7 +1090,7 @@ describe("code-flow", () => {
     expect(authRes.status).toBe(403);
   });
 
-  it.only("should be case insensitive with email address", async () => {
+  it("should be case insensitive with email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
