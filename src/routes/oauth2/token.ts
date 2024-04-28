@@ -22,7 +22,7 @@ export const tokenRoutes = new OpenAPIHono<{
   // --------------------------------
   .openapi(
     createRoute({
-      tags: ["passwordless"],
+      tags: ["oauth2"],
       method: "post",
       path: "/",
       request: {
