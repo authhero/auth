@@ -28,6 +28,7 @@ import authenticationMiddleware from "./middlewares/authentication";
 import { logoutRoutes } from "./routes/oauth2/logout";
 import { dbConnectionRoutes } from "./routes/oauth2/dbconnections";
 import { passwordlessRoutes } from "./routes/oauth2/passwordless";
+import { tokenRoutes } from "./routes/oauth2/token";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -95,6 +96,7 @@ export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
   .route("/callback", callback)
+  .route("/oauth/token", tokenRoutes)
   .route("/dbconnections", dbConnectionRoutes)
   .route("/passwordless", passwordlessRoutes)
   .route("/v2/logout", logoutRoutes)

@@ -1,25 +1,22 @@
 import {
   AuthorizationResponseType,
   AuthParams,
-  CodeResponse,
   Env,
   PKCEAuthorizationCodeGrantTypeParams,
-  TokenResponse,
   User,
+  Var,
 } from "../types";
-import { Controller } from "tsoa";
 import { getClient } from "../services/clients";
 import { computeCodeChallenge } from "../helpers/pkce";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
-import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
+import { generateAuthResponse } from "../helpers/generate-auth-response-new";
 import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
+import { Context } from "hono";
 
 export async function pkceAuthorizeCodeGrant(
-  env: Env,
-  controller: Controller,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   params: PKCEAuthorizationCodeGrantTypeParams,
-): Promise<TokenResponse | CodeResponse> {
+) {
   const state: {
     userId: string;
     authParams: AuthParams;
@@ -31,7 +28,7 @@ export async function pkceAuthorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Client" });
   }
 
-  const client = await getClient(env, state.authParams.client_id);
+  const client = await getClient(ctx.env, state.authParams.client_id);
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
   }
@@ -52,16 +49,7 @@ export async function pkceAuthorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Code Challange" });
   }
 
-  await setSilentAuthCookies(
-    env,
-    controller,
-    client.tenant_id,
-    client.id,
-    state.user,
-  );
-
-  return generateAuthResponse({
-    env,
+  return generateAuthResponse(ctx, {
     ...state,
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
   });

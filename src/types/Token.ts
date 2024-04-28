@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export enum GrantType {
   RefreshToken = "refresh_token",
   AuthorizationCode = "authorization_code",
@@ -6,62 +8,87 @@ export enum GrantType {
   Password = "password",
 }
 
-export type TokenParams =
-  | RefreshTokenGrantTypeParams
-  | AuthorizationCodeGrantTypeParams
-  | PKCEAuthorizationCodeGrantTypeParams
-  | ClientCredentialGrantTypeParams
-  | PasswordGrantTypeParams;
+const grantTypeSchema = z.nativeEnum(GrantType);
 
-interface RefreshTokenGrantTypeParams {
-  grant_type: GrantType.RefreshToken;
-  refresh_token: string;
-  client_id: string;
-}
+const refreshTokenGrantTypeParamsSchema = z.object({
+  grant_type: grantTypeSchema.refine((val) => val === GrantType.RefreshToken),
+  refresh_token: z.string(),
+  client_id: z.string(),
+});
 
-export interface AuthorizationCodeGrantTypeParams {
-  grant_type: GrantType.AuthorizationCode;
-  code: string;
-  client_secret: string;
-  client_id: string;
-}
+const authorizationCodeGrantTypeParamsSchema = z.object({
+  grant_type: grantTypeSchema.refine(
+    (val) => val === GrantType.AuthorizationCode,
+  ),
+  code: z.string(),
+  client_secret: z.string(),
+  client_id: z.string(),
+});
 
-export interface PKCEAuthorizationCodeGrantTypeParams {
-  grant_type: GrantType.AuthorizationCode;
-  code: string;
-  code_verifier: string;
-  client_id?: string;
-  redirect_uri: string;
-}
+export type AuthorizationCodeGrantTypeParams = z.infer<
+  typeof authorizationCodeGrantTypeParamsSchema
+>;
 
-export interface ClientCredentialGrantTypeParams {
-  grant_type: GrantType.ClientCredential;
-  scope?: string;
-  client_secret: string;
-  client_id: string;
-  audience?: string;
-}
+const pkceAuthorizationCodeGrantTypeParamsSchema = z.object({
+  grant_type: grantTypeSchema.refine(
+    (val) => val === GrantType.AuthorizationCode,
+  ),
+  code: z.string(),
+  code_verifier: z.string(),
+  client_id: z.string().optional(),
+  redirect_uri: z.string(),
+});
 
-export interface PasswordGrantTypeParams {
-  grant_type: GrantType.Password;
-  username: string;
-  password: string;
-  client_id: string;
-  audience?: string;
-  scope?: string;
-}
+export type PKCEAuthorizationCodeGrantTypeParams = z.infer<
+  typeof pkceAuthorizationCodeGrantTypeParamsSchema
+>;
 
-export interface TokenResponse {
-  access_token: string;
-  id_token?: string;
-  scope?: string;
-  state?: string;
-  refresh_token?: string;
-  token_type: string;
-  expires_in: number;
-}
+const clientCredentialGrantTypeParamsSchema = z.object({
+  grant_type: grantTypeSchema.refine(
+    (val) => val === GrantType.ClientCredential,
+  ),
+  scope: z.string().optional(),
+  client_secret: z.string(),
+  client_id: z.string(),
+  audience: z.string().optional(),
+});
 
-export interface CodeResponse {
-  code: string;
-  state?: string;
-}
+export type ClientCredentialsGrantTypeParams = z.infer<
+  typeof clientCredentialGrantTypeParamsSchema
+>;
+
+const passwordGrantTypeParamsSchema = z.object({
+  grant_type: grantTypeSchema.refine((val) => val === GrantType.Password),
+  username: z.string(),
+  password: z.string(),
+  client_id: z.string(),
+  audience: z.string().optional(),
+  scope: z.string().optional(),
+});
+
+const tokenResponseSchema = z.object({
+  access_token: z.string(),
+  id_token: z.string().optional(),
+  scope: z.string().optional(),
+  state: z.string().optional(),
+  refresh_token: z.string().optional(),
+  token_type: z.string(),
+  expires_in: z.number(),
+});
+export type TokenResponse = z.infer<typeof tokenResponseSchema>;
+
+const codeResponseSchema = z.object({
+  code: z.string(),
+  state: z.string().optional(),
+});
+export type CodeResponse = z.infer<typeof codeResponseSchema>;
+
+export {
+  refreshTokenGrantTypeParamsSchema,
+  authorizationCodeGrantTypeParamsSchema,
+  pkceAuthorizationCodeGrantTypeParamsSchema,
+  clientCredentialGrantTypeParamsSchema,
+  passwordGrantTypeParamsSchema,
+  tokenResponseSchema,
+  codeResponseSchema,
+};
