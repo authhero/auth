@@ -1160,7 +1160,6 @@ describe("code-flow", () => {
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
         realm: "email",
-        // what does this mean here?
         username: "JOHN-DOE@example.com",
       },
     });
