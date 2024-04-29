@@ -573,7 +573,7 @@ describe("magic link flow", () => {
     expect(redirectUri2.pathname).toBe("/expired-code");
   });
 
-  it.only("should not accept an invalid code in the magic link", async () => {
+  it("should not accept an invalid code in the magic link", async () => {
     const env = await getEnv();
     const loginClient = testClient(loginApp, env);
 
