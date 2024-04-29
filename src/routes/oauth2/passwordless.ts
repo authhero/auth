@@ -1,11 +1,21 @@
 import { nanoid } from "nanoid";
-import { authParamsSchema } from "../../types/AuthParams";
+import {
+  AuthParams,
+  AuthorizationResponseType,
+  authParamsSchema,
+} from "../../types/AuthParams";
 import generateOTP from "../../utils/otp";
 import { getClient } from "../../services/clients";
 import { sendCode, sendLink } from "../../controllers/email";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, Var } from "../../types";
 import { HTTPException } from "hono/http-exception";
+import { validateCode } from "../../authentication-flows/passwordless";
+import { validateRedirectUrl } from "../../utils/validate-redirect-url";
+import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { applyTokenResponse } from "../../helpers/apply-token-response-new";
+import { serializeStateInCookie } from "../../services/cookies";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -14,11 +24,11 @@ export const passwordlessRoutes = new OpenAPIHono<{
   Variables: Var;
 }>()
   // --------------------------------
-  // POST /passwordless
+  // POST /passwordless/start
   // --------------------------------
   .openapi(
     createRoute({
-      tags: ["dbconnections"],
+      tags: ["passwordless"],
       method: "post",
       path: "/start",
       request: {
@@ -99,5 +109,157 @@ export const passwordlessRoutes = new OpenAPIHono<{
       }
 
       return ctx.html("OK");
+    },
+  )
+  // --------------------------------
+  // POST /passwordless/verify_redirect
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["passwordless"],
+      method: "get",
+      path: "/verify_redirect",
+      request: {
+        query: z.object({
+          scope: z.string(),
+          response_type: z.nativeEnum(AuthorizationResponseType),
+          redirect_uri: z.string(),
+          state: z.string(),
+          nonce: z.string(),
+          verification_code: z.string(),
+          connection: z.string(),
+          client_id: z.string(),
+          email: z.string(),
+          audience: z.string().optional(),
+        }),
+      },
+      responses: {
+        302: {
+          description: "Status",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { env } = ctx;
+      const {
+        client_id,
+        email,
+        verification_code,
+        redirect_uri,
+        state,
+        scope,
+        audience,
+        response_type,
+        nonce,
+      } = ctx.req.valid("query");
+      const client = await getClient(env, client_id);
+      if (!client) {
+        throw new Error("Client not found");
+      }
+
+      try {
+        const user = await validateCode(env, {
+          client_id,
+          email,
+          verification_code,
+        });
+
+        if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
+          throw new HTTPException(400, {
+            message: `Invalid redirect URI - ${redirect_uri}`,
+          });
+        }
+
+        const authParams: AuthParams = {
+          client_id,
+          redirect_uri,
+          state,
+          scope,
+          audience,
+        };
+
+        const sessionId = await setSilentAuthCookies(
+          env,
+          client.tenant_id,
+          client.id,
+          user,
+        );
+        const [sessionCookie] = serializeStateInCookie(sessionId);
+
+        const tokenResponse = await generateAuthResponse({
+          responseType: response_type,
+          env,
+          userId: user.id,
+          sid: sessionId,
+          state,
+          nonce,
+          user,
+          authParams,
+        });
+
+        return new Response("Redirecting...", {
+          status: 302,
+          headers: {
+            location: applyTokenResponse(tokenResponse, authParams),
+            "set-cookie": sessionCookie,
+          },
+        });
+      } catch (e) {
+        // Ideally here only catch AuthenticationCodeExpiredError
+        // redirect here always to login2.sesamy.dev/expired-code
+
+        const locale = client.tenant.language || "sv";
+
+        const login2ExpiredCodeUrl = new URL(`${env.LOGIN2_URL}/expired-code`);
+
+        const stateDecoded = new URLSearchParams(state);
+
+        login2ExpiredCodeUrl.searchParams.set("email", email);
+
+        login2ExpiredCodeUrl.searchParams.set("lang", locale);
+
+        const redirectUri = stateDecoded.get("redirect_uri");
+        if (redirectUri) {
+          login2ExpiredCodeUrl.searchParams.set("redirect_uri", redirectUri);
+        }
+
+        const audience = stateDecoded.get("audience");
+        if (audience) {
+          login2ExpiredCodeUrl.searchParams.set("audience", audience);
+        }
+
+        const nonce = stateDecoded.get("nonce");
+        if (nonce) {
+          login2ExpiredCodeUrl.searchParams.set("nonce", nonce);
+        }
+
+        const scope = stateDecoded.get("scope");
+        if (scope) {
+          login2ExpiredCodeUrl.searchParams.set("scope", scope);
+        }
+
+        const responseType = stateDecoded.get("response_type");
+        if (responseType) {
+          login2ExpiredCodeUrl.searchParams.set("response_type", responseType);
+        }
+
+        const state2 = stateDecoded.get("state");
+        if (state2) {
+          login2ExpiredCodeUrl.searchParams.set("state", state2);
+        }
+
+        const client_id = stateDecoded.get("client_id");
+        if (client_id) {
+          login2ExpiredCodeUrl.searchParams.set("client_id", client_id);
+        }
+
+        // this will always be auth2
+        const connection2 = stateDecoded.get("connection");
+        if (connection2) {
+          login2ExpiredCodeUrl.searchParams.set("connection", connection2);
+        }
+
+        return ctx.redirect(login2ExpiredCodeUrl.toString());
+      }
     },
   );

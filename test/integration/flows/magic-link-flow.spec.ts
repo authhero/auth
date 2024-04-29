@@ -8,6 +8,7 @@ import { loginApp, tsoaApp } from "../../../src/app";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
+import { z } from "zod";
 
 const AUTH_PARAMS = {
   nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
@@ -25,6 +26,19 @@ function getMagicLinkFromEmailBody(email: EmailOptions) {
 
   return magicLink;
 }
+
+const verifyCodeQuerySchema = z.object({
+  scope: z.string(),
+  response_type: z.nativeEnum(AuthorizationResponseType),
+  redirect_uri: z.string(),
+  state: z.string(),
+  nonce: z.string(),
+  verification_code: z.string(),
+  connection: z.string(),
+  client_id: z.string(),
+  email: z.string(),
+  audience: z.string().optional(),
+});
 
 describe("magic link flow", () => {
   describe("should log in using the sent magic link, when", () => {
@@ -84,10 +98,12 @@ describe("magic link flow", () => {
       const querySearchParams = new URLSearchParams(
         authenticatePath.split("?")[1],
       );
-      const query = Object.fromEntries(querySearchParams.entries());
+      const query = verifyCodeQuerySchema.parse(
+        Object.fromEntries(querySearchParams.entries()),
+      );
 
       const authenticateResponse =
-        await client.passwordless.verify_redirect.$get({
+        await loginClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -217,13 +233,14 @@ describe("magic link flow", () => {
       const querySearchParams = new URLSearchParams(
         authenticatePath.split("?")[1],
       );
-      const query = Object.fromEntries(querySearchParams.entries());
-
+      const query = verifyCodeQuerySchema.parse(
+        Object.fromEntries(querySearchParams.entries()),
+      );
       // -----------------
       // Authenticate using the magic link for the existing user
       // -----------------
       const authenticateResponse =
-        await client.passwordless.verify_redirect.$get({
+        await loginClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -328,13 +345,14 @@ describe("magic link flow", () => {
       const querySearchParams = new URLSearchParams(
         authenticatePath.split("?")[1],
       );
-      const query = Object.fromEntries(querySearchParams.entries());
-
+      const query = verifyCodeQuerySchema.parse(
+        Object.fromEntries(querySearchParams.entries()),
+      );
       // -----------------
       // Authenticate using the magic link for the existing user
       // -----------------
       const authenticateResponse =
-        await client.passwordless.verify_redirect.$get({
+        await loginClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -428,13 +446,14 @@ describe("magic link flow", () => {
       const querySearchParams = new URLSearchParams(
         authenticatePath.split("?")[1],
       );
-      const query = Object.fromEntries(querySearchParams.entries());
-
+      const query = verifyCodeQuerySchema.parse(
+        Object.fromEntries(querySearchParams.entries()),
+      );
       // -----------------
       // Authenticate using the magic link for the existing user
       // -----------------
       const authenticateResponse =
-        await client.passwordless.verify_redirect.$get({
+        await loginClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -461,6 +480,7 @@ describe("magic link flow", () => {
       expect(idTokenPayload.sub).toBe("auth2|userId");
 
       const authCookieHeader = authenticateResponse.headers.get("set-cookie")!;
+      expect(authCookieHeader).toBeTypeOf("string");
 
       // ----------------------------------------
       // now check silent auth works when logged in with magic link for existing user
@@ -525,22 +545,22 @@ describe("magic link flow", () => {
     const querySearchParams = new URLSearchParams(
       authenticatePath.split("?")[1],
     );
-    const query = Object.fromEntries(querySearchParams.entries());
-
+    const query = verifyCodeQuerySchema.parse(
+      Object.fromEntries(querySearchParams.entries()),
+    );
     // ------------
     // Use the magic link
     // ----------------
-    const authenticateResponse = await client.passwordless.verify_redirect.$get(
-      {
+    const authenticateResponse =
+      await loginClient.passwordless.verify_redirect.$get({
         query,
-      },
-    );
+      });
     expect(authenticateResponse.status).toBe(302);
     // ------------
     // Try using the magic link twice
     // ----------------
     const authenticateResponse2 =
-      await client.passwordless.verify_redirect.$get({
+      await loginClient.passwordless.verify_redirect.$get({
         query,
       });
     expect(authenticateResponse2.status).toBe(302);
@@ -586,15 +606,14 @@ describe("magic link flow", () => {
     const magicLinkWithBadCode = new URL(link!);
     magicLinkWithBadCode.searchParams.set("verification_code", "123456");
 
-    const query = Object.fromEntries(
-      magicLinkWithBadCode.searchParams.entries(),
+    const query = verifyCodeQuerySchema.parse(
+      Object.fromEntries(magicLinkWithBadCode.searchParams.entries()),
     );
 
-    const authenticateResponse = await client.passwordless.verify_redirect.$get(
-      {
+    const authenticateResponse =
+      await loginClient.passwordless.verify_redirect.$get({
         query,
-      },
-    );
+      });
 
     // we are still getting a redirect but to a page on login2 saying the code is expired
     expect(authenticateResponse.status).toBe(302);
@@ -609,8 +628,10 @@ describe("magic link flow", () => {
     magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
 
     const authenticateResponse2 =
-      await client.passwordless.verify_redirect.$get({
-        query: Object.fromEntries(magicLinkWithBadEmail.searchParams.entries()),
+      await loginClient.passwordless.verify_redirect.$get({
+        query: verifyCodeQuerySchema.parse(
+          Object.fromEntries(magicLinkWithBadEmail.searchParams.entries()),
+        ),
       });
     expect(authenticateResponse2.status).toBe(302);
     const redirectUri2 = new URL(
@@ -664,10 +685,12 @@ describe("magic link flow", () => {
       const querySearchParams = new URLSearchParams(
         authenticatePath.split("?")[1],
       );
-      const query = Object.fromEntries(querySearchParams.entries());
+      const query = verifyCodeQuerySchema.parse(
+        Object.fromEntries(querySearchParams.entries()),
+      );
 
       const authenticateResponse =
-        await client.passwordless.verify_redirect.$get({
+        await loginClient.passwordless.verify_redirect.$get({
           query,
         });
       expect(authenticateResponse.status).toBe(302);
