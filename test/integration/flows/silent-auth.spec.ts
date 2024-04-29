@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
-import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp } from "../../../src/app";
+import { loginApp, tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 
 function getDefaultSilentAuthSearchParams() {
@@ -47,25 +46,19 @@ describe("silent-auth", () => {
   it("should set the used_at property on the session when the token is renewed", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
-    const loginResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-          realm: "Username-Password-Authentication",
-          password: "Test1234!",
-          username: "foo@example.com",
-        },
+    const loginResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+        realm: "Username-Password-Authentication",
+        password: "Test1234!",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
     expect(loginResponse.status).toBe(200);
-    const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+    const { login_ticket } = await loginResponse.json();
     const query = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
@@ -104,25 +97,19 @@ describe("silent-auth", () => {
   it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
-    const loginResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-          realm: "Username-Password-Authentication",
-          password: "Test1234!",
-          username: "foo@example.com",
-        },
+    const loginResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+        realm: "Username-Password-Authentication",
+        password: "Test1234!",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
     expect(loginResponse.status).toBe(200);
-    const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+    const { login_ticket } = await loginResponse.json();
     const query = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",

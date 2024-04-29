@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
@@ -59,23 +58,16 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    const response = await loginClient.passwordless.start.$post(
-      {
-        json: {
-          authParams: AUTH_PARAMS,
-          client_id: "clientId",
-          connection: "email",
-          email: "test@example.com",
-          // can be code or link
-          send: "code",
-        },
+    const response = await loginClient.passwordless.start.$post({
+      json: {
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "test@example.com",
+        // can be code or link
+        send: "code",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     if (response.status !== 200) {
       throw new Error(await response.text());
@@ -86,22 +78,15 @@ describe("code-flow", () => {
     await snapshotEmail(env.data.emails[0], true);
 
     // Authenticate using the code
-    const authenticateResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          username: "test@example.com",
-        },
+    const authenticateResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "test@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     if (authenticateResponse.status !== 200) {
       throw new Error(
@@ -111,7 +96,7 @@ describe("code-flow", () => {
       );
     }
 
-    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+    const { login_ticket } = await authenticateResponse.json();
 
     const query = {
       ...AUTH_PARAMS,
@@ -183,44 +168,29 @@ describe("code-flow", () => {
     // ----------------------------
     // Now log in (previous flow was signup)
     // ----------------------------
-    await loginClient.passwordless.start.$post(
-      {
-        json: {
-          authParams: AUTH_PARAMS,
-          client_id: "clientId",
-          connection: "email",
-          email: "test@example.com",
-          send: "code",
-        },
+    await loginClient.passwordless.start.$post({
+      json: {
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "test@example.com",
+        send: "code",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     const otpLogin = getOTP(env.data.emails[1]);
 
-    const authRes2 = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp: otpLogin,
-          realm: "email",
-          username: "test@example.com",
-        },
+    const authRes2 = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp: otpLogin,
+        realm: "email",
+        username: "test@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
-    const { login_ticket: loginTicket2 } =
-      (await authRes2.json()) as LoginTicket;
+    const { login_ticket: loginTicket2 } = await authRes2.json();
 
     const query2 = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -336,24 +306,17 @@ describe("code-flow", () => {
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
-    const authenticateResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          username: "bar@example.com",
-        },
+    const authenticateResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "bar@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
-    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+    const { login_ticket } = await authenticateResponse.json();
 
     const query = {
       ...AUTH_PARAMS,
@@ -444,24 +407,17 @@ describe("code-flow", () => {
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
-    const authenticateResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          username: "foo@example.com",
-        },
+    const authenticateResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
-    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+    const { login_ticket } = await authenticateResponse.json();
 
     const query = {
       ...AUTH_PARAMS,
@@ -544,24 +500,17 @@ describe("code-flow", () => {
 
     const otp = getOTP(env.data.emails[0]);
 
-    const authenticateResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          username: "foo@example.com",
-        },
+    const authenticateResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
-    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+    const { login_ticket } = await authenticateResponse.json();
 
     const query = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -687,25 +636,17 @@ describe("code-flow", () => {
 
     const otp2 = getOTP(env.data.emails[1]);
 
-    const authenticateResponse2 = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp: otp2,
-          realm: "email",
-          username: "foo@example.com",
-        },
+    const authenticateResponse2 = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp: otp2,
+        realm: "email",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
-    const { login_ticket: loginTicket2 } =
-      (await authenticateResponse2.json()) as LoginTicket;
+    const { login_ticket: loginTicket2 } = await authenticateResponse2.json();
 
     const query2 = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -832,48 +773,32 @@ describe("code-flow", () => {
       // Now do a new passwordless flow with a new user with email same-email@example.com
       // -----------------
 
-      const passwordlessStartRes = await loginClient.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "same-email@example.com",
-            send: "code",
-          },
+      const passwordlessStartRes = await loginClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "same-email@example.com",
+          send: "code",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(passwordlessStartRes.status).toBe(200);
 
       const otp = getOTP(env.data.emails[0]);
 
       // Authenticate using the code
-      const authenticateResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type:
-              "http://auth0.com/oauth/grant-type/passwordless/otp",
-            otp,
-            realm: "email",
-            username: "same-email@example.com",
-          },
+      const authenticateResponse = await loginClient.co.authenticate.$post({
+        form: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "same-email@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(authenticateResponse.status).toBe(200);
 
-      const { login_ticket } =
-        (await authenticateResponse.json()) as LoginTicket;
+      const { login_ticket } = await authenticateResponse.json();
 
       const query = {
         ...AUTH_PARAMS,
@@ -994,41 +919,27 @@ describe("code-flow", () => {
 
     const otp = getOTP(env.data.emails[0]);
 
-    const authRes = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          username: "foo@example.com",
-        },
+    const authRes = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
     expect(authRes.status).toBe(200);
 
     // now try to use the same code again
-    const authRes2 = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          username: "foo@example.com",
-        },
+    const authRes2 = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(authRes2.status).toBe(403);
     // this message isn't exactly true! We could check what auth0 does
@@ -1070,22 +981,15 @@ describe("code-flow", () => {
 
     const BAD_CODE = "123456";
 
-    const authRes = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp: BAD_CODE,
-          realm: "email",
-          username: "foo@example.com",
-        },
+    const authRes = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp: BAD_CODE,
+        realm: "email",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(authRes.status).toBe(403);
   });
@@ -1154,7 +1058,7 @@ describe("code-flow", () => {
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
-    const authenticateResponse = await client.co.authenticate.$post({
+    const authenticateResponse = await loginClient.co.authenticate.$post({
       form: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -1169,7 +1073,7 @@ describe("code-flow", () => {
       throw new Error(await authenticateResponse.text());
     }
 
-    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+    const { login_ticket } = await authenticateResponse.json();
 
     const query = {
       ...AUTH_PARAMS,
@@ -1237,27 +1141,21 @@ describe("code-flow", () => {
     );
 
     const otp = getOTP(env.data.emails[0]);
+    expect(otp).toBeTypeOf("string");
 
     // Authenticate using the code
-    const authenticateResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          // use lowercase here... TBD
-          username: "john-doe@example.com",
-        },
+    const authenticateResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        // use lowercase here... TBD
+        username: "john-doe@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
-    const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
+    const { login_ticket } = await authenticateResponse.json();
 
     const query = {
       ...AUTH_PARAMS,
@@ -1389,22 +1287,15 @@ describe("code-flow", () => {
       // I'm testing that the unlinked password user with the same email address does not affect this
       // -----------------
 
-      const response = await loginClient.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "code-user@example.com",
-            send: "code",
-          },
+      const response = await loginClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "code-user@example.com",
+          send: "code",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       expect(response.status).toBe(200);
 
@@ -1412,23 +1303,15 @@ describe("code-flow", () => {
       const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
-      const authenticateResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type:
-              "http://auth0.com/oauth/grant-type/passwordless/otp",
-            otp,
-            realm: "email",
-            username: "code-user@example.com",
-          },
+      const authenticateResponse = await loginClient.co.authenticate.$post({
+        form: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "code-user@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       if (authenticateResponse.status !== 200) {
         throw new Error(
@@ -1440,8 +1323,7 @@ describe("code-flow", () => {
 
       expect(authenticateResponse.status).toBe(200);
 
-      const { login_ticket } =
-        (await authenticateResponse.json()) as LoginTicket;
+      const { login_ticket } = await authenticateResponse.json();
 
       const query = {
         ...AUTH_PARAMS,
@@ -1522,26 +1404,17 @@ describe("code-flow", () => {
       const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
-      const authenticateResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type:
-              "http://auth0.com/oauth/grant-type/passwordless/otp",
-            otp,
-            realm: "email",
-            username: "same-user-signin@example.com",
-          },
+      const authenticateResponse = await loginClient.co.authenticate.$post({
+        form: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "same-user-signin@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
-      const { login_ticket } =
-        (await authenticateResponse.json()) as LoginTicket;
+      const { login_ticket } = await authenticateResponse.json();
 
       const query = {
         ...AUTH_PARAMS,
@@ -1606,27 +1479,18 @@ describe("code-flow", () => {
       );
       const otp = getOTP(env.data.emails[0]);
 
-      const authenticateResponse = await client.co.authenticate.$post(
-        {
-          json: {
-            client_id: "clientId",
-            credential_type:
-              "http://auth0.com/oauth/grant-type/passwordless/otp",
-            otp,
-            realm: "email",
-            username: "foo@example.com",
-          },
+      const authenticateResponse = await loginClient.co.authenticate.$post({
+        form: {
+          client_id: "clientId",
+          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+          otp,
+          realm: "email",
+          username: "foo@example.com",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       expect(authenticateResponse.status).toBe(200);
 
-      const { login_ticket } =
-        (await authenticateResponse.json()) as LoginTicket;
+      const { login_ticket } = await authenticateResponse.json();
 
       const query = {
         ...AUTH_PARAMS,

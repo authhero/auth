@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import type { LoginTicket } from "../../../src/routes/tsoa/authenticate";
 import {
   doSilentAuthRequest,
   doSilentAuthRequestAndReturnTokens,
@@ -14,24 +13,17 @@ describe("logout", () => {
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
-    const loginResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-          realm: "Username-Password-Authentication",
-          password: "Test1234!",
-          username: "foo@example.com",
-        },
+    const loginResponse = await loginClient.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+        realm: "Username-Password-Authentication",
+        password: "Test1234!",
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
     expect(loginResponse.status).toBe(200);
-    const { login_ticket } = (await loginResponse.json()) as LoginTicket;
+    const { login_ticket } = await loginResponse.json();
     const query = {
       auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
