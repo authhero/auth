@@ -631,30 +631,54 @@ describe("magic link flow", () => {
     );
   });
 
-  // this test will give a false positive as we can only use each magic link once now... I can make a new test
-  // that rewrites a magic link before using it, and check that it doesn't work
+  it("should not accept a magic link where the email has been altered", async () => {
+    const env = await getEnv();
+    const loginClient = testClient(loginApp, env);
 
-  // ------------
-  // Overwrite the magic link with a bad email, and try and use it
-  // ----------------
-  // const magicLinkWithBadEmail = new URL(link!);
-  // magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
+    // -----------
+    // get code to log in
+    // -----------
+    await loginClient.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "test@example.com",
+          send: "link",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
 
-  // const authenticateResponse2 =
-  //   await loginClient.passwordless.verify_redirect.$get({
-  //     query: verifyCodeQuerySchema.parse(
-  //       Object.fromEntries(magicLinkWithBadEmail.searchParams.entries()),
-  //     ),
-  //   });
-  // expect(authenticateResponse2.status).toBe(302);
-  // const redirectUri2 = new URL(
-  //   authenticateResponse2.headers.get("location")!,
-  // );
-  // expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
-  // expect(redirectUri2.pathname).toBe("/expired-code");
-  // expect(redirectUri2.searchParams.get("email")).toBe("another@email.com");
-  // expect(redirectUri2.searchParams.get("lang")).toBe("sv");
-  // });
+    const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+
+    const link = magicLink!;
+    // ------------
+    // Overwrite the magic link with a bad email, and try and use it
+    // ----------------
+    const magicLinkWithBadEmail = new URL(link!);
+    magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
+
+    const authenticateResponse2 =
+      await loginClient.passwordless.verify_redirect.$get({
+        query: verifyCodeQuerySchema.parse(
+          Object.fromEntries(magicLinkWithBadEmail.searchParams.entries()),
+        ),
+      });
+    expect(authenticateResponse2.status).toBe(302);
+    const redirectUri2 = new URL(
+      authenticateResponse2.headers.get("location")!,
+    );
+    expect(redirectUri2.hostname).toBe("login2.sesamy.dev");
+    expect(redirectUri2.pathname).toBe("/expired-code");
+    expect(redirectUri2.searchParams.get("email")).toBe("another@email.com");
+    expect(redirectUri2.searchParams.get("lang")).toBe("sv");
+  });
 
   describe("edge cases", () => {
     it("should ignore un-verified password account when signing up with magic link", async () => {
