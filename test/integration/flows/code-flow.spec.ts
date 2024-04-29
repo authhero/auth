@@ -9,11 +9,12 @@ import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
+import { AuthorizationResponseType } from "../../../src/types";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
   redirect_uri: "https://login.example.com/callback",
-  response_type: "token id_token",
+  response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
   scope: "openid profile email",
   state: "state",
 };
@@ -58,7 +59,7 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    const response = await client.passwordless.start.$post(
+    const response = await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -182,7 +183,7 @@ describe("code-flow", () => {
     // ----------------------------
     // Now log in (previous flow was signup)
     // ----------------------------
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -315,7 +316,7 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -397,6 +398,7 @@ describe("code-flow", () => {
   it("is an existing linked user", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     // -----------------
     // Create the linked user to log in with the magic link
@@ -422,7 +424,7 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -512,11 +514,11 @@ describe("code-flow", () => {
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/callback";
-    const response_type = "token id_token";
+    const response_type = AuthorizationResponseType.TOKEN_ID_TOKEN;
     const scope = "openid profile email";
     const state = "state";
 
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: {
@@ -660,7 +662,7 @@ describe("code-flow", () => {
     // now log in again with the same email and code user
     // ----------------------------
 
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: {
@@ -830,7 +832,7 @@ describe("code-flow", () => {
       // Now do a new passwordless flow with a new user with email same-email@example.com
       // -----------------
 
-      const passwordlessStartRes = await client.passwordless.start.$post(
+      const passwordlessStartRes = await loginClient.passwordless.start.$post(
         {
           json: {
             authParams: AUTH_PARAMS,
@@ -971,30 +973,24 @@ describe("code-flow", () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
-      response_type: "token id_token",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       scope: "openid profile email",
       state: "state",
     };
 
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
-    await client.passwordless.start.$post(
-      {
-        json: {
-          authParams: AUTH_PARAMS,
-          client_id: "clientId",
-          connection: "email",
-          email: "foo@example.com",
-          send: "code",
-        },
+    await loginClient.passwordless.start.$post({
+      json: {
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "foo@example.com",
+        send: "code",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     const otp = getOTP(env.data.emails[0]);
 
@@ -1046,15 +1042,16 @@ describe("code-flow", () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
-      response_type: "token id_token",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       scope: "openid profile email",
       state: "state",
     };
 
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -1127,7 +1124,7 @@ describe("code-flow", () => {
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
-      response_type: "token id_token",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       scope: "openid profile email",
       state: "state",
     };
@@ -1135,7 +1132,7 @@ describe("code-flow", () => {
     // -----------------
     // Sign in with same user passwordless
     // -----------------
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -1153,26 +1150,23 @@ describe("code-flow", () => {
       },
     );
 
+    expect(env.data.emails.length).toBe(1);
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
-    const authenticateResponse = await client.co.authenticate.$post(
-      {
-        json: {
-          client_id: "clientId",
-          credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
-          otp,
-          realm: "email",
-          // what does this mean here?
-          username: "JOHN-DOE@example.com",
-        },
+    const authenticateResponse = await client.co.authenticate.$post({
+      form: {
+        client_id: "clientId",
+        credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
+        otp,
+        realm: "email",
+        username: "JOHN-DOE@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
+
+    if (authenticateResponse.status !== 200) {
+      throw new Error(await authenticateResponse.text());
+    }
 
     const { login_ticket } = (await authenticateResponse.json()) as LoginTicket;
 
@@ -1211,11 +1205,12 @@ describe("code-flow", () => {
   it("should store new user email in lowercase", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
       redirect_uri: "https://login.example.com/callback",
-      response_type: "token id_token",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       scope: "openid profile email",
       state: "state",
     };
@@ -1223,7 +1218,7 @@ describe("code-flow", () => {
     // -----------------
     // New passwordless sign up all uppercase - login2 would stop this... What does auth0.js do? CHECK!
     // -----------------
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -1393,7 +1388,7 @@ describe("code-flow", () => {
       // I'm testing that the unlinked password user with the same email address does not affect this
       // -----------------
 
-      const response = await client.passwordless.start.$post(
+      const response = await loginClient.passwordless.start.$post(
         {
           json: {
             authParams: AUTH_PARAMS,
@@ -1501,7 +1496,7 @@ describe("code-flow", () => {
       //-----------------
       // sign up new code user that has same email address
       //-----------------
-      const response = await client.passwordless.start.$post(
+      const response = await loginClient.passwordless.start.$post(
         {
           json: {
             authParams: AUTH_PARAMS,
@@ -1584,13 +1579,15 @@ describe("code-flow", () => {
       const AUTH_PARAMS = {
         nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
         redirect_uri: "https://login.example.com/callback",
-        response_type: "token id_token",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
         scope: "openid profile email",
         state: "state",
       };
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
-      await client.passwordless.start.$post(
+      const loginClient = testClient(loginApp, env);
+
+      await loginClient.passwordless.start.$post(
         {
           json: {
             authParams: AUTH_PARAMS,

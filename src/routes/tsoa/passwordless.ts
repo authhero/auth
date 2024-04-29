@@ -1,15 +1,12 @@
 import {
-  Body,
   Controller,
   Get,
   Middlewares,
-  Post,
   Query,
   Request,
   Route,
   Tags,
 } from "@tsoa/runtime";
-import { nanoid } from "nanoid";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { AuthParams, AuthorizationResponseType } from "../../types/AuthParams";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
@@ -17,15 +14,11 @@ import { applyTokenResponse } from "../../helpers/apply-token-response";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { headers } from "../../constants";
-import generateOTP from "../../utils/otp";
 import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getClient } from "../../services/clients";
 import { loggerMiddleware } from "../../tsoa-middlewares/logger";
 import { LogTypes } from "../../types";
-import { sendCode, sendLink } from "../../controllers/email";
-
-const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
 export interface PasswordlessOptions {
   client_id: string;
@@ -39,82 +32,6 @@ export interface PasswordlessOptions {
 @Route("passwordless")
 @Tags("passwordless")
 export class PasswordlessController extends Controller {
-  @Post("start")
-  public async startPasswordless(
-    @Body() body: PasswordlessOptions,
-    @Request() request: RequestWithContext,
-  ): Promise<string> {
-    const { ctx } = request;
-    const { env } = ctx;
-    ctx.set("client_id", body.client_id);
-    ctx.set("description", body.email);
-    ctx.set("userName", body.email);
-
-    const client = await getClient(env, body.client_id);
-
-    if (!client) {
-      throw new Error("Client not found");
-    }
-    ctx.set("tenantId", client.tenant_id);
-    const email = body.email.toLocaleLowerCase();
-
-    const code = generateOTP();
-
-    await env.data.OTP.create({
-      id: nanoid(),
-      code,
-      email,
-      client_id: body.client_id,
-      send: body.send,
-      authParams: body.authParams,
-      tenant_id: client.tenant_id,
-      created_at: new Date(),
-      expires_at: new Date(Date.now() + OTP_EXPIRATION_TIME),
-    });
-
-    request.ctx.set("log", `Code: ${code}`);
-
-    if (body.send === "link") {
-      const magicLink = new URL(env.ISSUER);
-      magicLink.pathname = "passwordless/verify_redirect";
-      if (body.authParams.scope) {
-        magicLink.searchParams.set("scope", body.authParams.scope);
-      }
-      if (body.authParams.response_type) {
-        magicLink.searchParams.set(
-          "response_type",
-          body.authParams.response_type,
-        );
-      }
-      if (body.authParams.redirect_uri) {
-        magicLink.searchParams.set(
-          "redirect_uri",
-          body.authParams.redirect_uri,
-        );
-      }
-      if (body.authParams.audience) {
-        magicLink.searchParams.set("audience", body.authParams.audience);
-      }
-      if (body.authParams.state) {
-        magicLink.searchParams.set("state", body.authParams.state);
-      }
-      if (body.authParams.nonce) {
-        magicLink.searchParams.set("nonce", body.authParams.nonce);
-      }
-
-      magicLink.searchParams.set("connection", body.connection);
-      magicLink.searchParams.set("client_id", body.client_id);
-      magicLink.searchParams.set("email", email);
-      magicLink.searchParams.set("verification_code", code);
-
-      await sendLink(env, client, email, code, magicLink.href);
-    } else {
-      await sendCode(env, client, email, code);
-    }
-
-    return "OK";
-  }
-
   @Get("verify_redirect")
   @Middlewares(loggerMiddleware(LogTypes.SUCCESS_LOGIN))
   public async verifyRedirect(

@@ -5,14 +5,14 @@ import { getEnv } from "../helpers/test-client";
 import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
 import { loginApp, tsoaApp } from "../../../src/app";
-import { UserResponse } from "../../../src/types";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
+import { AuthorizationResponseType } from "../../../src/types";
 
 const AUTH_PARAMS = {
   nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",
   redirect_uri: "https://login.example.com/callback",
-  response_type: "token id_token",
+  response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
   scope: "openid profile email",
   state: "state",
 };
@@ -55,23 +55,15 @@ describe("magic link flow", () => {
       const results = await resInitialQuery.json();
       expect(results).toHaveLength(0);
 
-      const response = await client.passwordless.start.$post(
-        {
-          // ouch! I had this typed as "body"... no typesafety...
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "new-user@example.com",
-            send: "link",
-          },
+      const response = await loginClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "new-user@example.com",
+          send: "link",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       if (response.status !== 200) {
         throw new Error(await response.text());
@@ -202,22 +194,15 @@ describe("magic link flow", () => {
       // Now get magic link emailed
       // -----------------
 
-      await client.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "bar@example.com",
-            send: "link",
-          },
+      await loginClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "bar@example.com",
+          send: "link",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
 
@@ -295,6 +280,7 @@ describe("magic link flow", () => {
     it("is an existing linked user", async () => {
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // Create the linked user to log in with the magic link
@@ -319,22 +305,15 @@ describe("magic link flow", () => {
       // Now get magic link emailed
       // -----------------
 
-      await client.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "foo@example.com",
-            send: "link",
-          },
+      await loginClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "link",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
 
@@ -411,15 +390,15 @@ describe("magic link flow", () => {
     });
 
     it("is the same email address as an existing password user", async () => {
-      const token = await getAdminToken();
       const env = await getEnv();
       const client = testClient(tsoaApp, env);
+      const loginClient = testClient(loginApp, env);
 
       // -----------------
       // Now get magic link emailed
       // -----------------
 
-      await client.passwordless.start.$post(
+      await loginClient.passwordless.start.$post(
         {
           json: {
             authParams: AUTH_PARAMS,
@@ -513,11 +492,12 @@ describe("magic link flow", () => {
   it("should only allow a magic link to be used once", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     // -----------
     // get code to log in
     // -----------
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -575,11 +555,12 @@ describe("magic link flow", () => {
   it("should not accept any invalid params on the magic link", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     // -----------
     // get code to log in
     // -----------
-    await client.passwordless.start.$post(
+    await loginClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -666,22 +647,15 @@ describe("magic link flow", () => {
       //-----------------
       // sign up new code user that has same email address
       //-----------------
-      await client.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "same-user-signin@example.com",
-            send: "link",
-          },
+      await loginClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "same-user-signin@example.com",
+          send: "link",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       const magicLink = getMagicLinkFromEmailBody(env.data.emails[1]);
 
@@ -696,6 +670,7 @@ describe("magic link flow", () => {
         await client.passwordless.verify_redirect.$get({
           query,
         });
+      expect(authenticateResponse.status).toBe(302);
 
       const redirectUri = new URL(
         authenticateResponse.headers.get("location")!,
