@@ -259,6 +259,11 @@ export const passwordlessRoutes = new OpenAPIHono<{
           login2ExpiredCodeUrl.searchParams.set("connection", connection2);
         }
 
+        const vendorId = stateDecoded.get("vendor_id");
+        if (vendorId) {
+          login2ExpiredCodeUrl.searchParams.set("vendor_id", vendorId);
+        }
+
         return ctx.redirect(login2ExpiredCodeUrl.toString());
       }
     },
