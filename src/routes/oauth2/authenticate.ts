@@ -47,7 +47,7 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const client = await getClient(ctx.env, client_id);
 
       if (!client) {
-        throw new Error("Client not found");
+        throw new HTTPException(400, { message: "Client not found" });
       }
 
       const email = username.toLocaleLowerCase();
@@ -84,9 +84,9 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
         }
 
         // TODO - use validateCode() helper common code here
-        await ctx.env.data.OTP.remove(client.tenant_id, matchingOtp!.id);
+        await ctx.env.data.OTP.remove(client.tenant_id, matchingOtp.id);
 
-        ticket.authParams = matchingOtp!.authParams;
+        ticket.authParams = matchingOtp.authParams;
       } else if (password) {
         // we do not want to fetch a primary user here we want the auth2 user
         const user = await getUserByEmailAndProvider({
