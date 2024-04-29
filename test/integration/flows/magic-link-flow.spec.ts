@@ -659,7 +659,7 @@ describe("magic link flow", () => {
 
     const link = magicLink!;
     // ------------
-    // Overwrite the magic link with a bad email, and try and use it
+    // Overwrite the magic link with a different email, and try and use it
     // ----------------
     const magicLinkWithBadEmail = new URL(link!);
     magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
