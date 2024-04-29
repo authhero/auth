@@ -77,7 +77,7 @@
     "@cloudflare/workers-types": "4.20240405.0",
     "@semantic-release/git": "10.0.1",
     "@types/bcryptjs": "2.4.6",
-    "@types/better-sqlite3": "7.6.9",
+    "@types/better-sqlite3": "7.6.10",
     "@types/cookie": "0.6.0",
     "@types/jest-image-snapshot": "^6.4.0",
     "@types/node": "20.11.1",
