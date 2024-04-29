@@ -1,24 +1,22 @@
 import {
   AuthorizationCodeGrantTypeParams,
-  ClientCredentialGrantTypeParams,
   AuthorizationResponseType,
   AuthParams,
-  CodeResponse,
   Env,
-  TokenResponse,
   User,
+  Var,
 } from "../types";
 import { getClient } from "../services/clients";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
 import hash from "../utils/hash";
-import { nanoid } from "nanoid";
 import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
+import { generateAuthResponse } from "../helpers/generate-auth-response-new";
+import { Context } from "hono";
 
 export async function authorizeCodeGrant(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   params: AuthorizationCodeGrantTypeParams,
-): Promise<TokenResponse | CodeResponse> {
+) {
   const state: {
     userId: string;
     authParams: AuthParams;
@@ -30,7 +28,7 @@ export async function authorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Client" });
   }
 
-  const client = await getClient(env, state.authParams.client_id);
+  const client = await getClient(ctx.env, state.authParams.client_id);
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
   }
@@ -41,37 +39,8 @@ export async function authorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Secret" });
   }
 
-  return generateAuthResponse({
-    env,
+  return generateAuthResponse(ctx, {
     ...state,
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
-  });
-}
-
-export async function clientCredentialsGrant(
-  env: Env,
-  params: ClientCredentialGrantTypeParams,
-): Promise<TokenResponse | CodeResponse> {
-  const client = await getClient(env, params.client_id);
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
-  }
-
-  if (client.client_secret !== params.client_secret) {
-    throw new Error("Invalid secret");
-  }
-
-  const authParams: AuthParams = {
-    client_id: client.id,
-    scope: params.scope,
-    redirect_uri: "",
-  };
-
-  return generateAuthResponse({
-    env,
-    responseType: AuthorizationResponseType.TOKEN,
-    userId: client.id,
-    sid: nanoid(),
-    authParams,
   });
 }

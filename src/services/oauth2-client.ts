@@ -6,7 +6,9 @@ export interface TokenResponse {
   id_token?: string;
   token_type: string;
   expires_in: number;
-  refresh_token: string;
+  refresh_token?: string;
+  state?: string;
+  scope?: string;
 }
 export interface OAuthProviderParams {
   client_id: string;
