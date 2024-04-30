@@ -67,7 +67,6 @@ describe("Login with code on liquidjs template", () => {
 
     console.log(await postSendCodeResponse.text());
 
-    // 400! that's interesting...
     expect(postSendCodeResponse.status).toBe(302);
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
