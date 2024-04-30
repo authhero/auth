@@ -15,7 +15,8 @@ const AUTH_PARAMS = {
   redirect_uri: "https://login.example.com/callback",
   response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
   scope: "openid profile email",
-  state: "state",
+  state:
+    "client_id=clientId&redirect_uri=https://example.com/callback&vendor_id=vendorId&connection=auth2",
 };
 
 function getMagicLinkFromEmailBody(email: EmailOptions) {
@@ -572,9 +573,8 @@ describe("magic link flow", () => {
     expect(redirectUri2.pathname).toBe("/expired-code");
   });
 
-  it("should not accept any invalid params on the magic link", async () => {
+  it("should not accept an invalid code in the magic link", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     // -----------
@@ -621,8 +621,45 @@ describe("magic link flow", () => {
     expect(redirectUri.hostname).toBe("login2.sesamy.dev");
     expect(redirectUri.pathname).toBe("/expired-code");
     expect(redirectUri.searchParams.get("email")).toBe("test@example.com");
+
+    expect(redirectUri.searchParams.get("lang")).toBe("sv");
+    expect(redirectUri.searchParams.get("client_id")).toBe("clientId");
+    expect(redirectUri.searchParams.get("vendor_id")).toBe("vendorId");
+    expect(redirectUri.searchParams.get("connection")).toBe("auth2");
+    expect(redirectUri.searchParams.get("redirect_uri")).toBe(
+      "https://example.com/callback",
+    );
+  });
+
+  it("should not accept a magic link where the email has been altered", async () => {
+    const env = await getEnv();
+    const loginClient = testClient(loginApp, env);
+
+    // -----------
+    // get code to log in
+    // -----------
+    await loginClient.passwordless.start.$post(
+      {
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "test@example.com",
+          send: "link",
+        },
+      },
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+
+    const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+
+    const link = magicLink!;
     // ------------
-    // Overwrite the magic link with a bad email, and try and use it
+    // Overwrite the magic link with a different email, and try and use it
     // ----------------
     const magicLinkWithBadEmail = new URL(link!);
     magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
