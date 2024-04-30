@@ -60,7 +60,7 @@
     "@tsoa/runtime": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cookie": "^0.6.0",
-    "hono": "4.2.2",
+    "hono": "4.2.9",
     "kysely": "^0.27.2",
     "kysely-bun-sqlite": "^0.3.2",
     "kysely-planetscale": "^1.4.0",
