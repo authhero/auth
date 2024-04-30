@@ -65,7 +65,7 @@
     "kysely-bun-sqlite": "^0.3.2",
     "kysely-planetscale": "^1.4.0",
     "liquidjs": "^10.9.2",
-    "mime": "4.0.1",
+    "mime": "4.0.3",
     "nanoid": "5.0.7",
     "playwright": "^1.43.1",
     "tsoa": "^6.1.4",
