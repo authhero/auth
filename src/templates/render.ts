@@ -95,7 +95,7 @@ export async function renderLoginWithCode(context: UniversalLoginSession) {
   });
 }
 
-export async function renderEnterCodeInner(
+export async function renderEnterCode(
   context: UniversalLoginSession,
   errorMessage?: string,
 ) {

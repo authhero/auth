@@ -15,7 +15,7 @@ import {
   renderMessageInner as renderMessage,
   renderLogin,
   renderLoginWithCode,
-  renderEnterCodeInner as renderEnterCode,
+  renderEnterCode,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -26,7 +26,6 @@ import { renderForgotPassword } from "../../templates/render";
 import generateOTP from "../../utils/otp";
 import { sendResetPassword, sendLink } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
-import { applyTokenResponse } from "../../helpers/apply-token-response";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
