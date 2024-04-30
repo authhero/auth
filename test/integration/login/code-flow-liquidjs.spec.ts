@@ -80,8 +80,8 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
-    const enterCodeForm = await client.u["enter-code"].$get({
-      query: enterCodeQuery,
+    const enterCodeForm = await loginClient.u["enter-code"].$get({
+      query: { state: enterCodeQuery.state },
     });
     expect(enterCodeForm.status).toBe(200);
     await snapshotResponse(enterCodeForm);
