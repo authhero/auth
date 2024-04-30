@@ -58,20 +58,16 @@ describe("Login with code on liquidjs template", () => {
 
     await snapshotResponse(codeInputFormResponse);
 
-    const postSendCodeResponse = await loginClient.u.code.$post(
-      {
-        query: { state: query.state },
-        form: {
-          username: "foo@example.com",
-        },
+    const postSendCodeResponse = await loginClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
+    console.log(await postSendCodeResponse.text());
+
+    // 400! that's interesting...
     expect(postSendCodeResponse.status).toBe(302);
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
@@ -90,19 +86,12 @@ describe("Login with code on liquidjs template", () => {
     expect(enterCodeForm.status).toBe(200);
     await snapshotResponse(enterCodeForm);
 
-    const authenticateResponse = await client.u["enter-code"].$post(
-      {
-        query: enterCodeQuery,
-        json: {
-          code,
-        },
+    const authenticateResponse = await client.u["enter-code"].$post({
+      query: enterCodeQuery,
+      json: {
+        code,
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     const codeLoginRedirectUri = authenticateResponse.headers.get("location");
     const redirectUrl = new URL(codeLoginRedirectUri!);
@@ -137,19 +126,12 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await loginClient.u.code.$post(
-      {
-        query: { state: query.state },
-        form: {
-          username: "foo@example.com",
-        },
+    const postSendCodeResponse = await loginClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -157,20 +139,13 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
-    const incorrectCodeResponse = await client.u["enter-code"].$post(
-      {
-        query: enterCodeQuery,
-        json: {
-          // clearly wrong!
-          code: "123456",
-        },
+    const incorrectCodeResponse = await client.u["enter-code"].$post({
+      query: enterCodeQuery,
+      json: {
+        // clearly wrong!
+        code: "123456",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     await snapshotResponse(incorrectCodeResponse);
   });
