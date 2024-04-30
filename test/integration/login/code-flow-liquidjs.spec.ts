@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp } from "../../../src/app";
+import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
@@ -24,6 +24,7 @@ describe("Login with code on liquidjs template", () => {
       testTenantLanguage: "nb",
     });
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const searchParams = {
       client_id: "clientId",
@@ -47,8 +48,10 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await client.u.code.$get({
-      query,
+    const codeInputFormResponse = await loginClient.u.code.$get({
+      query: {
+        state: query.state,
+      },
     });
 
     expect(codeInputFormResponse.status).toBe(200);
