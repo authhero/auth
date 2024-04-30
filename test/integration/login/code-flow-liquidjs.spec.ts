@@ -58,10 +58,10 @@ describe("Login with code on liquidjs template", () => {
 
     await snapshotResponse(codeInputFormResponse);
 
-    const postSendCodeResponse = await client.u.code.$post(
+    const postSendCodeResponse = await loginClient.u.code.$post(
       {
-        query,
-        json: {
+        query: { state: query.state },
+        form: {
           username: "foo@example.com",
         },
       },
@@ -117,6 +117,7 @@ describe("Login with code on liquidjs template", () => {
   it("should reject bad code", async () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
+    const loginClient = testClient(loginApp, env);
 
     const searchParams = {
       client_id: "clientId",
@@ -136,10 +137,10 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await client.u.code.$post(
+    const postSendCodeResponse = await loginClient.u.code.$post(
       {
-        query,
-        json: {
+        query: { state: query.state },
+        form: {
           username: "foo@example.com",
         },
       },
