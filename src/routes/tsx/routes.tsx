@@ -827,7 +827,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           verification_code: code,
         });
 
-        const tokenResponse = await generateAuthResponse({
+        const authResponse = await generateAuthResponse({
           env,
           userId: user.id,
           sid: nanoid(),
@@ -838,7 +838,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           user,
         });
 
-        return applyTokenResponse(this, tokenResponse, session.authParams);
+        const redirectUrl = getTokenResponseRedirectUri(
+          authResponse,
+          session.authParams,
+        );
+
+        return ctx.redirect(redirectUrl.href);
       } catch (err) {
         return ctx.html(renderEnterCode(session, "Invalid code"));
       }
