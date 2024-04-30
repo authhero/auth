@@ -14,6 +14,7 @@ import LoginPage from "../../utils/components/LoginPage";
 import {
   renderMessageInner as renderMessage,
   renderLogin,
+  renderLoginWithCode,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -566,6 +567,44 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           message: "A code has been sent to your email address",
         }),
       );
+    },
+  )
+  // --------------------------------
+  // GET /u/code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderLoginWithCode(session));
     },
   )
 

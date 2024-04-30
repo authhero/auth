@@ -82,17 +82,10 @@ export async function renderLogin(
   return renderedLogin;
 }
 
-export async function renderLoginWithCode(
-  env: Env,
-  controller: Controller,
-  context: UniversalLoginSession,
-) {
+export async function renderLoginWithCode(context: UniversalLoginSession) {
   const layoutTemplate = engine.parse(layout);
 
   const template = engine.parse(code);
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
 
   const content = await engine.render(template, context);
 
