@@ -55,8 +55,10 @@ describe("Register password user", () => {
     );
 
     // Open signup page
-    const getSignupResponse = await client.u.signup.$get({
-      query: loginSearchParamsQuery,
+    const getSignupResponse = await loginClient.u.signup.$get({
+      query: {
+        state: loginSearchParamsQuery.state,
+      },
     });
     expect(getSignupResponse.status).toBe(200);
 
@@ -131,8 +133,10 @@ describe("Register password user", () => {
     const loginSearchParamsQuery = Object.fromEntries(
       loginSearchParams.entries(),
     );
-    const getSignupResponse = await client.u.signup.$get({
-      query: loginSearchParamsQuery,
+    const getSignupResponse = await loginClient.u.signup.$get({
+      query: {
+        state: loginSearchParamsQuery.state,
+      },
     });
     const signupSearchParams = new URLSearchParams(location.split("?")[1]);
     const signupSearchParamsQuery = Object.fromEntries(

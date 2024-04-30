@@ -15,7 +15,8 @@ import {
   renderMessageInner as renderMessage,
   renderLogin,
   renderLoginWithCode,
-  renderEnterCodeInner as renderEnterCode,
+  renderEnterCode,
+  renderSignupInner as renderSignup,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -26,7 +27,6 @@ import { renderForgotPassword } from "../../templates/render";
 import generateOTP from "../../utils/otp";
 import { sendResetPassword, sendLink } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
-import { applyTokenResponse } from "../../helpers/apply-token-response";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -797,6 +797,38 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       } catch (err) {
         return ctx.html(renderEnterCode(session, "Invalid code"));
       }
+    },
+  )
+  // --------------------------------
+  // GET /u/signup
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/signup",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderSignup(session));
     },
   )
   // --------------------------------

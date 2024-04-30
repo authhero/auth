@@ -95,7 +95,7 @@ export async function renderLoginWithCode(context: UniversalLoginSession) {
   });
 }
 
-export async function renderEnterCodeInner(
+export async function renderEnterCode(
   context: UniversalLoginSession,
   errorMessage?: string,
 ) {
@@ -142,12 +142,19 @@ export async function renderSignup(
   state: string,
   errorMessage?: string,
 ) {
+  controller.setHeader("content-type", "text/html");
+  controller.setStatus(200);
+
+  return renderSignupInner(context, errorMessage);
+}
+
+export async function renderSignupInner(
+  context: UniversalLoginSession,
+  errorMessage?: string,
+) {
   const layoutTemplate = engine.parse(layout);
 
   const template = engine.parse(signup);
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
 
   const content = await engine.render(template, { ...context, errorMessage });
   return engine.render(layoutTemplate, {
