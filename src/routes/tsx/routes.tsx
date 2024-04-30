@@ -27,6 +27,8 @@ import { renderForgotPassword } from "../../templates/render";
 import generateOTP from "../../utils/otp";
 import { sendResetPassword, sendLink } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
+import { getUsersByEmail } from "../../utils/users";
+import userIdGenerate from "../../utils/userIdGenerate";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -874,6 +876,108 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       return ctx.html(renderSignup(session));
+    },
+  )
+  // --------------------------------
+  // POST /u/signup
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/signup",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                username: z.string(),
+                password: z.string(),
+                // TODO - something like this
+                // "re-enter-password": z.string(),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const loginParams = ctx.req.valid("form");
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      if (session.authParams.username !== loginParams.username) {
+        session.authParams.username = loginParams.username;
+        await env.data.universalLoginSessions.update(session.id, session);
+      }
+
+      try {
+        // TODO - filter by primary user
+        let [user] = await getUsersByEmail(
+          env.data.users,
+          client.tenant_id,
+          loginParams.username,
+        );
+
+        if (!user) {
+          // Create the user if it doesn't exist
+          user = await env.data.users.create(client.tenant_id, {
+            id: `auth2|${userIdGenerate()}`,
+            email: loginParams.username,
+            name: loginParams.username,
+            provider: "auth2",
+            connection: "Username-Password-Authentication",
+            email_verified: false,
+            last_ip: "",
+            login_count: 0,
+            is_social: false,
+            last_login: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        }
+
+        await env.data.passwords.create(client.tenant_id, {
+          user_id: user.id,
+          password: loginParams.password,
+        });
+
+        // if (client.email_validation === "enforced") {
+        //   // Update the username in the state
+        //   await setLoginState(env, state, {
+        //     ...loginState,
+        //     authParams: {
+        //       ...loginState.authParams,
+        //       username: loginParams.username,
+        //     },
+        //   });
+
+        //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+        // }
+
+        return handleLogin(env, this, user, session);
+      } catch (err: any) {
+        return renderSignup(env, this, session, state, err.message);
+      }
     },
   )
   // --------------------------------

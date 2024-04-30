@@ -9,7 +9,6 @@ import {
   Query,
 } from "@tsoa/runtime";
 import { nanoid } from "nanoid";
-import userIdGenerate from "../../utils/userIdGenerate";
 import { HTTPException } from "hono/http-exception";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
@@ -140,77 +139,5 @@ export class LoginController extends Controller {
 
     // what should we actually do here?
     return "email validated";
-  }
-
-  @Post("signup")
-  public async postSignup(
-    @Request() request: RequestWithContext,
-    @Body() loginParams: LoginParams,
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    const client = await getClient(env, session.authParams.client_id);
-    if (!client) {
-      throw new HTTPException(400, { message: "Client not found" });
-    }
-
-    if (session.authParams.username !== loginParams.username) {
-      session.authParams.username = loginParams.username;
-      await env.data.universalLoginSessions.update(session.id, session);
-    }
-
-    try {
-      // TODO - filter by primary user
-      let [user] = await getUsersByEmail(
-        env.data.users,
-        client.tenant_id,
-        loginParams.username,
-      );
-
-      if (!user) {
-        // Create the user if it doesn't exist
-        user = await env.data.users.create(client.tenant_id, {
-          id: `auth2|${userIdGenerate()}`,
-          email: loginParams.username,
-          name: loginParams.username,
-          provider: "auth2",
-          connection: "Username-Password-Authentication",
-          email_verified: false,
-          last_ip: "",
-          login_count: 0,
-          is_social: false,
-          last_login: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      }
-
-      await env.data.passwords.create(client.tenant_id, {
-        user_id: user.id,
-        password: loginParams.password,
-      });
-
-      // if (client.email_validation === "enforced") {
-      //   // Update the username in the state
-      //   await setLoginState(env, state, {
-      //     ...loginState,
-      //     authParams: {
-      //       ...loginState.authParams,
-      //       username: loginParams.username,
-      //     },
-      //   });
-
-      //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-      // }
-
-      return handleLogin(env, this, user, session);
-    } catch (err: any) {
-      return renderSignup(env, this, session, state, err.message);
-    }
   }
 }
