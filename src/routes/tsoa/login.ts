@@ -142,24 +142,6 @@ export class LoginController extends Controller {
     return "email validated";
   }
 
-  /**
-   * Renders a signup user form
-   * @param request
-   */
-  @Get("signup")
-  public async getSignup(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    return renderSignup(env, this, session, state);
-  }
-
   @Post("signup")
   public async postSignup(
     @Request() request: RequestWithContext,

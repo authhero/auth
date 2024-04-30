@@ -16,6 +16,7 @@ import {
   renderLogin,
   renderLoginWithCode,
   renderEnterCode,
+  renderSignupInner as renderSignup,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -841,6 +842,38 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       } catch (err) {
         return ctx.html(renderEnterCode(session, "Invalid code"));
       }
+    },
+  )
+  // --------------------------------
+  // GET /u/signup
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/signup",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderSignup(session));
     },
   )
   // --------------------------------
