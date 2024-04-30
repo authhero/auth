@@ -73,24 +73,6 @@ async function handleLogin(
 @Tags("login ui")
 export class LoginController extends Controller {
   /**
-   * Renders a code login form
-   * @param request
-   */
-  @Get("code")
-  public async getLoginWithCode(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    return renderLoginWithCode(env, this, session);
-  }
-
-  /**
    * Sends a code to the email (username) entered
    * @param request
    */
