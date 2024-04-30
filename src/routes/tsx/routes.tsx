@@ -569,22 +569,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       );
     },
   )
-
-  /* 
-  @Get("code")
-  public async getLoginWithCode(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    return renderLoginWithCode(env, this, session);
-  }
-  */
   // --------------------------------
   // GET /u/code
   // --------------------------------
