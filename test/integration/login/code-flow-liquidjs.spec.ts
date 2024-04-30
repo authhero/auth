@@ -65,7 +65,6 @@ describe("Login with code on liquidjs template", () => {
       },
     });
 
-
     expect(postSendCodeResponse.status).toBe(302);
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
