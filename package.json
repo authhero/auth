@@ -98,7 +98,7 @@
     "semantic-release": "23.0.7",
     "sort-json": "2.0.1",
     "tailwindcss": "3.4.3",
-    "typescript": "5.4.4",
+    "typescript": "5.4.5",
     "validator": "13.11.0",
     "vitest": "1.4.0",
     "vitest-fetch-mock": "0.2.2",
