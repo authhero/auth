@@ -65,50 +65,6 @@ async function handleLogin(
 @Tags("login ui")
 export class LoginController extends Controller {
   /**
-   * Posts a code
-   * @param request
-   */
-  @Post("enter-code")
-  public async postCode(
-    @Request() request: RequestWithContext,
-    @Body() params: { code: string },
-    @Query("state") state: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    if (!session.authParams.username) {
-      throw new HTTPException(400, { message: "Username not found in state" });
-    }
-
-    try {
-      const user = await validateCode(env, {
-        client_id: session.authParams.client_id,
-        email: session.authParams.username,
-        verification_code: params.code,
-      });
-
-      const tokenResponse = await generateAuthResponse({
-        env,
-        userId: user.id,
-        sid: nanoid(),
-        responseType:
-          session.authParams.response_type ||
-          AuthorizationResponseType.TOKEN_ID_TOKEN,
-        authParams: session.authParams,
-        user,
-      });
-
-      return applyTokenResponse(this, tokenResponse, session.authParams);
-    } catch (err) {
-      return renderEnterCode(env, this, session, "Invlalid code");
-    }
-  }
-
-  /**
    * Validates a link sent to the user's email
    */
   @Get("validate-email")

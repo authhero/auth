@@ -732,7 +732,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /u/enter-code
   // --------------------------------
-
   .openapi(
     createRoute({
       tags: ["login"],
@@ -768,7 +767,81 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       return ctx.html(renderEnterCode(session));
     },
   )
+  // --------------------------------
+  // POST /u/enter-code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/enter-code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                code: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { code } = ctx.req.valid("form");
 
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      if (!session.authParams.username) {
+        throw new HTTPException(400, {
+          message: "Username not found in state",
+        });
+      }
+
+      try {
+        const user = await validateCode(env, {
+          client_id: session.authParams.client_id,
+          email: session.authParams.username,
+          verification_code: code,
+        });
+
+        const tokenResponse = await generateAuthResponse({
+          env,
+          userId: user.id,
+          sid: nanoid(),
+          responseType:
+            session.authParams.response_type ||
+            AuthorizationResponseType.TOKEN_ID_TOKEN,
+          authParams: session.authParams,
+          user,
+        });
+
+        return applyTokenResponse(this, tokenResponse, session.authParams);
+      } catch (err) {
+        return renderEnterCode(env, this, session, "Invlalid code");
+      }
+    },
+  )
   // --------------------------------
   // GET /u/info
   // --------------------------------
