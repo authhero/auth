@@ -80,7 +80,7 @@
     "@types/better-sqlite3": "7.6.10",
     "@types/cookie": "0.6.0",
     "@types/jest-image-snapshot": "6.4.0",
-    "@types/node": "20.11.1",
+    "@types/node": "20.12.7",
     "@types/service-worker-mock": "2.0.4",
     "@types/validator": "13.11.9",
     "better-sqlite3": "9.4.5",
