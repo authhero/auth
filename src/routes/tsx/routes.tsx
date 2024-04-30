@@ -217,7 +217,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
-        return renderLogin(session, err.message);
+        return ctx.html(renderLogin(session, err.message));
       }
     },
   )
@@ -974,9 +974,9 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
         // }
 
-        return handleLogin(env, this, user, session);
+        return handleLogin(env, user, session, ctx);
       } catch (err: any) {
-        return renderSignup(env, this, session, state, err.message);
+        return ctx.html(renderSignup(session, err.message));
       }
     },
   )

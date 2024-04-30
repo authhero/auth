@@ -1,59 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Request,
-  Route,
-  Tags,
-  Body,
-  Query,
-} from "@tsoa/runtime";
-import { nanoid } from "nanoid";
+import { Controller, Get, Request, Route, Tags, Query } from "@tsoa/runtime";
 import { HTTPException } from "hono/http-exception";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
-import { renderMessage, renderSignup } from "../../templates/render";
-import { AuthorizationResponseType, Env, User } from "../../types";
-import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { applyTokenResponse } from "../../helpers/apply-token-response";
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
-
-interface LoginParams {
-  username: string;
-  password: string;
-}
-
-async function handleLogin(
-  env: Env,
-  controller: Controller,
-  user: User,
-  session: UniversalLoginSession,
-) {
-  if (session.authParams.redirect_uri) {
-    const responseType =
-      session.authParams.response_type ||
-      AuthorizationResponseType.TOKEN_ID_TOKEN;
-
-    const authResponse = await generateAuthResponse({
-      env,
-      userId: user.id,
-      sid: nanoid(),
-      responseType,
-      authParams: session.authParams,
-      user,
-    });
-
-    return applyTokenResponse(controller, authResponse, session.authParams);
-  }
-
-  // This is just a fallback in case no redirect was present
-  return renderMessage(env, controller, {
-    ...session,
-    page_title: "Logged in",
-    message: "You are logged in",
-  });
-}
 
 @Route("u")
 @Tags("login ui")
