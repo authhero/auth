@@ -79,7 +79,7 @@ describe("code-flow", () => {
 
     // Authenticate using the code
     const authenticateResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -181,7 +181,7 @@ describe("code-flow", () => {
     const otpLogin = getOTP(env.data.emails[1]);
 
     const authRes2 = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp: otpLogin,
@@ -307,7 +307,7 @@ describe("code-flow", () => {
 
     // Authenticate using the code
     const authenticateResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -408,7 +408,7 @@ describe("code-flow", () => {
 
     // Authenticate using the code
     const authenticateResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -501,7 +501,7 @@ describe("code-flow", () => {
     const otp = getOTP(env.data.emails[0]);
 
     const authenticateResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -637,7 +637,7 @@ describe("code-flow", () => {
     const otp2 = getOTP(env.data.emails[1]);
 
     const authenticateResponse2 = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp: otp2,
@@ -788,7 +788,7 @@ describe("code-flow", () => {
 
       // Authenticate using the code
       const authenticateResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
           otp,
@@ -920,7 +920,7 @@ describe("code-flow", () => {
     const otp = getOTP(env.data.emails[0]);
 
     const authRes = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -932,7 +932,7 @@ describe("code-flow", () => {
 
     // now try to use the same code again
     const authRes2 = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -982,7 +982,7 @@ describe("code-flow", () => {
     const BAD_CODE = "123456";
 
     const authRes = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp: BAD_CODE,
@@ -1059,7 +1059,7 @@ describe("code-flow", () => {
 
     // Authenticate using the code
     const authenticateResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -1144,7 +1144,7 @@ describe("code-flow", () => {
 
     // Authenticate using the code
     const authenticateResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
         otp,
@@ -1303,7 +1303,7 @@ describe("code-flow", () => {
 
       // Authenticate using the code
       const authenticateResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
           otp,
@@ -1404,7 +1404,7 @@ describe("code-flow", () => {
 
       // Authenticate using the code
       const authenticateResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
           otp,
@@ -1479,7 +1479,7 @@ describe("code-flow", () => {
       const otp = getOTP(env.data.emails[0]);
 
       const authenticateResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
           otp,
