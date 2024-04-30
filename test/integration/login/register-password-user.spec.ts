@@ -70,20 +70,13 @@ describe("Register password user", () => {
     await snapshotResponse(getSignupResponse);
 
     // Signup
-    const postSignupResponse = await client.u.signup.$post(
-      {
-        query: signupSearchParamsQuery,
-        json: {
-          username: "test@example.com",
-          password: "Password1234!",
-        },
+    const postSignupResponse = await loginClient.u.signup.$post({
+      query: { state: signupSearchParamsQuery.state },
+      form: {
+        username: "test@example.com",
+        password: "Password1234!",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(postSignupResponse.status).toBe(302);
     const signupLocation: string = postSignupResponse.headers.get("location")!;
@@ -143,20 +136,13 @@ describe("Register password user", () => {
       signupSearchParams.entries(),
     );
     // Enter weak passworrd
-    const postSignupResponse = await client.u.signup.$post(
-      {
-        query: signupSearchParamsQuery,
-        json: {
-          username: "test@example.com",
-          password: "weak",
-        },
+    const postSignupResponse = await loginClient.u.signup.$post({
+      query: { state: signupSearchParamsQuery.state },
+      form: {
+        username: "test@example.com",
+        password: "weak",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(postSignupResponse.status).toBe(200);
 
