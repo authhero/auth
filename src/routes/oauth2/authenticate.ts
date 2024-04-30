@@ -20,20 +20,6 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
       request: {
         body: {
           content: {
-            // no idea how to support both, and do we need to?
-            // "application/x-www-form-urlencoded": {
-            //   schema: z.object({
-            //     credential_type: z.enum([
-            //       "http://auth0.com/oauth/grant-type/passwordless/otp",
-            //       "http://auth0.com/oauth/grant-type/password-realm",
-            //     ]),
-            //     otp: z.string().optional(),
-            //     client_id: z.string(),
-            //     username: z.string().transform((v) => v.toLowerCase()),
-            //     password: z.string().optional(),
-            //     realm: z.enum(["email", "Username-Password-Authentication"]),
-            //   }),
-            // },
             "application/json": {
               schema: z.object({
                 credential_type: z.enum([
