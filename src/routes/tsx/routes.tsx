@@ -793,11 +793,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           },
         },
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",
