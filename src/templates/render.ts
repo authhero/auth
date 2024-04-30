@@ -101,12 +101,19 @@ export async function renderEnterCode(
   context: UniversalLoginSession,
   errorMessage?: string,
 ) {
+  controller.setHeader("content-type", "text/html");
+  controller.setStatus(200);
+
+  return renderEnterCodeInner(context, errorMessage);
+}
+
+export async function renderEnterCodeInner(
+  context: UniversalLoginSession,
+  errorMessage?: string,
+) {
   const layoutTemplate = engine.parse(layout);
 
   const template = engine.parse(enterCode);
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
 
   const content = await engine.render(template, {
     ...context,
