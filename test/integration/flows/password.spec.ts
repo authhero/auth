@@ -68,7 +68,7 @@ describe("password-flow", () => {
       expect(createUserResponse.status).toBe(200);
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -129,7 +129,7 @@ describe("password-flow", () => {
       //-------------------
 
       const loginResponse2 = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -270,7 +270,7 @@ describe("password-flow", () => {
       // -----------------------------
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -379,7 +379,7 @@ describe("password-flow", () => {
       expect(createUserResponse.status).toBe(200);
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -429,7 +429,7 @@ describe("password-flow", () => {
       // -----------------------------------------
 
       const loginResponse2 = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -483,7 +483,7 @@ describe("password-flow", () => {
       expect(body).toBe("Invalid sign up");
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -523,7 +523,7 @@ describe("password-flow", () => {
       // foo@example.com is an existing username-password user, with password - Test!
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -599,7 +599,7 @@ describe("password-flow", () => {
       const loginClient = testClient(loginApp, env);
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -626,7 +626,7 @@ describe("password-flow", () => {
       expect(signupResponse.status).toBe(200);
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -645,7 +645,7 @@ describe("password-flow", () => {
       // ------------------
 
       const rejectedLoginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -662,7 +662,7 @@ describe("password-flow", () => {
       const loginClient = testClient(loginApp, env);
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -677,7 +677,7 @@ describe("password-flow", () => {
       const loginClient = testClient(loginApp, env);
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "otherClientIdOnOtherTenant",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -763,7 +763,7 @@ describe("password-flow", () => {
       // ------------------
 
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",
@@ -939,7 +939,7 @@ describe("password-flow", () => {
       // now check we can login with the new password, and we are not told to verify our email
       // ------------------
       const loginResponse = await loginClient.co.authenticate.$post({
-        form: {
+        json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
           realm: "Username-Password-Authentication",

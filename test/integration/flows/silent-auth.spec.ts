@@ -49,7 +49,7 @@ describe("silent-auth", () => {
     const loginClient = testClient(loginApp, env);
 
     const loginResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
         realm: "Username-Password-Authentication",
@@ -100,7 +100,7 @@ describe("silent-auth", () => {
     const loginClient = testClient(loginApp, env);
 
     const loginResponse = await loginClient.co.authenticate.$post({
-      form: {
+      json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
         realm: "Username-Password-Authentication",
