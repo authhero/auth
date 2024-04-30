@@ -23,7 +23,7 @@ import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response"
 import { Context } from "hono";
 import { renderForgotPassword } from "../../templates/render";
 import generateOTP from "../../utils/otp";
-import { sendResetPassword } from "../../controllers/email";
+import { sendResetPassword, sendLink } from "../../controllers/email";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -605,6 +605,127 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       return ctx.html(renderLoginWithCode(session));
+    },
+  )
+  // --------------------------------
+  // POST /u/code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                username: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      // backwards compatible to maintain pasted code
+      const params = ctx.req.valid("form");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const code = generateOTP();
+
+      // fields in universalLoginSessions don't match fields in OTP
+      const {
+        audience,
+        code_challenge_method,
+        code_challenge,
+        username,
+        ...otpAuthParams
+      } = session.authParams;
+
+      await env.data.OTP.create({
+        id: nanoid(),
+        code,
+        // is this a reasonable assumption?
+        email: params.username,
+        client_id: session.authParams.client_id,
+        send: "code",
+        authParams: otpAuthParams,
+        tenant_id: client.tenant_id,
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+      });
+
+      // request.ctx.set("log", `Code: ${code}`);
+
+      // Add the username to the state
+      session.authParams.username = params.username;
+      await env.data.universalLoginSessions.update(session.id, session);
+
+      const magicLink = new URL(env.ISSUER);
+      magicLink.pathname = "passwordless/verify_redirect";
+      if (session.authParams.scope) {
+        magicLink.searchParams.set("scope", session.authParams.scope);
+      }
+      if (session.authParams.response_type) {
+        magicLink.searchParams.set(
+          "response_type",
+          session.authParams.response_type,
+        );
+      }
+      if (session.authParams.redirect_uri) {
+        magicLink.searchParams.set(
+          "redirect_uri",
+          session.authParams.redirect_uri,
+        );
+      }
+      if (session.authParams.audience) {
+        magicLink.searchParams.set("audience", session.authParams.audience);
+      }
+      if (session.authParams.state) {
+        magicLink.searchParams.set("state", session.authParams.state);
+      }
+      if (session.authParams.nonce) {
+        magicLink.searchParams.set("nonce", session.authParams.nonce);
+      }
+
+      magicLink.searchParams.set("connection", "email");
+      magicLink.searchParams.set("client_id", session.authParams.client_id);
+      magicLink.searchParams.set("email", session.authParams.username);
+      magicLink.searchParams.set("verification_code", code);
+
+      await sendLink(env, client, params.username, code, magicLink.href);
+
+      return ctx.redirect(
+        `/u/enter-code?state=${state}&username=${params.username}`,
+      );
     },
   )
 
