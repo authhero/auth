@@ -83,9 +83,11 @@ describe("Login with code on liquidjs template", () => {
     expect(enterCodeForm.status).toBe(200);
     await snapshotResponse(enterCodeForm);
 
-    const authenticateResponse = await client.u["enter-code"].$post({
-      query: enterCodeQuery,
-      json: {
+    const authenticateResponse = await loginClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
+      },
+      form: {
         code,
       },
     });
@@ -136,9 +138,11 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
-    const incorrectCodeResponse = await client.u["enter-code"].$post({
-      query: enterCodeQuery,
-      json: {
+    const incorrectCodeResponse = await loginClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
+      },
+      form: {
         // clearly wrong!
         code: "123456",
       },

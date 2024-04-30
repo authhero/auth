@@ -25,6 +25,8 @@ import { Context } from "hono";
 import { renderForgotPassword } from "../../templates/render";
 import generateOTP from "../../utils/otp";
 import { sendResetPassword, sendLink } from "../../controllers/email";
+import { validateCode } from "../../authentication-flows/passwordless";
+import { applyTokenResponse } from "../../helpers/apply-token-response";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -692,7 +694,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /u/enter-code
   // --------------------------------
-
   .openapi(
     createRoute({
       tags: ["login"],
@@ -723,7 +724,81 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       return ctx.html(renderEnterCode(session));
     },
   )
+  // --------------------------------
+  // POST /u/enter-code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/enter-code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                code: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { code } = ctx.req.valid("form");
 
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      if (!session.authParams.username) {
+        throw new HTTPException(400, {
+          message: "Username not found in state",
+        });
+      }
+
+      try {
+        const user = await validateCode(env, {
+          client_id: session.authParams.client_id,
+          email: session.authParams.username,
+          verification_code: code,
+        });
+
+        const authResponse = await generateAuthResponse({
+          env,
+          userId: user.id,
+          sid: nanoid(),
+          responseType:
+            session.authParams.response_type ||
+            AuthorizationResponseType.TOKEN_ID_TOKEN,
+          authParams: session.authParams,
+          user,
+        });
+
+        const redirectUrl = getTokenResponseRedirectUri(
+          authResponse,
+          session.authParams,
+        );
+
+        return ctx.redirect(redirectUrl.href);
+      } catch (err) {
+        return ctx.html(renderEnterCode(session, "Invalid code"));
+      }
+    },
+  )
   // --------------------------------
   // GET /u/info
   // --------------------------------
