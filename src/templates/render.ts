@@ -95,18 +95,6 @@ export async function renderLoginWithCode(context: UniversalLoginSession) {
   });
 }
 
-export async function renderEnterCode(
-  env: Env,
-  controller: Controller,
-  context: UniversalLoginSession,
-  errorMessage?: string,
-) {
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
-
-  return renderEnterCodeInner(context, errorMessage);
-}
-
 export async function renderEnterCodeInner(
   context: UniversalLoginSession,
   errorMessage?: string,

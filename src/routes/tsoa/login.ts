@@ -13,15 +13,10 @@ import userIdGenerate from "../../utils/userIdGenerate";
 import { HTTPException } from "hono/http-exception";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
-import {
-  renderMessage,
-  renderSignup,
-  renderEnterCode,
-} from "../../templates/render";
+import { renderMessage, renderSignup } from "../../templates/render";
 import { AuthorizationResponseType, Env, User } from "../../types";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
-import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
 

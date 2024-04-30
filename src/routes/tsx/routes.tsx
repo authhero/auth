@@ -25,6 +25,8 @@ import { Context } from "hono";
 import { renderForgotPassword } from "../../templates/render";
 import generateOTP from "../../utils/otp";
 import { sendResetPassword, sendLink } from "../../controllers/email";
+import { validateCode } from "../../authentication-flows/passwordless";
+import { applyTokenResponse } from "../../helpers/apply-token-response";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -838,7 +840,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         return applyTokenResponse(this, tokenResponse, session.authParams);
       } catch (err) {
-        return renderEnterCode(env, this, session, "Invlalid code");
+        return ctx.html(renderEnterCode(session, "Invalid code"));
       }
     },
   )
