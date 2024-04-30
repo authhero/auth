@@ -11,27 +11,19 @@ import {
 import { nanoid } from "nanoid";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { HTTPException } from "hono/http-exception";
-import generateOTP from "../../utils/otp";
 import { RequestWithContext } from "../../types/RequestWithContext";
 import { getClient } from "../../services/clients";
 import {
   renderMessage,
   renderSignup,
-  renderLoginWithCode,
   renderEnterCode,
 } from "../../templates/render";
 import { AuthorizationResponseType, Env, User } from "../../types";
-import { headers } from "../../constants";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response";
-import { sendResetPassword } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getUserByEmailAndProvider, getUsersByEmail } from "../../utils/users";
-import { sendLink } from "../../controllers/email";
-
-// duplicated from /passwordless route
-const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 interface LoginParams {
   username: string;
@@ -72,25 +64,6 @@ async function handleLogin(
 @Route("u")
 @Tags("login ui")
 export class LoginController extends Controller {
-  /**
-   * Renders a code submit form
-   * @param request
-   */
-  @Get("enter-code")
-  public async getEnterCode(
-    @Request() request: RequestWithContext,
-    @Query("state") state: string,
-    @Query("username") username: string,
-  ): Promise<string> {
-    const { env } = request.ctx;
-    const session = await env.data.universalLoginSessions.get(state);
-    if (!session) {
-      throw new HTTPException(400, { message: "Session not found" });
-    }
-
-    return renderEnterCode(env, this, session);
-  }
-
   /**
    * Posts a code
    * @param request

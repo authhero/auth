@@ -728,6 +728,45 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       );
     },
   )
+  // --------------------------------
+  // GET /u/enter-code
+  // --------------------------------
+
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/enter-code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state",
+          }),
+        }),
+      },
+      security: [
+        {
+          Bearer: [],
+        },
+      ],
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderEnterCode(env, session));
+    },
+  )
 
   // --------------------------------
   // GET /u/info
