@@ -15,6 +15,7 @@ import {
   renderMessageInner as renderMessage,
   renderLogin,
   renderLoginWithCode,
+  renderEnterCodeInner as renderEnterCode,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -764,7 +765,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Session not found" });
       }
 
-      return ctx.html(renderEnterCode(env, session));
+      return ctx.html(renderEnterCode(session));
     },
   )
 
