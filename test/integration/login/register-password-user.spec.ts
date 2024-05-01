@@ -54,8 +54,10 @@ describe("Register password user", () => {
     );
 
     // Open signup page
-    const getSignupResponse = await client.u.signup.$get({
-      query: loginSearchParamsQuery,
+    const getSignupResponse = await loginClient.u.signup.$get({
+      query: {
+        state: loginSearchParamsQuery.state,
+      },
     });
     expect(getSignupResponse.status).toBe(200);
 
@@ -67,20 +69,13 @@ describe("Register password user", () => {
     await snapshotResponse(getSignupResponse);
 
     // Signup
-    const postSignupResponse = await client.u.signup.$post(
-      {
-        query: signupSearchParamsQuery,
-        json: {
-          username: "test@example.com",
-          password: "Password1234!",
-        },
+    const postSignupResponse = await loginClient.u.signup.$post({
+      query: { state: signupSearchParamsQuery.state },
+      form: {
+        username: "test@example.com",
+        password: "Password1234!",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(postSignupResponse.status).toBe(302);
     const signupLocation: string = postSignupResponse.headers.get("location")!;
@@ -130,28 +125,23 @@ describe("Register password user", () => {
     const loginSearchParamsQuery = Object.fromEntries(
       loginSearchParams.entries(),
     );
-    const getSignupResponse = await client.u.signup.$get({
-      query: loginSearchParamsQuery,
+    const getSignupResponse = await loginClient.u.signup.$get({
+      query: {
+        state: loginSearchParamsQuery.state,
+      },
     });
     const signupSearchParams = new URLSearchParams(location.split("?")[1]);
     const signupSearchParamsQuery = Object.fromEntries(
       signupSearchParams.entries(),
     );
     // Enter weak passworrd
-    const postSignupResponse = await client.u.signup.$post(
-      {
-        query: signupSearchParamsQuery,
-        json: {
-          username: "test@example.com",
-          password: "weak",
-        },
+    const postSignupResponse = await loginClient.u.signup.$post({
+      query: { state: signupSearchParamsQuery.state },
+      form: {
+        username: "test@example.com",
+        password: "weak",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(postSignupResponse.status).toBe(200);
 

@@ -14,6 +14,9 @@ import LoginPage from "../../utils/components/LoginPage";
 import {
   renderMessageInner as renderMessage,
   renderLogin,
+  renderLoginWithCode,
+  renderEnterCode,
+  renderSignupInner as renderSignup,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -22,7 +25,10 @@ import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response"
 import { Context } from "hono";
 import { renderForgotPassword } from "../../templates/render";
 import generateOTP from "../../utils/otp";
-import { sendResetPassword } from "../../controllers/email";
+import { sendResetPassword, sendLink } from "../../controllers/email";
+import { validateCode } from "../../authentication-flows/passwordless";
+import { getUsersByEmail } from "../../utils/users";
+import userIdGenerate from "../../utils/userIdGenerate";
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -91,11 +97,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           }),
         }),
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",
@@ -156,11 +157,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           },
         },
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",
@@ -211,7 +207,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
-        return renderLogin(session, err.message);
+        return ctx.html(renderLogin(session, err.message));
       }
     },
   )
@@ -233,11 +229,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           }),
         }),
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",
@@ -312,11 +303,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           },
         },
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",
@@ -452,11 +438,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           }),
         }),
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",
@@ -500,11 +481,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           },
         },
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",
@@ -568,6 +544,500 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       );
     },
   )
+  // --------------------------------
+  // GET /u/code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderLoginWithCode(session));
+    },
+  )
+  // --------------------------------
+  // POST /u/code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                username: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      // backwards compatible to maintain pasted code
+      const params = ctx.req.valid("form");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const code = generateOTP();
+
+      // fields in universalLoginSessions don't match fields in OTP
+      const {
+        audience,
+        code_challenge_method,
+        code_challenge,
+        username,
+        ...otpAuthParams
+      } = session.authParams;
+
+      await env.data.OTP.create({
+        id: nanoid(),
+        code,
+        // is this a reasonable assumption?
+        email: params.username,
+        client_id: session.authParams.client_id,
+        send: "code",
+        authParams: otpAuthParams,
+        tenant_id: client.tenant_id,
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+      });
+
+      // request.ctx.set("log", `Code: ${code}`);
+
+      // Add the username to the state
+      session.authParams.username = params.username;
+      await env.data.universalLoginSessions.update(session.id, session);
+
+      const magicLink = new URL(env.ISSUER);
+      magicLink.pathname = "passwordless/verify_redirect";
+      if (session.authParams.scope) {
+        magicLink.searchParams.set("scope", session.authParams.scope);
+      }
+      if (session.authParams.response_type) {
+        magicLink.searchParams.set(
+          "response_type",
+          session.authParams.response_type,
+        );
+      }
+      if (session.authParams.redirect_uri) {
+        magicLink.searchParams.set(
+          "redirect_uri",
+          session.authParams.redirect_uri,
+        );
+      }
+      if (session.authParams.audience) {
+        magicLink.searchParams.set("audience", session.authParams.audience);
+      }
+      if (session.authParams.state) {
+        magicLink.searchParams.set("state", session.authParams.state);
+      }
+      if (session.authParams.nonce) {
+        magicLink.searchParams.set("nonce", session.authParams.nonce);
+      }
+
+      magicLink.searchParams.set("connection", "email");
+      magicLink.searchParams.set("client_id", session.authParams.client_id);
+      magicLink.searchParams.set("email", session.authParams.username);
+      magicLink.searchParams.set("verification_code", code);
+
+      await sendLink(env, client, params.username, code, magicLink.href);
+
+      return ctx.redirect(
+        `/u/enter-code?state=${state}&username=${params.username}`,
+      );
+    },
+  )
+  // --------------------------------
+  // GET /u/enter-code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/enter-code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderEnterCode(session));
+    },
+  )
+  // --------------------------------
+  // POST /u/enter-code
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/enter-code",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                code: z.string(),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { code } = ctx.req.valid("form");
+
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      if (!session.authParams.username) {
+        throw new HTTPException(400, {
+          message: "Username not found in state",
+        });
+      }
+
+      try {
+        const user = await validateCode(env, {
+          client_id: session.authParams.client_id,
+          email: session.authParams.username,
+          verification_code: code,
+        });
+
+        const authResponse = await generateAuthResponse({
+          env,
+          userId: user.id,
+          sid: nanoid(),
+          responseType:
+            session.authParams.response_type ||
+            AuthorizationResponseType.TOKEN_ID_TOKEN,
+          authParams: session.authParams,
+          user,
+        });
+
+        const redirectUrl = getTokenResponseRedirectUri(
+          authResponse,
+          session.authParams,
+        );
+
+        return ctx.redirect(redirectUrl.href);
+      } catch (err) {
+        return ctx.html(renderEnterCode(session, "Invalid code"));
+      }
+    },
+  )
+  // --------------------------------
+  // GET /u/signup
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/signup",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      return ctx.html(renderSignup(session));
+    },
+  )
+  // --------------------------------
+  // POST /u/signup
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/signup",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+        body: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                username: z.string(),
+                password: z.string(),
+                // TODO - something like this
+                // "re-enter-password": z.string(),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const loginParams = ctx.req.valid("form");
+      const { env } = ctx;
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      if (session.authParams.username !== loginParams.username) {
+        session.authParams.username = loginParams.username;
+        await env.data.universalLoginSessions.update(session.id, session);
+      }
+
+      try {
+        // TODO - filter by primary user
+        let [user] = await getUsersByEmail(
+          env.data.users,
+          client.tenant_id,
+          loginParams.username,
+        );
+
+        if (!user) {
+          // Create the user if it doesn't exist
+          user = await env.data.users.create(client.tenant_id, {
+            id: `auth2|${userIdGenerate()}`,
+            email: loginParams.username,
+            name: loginParams.username,
+            provider: "auth2",
+            connection: "Username-Password-Authentication",
+            email_verified: false,
+            last_ip: "",
+            login_count: 0,
+            is_social: false,
+            last_login: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        }
+
+        await env.data.passwords.create(client.tenant_id, {
+          user_id: user.id,
+          password: loginParams.password,
+        });
+
+        // if (client.email_validation === "enforced") {
+        //   // Update the username in the state
+        //   await setLoginState(env, state, {
+        //     ...loginState,
+        //     authParams: {
+        //       ...loginState.authParams,
+        //       username: loginParams.username,
+        //     },
+        //   });
+
+        //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
+        // }
+
+        return handleLogin(env, user, session, ctx);
+      } catch (err: any) {
+        return ctx.html(renderSignup(session, err.message));
+      }
+    },
+  )
+  // --------------------------------
+  // GET /u/validate-email
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/validate-email",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+          code: z.string().openapi({
+            description: "The code parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state, code } = ctx.req.valid("query");
+
+      const { env } = ctx;
+
+      const session = await env.data.universalLoginSessions.get(state);
+      if (!session) {
+        throw new HTTPException(400, { message: "Session not found" });
+      }
+
+      const email = session.authParams.username;
+      if (!email) {
+        throw new HTTPException(400, {
+          message: "Username not found in state",
+        });
+      }
+
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const user = await getUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email,
+        provider: "auth2",
+      });
+      if (!user) {
+        throw new HTTPException(500, { message: "No user found" });
+      }
+
+      const codes = await env.data.codes.list(client.tenant_id, user.id);
+      const foundCode = codes.find((storedCode) => storedCode.code === code);
+
+      if (!foundCode) {
+        throw new HTTPException(400, { message: "Code not found or expired" });
+      }
+
+      await env.data.users.update(client.tenant_id, user.id, {
+        email_verified: true,
+      });
+
+      const usersWithSameEmail = await getUsersByEmail(
+        env.data.users,
+        client.tenant_id,
+        email,
+      );
+      const usersWithSameEmailButNotUsernamePassword =
+        usersWithSameEmail.filter((user) => user.provider !== "auth2");
+
+      if (usersWithSameEmailButNotUsernamePassword.length > 0) {
+        const primaryUsers = usersWithSameEmailButNotUsernamePassword.filter(
+          (user) => !user.linked_to,
+        );
+
+        // these cases are currently not handled! if we think they're edge cases and we release this, we should at least inform datadog!
+        if (primaryUsers.length > 1) {
+          console.error("More than one primary user found for email", email);
+        }
+
+        if (primaryUsers.length === 0) {
+          console.error("No primary user found for email", email);
+          // so here we should ... hope there is only one usersWithSameEmailButNotUsernamePassword
+          // and then follow that linked_to chain?
+        }
+
+        // now actually link this username-password user to the primary user
+        if (primaryUsers.length === 1) {
+          await env.data.users.update(client.tenant_id, user.id, {
+            linked_to: primaryUsers[0].id,
+          });
+        }
+      }
+
+      // what should we actually do here?
+      return ctx.text("email validated");
+    },
+  )
 
   // --------------------------------
   // GET /u/info
@@ -587,11 +1057,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           }),
         }),
       },
-      security: [
-        {
-          Bearer: [],
-        },
-      ],
       responses: {
         200: {
           description: "Response",

@@ -123,7 +123,7 @@ describe("password-flow", () => {
       expect(code).toBeDefined();
       expect(state).toBeTypeOf("string");
 
-      const emailValidatedRes = await client.u["validate-email"].$get({
+      const emailValidatedRes = await loginClient.u["validate-email"].$get({
         query: {
           state,
           code,
@@ -254,7 +254,7 @@ describe("password-flow", () => {
       expect(to).toBe("existing-code-user@example.com");
       expect(code).toBeDefined();
 
-      const emailValidatedRes = await client.u["validate-email"].$get({
+      const emailValidatedRes = await loginClient.u["validate-email"].$get({
         query: {
           state,
           code,
@@ -445,7 +445,7 @@ describe("password-flow", () => {
 
       expect(to).toBe("password-login-test@example.com");
 
-      const emailValidatedRes = await client.u["validate-email"].$get({
+      const emailValidatedRes = await loginClient.u["validate-email"].$get({
         query: {
           state,
           code,

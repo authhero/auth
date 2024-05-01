@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { loginApp, tsoaApp } from "../../../src/app";
+import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
@@ -47,27 +47,22 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await client.u.code.$get({
-      query,
+    const codeInputFormResponse = await loginClient.u.code.$get({
+      query: {
+        state: query.state,
+      },
     });
 
     expect(codeInputFormResponse.status).toBe(200);
 
     await snapshotResponse(codeInputFormResponse);
 
-    const postSendCodeResponse = await client.u.code.$post(
-      {
-        query,
-        json: {
-          username: "foo@example.com",
-        },
+    const postSendCodeResponse = await loginClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(postSendCodeResponse.status).toBe(302);
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
@@ -81,25 +76,20 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
-    const enterCodeForm = await client.u["enter-code"].$get({
-      query: enterCodeQuery,
+    const enterCodeForm = await loginClient.u["enter-code"].$get({
+      query: { state: enterCodeQuery.state },
     });
     expect(enterCodeForm.status).toBe(200);
     await snapshotResponse(enterCodeForm);
 
-    const authenticateResponse = await client.u["enter-code"].$post(
-      {
-        query: enterCodeQuery,
-        json: {
-          code,
-        },
+    const authenticateResponse = await loginClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
+      form: {
+        code,
       },
-    );
+    });
 
     const codeLoginRedirectUri = authenticateResponse.headers.get("location");
     const redirectUrl = new URL(codeLoginRedirectUri!);
@@ -132,19 +122,12 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await client.u.code.$post(
-      {
-        query,
-        json: {
-          username: "foo@example.com",
-        },
+    const postSendCodeResponse = await loginClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "foo@example.com",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -152,20 +135,15 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
-    const incorrectCodeResponse = await client.u["enter-code"].$post(
-      {
-        query: enterCodeQuery,
-        json: {
-          // clearly wrong!
-          code: "123456",
-        },
+    const incorrectCodeResponse = await loginClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
+      form: {
+        // clearly wrong!
+        code: "123456",
       },
-    );
+    });
 
     await snapshotResponse(incorrectCodeResponse);
   });

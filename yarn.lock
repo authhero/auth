@@ -1681,10 +1681,10 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@types/node@20.11.1":
-  version "20.11.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.1.tgz#6a93f94abeda166f688d3d2aca18012afbe5f850"
-  integrity sha512-DsXojJUES2M+FE8CpptJTKpg+r54moV9ZEncPstni1WHFmTcCzeFLnMFfyhCVS8XNOy/OQG+8lVxRLRrVHmV5A==
+"@types/node@20.12.7":
+  version "20.12.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.7.tgz#04080362fa3dd6c5822061aa3124f5c152cff384"
+  integrity sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==
   dependencies:
     undici-types "~5.26.4"
 
@@ -3974,10 +3974,10 @@ highlight.js@^10.7.1:
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.7.3.tgz#697272e3991356e40c3cac566a74eef681756531"
   integrity sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A==
 
-hono@4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/hono/-/hono-4.2.2.tgz#d06dff091c8ed2541a38d90b6de8d39ea89f3e23"
-  integrity sha512-mDmjBHF6uBNN3TASdAbDCFsN9FLbrlgXyFZkhLEkU7hUgk0+T9hcsUrL/nho4qV+Xk0RDHx7gop4Q1gelZZVRw==
+hono@4.2.9:
+  version "4.2.9"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-4.2.9.tgz#9e81de065d18f61721aa6bfd9121dcf2af3e78d2"
+  integrity sha512-59FAv52UxDWUt/NlC0NzrRCjeVCThUnVlqlrKYm+k80XujBu6uJwBIa5gACKKZWobjA0MJ6Vds0I3URKf383Cw==
 
 hook-std@^3.0.0:
   version "3.0.0"
@@ -5205,10 +5205,10 @@ mime@1.6.0:
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.6.0.tgz#32cd9e5c64553bd58d19a568af452acff04981b1"
   integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
 
-mime@4.0.1, mime@^4.0.0:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/mime/-/mime-4.0.1.tgz#ad7563d1bfe30253ad97dedfae2b1009d01b9470"
-  integrity sha512-5lZ5tyrIfliMXzFtkYyekWbtRXObT9OWa8IwQ5uxTBDHucNNwniRqo0yInflj+iYi5CBa6qxadGzGarDfuEOxA==
+mime@4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-4.0.3.tgz#cd4a1aa052fc980dfc34f111fe1be9e8b878c5d2"
+  integrity sha512-KgUb15Oorc0NEKPbvfa0wRU+PItIEZmiv+pyAO2i0oTIVTJhlzMclU7w4RXWQrSOVH5ax/p/CkIO7KI4OyFJTQ==
 
 mime@^2.4.6:
   version "2.6.0"
@@ -5219,6 +5219,11 @@ mime@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/mime/-/mime-3.0.0.tgz#b374550dca3a0c18443b0c950a6a58f1931cf7a7"
   integrity sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==
+
+mime@^4.0.0:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-4.0.1.tgz#ad7563d1bfe30253ad97dedfae2b1009d01b9470"
+  integrity sha512-5lZ5tyrIfliMXzFtkYyekWbtRXObT9OWa8IwQ5uxTBDHucNNwniRqo0yInflj+iYi5CBa6qxadGzGarDfuEOxA==
 
 mimic-fn@^2.1.0:
   version "2.1.0"
@@ -6818,6 +6823,15 @@ read-package-json@^7.0.0:
     normalize-package-data "^6.0.0"
     npm-normalize-package-bin "^3.0.0"
 
+read-package-up@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/read-package-up/-/read-package-up-11.0.0.tgz#71fb879fdaac0e16891e6e666df22de24a48d5ba"
+  integrity sha512-MbgfoNPANMdb4oRBNg5eqLbB2t2r+o5Ua1pNt8BqGp4I0FJZhuVSOj3PaBPni4azWuSzEdNn2evevzVmEk1ohQ==
+  dependencies:
+    find-up-simple "^1.0.0"
+    read-pkg "^9.0.0"
+    type-fest "^4.6.0"
+
 read-pkg-up@^11.0.0:
   version "11.0.0"
   resolved "https://registry.yarnpkg.com/read-pkg-up/-/read-pkg-up-11.0.0.tgz#8916ffc6af2a7538b43bcc2c6445d4450ffe5a74"
@@ -7070,10 +7084,10 @@ selfsigned@^2.0.1:
     "@types/node-forge" "^1.3.0"
     node-forge "^1"
 
-semantic-release@23.0.7:
-  version "23.0.7"
-  resolved "https://registry.yarnpkg.com/semantic-release/-/semantic-release-23.0.7.tgz#fc34d0472ebdb5fde1b5b93a31df97b44e17dac4"
-  integrity sha512-PFxXQE57zrYiCbWKkdsVUF08s0SifEw3WhDhrN47ZEUWQiLl21FI9Dg/H8g7i/lPx0IkF6u7PjJbgxPceXKBeg==
+semantic-release@23.0.8:
+  version "23.0.8"
+  resolved "https://registry.yarnpkg.com/semantic-release/-/semantic-release-23.0.8.tgz#4a7d0b6de75d983082583502a257cc5646165800"
+  integrity sha512-yZkuWcTTfh5h/DrR4Q4QvJSARJdb6wjwn/sN0qKMYEkvwaVFek8YWfrgtL8oWaRdl0fLte0Y1wWMzLbwoaII1g==
   dependencies:
     "@semantic-release/commit-analyzer" "^12.0.0"
     "@semantic-release/error" "^4.0.0"
@@ -7098,7 +7112,7 @@ semantic-release@23.0.7:
     micromatch "^4.0.2"
     p-each-series "^3.0.0"
     p-reduce "^3.0.0"
-    read-pkg-up "^11.0.0"
+    read-package-up "^11.0.0"
     resolve-from "^5.0.0"
     semver "^7.3.2"
     semver-diff "^4.0.0"
@@ -7963,10 +7977,10 @@ type-is@^1.6.16, type-is@~1.6.18:
     media-typer "0.3.0"
     mime-types "~2.1.24"
 
-typescript@5.4.4:
-  version "5.4.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.4.tgz#eb2471e7b0a5f1377523700a21669dce30c2d952"
-  integrity sha512-dGE2Vv8cpVvw28v8HCPqyb08EzbBURxDpuhJvTrusShUfGnhHBafDsLdS1EhhxyL6BJQE+2cT3dDPAv+MQ6oLw==
+typescript@5.4.5:
+  version "5.4.5"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.5.tgz#42ccef2c571fdbd0f6718b1d1f5e6e5ef006f611"
+  integrity sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==
 
 typescript@^5.3.3:
   version "5.3.3"
