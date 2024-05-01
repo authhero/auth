@@ -111,6 +111,8 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
         if (!valid) {
           throw new HTTPException(403);
         }
+      } else {
+        throw new HTTPException(400, { message: "Code or password required" });
       }
 
       await ctx.env.data.tickets.create(ticket);
