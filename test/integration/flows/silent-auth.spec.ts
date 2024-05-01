@@ -3,33 +3,37 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { loginApp, tsoaApp } from "../../../src/app";
 import { testClient } from "hono/testing";
+import {
+  AuthorizationResponseType,
+  AuthorizationResponseMode,
+} from "../../../src/types";
 
 function getDefaultSilentAuthSearchParams() {
   return {
-    response_type: "token id_token",
+    response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
     scope: "openid profile email",
     redirect_uri: "http://localhost:3000/callback",
     state: "state",
     // silent auth pararms!
     prompt: "none",
     nonce: "unique-nonce",
-    response_mode: "web_message",
+    response_mode: AuthorizationResponseMode.WEB_MESSAGE,
   };
 }
 
 describe("silent-auth", () => {
   it("should return a 200 when not logged in, with a login_required error", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
+    const client = testClient(loginApp, env);
 
     const query = {
       client_id: "clientId",
-      response_type: "token id_token",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       redirect_uri: "https://login2.sesamy.dev/callback",
       scope: "openid profile email",
       state: "vaaQLli49FhEg894zjZXT1w.f~1gOEt0",
       nonce: "Mh3lSnGeCS3mIjQuofbSjULzJn~GCfdN",
-      response_mode: "web_message",
+      response_mode: AuthorizationResponseMode.WEB_MESSAGE,
       prompt: "none",
       auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
     };
@@ -37,6 +41,10 @@ describe("silent-auth", () => {
     const response = await client.authorize.$get({
       query,
     });
+
+    if (response.status !== 200) {
+      throw new Error(await response.text());
+    }
 
     expect(response.status).toBe(200);
     const body = await response.text();
@@ -60,17 +68,17 @@ describe("silent-auth", () => {
     expect(loginResponse.status).toBe(200);
     const { login_ticket } = await loginResponse.json();
     const query = {
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+      auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
       login_ticket,
       referrer: "https://login.example.com",
-      response_type: "token id_token",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       redirect_uri: "http://login.example.com",
       state: "state",
       realm: "Username-Password-Authentication",
     };
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
+    const tokenResponse = await loginClient.authorize.$get({
       query,
     });
     expect(tokenResponse.status).toBe(302);
@@ -84,7 +92,7 @@ describe("silent-auth", () => {
     // -------------------------------------------------------------
     const { idToken } = await doSilentAuthRequestAndReturnTokens(
       setCookieHeader,
-      client,
+      loginClient,
       "nonce",
       "clientId",
     );
@@ -110,20 +118,25 @@ describe("silent-auth", () => {
     });
     expect(loginResponse.status).toBe(200);
     const { login_ticket } = await loginResponse.json();
-    const query = {
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      client_id: "clientId",
-      login_ticket,
-      referrer: "https://login.example.com",
-      response_type: "token id_token",
-      redirect_uri: "http://login.example.com",
-      state: "state",
-      realm: "Username-Password-Authentication",
-    };
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
-      query,
-    });
+    const tokenResponse = await loginClient.authorize.$get(
+      {
+        query: {
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+          client_id: "clientId",
+          login_ticket,
+          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+          redirect_uri: "http://login.example.com",
+          state: "state",
+          realm: "Username-Password-Authentication",
+        },
+      },
+      {
+        headers: {
+          referrer: "https://login.example.com",
+        },
+      },
+    );
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
     const setCookieHeader = tokenResponse.headers.get("set-cookie")!;
@@ -133,7 +146,7 @@ describe("silent-auth", () => {
     const { accessToken: silentAuthAccessTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookieHeader,
-        client,
+        loginClient,
         "nonce",
         "clientId",
       );
@@ -145,7 +158,7 @@ describe("silent-auth", () => {
     const { accessToken: silentAuthAccessTokenPayloadOtherClient } =
       await doSilentAuthRequestAndReturnTokens(
         setCookieHeader,
-        client,
+        loginClient,
         "nonce",
         "otherClientId",
       );
@@ -158,7 +171,7 @@ describe("silent-auth", () => {
       client_id: "otherClientIdOnOtherTenant",
     };
 
-    const silentAuthResponseDifferentTenant = await client.authorize.$get(
+    const silentAuthResponseDifferentTenant = await loginClient.authorize.$get(
       {
         query: silentAuthSearchParamsDifferentTenant,
       },

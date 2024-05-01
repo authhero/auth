@@ -30,6 +30,7 @@ import { dbConnectionRoutes } from "./routes/oauth2/dbconnections";
 import { passwordlessRoutes } from "./routes/oauth2/passwordless";
 import { tokenRoutes } from "./routes/oauth2/token";
 import { authenticateRoutes } from "./routes/oauth2/authenticate";
+import { authorizeRoutes } from "./routes/oauth2/authorize";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -96,6 +97,7 @@ export const app = rootApp
 export const loginApp = rootApp
   .route("/u", login)
   .route("/.well-known", wellKnown)
+  .route("/authorize", authorizeRoutes)
   .route("/callback", callback)
   .route("/oauth/token", tokenRoutes)
   .route("/dbconnections", dbConnectionRoutes)

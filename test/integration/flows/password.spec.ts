@@ -5,7 +5,7 @@ import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { UserResponse } from "../../../src/types";
+import { AuthorizationResponseType, UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import {
   snapshotResponse,
@@ -79,19 +79,28 @@ describe("password-flow", () => {
 
       // this will not work! need to validate the email before allowing a login
       const { login_ticket } = await loginResponse.json();
-      const query = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
 
       // cannot login now because email not validated!
-      const loginBlockedRes = await client.authorize.$get({ query });
+      const loginBlockedRes = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
+
+      expect(loginBlockedRes.status).toBe(302);
 
       // this will redirect us to login2
       const login2RedirectUri2 = new URL(
@@ -139,18 +148,25 @@ describe("password-flow", () => {
       });
 
       const { login_ticket: loginTicket2 } = await loginResponse2.json();
-      const query2 = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket: loginTicket2,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
 
-      const tokenResponse = await client.authorize.$get({ query: query2 });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket: loginTicket2,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
@@ -174,7 +190,7 @@ describe("password-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client,
+          loginClient,
           "unique-nonce",
           "clientId",
         );
@@ -282,18 +298,25 @@ describe("password-flow", () => {
       expect(loginResponse.status).toBe(200);
 
       const { login_ticket } = await loginResponse.json();
-      const query = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
 
-      const tokenResponse = await client.authorize.$get({ query });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
@@ -311,7 +334,7 @@ describe("password-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client,
+          loginClient,
           "unique-nonce",
           "clientId",
         );
@@ -389,22 +412,29 @@ describe("password-flow", () => {
       });
 
       const { login_ticket } = await loginResponse.json();
-      const query = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
 
       // ---------------------------
       // this will not work because email not validated
       // the user is redirected to a page informing them that they need to validate their email
       // ---------------------------
-      const res = await client.authorize.$get({ query });
+      const res = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
       expect(res.headers.get("location")).toBe(
         "https://login2.sesamy.dev/unverified-email?email=password-login-test%2540example.com&lang=sv",
       );
@@ -439,18 +469,23 @@ describe("password-flow", () => {
       });
 
       const { login_ticket: loginTicket2 } = await loginResponse2.json();
-      const query2 = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket: loginTicket2,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
 
-      const tokenResponse = await client.authorize.$get({ query: query2 });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket: loginTicket2,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: { referrer: "https://login.example.com" },
+        },
+      );
 
       expect(tokenResponse.status).toBe(302);
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
@@ -534,19 +569,26 @@ describe("password-flow", () => {
 
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = await loginResponse.json();
-      const query = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
 
       // Trade the ticket for token
-      const tokenResponse = await client.authorize.$get({ query });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
@@ -576,7 +618,7 @@ describe("password-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client,
+          loginClient,
           "unique-nonce",
           "clientId",
         );
@@ -774,19 +816,26 @@ describe("password-flow", () => {
 
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = await loginResponse.json();
-      const query = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
 
       // Trade the ticket for token
-      const tokenResponse = await client.authorize.$get({ query });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
       const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
@@ -949,17 +998,24 @@ describe("password-flow", () => {
       });
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = await loginResponse.json();
-      const query = {
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        response_type: "token id_token",
-        redirect_uri: "http://login.example.com",
-        state: "state",
-        realm: "Username-Password-Authentication",
-      };
-      const tokenResponse = await client.authorize.$get({ query });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+            redirect_uri: "http://login.example.com",
+            state: "state",
+            realm: "Username-Password-Authentication",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       // this proves that email_verified is set to true, and the new password has been set
       expect(tokenResponse.status).toBe(302);

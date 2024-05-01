@@ -1,28 +1,21 @@
-import { Controller } from "@tsoa/runtime";
-import { AuthParams, Env } from "../types";
-import {
-  UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS,
-  headers,
-} from "../constants";
+import { HTTPException } from "hono/http-exception";
+import { Context } from "hono";
+import { AuthParams, Env, Var } from "../types";
+import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../constants";
 import { nanoid } from "nanoid";
 import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import { getClient } from "../services/clients";
 
 interface UniversalAuthParams {
-  env: Env;
-  controller: Controller;
+  ctx: Context<{ Bindings: Env; Variables: Var }>;
   authParams: AuthParams;
 }
 
-export async function universalAuth({
-  env,
-  controller,
-  authParams,
-}: UniversalAuthParams) {
-  const client = await getClient(env, authParams.client_id);
+export async function universalAuth({ ctx, authParams }: UniversalAuthParams) {
+  const client = await getClient(ctx.env, authParams.client_id);
 
   if (!client) {
-    throw new Error("Client not found");
+    throw new HTTPException(400, { message: "Client not found" });
   }
 
   const session: UniversalLoginSession = {
@@ -37,9 +30,7 @@ export async function universalAuth({
     authParams,
   };
 
-  await env.data.universalLoginSessions.create(session);
+  await ctx.env.data.universalLoginSessions.create(session);
 
-  controller.setStatus(302);
-  controller.setHeader(headers.location, `/u/login?state=${session.id}`);
-  return "Redirecting...";
+  return ctx.redirect(`/u/login?state=${session.id}`);
 }

@@ -1,4 +1,3 @@
-import { Controller } from "@tsoa/runtime";
 import { Context } from "hono";
 import {
   getStateFromCookie,
@@ -7,15 +6,14 @@ import {
 import { AuthorizationResponseType, CodeChallengeMethod, Env } from "../types";
 import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
-import { headers } from "../constants";
 import { Var } from "../types/Var";
 import { LogTypes } from "../types";
+import { waitUntil } from "../utils/wait-until";
 
 interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
   tenant_id: string;
-  controller: Controller;
-  cookie_header: string | null;
+  cookie_header?: string;
   redirect_uri: string;
   state: string;
   response_type: AuthorizationResponseType;
@@ -30,7 +28,6 @@ interface SilentAuthParams {
 export async function silentAuth({
   ctx,
   tenant_id,
-  controller,
   cookie_header,
   redirect_uri,
   state,
@@ -56,9 +53,9 @@ export async function silentAuth({
       ctx.set("userId", session.user_id);
 
       // Update the cookie
-      serializeStateInCookie(tokenState).forEach((cookie) => {
-        controller.setHeader(headers.setCookie, cookie);
-      });
+      const headers = new Headers();
+      const [cookie] = serializeStateInCookie(tokenState);
+      headers.set("set-cookie", cookie);
 
       const user = await env.data.users.get(tenant_id, session.user_id);
       ctx.set("userName", user?.email);
@@ -85,10 +82,14 @@ export async function silentAuth({
           used_at: new Date().toISOString(),
         });
 
-        return renderAuthIframe(
-          controller,
-          `${redirectURL.protocol}//${redirectURL.host}`,
-          JSON.stringify(tokenResponse),
+        return ctx.html(
+          renderAuthIframe(
+            `${redirectURL.protocol}//${redirectURL.host}`,
+            JSON.stringify(tokenResponse),
+          ),
+          {
+            headers,
+          },
         );
       }
     }
@@ -96,13 +97,14 @@ export async function silentAuth({
 
   ctx.set("description", "Login required");
   ctx.set("logType", "fsa");
-  return renderAuthIframe(
-    controller,
-    `${redirectURL.protocol}//${redirectURL.host}`,
-    JSON.stringify({
-      error: "login_required",
-      error_description: "Login required",
-      state,
-    }),
+  return ctx.html(
+    renderAuthIframe(
+      `${redirectURL.protocol}//${redirectURL.host}`,
+      JSON.stringify({
+        error: "login_required",
+        error_description: "Login required",
+        state,
+      }),
+    ),
   );
 }

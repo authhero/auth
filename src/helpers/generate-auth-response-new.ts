@@ -117,7 +117,7 @@ export async function generateTokens(
 
   const sessionCookie = serializeStateInCookie(sid);
 
-  return new Response("Redirecting...", {
+  return new Response("Redirecting", {
     status: 302,
     headers: {
       Location: redirectUrl,

@@ -6,6 +6,7 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
 import { loginApp, tsoaApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
+import { AuthorizationResponseType } from "../../../src/types";
 
 const LOGIN2_STATE = "client_id=clientId&connection=auth2";
 
@@ -15,7 +16,7 @@ const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
   state: LOGIN2_STATE,
   client_id: "clientId",
   nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-  response_type: "token id_token",
+  response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
 };
 
 // same on each test
@@ -70,16 +71,14 @@ describe("social sign on", () => {
 
     it("should create correct args for social sign on from hitting /authorize with connection", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
-
-      const socialSignOnQuery = {
-        ...SOCIAL_STATE_PARAM_AUTH_PARAMS,
-        connection: "demo-social-provider",
-        auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      };
+      const client = testClient(loginApp, env);
 
       const socialSignOnResponse = await client.authorize.$get({
-        query: socialSignOnQuery,
+        query: {
+          ...SOCIAL_STATE_PARAM_AUTH_PARAMS,
+          connection: "demo-social-provider",
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        },
       });
 
       expect(socialSignOnResponse.status).toBe(302);
@@ -151,7 +150,7 @@ describe("social sign on", () => {
         const { idToken: silentAuthIdTokenPayload } =
           await doSilentAuthRequestAndReturnTokens(
             setCookiesHeader,
-            client,
+            loginClient,
             "nonce",
             "clientId",
           );
@@ -253,7 +252,7 @@ describe("social sign on", () => {
         const { idToken: silentAuthIdTokenPayload } =
           await doSilentAuthRequestAndReturnTokens(
             setCookiesHeader,
-            client,
+            loginClient,
             "nonce",
             "clientId",
           );
@@ -434,7 +433,7 @@ describe("social sign on", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           setCookiesHeader,
-          client,
+          loginClient,
           "nonce",
           "clientId",
         );

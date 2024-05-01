@@ -68,7 +68,7 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env }>()
         }
       }
 
-      return new Response("Redirecting...", {
+      return new Response("Redirecting", {
         status: 302,
         headers: {
           "set-cookie": serializeClearCookie(),

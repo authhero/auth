@@ -1,7 +1,4 @@
-import { Controller } from "tsoa";
-
 export default async function renderAuthIframe(
-  controller: Controller,
   targetOrigin: string,
   response: string,
 ) {
@@ -49,9 +46,6 @@ export default async function renderAuthIframe(
   </body>
   
   </html>`;
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
 
   return auth0Iframe;
 }
