@@ -23,7 +23,3 @@ export interface UserResponse extends BaseUser {
   user_id: string;
   [key: string]: any;
 }
-
-export interface GetUserResponseWithTotals extends Totals {
-  users: UserResponse[];
-}

@@ -27,7 +27,7 @@ interface GenerateAuthResponseParamsForCode
   user: User;
 }
 
-export interface GenerateAuthResponseParamsForToken
+interface GenerateAuthResponseParamsForToken
   extends GenerateAuthResponseParamsBase {
   responseType: AuthorizationResponseType.TOKEN;
 }

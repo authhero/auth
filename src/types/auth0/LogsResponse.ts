@@ -79,9 +79,6 @@ const browserLogCommonFieldSchema = logCommonFieldsSchema.extend({
   client_id: z.string().optional(),
   client_name: z.string(),
 });
-export type BrowserLogCommonFields = z.infer<
-  typeof browserLogCommonFieldSchema
->;
 
 const successfulExchangeOfAccessTokenForAClientCredentialsGrantSchema =
   browserLogCommonFieldSchema.extend({

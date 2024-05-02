@@ -7,7 +7,7 @@ import { domainInsertSchema, domainSchema } from "../../types/Domain";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 
-export const domainWithTotalsSchema = totalsSchema.extend({
+const domainWithTotalsSchema = totalsSchema.extend({
   domains: z.array(domainSchema),
 });
 

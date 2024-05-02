@@ -48,7 +48,7 @@ const rootApp = new OpenAPIHono<{ Bindings: Env }>();
 
 registerComponent(rootApp);
 
-export const app = rootApp
+const app = rootApp
   .onError((err, ctx) => {
     if (err instanceof HTTPException) {
       // Get the custom response
