@@ -4,7 +4,7 @@ import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { loginApp, tsoaApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { AuthorizationResponseType } from "../../../src/types";
 
@@ -106,7 +106,6 @@ describe("social sign on", () => {
           code: "code",
         };
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
         const loginClient = testClient(loginApp, env);
 
         const socialCallbackResponse = await loginClient.callback.$get({
@@ -191,7 +190,6 @@ describe("social sign on", () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
-        const client = testClient(tsoaApp, env);
         const loginClient = testClient(loginApp, env);
 
         // check this user isn't already created from the previous test
@@ -298,7 +296,6 @@ describe("social sign on", () => {
       // ---------------------------------------------
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       const createEmailUserResponse = await loginClient.api.v2.users.$post(
@@ -659,7 +656,6 @@ describe("social sign on", () => {
 
     it("should ignore un-verified password account when signing up with social account", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------

@@ -10,12 +10,6 @@ export enum GrantType {
 
 const grantTypeSchema = z.nativeEnum(GrantType);
 
-const refreshTokenGrantTypeParamsSchema = z.object({
-  grant_type: grantTypeSchema.refine((val) => val === GrantType.RefreshToken),
-  refresh_token: z.string(),
-  client_id: z.string(),
-});
-
 const authorizationCodeGrantTypeParamsSchema = z.object({
   grant_type: grantTypeSchema.refine(
     (val) => val === GrantType.AuthorizationCode,
@@ -56,15 +50,6 @@ const clientCredentialGrantTypeParamsSchema = z.object({
 export type ClientCredentialsGrantTypeParams = z.infer<
   typeof clientCredentialGrantTypeParamsSchema
 >;
-
-const passwordGrantTypeParamsSchema = z.object({
-  grant_type: grantTypeSchema.refine((val) => val === GrantType.Password),
-  username: z.string(),
-  password: z.string(),
-  client_id: z.string(),
-  audience: z.string().optional(),
-  scope: z.string().optional(),
-});
 
 const tokenResponseSchema = z.object({
   access_token: z.string(),

@@ -5,7 +5,7 @@ import {
   openIDConfigurationSchema,
 } from "../../types/jwks";
 import { Env } from "../../types";
-import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 
 export const wellKnown = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------

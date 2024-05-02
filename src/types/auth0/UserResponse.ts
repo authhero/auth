@@ -1,6 +1,5 @@
 import { BaseUser } from "../User";
 import { Identity } from "./Identity";
-import { Totals } from "./Totals";
 
 export interface PostUsersBody extends BaseUser {
   password?: string;

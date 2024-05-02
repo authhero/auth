@@ -1,11 +1,9 @@
-import { Controller } from "tsoa";
 import {
   AuthParams,
   AuthorizationResponseMode,
   CodeResponse,
   TokenResponse,
 } from "../types";
-import { headers } from "../constants";
 
 function getTokenResponseAsQueryRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
@@ -45,21 +43,6 @@ function getTokenResponseAsQueryRedirectUri(
   }
 
   return redirectUri;
-}
-
-function applyTokenResponseAsFragment(
-  controller: Controller,
-  tokenResponse: TokenResponse | CodeResponse,
-  authParams: AuthParams,
-) {
-  const redirectUri = getTokenResponseAsFragmentRedirectUri(
-    tokenResponse,
-    authParams,
-  );
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectUri.href);
-
-  return "Redirecting";
 }
 
 function getTokenResponseAsFragmentRedirectUri(

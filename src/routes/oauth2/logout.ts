@@ -54,16 +54,17 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env }>()
       if (cookie) {
         const tokenState = getStateFromCookie(cookie);
         if (tokenState) {
-          const session = await ctx.env.data.sessions.get(
-            client.tenant_id,
-            tokenState,
-          );
-          if (session) {
-            const user = await ctx.env.data.users.get(
-              client.tenant_id,
-              session.user_id,
-            );
-          }
+          // why was this code previously here that did nothing?
+          // const session = await ctx.env.data.sessions.get(
+          //   client.tenant_id,
+          //   tokenState,
+          // );
+          // if (session) {
+          //   const user = await ctx.env.data.users.get(
+          //     client.tenant_id,
+          //     session.user_id,
+          //   );
+          // }
           await ctx.env.data.sessions.remove(client.tenant_id, tokenState);
         }
       }
