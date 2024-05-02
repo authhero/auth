@@ -3,7 +3,6 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { Env, Var } from "./types";
-import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import loggerMiddleware from "./middlewares/logger";
@@ -116,10 +115,6 @@ loginApp.doc("/u/doc", {
     version: "1.0.0",
     title: "Login spec",
   },
-});
-
-app.get("/spec", async () => {
-  return new Response(JSON.stringify(swagger));
 });
 
 app.get(
