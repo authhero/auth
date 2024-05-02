@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { loginApp } from "../../../src/app";
+import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import {
   snapshotResponse,
@@ -12,9 +12,9 @@ describe("Forgot password", () => {
   it("should send forgot password email", async () => {
     const env = await getEnv();
 
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const response = await loginClient.authorize.$get({
+    const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
@@ -33,7 +33,7 @@ describe("Forgot password", () => {
     // Open forgot password page
     // ---------------------
 
-    const forgotPasswordResponse = await loginClient.u["forgot-password"].$get({
+    const forgotPasswordResponse = await oauthClient.u["forgot-password"].$get({
       query: {
         state: query.state,
       },
@@ -47,7 +47,7 @@ describe("Forgot password", () => {
     // now send the password reset email
     // ---------------------
 
-    const forgotPasswordEmailResponse = await loginClient.u[
+    const forgotPasswordEmailResponse = await oauthClient.u[
       "forgot-password"
     ].$post({
       query: {

@@ -2,18 +2,7 @@ import { Kysely } from "kysely";
 import { Database, PartialClient } from "../../../types";
 import { connectionSchema } from "../../../types/Connection";
 import { HTTPException } from "hono/http-exception";
-
-function removeNullProperties<T = any>(obj: Record<string, any>) {
-  const clone = { ...obj };
-
-  for (const key in clone) {
-    if (clone[key] === null) {
-      delete clone[key];
-    }
-  }
-
-  return clone as T;
-}
+import { removeNullProperties } from "../helpers/remove-nulls";
 
 function splitUrls(value?: string) {
   if (!value?.length) {

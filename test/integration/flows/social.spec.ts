@@ -4,7 +4,7 @@ import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
+import { managementApp, oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { AuthorizationResponseType } from "../../../src/types";
 
@@ -38,7 +38,6 @@ const EXPECTED_PROFILE_DATA = {
 };
 
 const EXPECTED_NEW_USER = {
-  tenant_id: "tenantId",
   name: "örjan.lindström@example.com",
   provider: "demo-social-provider",
   connection: "demo-social-provider",
@@ -71,7 +70,7 @@ describe("social sign on", () => {
 
     it("should create correct args for social sign on from hitting /authorize with connection", async () => {
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
 
       const socialSignOnResponse = await client.authorize.$get({
         query: {
@@ -106,9 +105,10 @@ describe("social sign on", () => {
           code: "code",
         };
         const env = await getEnv();
-        const loginClient = testClient(loginApp, env);
+        const oauthClient = testClient(oauthApp, env);
+        const managementClient = testClient(managementApp, env);
 
-        const socialCallbackResponse = await loginClient.callback.$get({
+        const socialCallbackResponse = await oauthClient.callback.$get({
           query: socialCallbackQuery,
         });
         expect(socialCallbackResponse.status).toBe(302);
@@ -149,7 +149,7 @@ describe("social sign on", () => {
         const { idToken: silentAuthIdTokenPayload } =
           await doSilentAuthRequestAndReturnTokens(
             setCookiesHeader,
-            loginClient,
+            oauthClient,
             "nonce",
             "clientId",
           );
@@ -161,7 +161,7 @@ describe("social sign on", () => {
         // ---------------------------------------------
         // now check that the user was created was properly in the data providers
         // ---------------------------------------------
-        const newSocialUserRes = await loginClient.api.v2.users[
+        const newSocialUserRes = await managementClient.api.v2.users[
           ":user_id"
         ].$get(
           {
@@ -190,10 +190,11 @@ describe("social sign on", () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
-        const loginClient = testClient(loginApp, env);
+        const oauthClient = testClient(oauthApp, env);
+        const managementClient = testClient(managementApp, env);
 
         // check this user isn't already created from the previous test
-        const checkNoExistingUser = await loginClient.api.v2.users[
+        const checkNoExistingUser = await managementClient.api.v2.users[
           ":user_id"
         ].$get(
           {
@@ -210,7 +211,7 @@ describe("social sign on", () => {
         );
         // this checks that the integration test persistence is correctly reset every test
         expect(checkNoExistingUser.status).toBe(404);
-        const socialCallbackResponse = await loginClient.callback.$post({
+        const socialCallbackResponse = await oauthClient.callback.$post({
           form: {
             state: SOCIAL_STATE_PARAM,
             code: "code",
@@ -250,7 +251,7 @@ describe("social sign on", () => {
         const { idToken: silentAuthIdTokenPayload } =
           await doSilentAuthRequestAndReturnTokens(
             setCookiesHeader,
-            loginClient,
+            oauthClient,
             "nonce",
             "clientId",
           );
@@ -262,7 +263,7 @@ describe("social sign on", () => {
         // ---------------------------------------------
         // now check that the user was created was properly in the data providers
         // ---------------------------------------------
-        const newSocialUserRes = await loginClient.api.v2.users[
+        const newSocialUserRes = await managementClient.api.v2.users[
           ":user_id"
         ].$get(
           {
@@ -296,9 +297,10 @@ describe("social sign on", () => {
       // ---------------------------------------------
       const token = await getAdminToken();
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
-      const createEmailUserResponse = await loginClient.api.v2.users.$post(
+      const createEmailUserResponse = await managementClient.api.v2.users.$post(
         {
           json: {
             email: "örjan.lindström@example.com",
@@ -338,7 +340,7 @@ describe("social sign on", () => {
         code: "code",
       };
 
-      const socialCallbackResponse = await loginClient.callback.$get({
+      const socialCallbackResponse = await oauthClient.callback.$get({
         query: socialCallbackQuery,
       });
 
@@ -366,7 +368,9 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now check that the new social user was created was properly in the data providers
       // ---------------------------------------------
-      const newSocialUserRes = await loginClient.api.v2.users[":user_id"].$get(
+      const newSocialUserRes = await managementClient.api.v2.users[
+        ":user_id"
+      ].$get(
         {
           param: { user_id: createEmailUser.user_id },
           header: {
@@ -384,7 +388,9 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // check that the primary user has new identities
       // ---------------------------------------------
-      const primaryUserRes = await loginClient.api.v2.users[":user_id"].$get(
+      const primaryUserRes = await managementClient.api.v2.users[
+        ":user_id"
+      ].$get(
         {
           param: { user_id: createEmailUser.user_id },
           header: {
@@ -430,7 +436,7 @@ describe("social sign on", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           setCookiesHeader,
-          loginClient,
+          oauthClient,
           "nonce",
           "clientId",
         );
@@ -446,7 +452,7 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now sign in same social user again and check we get the same primary user back
       // ---------------------------------------------
-      const socialCallbackResponse2 = await loginClient.callback.$get({
+      const socialCallbackResponse2 = await oauthClient.callback.$get({
         query: socialCallbackQuery,
       });
 
@@ -468,7 +474,7 @@ describe("social sign on", () => {
         ).replace("==", ""),
         code: "code",
       };
-      const socialCallbackResponseAnotherSSO = await loginClient.callback.$get({
+      const socialCallbackResponseAnotherSSO = await oauthClient.callback.$get({
         query: socialCallbackQueryAnotherSSO,
       });
 
@@ -488,7 +494,7 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // now check that the primary user has new identities
       // ---------------------------------------------
-      const primaryUserResAgain = await loginClient.api.v2.users[
+      const primaryUserResAgain = await managementClient.api.v2.users[
         ":user_id"
       ].$get(
         {
@@ -546,7 +552,8 @@ describe("social sign on", () => {
     it("should return existing primary account when logging in with new social sign on with same email address AND there is already another linked social account", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // What I want here is for the linked social account to be returned FIRST!
       // so this is a bit synthetic by manually writing the users...
@@ -582,7 +589,7 @@ describe("social sign on", () => {
       // ---------------------------------------------
       // fetch this email user to sanity check test
       // ---------------------------------------------
-      const emailUserRes = await client.api.v2.users[":user_id"].$get(
+      const emailUserRes = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: { user_id: "email|7575757575757" },
           header: {
@@ -639,7 +646,7 @@ describe("social sign on", () => {
         code: "code",
       };
 
-      const socialCallbackResponse = await client.callback.$get({
+      const socialCallbackResponse = await oauthClient.callback.$get({
         query: socialCallbackQuery,
       });
 
@@ -656,13 +663,13 @@ describe("social sign on", () => {
 
     it("should ignore un-verified password account when signing up with social account", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // -----------------
       // signup new user
       // -----------------
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -682,7 +689,7 @@ describe("social sign on", () => {
         code: "code",
       };
 
-      const socialCallbackResponse = await loginClient.callback.$get({
+      const socialCallbackResponse = await oauthClient.callback.$get({
         query: socialCallbackQuery,
       });
       expect(socialCallbackResponse.status).toBe(302);
@@ -704,7 +711,7 @@ describe("social sign on", () => {
     describe("auth2 should not create a new user if callback from non-existing social provider", () => {
       it("should not when GET /callback", async () => {
         const env = await getEnv();
-        const client = testClient(loginApp, env);
+        const client = testClient(oauthApp, env);
 
         const socialCallbackQuery = {
           // this is the only difference from the other tests
@@ -733,7 +740,7 @@ describe("social sign on", () => {
       });
       it("should not when POST /callback", async () => {
         const env = await getEnv();
-        const client = testClient(loginApp, env);
+        const client = testClient(oauthApp, env);
 
         const socialCallbackResponse = await client.callback.$post({
           form: {
@@ -768,7 +775,7 @@ describe("social sign on", () => {
       // e.g. Facebook hit "not now" button
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
 
       const errorCallbackResponse = await client.callback.$get({
         query: {

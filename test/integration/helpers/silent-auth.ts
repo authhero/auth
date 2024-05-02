@@ -1,13 +1,13 @@
 import { expect } from "vitest";
 import { testClient } from "hono/testing";
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import { loginApp } from "../../../src/app";
+import { oauthApp } from "../../../src/app";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
 } from "../../../src/types";
 
-const client = testClient(loginApp, {});
+const client = testClient(oauthApp, {});
 type clientAppType = typeof client;
 
 export async function doSilentAuthRequest(

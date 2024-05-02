@@ -4,16 +4,16 @@ import {
   doSilentAuthRequestAndReturnTokens,
 } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
-import { loginApp } from "../../../src/app";
+import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { AuthorizationResponseType } from "../../../src/types";
 
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const loginResponse = await loginClient.co.authenticate.$post({
+    const loginResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -26,7 +26,7 @@ describe("logout", () => {
     const { login_ticket } = await loginResponse.json();
 
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get(
+    const tokenResponse = await oauthClient.authorize.$get(
       {
         query: {
           auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -53,7 +53,7 @@ describe("logout", () => {
     const { accessToken: silentAuthAccessTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookieHeader,
-        loginClient,
+        oauthClient,
         "nonce",
         "clientId",
       );
@@ -64,7 +64,7 @@ describe("logout", () => {
     const cookies = setCookieHeader.split(";").map((c) => c.trim());
     const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
-    const logoutResponse = await loginClient.v2.logout.$get(
+    const logoutResponse = await oauthClient.v2.logout.$get(
       {
         query: {
           client_id: "clientId",
@@ -85,7 +85,7 @@ describe("logout", () => {
     //--------------------------------------------------------------
     const result = await doSilentAuthRequest(
       setCookieHeader,
-      loginClient,
+      oauthClient,
       "nonce",
       "clientId",
     );

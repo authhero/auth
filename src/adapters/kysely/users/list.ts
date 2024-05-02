@@ -4,6 +4,7 @@ import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { luceneFilter } from "../helpers/filter";
+import { removeNullProperties } from "../helpers/remove-nulls";
 
 export function listUsers(db: Kysely<Database>) {
   return async (
@@ -34,11 +35,13 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      users: users.map((u) => ({
-        ...u,
-        email_verified: u.email_verified === 1,
-        is_social: u.is_social === 1,
-      })),
+      users: users.map((u) =>
+        removeNullProperties({
+          ...u,
+          email_verified: u.email_verified === 1,
+          is_social: u.is_social === 1,
+        }),
+      ),
       start: params.page * params.per_page,
       limit: params.per_page,
       length: countInt,

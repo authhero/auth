@@ -6,6 +6,7 @@ import { enrichUser } from "../../utils/enrichUser";
 import {
   Env,
   Log,
+  auth0UserResponseSchema,
   totalsSchema,
   userInsertSchema,
   userSchema,
@@ -47,8 +48,11 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       responses: {
         200: {
           content: {
-            "tenant/json": {
-              schema: z.union([z.array(userSchema), usersWithTotalsSchema]),
+            "application/json": {
+              schema: z.union([
+                z.array(auth0UserResponseSchema),
+                usersWithTotalsSchema,
+              ]),
             },
           },
           description: "List of users",
@@ -100,7 +104,9 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           primaryAccount,
         );
 
-        return ctx.json([primaryAccountEnriched]);
+        return ctx.json([
+          auth0UserResponseSchema.parse(primaryAccountEnriched),
+        ]);
       }
 
       // Filter out linked users
@@ -119,22 +125,31 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const primarySqlUsers = result.users.filter((user) => !user.linked_to);
 
-      const users: UserResponse[] = await Promise.all(
-        primarySqlUsers.map(async (primarySqlUser) => {
-          return await enrichUser(ctx.env, tenant_id, primarySqlUser);
+      const users = await Promise.all(
+        primarySqlUsers.map((primarySqlUser) => {
+          return enrichUser(ctx.env, tenant_id, primarySqlUser);
         }),
       );
 
       if (include_totals) {
-        return ctx.json({
-          users: users,
-          length: result.length,
-          start: result.start,
-          limit: result.limit,
-        });
+        return ctx.json(
+          usersWithTotalsSchema.parse({
+            users: users,
+            length: result.length,
+            start: result.start,
+            limit: result.limit,
+          }),
+        );
       }
 
-      return ctx.json(users);
+      try {
+        return ctx.json(z.array(auth0UserResponseSchema).parse(users));
+      } catch (e: any) {
+        console.error(e);
+        throw new HTTPException(503, { message: e.message });
+      }
+
+      return ctx.json(z.array(auth0UserResponseSchema).parse(users));
     },
   )
   // --------------------------------
@@ -162,8 +177,8 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       responses: {
         200: {
           content: {
-            "tenant/json": {
-              schema: userSchema,
+            "application/json": {
+              schema: auth0UserResponseSchema,
             },
           },
           description: "List of users",
@@ -186,13 +201,9 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
       }
 
-      const userResponse: UserResponse = await enrichUser(
-        ctx.env,
-        tenant_id,
-        user,
-      );
+      const userResponse = await enrichUser(ctx.env, tenant_id, user);
 
-      return ctx.json(userResponse);
+      return ctx.json(auth0UserResponseSchema.parse(userResponse));
     },
   )
   // --------------------------------
@@ -264,6 +275,11 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       ],
       responses: {
         200: {
+          content: {
+            "application/json": {
+              schema: auth0UserResponseSchema,
+            },
+          },
           description: "Status",
         },
       },
@@ -303,7 +319,7 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const log: Log = createTypeLog("sapi", ctx, body, `Create a User`);
       waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
-      const userResponse: UserResponse = {
+      const userResponse = {
         ...data,
         user_id: data.id,
         identities: [
@@ -316,7 +332,9 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ],
       };
 
-      return ctx.json(userResponse, { status: 201 });
+      return ctx.json(auth0UserResponseSchema.parse(userResponse), {
+        status: 201,
+      });
     },
   )
   // --------------------------------
@@ -410,11 +428,7 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(500);
       }
 
-      const userResponse: UserResponse = await enrichUser(
-        ctx.env,
-        tenant_id,
-        patchedUser,
-      );
+      const userResponse = await enrichUser(ctx.env, tenant_id, patchedUser);
 
       return ctx.json(userResponse);
     },
@@ -457,6 +471,18 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       ],
       responses: {
         200: {
+          content: {
+            "application/json": {
+              schema: z.array(
+                z.object({
+                  connection: z.string(),
+                  provider: z.string(),
+                  user_id: z.string(),
+                  isSocial: z.boolean(),
+                }),
+              ),
+            },
+          },
           description: "Status",
         },
       },
@@ -523,8 +549,8 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       responses: {
         200: {
           content: {
-            "tenant/json": {
-              schema: z.array(userSchema),
+            "application/json": {
+              schema: z.array(auth0UserResponseSchema),
             },
           },
           description: "Status",
@@ -547,12 +573,8 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(404);
       }
 
-      const userResponse: UserResponse = await enrichUser(
-        ctx.env,
-        tenant_id,
-        user,
-      );
+      const userResponse = await enrichUser(ctx.env, tenant_id, user);
 
-      return ctx.json([userResponse]);
+      return ctx.json([auth0UserResponseSchema.parse(userResponse)]);
     },
   );

@@ -4,7 +4,7 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
+import { managementApp, oauthApp } from "../../../src/app";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
@@ -46,12 +46,15 @@ describe("magic link flow", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // -----------------
       // Doing a new signup here, so expect this email not to exist
       // -----------------
-      const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
+      const resInitialQuery = await managementClient.api.v2[
+        "users-by-email"
+      ].$get(
         {
           query: {
             email: "new-user@example.com",
@@ -69,7 +72,7 @@ describe("magic link flow", () => {
       const results = await resInitialQuery.json();
       expect(results).toHaveLength(0);
 
-      const response = await loginClient.passwordless.start.$post({
+      const response = await oauthClient.passwordless.start.$post({
         json: {
           authParams: AUTH_PARAMS,
           client_id: "clientId",
@@ -103,7 +106,7 @@ describe("magic link flow", () => {
       );
 
       const authenticateResponse =
-        await loginClient.passwordless.verify_redirect.$get({
+        await oauthClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -139,7 +142,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          loginClient,
+          oauthClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -167,7 +170,8 @@ describe("magic link flow", () => {
     it("is an existing primary user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // -----------------
       // Create the user to log in with the magic link
@@ -187,7 +191,9 @@ describe("magic link flow", () => {
         updated_at: new Date().toISOString(),
       });
 
-      const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
+      const resInitialQuery = await managementClient.api.v2[
+        "users-by-email"
+      ].$get(
         {
           query: {
             email: "bar@example.com",
@@ -209,7 +215,7 @@ describe("magic link flow", () => {
       // Now get magic link emailed
       // -----------------
 
-      await loginClient.passwordless.start.$post({
+      await oauthClient.passwordless.start.$post({
         json: {
           authParams: AUTH_PARAMS,
           client_id: "clientId",
@@ -239,7 +245,7 @@ describe("magic link flow", () => {
       // Authenticate using the magic link for the existing user
       // -----------------
       const authenticateResponse =
-        await loginClient.passwordless.verify_redirect.$get({
+        await oauthClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -272,7 +278,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          loginClient,
+          oauthClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -295,7 +301,7 @@ describe("magic link flow", () => {
 
     it("is an existing linked user", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // -----------------
       // Create the linked user to log in with the magic link
@@ -320,7 +326,7 @@ describe("magic link flow", () => {
       // Now get magic link emailed
       // -----------------
 
-      await loginClient.passwordless.start.$post({
+      await oauthClient.passwordless.start.$post({
         json: {
           authParams: AUTH_PARAMS,
           client_id: "clientId",
@@ -350,7 +356,7 @@ describe("magic link flow", () => {
       // Authenticate using the magic link for the existing user
       // -----------------
       const authenticateResponse =
-        await loginClient.passwordless.verify_redirect.$get({
+        await oauthClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -384,7 +390,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          loginClient,
+          oauthClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -407,13 +413,13 @@ describe("magic link flow", () => {
 
     it("is the same email address as an existing password user", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // -----------------
       // Now get magic link emailed
       // -----------------
 
-      await loginClient.passwordless.start.$post(
+      await oauthClient.passwordless.start.$post(
         {
           json: {
             authParams: AUTH_PARAMS,
@@ -450,7 +456,7 @@ describe("magic link flow", () => {
       // Authenticate using the magic link for the existing user
       // -----------------
       const authenticateResponse =
-        await loginClient.passwordless.verify_redirect.$get({
+        await oauthClient.passwordless.verify_redirect.$get({
           query,
         });
 
@@ -485,7 +491,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          loginClient,
+          oauthClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -508,12 +514,12 @@ describe("magic link flow", () => {
   });
   it("should only allow a magic link to be used once", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
     // -----------
     // get code to log in
     // -----------
-    await loginClient.passwordless.start.$post(
+    await oauthClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -548,7 +554,7 @@ describe("magic link flow", () => {
     // Use the magic link
     // ----------------
     const authenticateResponse =
-      await loginClient.passwordless.verify_redirect.$get({
+      await oauthClient.passwordless.verify_redirect.$get({
         query,
       });
     expect(authenticateResponse.status).toBe(302);
@@ -556,7 +562,7 @@ describe("magic link flow", () => {
     // Try using the magic link twice
     // ----------------
     const authenticateResponse2 =
-      await loginClient.passwordless.verify_redirect.$get({
+      await oauthClient.passwordless.verify_redirect.$get({
         query,
       });
     expect(authenticateResponse2.status).toBe(302);
@@ -570,12 +576,12 @@ describe("magic link flow", () => {
 
   it("should not accept an invalid code in the magic link", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
     // -----------
     // get code to log in
     // -----------
-    await loginClient.passwordless.start.$post(
+    await oauthClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -606,7 +612,7 @@ describe("magic link flow", () => {
     );
 
     const authenticateResponse =
-      await loginClient.passwordless.verify_redirect.$get({
+      await oauthClient.passwordless.verify_redirect.$get({
         query,
       });
 
@@ -628,12 +634,12 @@ describe("magic link flow", () => {
 
   it("should not accept a magic link where the email has been altered", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
     // -----------
     // get code to log in
     // -----------
-    await loginClient.passwordless.start.$post(
+    await oauthClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -660,7 +666,7 @@ describe("magic link flow", () => {
     magicLinkWithBadEmail.searchParams.set("email", "another@email.com");
 
     const authenticateResponse2 =
-      await loginClient.passwordless.verify_redirect.$get({
+      await oauthClient.passwordless.verify_redirect.$get({
         query: verifyCodeQuerySchema.parse(
           Object.fromEntries(magicLinkWithBadEmail.searchParams.entries()),
         ),
@@ -678,13 +684,13 @@ describe("magic link flow", () => {
   describe("edge cases", () => {
     it("should ignore un-verified password account when signing up with magic link", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // -----------------
       // signup new user
       // -----------------
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -699,7 +705,7 @@ describe("magic link flow", () => {
       //-----------------
       // sign up new code user that has same email address
       //-----------------
-      await loginClient.passwordless.start.$post({
+      await oauthClient.passwordless.start.$post({
         json: {
           authParams: AUTH_PARAMS,
           client_id: "clientId",
@@ -721,7 +727,7 @@ describe("magic link flow", () => {
       );
 
       const authenticateResponse =
-        await loginClient.passwordless.verify_redirect.$get({
+        await oauthClient.passwordless.verify_redirect.$get({
           query,
         });
       expect(authenticateResponse.status).toBe(302);

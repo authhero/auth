@@ -89,7 +89,7 @@ const app = rootApp
     });
   });
 
-export const loginApp = rootApp
+export const oauthApp = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   .route("/u", login)
   .route("/.well-known", wellKnown)
   .route("/authorize", authorizeRoutes)
@@ -99,7 +99,22 @@ export const loginApp = rootApp
   .route("/dbconnections", dbConnectionRoutes)
   .route("/passwordless", passwordlessRoutes)
   .route("/co/authenticate", authenticateRoutes)
-  .route("/v2/logout", logoutRoutes)
+  .route("/v2/logout", logoutRoutes);
+
+oauthApp.doc("/spec", {
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "Oauth endpoints",
+  },
+});
+
+rootApp.route("/", oauthApp);
+
+export const managementApp = new OpenAPIHono<{
+  Bindings: Env;
+  Variables: Var;
+}>()
   .route("/api/v2/domains", domains)
   .route("/api/v2/users", users)
   .route("/api/v2/keys/signing", keys)
@@ -109,13 +124,15 @@ export const loginApp = rootApp
   .route("/api/v2/logs", logs)
   .route("/api/v2/connections", connections);
 
-loginApp.doc("/u/doc", {
+managementApp.doc("/api/v2/spec", {
   openapi: "3.0.0",
   info: {
     version: "1.0.0",
-    title: "Login spec",
+    title: "Management api",
   },
 });
+
+rootApp.route("/", oauthApp).route("/", managementApp);
 
 app.get(
   "/css/tailwind.css",

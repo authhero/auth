@@ -3,7 +3,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
+import { oauthApp, managementApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
@@ -31,12 +31,15 @@ describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     // -----------------
     // Doing a new signup here, so expect this email not to exist
     // -----------------
-    const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
+    const resInitialQuery = await managementClient.api.v2[
+      "users-by-email"
+    ].$get(
       {
         query: {
           email: "test@example.com",
@@ -57,7 +60,7 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    const response = await loginClient.passwordless.start.$post({
+    const response = await oauthClient.passwordless.start.$post({
       json: {
         authParams: AUTH_PARAMS,
         client_id: "clientId",
@@ -77,7 +80,7 @@ describe("code-flow", () => {
     await snapshotEmail(env.data.emails[0], true);
 
     // Authenticate using the code
-    const authenticateResponse = await loginClient.co.authenticate.$post({
+    const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -107,7 +110,7 @@ describe("code-flow", () => {
     };
 
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get({
+    const tokenResponse = await oauthClient.authorize.$get({
       query,
     });
 
@@ -140,7 +143,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        loginClient,
+        oauthClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -167,7 +170,7 @@ describe("code-flow", () => {
     // ----------------------------
     // Now log in (previous flow was signup)
     // ----------------------------
-    await loginClient.passwordless.start.$post({
+    await oauthClient.passwordless.start.$post({
       json: {
         authParams: AUTH_PARAMS,
         client_id: "clientId",
@@ -179,7 +182,7 @@ describe("code-flow", () => {
 
     const otpLogin = getOTP(env.data.emails[1]);
 
-    const authRes2 = await loginClient.co.authenticate.$post({
+    const authRes2 = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -191,7 +194,7 @@ describe("code-flow", () => {
 
     const { login_ticket: loginTicket2 } = await authRes2.json();
 
-    const tokenRes2 = await loginClient.authorize.$get(
+    const tokenRes2 = await oauthClient.authorize.$get(
       {
         query: {
           auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -215,7 +218,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        loginClient,
+        oauthClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -248,7 +251,8 @@ describe("code-flow", () => {
   it("is an existing primary user", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     // -----------------
     // Create the user to log in with the code
@@ -268,7 +272,9 @@ describe("code-flow", () => {
       updated_at: new Date().toISOString(),
     });
 
-    const resInitialQuery = await loginClient.api.v2["users-by-email"].$get(
+    const resInitialQuery = await managementClient.api.v2[
+      "users-by-email"
+    ].$get(
       {
         query: {
           email: "bar@example.com",
@@ -288,27 +294,20 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    await loginClient.passwordless.start.$post(
-      {
-        json: {
-          authParams: AUTH_PARAMS,
-          client_id: "clientId",
-          connection: "email",
-          email: "bar@example.com",
-          send: "code",
-        },
+    await oauthClient.passwordless.start.$post({
+      json: {
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "bar@example.com",
+        send: "code",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
-    const authenticateResponse = await loginClient.co.authenticate.$post({
+    const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -330,7 +329,7 @@ describe("code-flow", () => {
     };
 
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get({
+    const tokenResponse = await oauthClient.authorize.$get({
       query,
     });
 
@@ -353,7 +352,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        loginClient,
+        oauthClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -362,7 +361,7 @@ describe("code-flow", () => {
   });
   it("is an existing linked user", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
     // -----------------
     // Create the linked user to log in with the magic link
@@ -388,7 +387,7 @@ describe("code-flow", () => {
     // -----------------
     // Start the passwordless flow
     // -----------------
-    await loginClient.passwordless.start.$post(
+    await oauthClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -408,7 +407,7 @@ describe("code-flow", () => {
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
-    const authenticateResponse = await loginClient.co.authenticate.$post({
+    const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -421,7 +420,7 @@ describe("code-flow", () => {
     const { login_ticket } = await authenticateResponse.json();
 
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get(
+    const tokenResponse = await oauthClient.authorize.$get(
       {
         query: {
           ...AUTH_PARAMS,
@@ -458,7 +457,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        loginClient,
+        oauthClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -470,7 +469,8 @@ describe("code-flow", () => {
   it("should return existing username-primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
     const redirect_uri = "https://login.example.com/callback";
@@ -478,33 +478,26 @@ describe("code-flow", () => {
     const scope = "openid profile email";
     const state = "state";
 
-    await loginClient.passwordless.start.$post(
-      {
-        json: {
-          authParams: {
-            nonce,
-            redirect_uri,
-            response_type,
-            scope,
-            state,
-          },
-          client_id: "clientId",
-          connection: "email",
-          // this email already exists as a Username-Password-Authentication user
-          email: "foo@example.com",
-          send: "link",
+    await oauthClient.passwordless.start.$post({
+      json: {
+        authParams: {
+          nonce,
+          redirect_uri,
+          response_type,
+          scope,
+          state,
         },
+        client_id: "clientId",
+        connection: "email",
+        // this email already exists as a Username-Password-Authentication user
+        email: "foo@example.com",
+        send: "link",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     const otp = getOTP(env.data.emails[0]);
 
-    const authenticateResponse = await loginClient.co.authenticate.$post({
+    const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -516,7 +509,7 @@ describe("code-flow", () => {
 
     const { login_ticket } = await authenticateResponse.json();
 
-    const tokenResponse = await loginClient.authorize.$get(
+    const tokenResponse = await oauthClient.authorize.$get(
       {
         query: {
           auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -554,7 +547,7 @@ describe("code-flow", () => {
     // ----------------------------
     // now check the primary user has a new 'email' connection identity
     // ----------------------------
-    const primaryUserRes = await loginClient.api.v2.users[":user_id"].$get(
+    const primaryUserRes = await managementClient.api.v2.users[":user_id"].$get(
       {
         param: {
           user_id: "auth2|userId",
@@ -587,7 +580,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        loginClient,
+        oauthClient,
         nonce,
         "clientId",
       );
@@ -619,32 +612,25 @@ describe("code-flow", () => {
     // now log in again with the same email and code user
     // ----------------------------
 
-    await loginClient.passwordless.start.$post(
-      {
-        json: {
-          authParams: {
-            nonce: "nonce",
-            redirect_uri,
-            response_type,
-            scope,
-            state,
-          },
-          client_id: "clientId",
-          connection: "email",
-          email: "foo@example.com",
-          send: "link",
+    await oauthClient.passwordless.start.$post({
+      json: {
+        authParams: {
+          nonce: "nonce",
+          redirect_uri,
+          response_type,
+          scope,
+          state,
         },
+        client_id: "clientId",
+        connection: "email",
+        email: "foo@example.com",
+        send: "link",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     const otp2 = getOTP(env.data.emails[1]);
 
-    const authenticateResponse2 = await loginClient.co.authenticate.$post({
+    const authenticateResponse2 = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -655,7 +641,7 @@ describe("code-flow", () => {
     });
 
     const { login_ticket: loginTicket2 } = await authenticateResponse2.json();
-    const tokenResponse2 = await loginClient.authorize.$get(
+    const tokenResponse2 = await oauthClient.authorize.$get(
       {
         query: {
           auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -692,7 +678,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        loginClient,
+        oauthClient,
         nonce,
         "clientId",
       );
@@ -704,7 +690,8 @@ describe("code-flow", () => {
     it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // -----------------
       // create code user - the base user
@@ -743,7 +730,7 @@ describe("code-flow", () => {
       // sanity check these users are linked
       // -----------------
 
-      const baseUserRes = await loginClient.api.v2.users[":user_id"].$get(
+      const baseUserRes = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "email|the-base-user",
@@ -784,7 +771,7 @@ describe("code-flow", () => {
       // Now do a new passwordless flow with a new user with email same-email@example.com
       // -----------------
 
-      const passwordlessStartRes = await loginClient.passwordless.start.$post({
+      const passwordlessStartRes = await oauthClient.passwordless.start.$post({
         json: {
           authParams: AUTH_PARAMS,
           client_id: "clientId",
@@ -798,7 +785,7 @@ describe("code-flow", () => {
       const otp = getOTP(env.data.emails[0]);
 
       // Authenticate using the code
-      const authenticateResponse = await loginClient.co.authenticate.$post({
+      const authenticateResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -812,7 +799,7 @@ describe("code-flow", () => {
       const { login_ticket } = await authenticateResponse.json();
 
       // Trade the ticket for token
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             ...AUTH_PARAMS,
@@ -848,7 +835,7 @@ describe("code-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           setCookiesHeader,
-          loginClient,
+          oauthClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -860,7 +847,7 @@ describe("code-flow", () => {
       // fetch the base user again now and check we have THREE identities in there
       //------------------------------------------------------------------------------------------------
 
-      const baseUserRes2 = await loginClient.api.v2.users[":user_id"].$get(
+      const baseUserRes2 = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "email|the-base-user",
@@ -919,9 +906,9 @@ describe("code-flow", () => {
     };
 
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    await loginClient.passwordless.start.$post({
+    await oauthClient.passwordless.start.$post({
       json: {
         authParams: AUTH_PARAMS,
         client_id: "clientId",
@@ -933,7 +920,7 @@ describe("code-flow", () => {
 
     const otp = getOTP(env.data.emails[0]);
 
-    const authRes = await loginClient.co.authenticate.$post({
+    const authRes = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -945,7 +932,7 @@ describe("code-flow", () => {
     expect(authRes.status).toBe(200);
 
     // now try to use the same code again
-    const authRes2 = await loginClient.co.authenticate.$post({
+    const authRes2 = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -973,9 +960,9 @@ describe("code-flow", () => {
     };
 
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    await loginClient.passwordless.start.$post(
+    await oauthClient.passwordless.start.$post(
       {
         json: {
           authParams: AUTH_PARAMS,
@@ -994,7 +981,7 @@ describe("code-flow", () => {
 
     const BAD_CODE = "123456";
 
-    const authRes = await loginClient.co.authenticate.$post({
+    const authRes = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -1010,12 +997,13 @@ describe("code-flow", () => {
   it("should be case insensitive with email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     // -------------------------
     // Create new email user - all lower case email
     // -------------------------
-    const createUserResponse1 = await loginClient.api.v2.users.$post(
+    const createUserResponse1 = await managementClient.api.v2.users.$post(
       {
         json: {
           email: "john-doe@example.com",
@@ -1048,29 +1036,22 @@ describe("code-flow", () => {
     // -----------------
     // Sign in with same user passwordless
     // -----------------
-    await loginClient.passwordless.start.$post(
-      {
-        json: {
-          authParams: AUTH_PARAMS,
-          client_id: "clientId",
-          connection: "email",
-          // do we want two tests? one for the username uppercase one for the domain?
-          email: "JOHN-DOE@example.com",
-          send: "code",
-        },
+    await oauthClient.passwordless.start.$post({
+      json: {
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        // do we want two tests? one for the username uppercase one for the domain?
+        email: "JOHN-DOE@example.com",
+        send: "code",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     expect(env.data.emails.length).toBe(1);
     const otp = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
-    const authenticateResponse = await loginClient.co.authenticate.$post({
+    const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -1096,7 +1077,7 @@ describe("code-flow", () => {
     };
 
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get({
+    const tokenResponse = await oauthClient.authorize.$get({
       query,
     });
 
@@ -1111,7 +1092,7 @@ describe("code-flow", () => {
     const accessToken = searchParams.get("access_token");
 
     const accessTokenPayload = parseJwt(accessToken!);
-    expect(accessTokenPayload.sub).toBe(newUser1.id);
+    expect(accessTokenPayload.sub).toBe(newUser1.user_id);
 
     const idToken = searchParams.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
@@ -1120,7 +1101,7 @@ describe("code-flow", () => {
 
   it("should store new user email in lowercase", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
     const AUTH_PARAMS = {
       nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -1133,28 +1114,21 @@ describe("code-flow", () => {
     // -----------------
     // New passwordless sign up all uppercase - login2 would stop this... What does auth0.js do? CHECK!
     // -----------------
-    await loginClient.passwordless.start.$post(
-      {
-        json: {
-          authParams: AUTH_PARAMS,
-          client_id: "clientId",
-          connection: "email",
-          email: "JOHN-DOE@EXAMPLE.COM",
-          send: "code",
-        },
+    await oauthClient.passwordless.start.$post({
+      json: {
+        authParams: AUTH_PARAMS,
+        client_id: "clientId",
+        connection: "email",
+        email: "JOHN-DOE@EXAMPLE.COM",
+        send: "code",
       },
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-      },
-    );
+    });
 
     const otp = getOTP(env.data.emails[0]);
     expect(otp).toBeTypeOf("string");
 
     // Authenticate using the code
-    const authenticateResponse = await loginClient.co.authenticate.$post({
+    const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -1168,7 +1142,7 @@ describe("code-flow", () => {
     const { login_ticket } = await authenticateResponse.json();
 
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get(
+    const tokenResponse = await oauthClient.authorize.$get(
       {
         query: {
           ...AUTH_PARAMS,
@@ -1211,7 +1185,8 @@ describe("code-flow", () => {
       // create a new user with a password
       const token = await getAdminToken();
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // -----------------
       // user fixtures
@@ -1244,7 +1219,7 @@ describe("code-flow", () => {
       });
 
       // sanity check - get base user and check identities
-      const baseUserRes = await loginClient.api.v2.users[":user_id"].$get(
+      const baseUserRes = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "auth2|base-user",
@@ -1284,7 +1259,7 @@ describe("code-flow", () => {
       // Now start password sign up with same code-user@example.com email
       // I'm seeing if this affects the code user with the same email address
       // -----------------
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -1300,7 +1275,7 @@ describe("code-flow", () => {
       // I'm testing that the unlinked password user with the same email address does not affect this
       // -----------------
 
-      const response = await loginClient.passwordless.start.$post({
+      const response = await oauthClient.passwordless.start.$post({
         json: {
           authParams: AUTH_PARAMS,
           client_id: "clientId",
@@ -1316,7 +1291,7 @@ describe("code-flow", () => {
       const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
-      const authenticateResponse = await loginClient.co.authenticate.$post({
+      const authenticateResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -1339,7 +1314,7 @@ describe("code-flow", () => {
       const { login_ticket } = await authenticateResponse.json();
 
       // Trade the ticket for token
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             ...AUTH_PARAMS,
@@ -1374,12 +1349,12 @@ describe("code-flow", () => {
 
     it("should ignore un-verified password account when signing up with code account", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // -----------------
       // signup new user
       // -----------------
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -1395,22 +1370,15 @@ describe("code-flow", () => {
       //-----------------
       // sign up new code user that has same email address
       //-----------------
-      const response = await loginClient.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "same-user-signin@example.com",
-            send: "code",
-          },
+      const response = await oauthClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "same-user-signin@example.com",
+          send: "code",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
 
       if (response.status !== 200) {
         throw new Error(await response.text());
@@ -1420,7 +1388,7 @@ describe("code-flow", () => {
       const otp = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
-      const authenticateResponse = await loginClient.co.authenticate.$post({
+      const authenticateResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -1433,7 +1401,7 @@ describe("code-flow", () => {
       const { login_ticket } = await authenticateResponse.json();
 
       // Trade the ticket for token
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             ...AUTH_PARAMS,
@@ -1478,27 +1446,20 @@ describe("code-flow", () => {
         state: "state",
       };
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      await loginClient.passwordless.start.$post(
-        {
-          json: {
-            authParams: AUTH_PARAMS,
-            client_id: "clientId",
-            connection: "email",
-            email: "foo@example.com",
-            send: "code",
-          },
+      await oauthClient.passwordless.start.$post({
+        json: {
+          authParams: AUTH_PARAMS,
+          client_id: "clientId",
+          connection: "email",
+          email: "foo@example.com",
+          send: "code",
         },
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      });
       const otp = getOTP(env.data.emails[0]);
 
-      const authenticateResponse = await loginClient.co.authenticate.$post({
+      const authenticateResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/passwordless/otp",
@@ -1523,7 +1484,7 @@ describe("code-flow", () => {
         realm: "email",
       };
 
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query,
         },
@@ -1540,7 +1501,7 @@ describe("code-flow", () => {
       // -----------------
       // Now try trading ticket again and it should not work
       // -----------------
-      const rejectedSecondTicketUsageRes = await loginClient.authorize.$get({
+      const rejectedSecondTicketUsageRes = await oauthClient.authorize.$get({
         query,
       });
 

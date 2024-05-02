@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loginApp } from "../../../src/app";
+import { oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
@@ -12,9 +12,9 @@ describe("Register password user", () => {
       vendorSettings: BREAKIT_VENDOR_SETTINGS,
       testTenantLanguage: "it",
     });
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const response = await loginClient.authorize.$get(
+    const response = await oauthClient.authorize.$get(
       {
         query: {
           client_id: "clientId",
@@ -39,7 +39,7 @@ describe("Register password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    const loginFormResponse = await loginClient.u.login.$get({
+    const loginFormResponse = await oauthClient.u.login.$get({
       query: {
         state: query.state,
       },
@@ -53,7 +53,7 @@ describe("Register password user", () => {
     );
 
     // Open signup page
-    const getSignupResponse = await loginClient.u.signup.$get({
+    const getSignupResponse = await oauthClient.u.signup.$get({
       query: {
         state: loginSearchParamsQuery.state,
       },
@@ -68,7 +68,7 @@ describe("Register password user", () => {
     await snapshotResponse(getSignupResponse);
 
     // Signup
-    const postSignupResponse = await loginClient.u.signup.$post({
+    const postSignupResponse = await oauthClient.u.signup.$post({
       query: { state: signupSearchParamsQuery.state },
       form: {
         username: "test@example.com",
@@ -90,9 +90,9 @@ describe("Register password user", () => {
 
   it("should reject a weak password", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const response = await loginClient.authorize.$get(
+    const response = await oauthClient.authorize.$get(
       {
         query: {
           client_id: "clientId",
@@ -114,7 +114,7 @@ describe("Register password user", () => {
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
     // Open login page
-    await loginClient.u.login.$get({
+    await oauthClient.u.login.$get({
       query: {
         state: query.state,
       },
@@ -123,7 +123,7 @@ describe("Register password user", () => {
     const loginSearchParamsQuery = Object.fromEntries(
       loginSearchParams.entries(),
     );
-    await loginClient.u.signup.$get({
+    await oauthClient.u.signup.$get({
       query: {
         state: loginSearchParamsQuery.state,
       },
@@ -133,7 +133,7 @@ describe("Register password user", () => {
       signupSearchParams.entries(),
     );
     // Enter weak passworrd
-    const postSignupResponse = await loginClient.u.signup.$post({
+    const postSignupResponse = await oauthClient.u.signup.$post({
       query: { state: signupSearchParamsQuery.state },
       form: {
         username: "test@example.com",

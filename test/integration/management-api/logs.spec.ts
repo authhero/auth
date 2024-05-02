@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
-import { LogsResponse, UserResponse } from "../../../src/types/auth0";
+import { managementApp, oauthApp } from "../../../src/app";
+import { LogsResponse } from "../../../src/types/auth0";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import {
@@ -12,10 +12,10 @@ import {
 describe("logs", () => {
   it("should return an empty list of logs for a tenant", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
-    const response = await client.api.v2.logs.$get(
+    const response = await managementClient.api.v2.logs.$get(
       {
         query: {},
         header: {
@@ -31,17 +31,18 @@ describe("logs", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as UserResponse[];
+    const body = (await response.json()) as LogsResponse[];
     expect(body.length).toBe(0);
   });
 
   it("should return a log row for a created user", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
 
-    const createUserResponse = await client.api.v2.users.$post(
+    const createUserResponse = await managementClient.api.v2.users.$post(
       {
         json: {
           email: "test@example.com",
@@ -63,7 +64,7 @@ describe("logs", () => {
 
     expect(createUserResponse.status).toBe(201);
 
-    const response = await client.api.v2.logs.$get(
+    const response = await managementClient.api.v2.logs.$get(
       {
         query: {},
         header: {
@@ -97,11 +98,12 @@ describe("logs", () => {
 
   it.skip("should log a failed silent auth request", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
 
-    const silentAuthResponse = await loginClient.authorize.$get(
+    const silentAuthResponse = await oauthClient.authorize.$get(
       {
         query: {
           client_id: "clientId",
@@ -126,7 +128,7 @@ describe("logs", () => {
 
     expect(silentAuthResponse.status).toBe(200);
 
-    const response = await loginClient.api.v2.logs.$get(
+    const response = await managementClient.api.v2.logs.$get(
       {
         query: {},
         header: {
