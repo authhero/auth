@@ -2,13 +2,12 @@
   "name": "auth2",
   "version": "1.178.0",
   "description": "",
-  "main": "build/src/server.js",
+  "main": "app.js",
   "scripts": {
-    "build": "node tsoa.mjs",
-    "dev": "bun tsoa.mjs && bun run src/bun.ts --watch",
-    "dev:wrangler": "node tsoa.mjs && wrangler dev --remote",
-    "dev:https": "node tsoa.mjs && wrangler dev --remote --local-protocol=https",
-    "mf": "node tsoa.mjs && tsc & miniflare",
+    "dev": "bun run src/bun.ts --watch",
+    "dev:wrangler": "wrangler dev --remote",
+    "dev:https": "wrangler dev --remote --local-protocol=https",
+    "mf": "tsc & miniflare",
     "format": "prettier --write '**/*.{ts,css,json,md}'",
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
@@ -57,7 +56,6 @@
   "dependencies": {
     "@hono/zod-openapi": "0.10.0",
     "@planetscale/database": "1.16.0",
-    "@tsoa/runtime": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cookie": "^0.6.0",
     "hono": "4.2.9",
@@ -69,8 +67,6 @@
     "mime": "4.0.3",
     "nanoid": "5.0.7",
     "playwright": "^1.43.1",
-    "tsoa": "^6.1.4",
-    "tsoa-hono": "^1.2.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {

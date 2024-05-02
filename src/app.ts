@@ -3,8 +3,6 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { Env } from "./types/Env";
-import { RegisterRoutes } from "../build/routes";
-import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import loggerMiddleware from "./middlewares/logger";
@@ -121,10 +119,6 @@ loginApp.doc("/u/doc", {
   },
 });
 
-app.get("/spec", async () => {
-  return new Response(JSON.stringify(swagger));
-});
-
 app.get(
   "/css/tailwind.css",
   async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
@@ -138,7 +132,5 @@ app.get(
 
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
-
-export const tsoaApp = RegisterRoutes(app as unknown as Hono);
 
 export default app;
