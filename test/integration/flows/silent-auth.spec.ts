@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
-import { loginApp, tsoaApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import {
   AuthorizationResponseType,
@@ -53,7 +53,6 @@ describe("silent-auth", () => {
 
   it("should set the used_at property on the session when the token is renewed", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const loginResponse = await loginClient.co.authenticate.$post({
@@ -104,7 +103,6 @@ describe("silent-auth", () => {
 
   it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const loginResponse = await loginClient.co.authenticate.$post({

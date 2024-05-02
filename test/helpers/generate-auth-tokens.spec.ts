@@ -13,6 +13,7 @@ describe("generateTokens", () => {
 
     const options: GenerateAuthResponseParamsForToken = {
       env: ctx.env,
+      tenantId: "tenantId",
       responseType: AuthorizationResponseType.TOKEN,
       userId: "auth2|userId",
       sid: "sessionId",

@@ -8,6 +8,7 @@ interface GenerateAuthResponseParamsBase {
   env: Env;
   userId: string;
   sid: string;
+  tenantId: string;
   state?: string;
   nonce?: string;
   authParams: AuthParams;
@@ -66,9 +67,8 @@ export async function generateTokens(
     aud: authParams.audience,
     scope: authParams.scope || "",
     sub: userId,
-    // TODO - IMHO we should pass this in here to consistently generate just here
-    // sub: `${"tenant_id"}|${userId}`,
     iss: env.ISSUER,
+    azp: params.tenantId,
   });
 
   const tokenResponse: TokenResponse = {

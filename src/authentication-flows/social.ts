@@ -216,6 +216,7 @@ export async function socialAuthCallback({
 
   const tokenResponse = await generateAuthResponse({
     env,
+    tenantId: client.tenant_id,
     userId: user.id,
     sid: sessionId,
     state: state.authParams.state,

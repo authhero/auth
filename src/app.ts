@@ -1,16 +1,14 @@
-import { Context, Hono } from "hono";
+import { Context } from "hono";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
-import { Env } from "./types/Env";
-import { RegisterRoutes } from "../build/routes";
+import { Env, Var } from "./types";
 import swagger from "../build/swagger.json";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
-import { Var } from "./types/Var";
 import { login } from "./routes/tsx/routes";
 import { wellKnown } from "./routes/oauth2/well-known";
 import { users } from "./routes/management-api/users";
@@ -24,13 +22,13 @@ import { connections } from "./routes/management-api/connections";
 import { domains } from "./routes/management-api/domains";
 import { keys } from "./routes/management-api/keys";
 import { tailwindCss } from "./styles/tailwind";
-import authenticationMiddleware from "./middlewares/authentication";
 import { logoutRoutes } from "./routes/oauth2/logout";
 import { dbConnectionRoutes } from "./routes/oauth2/dbconnections";
 import { passwordlessRoutes } from "./routes/oauth2/passwordless";
 import { tokenRoutes } from "./routes/oauth2/token";
 import { authenticateRoutes } from "./routes/oauth2/authenticate";
 import { authorizeRoutes } from "./routes/oauth2/authorize";
+import { userinfoRoutes } from "./routes/oauth2/userinfo";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -44,7 +42,7 @@ const ALLOWED_ORIGINS = [
   "https://auth-admin.sesamy.com",
 ];
 
-const rootApp = new OpenAPIHono<{ Bindings: Env }>();
+const rootApp = new OpenAPIHono<{ Bindings: Env; Variables: Var }>();
 
 registerComponent(rootApp);
 
@@ -83,8 +81,6 @@ export const app = rootApp
     }),
   )
   .use(loggerMiddleware)
-  .use("/api/*", authenticationMiddleware)
-  .use("/userinfo", authenticationMiddleware)
   .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
     const url = new URL(ctx.req.url);
     const tenantId = url.hostname.split(".")[0];
@@ -99,6 +95,7 @@ export const loginApp = rootApp
   .route("/.well-known", wellKnown)
   .route("/authorize", authorizeRoutes)
   .route("/callback", callback)
+  .route("/userinfo", userinfoRoutes)
   .route("/oauth/token", tokenRoutes)
   .route("/dbconnections", dbConnectionRoutes)
   .route("/passwordless", passwordlessRoutes)
@@ -138,7 +135,5 @@ app.get(
 
 app.get("/docs", swaggerUi);
 app.get("/oauth2-redirect.html", renderOauthRedirectHtml);
-
-export const tsoaApp = RegisterRoutes(app as unknown as Hono);
 
 export default app;

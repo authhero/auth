@@ -3,7 +3,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { AuthorizationResponseType, UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
@@ -54,7 +54,6 @@ describe("password-flow", () => {
     it("should create a new user with a password and only allow login after email validation", async () => {
       const password = "Password1234!";
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       const createUserResponse = await loginClient.dbconnections.signup.$post({
@@ -217,7 +216,6 @@ describe("password-flow", () => {
     it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
       const password = "Password1234!";
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
       const token = await getAdminToken();
 
@@ -388,7 +386,6 @@ describe("password-flow", () => {
     it("should resend email validation email after login attempts, and this should work", async () => {
       const password = "Password1234!";
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       const createUserResponse = await loginClient.dbconnections.signup.$post({
@@ -499,7 +496,6 @@ describe("password-flow", () => {
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const aNewPassword = "A-new-valid-password-1234!";
       const loginClient = testClient(loginApp, env);
 
@@ -530,7 +526,6 @@ describe("password-flow", () => {
     });
     it("should reject signups for weak passwords", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
 
       const loginClient = testClient(loginApp, env);
 
@@ -553,7 +548,6 @@ describe("password-flow", () => {
   describe("Login with password", () => {
     it("should login with existing user", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
       // foo@example.com is an existing username-password user, with password - Test!
 
@@ -654,7 +648,6 @@ describe("password-flow", () => {
     });
     it("should not allow password of a different user to be used", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       const signupResponse = await loginClient.dbconnections.signup.$post({
@@ -740,7 +733,6 @@ describe("password-flow", () => {
         vendorSettings: FOKUS_VENDOR_SETTINGS,
         testTenantLanguage: "sv",
       });
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
@@ -853,7 +845,6 @@ describe("password-flow", () => {
         vendorSettings: KVARTAL_VENDOR_SETTINGS,
         testTenantLanguage: "nb",
       });
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
@@ -895,7 +886,7 @@ describe("password-flow", () => {
         vendorSettings: BREAKIT_VENDOR_SETTINGS,
         testTenantLanguage: "it",
       });
-      const client = testClient(tsoaApp, env);
+
       const loginClient = testClient(loginApp, env);
 
       // foo@example.com is an existing username-password user
@@ -934,7 +925,6 @@ describe("password-flow", () => {
     });
     it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       const createUserResponse = await loginClient.dbconnections.signup.$post({

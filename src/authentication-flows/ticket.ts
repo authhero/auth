@@ -195,12 +195,14 @@ export async function ticketAuth(
     userId: user.id,
     state: authParams.state,
     authParams: {
-      ...authParams,
+      // TODO: Should it be possibe to change the scope when using a ticket?
       scope: ticket.authParams?.scope,
+      ...authParams,
     },
     sid: sessionId,
     user,
     responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
+    tenantId: ticket.tenant_id,
   });
 
   const [sessionCookie] = serializeStateInCookie(sessionId);

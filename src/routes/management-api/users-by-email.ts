@@ -4,6 +4,7 @@ import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, userSchema } from "../../types";
 import { Var } from "../../types/Var";
+import authenticationMiddleware from "../../middlewares/authentication";
 
 export const usersByEmail = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
@@ -22,9 +23,10 @@ export const usersByEmail = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {

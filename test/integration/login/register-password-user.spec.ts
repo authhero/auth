@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
@@ -12,7 +12,6 @@ describe("Register password user", () => {
       vendorSettings: BREAKIT_VENDOR_SETTINGS,
       testTenantLanguage: "it",
     });
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const response = await loginClient.authorize.$get(
@@ -91,7 +90,6 @@ describe("Register password user", () => {
 
   it("should reject a weak password", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const response = await loginClient.authorize.$get(

@@ -4,14 +4,13 @@ import {
   doSilentAuthRequestAndReturnTokens,
 } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { AuthorizationResponseType } from "../../../src/types";
 
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const loginResponse = await loginClient.co.authenticate.$post({

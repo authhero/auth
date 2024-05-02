@@ -31,6 +31,7 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
                 username: z.string().transform((v) => v.toLowerCase()),
                 password: z.string().optional(),
                 realm: z.enum(["email", "Username-Password-Authentication"]),
+                scope: z.string().optional(),
               }),
             },
           },

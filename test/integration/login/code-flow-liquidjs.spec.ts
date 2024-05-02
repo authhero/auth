@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
@@ -24,7 +24,6 @@ describe("Login with code on liquidjs template", () => {
       vendorSettings: FOKUS_VENDOR_SETTINGS,
       testTenantLanguage: "nb",
     });
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const response = await loginClient.authorize.$get({
@@ -103,7 +102,6 @@ describe("Login with code on liquidjs template", () => {
 
   it("should reject bad code", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const response = await loginClient.authorize.$get({

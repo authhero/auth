@@ -17,6 +17,7 @@ import { parseSort } from "../../utils/sort";
 import { createTypeLog } from "../../tsoa-middlewares/logger";
 import { Var } from "../../types/Var";
 import { waitUntil } from "../../utils/wait-until";
+import authenticationMiddleware from "../../middlewares/authentication";
 
 export const usersWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(userSchema),
@@ -37,9 +38,10 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -151,9 +153,10 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user_id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -208,9 +211,10 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user_id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -252,9 +256,10 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           },
         },
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -339,9 +344,10 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user_id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -443,9 +449,10 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user_id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -507,9 +514,10 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           linked_user_id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {

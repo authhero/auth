@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
@@ -12,7 +12,6 @@ describe("Login with password user", () => {
       vendorSettings: KVARTAL_VENDOR_SETTINGS,
       testTenantLanguage: "en",
     });
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const searchParams = {

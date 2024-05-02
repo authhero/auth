@@ -189,6 +189,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
         const tokenResponse = await generateAuthResponse({
           responseType: response_type,
           env,
+          tenantId: client.tenant_id,
           userId: user.id,
           sid: sessionId,
           state,

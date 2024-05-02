@@ -124,46 +124,51 @@ function decodeJwt(token: string): TokenData {
   };
 }
 
-export default async function authenticationMiddleware(
-  ctx: Context<{ Bindings: Env; Variables: Var }>,
-  next: Next,
+export interface AuthenticationMiddlewareOptions {
+  scopes?: string[];
+}
+
+export default function authenticationMiddleware(
+  options: AuthenticationMiddlewareOptions,
 ) {
-  const authHeader = ctx.req.header("authorization");
+  return async (
+    ctx: Context<{ Bindings: Env; Variables: Var }>,
+    next: Next,
+  ) => {
+    const authHeader = ctx.req.header("authorization");
 
-  if (authHeader?.toLowerCase().startsWith("bearer")) {
-    const [, bearer] = authHeader.split(" ");
-    const token = decodeJwt(bearer);
+    if (authHeader?.toLowerCase().startsWith("bearer")) {
+      const [, bearer] = authHeader.split(" ");
+      const token = decodeJwt(bearer);
 
-    if (!(await isValidJwtSignature(ctx, token))) {
-      throw new HTTPException(403, { message: "Invalid JWT signature" });
-    }
+      if (!(await isValidJwtSignature(ctx, token))) {
+        throw new HTTPException(403, { message: "Invalid JWT signature" });
+      }
 
-    const permissions = token.payload.permissions || [];
+      const permissions = token.payload.permissions || [];
+      const scopes = token.payload.scope.split(" ");
+      // TODO: Now we check both permissions and scopes. Is this correct?
+      const permissionsAndScopes = [...permissions, ...scopes];
 
-    if (
-      ["POST", "PATCH", "DELETE", "PUT"].includes(ctx.req.method) &&
-      !permissions.includes("auth:write")
-    ) {
+      const requiredScopes = options.scopes || [];
+
+      if (
+        !requiredScopes.some((scope) => permissionsAndScopes.includes(scope))
+      ) {
+        throw new HTTPException(403, { message: "Unauthorized" });
+      }
+
+      if (ctx.req.method)
+        ctx.set("user", {
+          sub: token.payload.sub,
+          azp: token.payload.azp || "sesamy",
+          permissions,
+        });
+      ctx.set("vendorId", token.payload.azp || "sesamy");
+    } else {
       throw new HTTPException(403, { message: "Unauthorized" });
     }
 
-    if (
-      !permissions.includes("auth:read") ||
-      !permissions.includes("auth:write")
-    ) {
-      throw new HTTPException(403, { message: "Unauthorized" });
-    }
-
-    if (ctx.req.method)
-      ctx.set("user", {
-        sub: token.payload.sub,
-        azp: token.payload.azp || "sesamy",
-        permissions,
-      });
-    ctx.set("vendorId", token.payload.azp || "sesamy");
-  } else {
-    throw new HTTPException(403, { message: "Unauthorized" });
-  }
-
-  await next();
+    await next();
+  };
 }
