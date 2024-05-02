@@ -12,7 +12,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings }) => {
   return (
     <Layout title="Login with Code" vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">Login</div>
-      <div class="mb-6 text-gray-300">"Enter your email to receive a code"</div>
+      <div class="mb-6 text-gray-300">Enter your email to receive a code</div>
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">
           <input
