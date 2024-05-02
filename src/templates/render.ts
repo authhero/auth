@@ -1,12 +1,6 @@
 import { Liquid } from "liquidjs";
 import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
-import {
-  layout,
-  forgotPassword,
-  enterCode,
-  signup,
-  message,
-} from "./universal";
+import { layout, forgotPassword, signup, message } from "./universal";
 
 const engine = new Liquid();
 
@@ -22,25 +16,6 @@ export async function renderForgotPassword(
   return engine.render(layoutTemplate, {
     ...context,
     state, // seems inconsistent doing this here... does it need doing in both places?
-    content,
-  });
-}
-
-export async function renderEnterCode(
-  context: UniversalLoginSession,
-  errorMessage?: string,
-) {
-  const layoutTemplate = engine.parse(layout);
-
-  const template = engine.parse(enterCode);
-
-  const content = await engine.render(template, {
-    ...context,
-    errorMessage,
-  });
-
-  return engine.render(layoutTemplate, {
-    context,
     content,
   });
 }

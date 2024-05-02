@@ -13,11 +13,7 @@ import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
-import {
-  renderMessage,
-  renderEnterCode,
-  renderSignup,
-} from "../../templates/render";
+import { renderMessage, renderSignup } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
