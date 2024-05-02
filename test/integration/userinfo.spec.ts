@@ -51,9 +51,6 @@ describe("userinfo", () => {
       },
     );
 
-    if (userinfoResponse.status !== 200) {
-      throw new Error(await userinfoResponse.text());
-    }
     expect(userinfoResponse.status).toBe(200);
   });
 });
