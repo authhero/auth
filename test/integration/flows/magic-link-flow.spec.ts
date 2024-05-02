@@ -297,7 +297,6 @@ describe("magic link flow", () => {
 
     it("is an existing linked user", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------

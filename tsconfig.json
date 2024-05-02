@@ -22,7 +22,7 @@
     "paths": {
       "*": ["node_modules/*"]
     },
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "noUnusedParameters": false,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"

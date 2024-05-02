@@ -1,10 +1,5 @@
 import { z } from "zod";
-import {
-  AuthorizationResponseMode,
-  AuthorizationResponseType,
-} from "./AuthParams";
 import { connectionSchema } from "./Connection";
-import { Connection } from "@planetscale/database";
 
 const ClientDomainSchema = z.object({
   domain: z.string(),

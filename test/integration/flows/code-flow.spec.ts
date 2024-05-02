@@ -924,7 +924,6 @@ describe("code-flow", () => {
     };
 
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     await loginClient.passwordless.start.$post({

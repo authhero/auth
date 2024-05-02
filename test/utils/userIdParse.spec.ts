@@ -9,7 +9,6 @@ describe("userIdParse", () => {
 
   it("should return the id if user_id only only contains the id", () => {
     // mock console.error
-    const error = console.error;
     console.error = vitest.fn();
 
     // this is the defensive programming
