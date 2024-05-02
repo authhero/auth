@@ -142,13 +142,6 @@ export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         );
       }
 
-      try {
-        return ctx.json(z.array(auth0UserResponseSchema).parse(users));
-      } catch (e: any) {
-        console.error(e);
-        throw new HTTPException(503, { message: e.message });
-      }
-
       return ctx.json(z.array(auth0UserResponseSchema).parse(users));
     },
   )
