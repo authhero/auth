@@ -28,17 +28,6 @@ export function registerComponent(
         },
       });
 
-      // const routes = app.openAPIRegistry.definitions
-      //   .map((r) => ("route" in r ? r.route : undefined))
-      //   .filter((r) => r);
-
-      // console.log(
-      //   "protectedRoutes",
-      //   protectedRoutes.map(
-      //     (r) => `${r?.path} ${r?.security ? JSON.stringify(r.security) : ""}`,
-      //   ),
-      // );
-
       inititated = true;
     }
 
