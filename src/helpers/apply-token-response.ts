@@ -7,21 +7,6 @@ import {
 } from "../types";
 import { headers } from "../constants";
 
-function applyTokenResponseAsQuery(
-  controller: Controller,
-  tokenResponse: TokenResponse | CodeResponse,
-  authParams: AuthParams,
-) {
-  const redirectUri = getTokenResponseAsQueryRedirectUri(
-    tokenResponse,
-    authParams,
-  );
-
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectUri.href);
-  return "Redirecting";
-}
-
 function getTokenResponseAsQueryRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,
@@ -113,33 +98,6 @@ function getTokenResponseAsFragmentRedirectUri(
   redirectUri.hash = anchorLinks.toString();
 
   return redirectUri;
-}
-
-export function applyTokenResponse(
-  controller: Controller,
-  tokenResponse: TokenResponse | CodeResponse,
-  authParams: AuthParams,
-) {
-  if (authParams.response_type?.includes("token")) {
-    return applyTokenResponseAsFragment(controller, tokenResponse, authParams);
-  }
-
-  if (authParams.response_type?.includes("code")) {
-    return applyTokenResponseAsQuery(controller, tokenResponse, authParams);
-  }
-
-  switch (authParams.response_mode) {
-    // Auth0 does not allow query if response_type is token
-    case AuthorizationResponseMode.QUERY:
-      return applyTokenResponseAsQuery(controller, tokenResponse, authParams);
-    case AuthorizationResponseMode.FRAGMENT:
-    default:
-      return applyTokenResponseAsFragment(
-        controller,
-        tokenResponse,
-        authParams,
-      );
-  }
 }
 
 export function getTokenResponseRedirectUri(
