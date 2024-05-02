@@ -20,7 +20,6 @@ jobs:
         run: yarn install --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN }}
-      - run: NODE_ENV=production yarn build
       - name: Publish
         uses: cloudflare/wrangler-action@4c10c1822abba527d820b29e6333e7f5dac2cabd # 2.0.0
         with:

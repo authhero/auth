@@ -1,11 +1,10 @@
 {
   "name": "auth2",
-  "version": "1.178.0",
+  "version": "1.179.0",
   "description": "",
-  "main": "build/src/server.js",
+  "main": "app.js",
   "scripts": {
     "dev": "bun run src/bun.ts --watch",
-    "build": "echo 'No build script for now'",
     "dev:wrangler": "wrangler dev --remote",
     "dev:https": "wrangler dev --remote --local-protocol=https",
     "format": "prettier --write '**/*.{ts,css,json,md}'",
@@ -55,8 +54,7 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "0.11.0",
-    "@planetscale/database": "1.18.0",
-    "@tsoa/runtime": "^6.2.1",
+    "@planetscale/database": "1.16.0",
     "bcryptjs": "^2.4.3",
     "cookie": "^0.6.0",
     "hono": "4.2.9",
@@ -68,9 +66,7 @@
     "mime": "4.0.3",
     "nanoid": "5.0.7",
     "playwright": "^1.43.1",
-    "tsoa": "^6.2.1",
-    "tsoa-hono": "^1.2.2",
-    "zod": "^3.23.5"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@ape-egg/tailwind-rows-columns": "1.0.2",
