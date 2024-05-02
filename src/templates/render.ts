@@ -114,41 +114,7 @@ export async function renderEnterCode(
   });
 }
 
-export async function renderEmailValidation(
-  env: Env,
-  controller: Controller,
-  context: UniversalLoginSession,
-  errorMessage?: string,
-) {
-  const layoutTemplate = engine.parse(layout);
-
-  const template = engine.parse(emailValidation);
-
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
-
-  const content = await engine.render(template, { ...context, errorMessage });
-
-  return engine.render(layoutTemplate, {
-    context,
-    content,
-  });
-}
-
 export async function renderSignup(
-  env: Env,
-  controller: Controller,
-  context: UniversalLoginSession,
-  state: string,
-  errorMessage?: string,
-) {
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
-
-  return renderSignupInner(context, errorMessage);
-}
-
-export async function renderSignupInner(
   context: UniversalLoginSession,
   errorMessage?: string,
 ) {
@@ -164,17 +130,6 @@ export async function renderSignupInner(
 }
 
 export async function renderMessage(
-  env: Env,
-  controller: Controller,
-  context: UniversalLoginSession | { page_title: string; message: string },
-) {
-  controller.setHeader("content-type", "text/html");
-  controller.setStatus(200);
-
-  return renderMessageInner(context);
-}
-
-export async function renderMessageInner(
   context: UniversalLoginSession | { page_title: string; message: string },
 ) {
   const layoutTemplate = engine.parse(layout);

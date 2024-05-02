@@ -84,11 +84,7 @@ const codeResponseSchema = z.object({
 export type CodeResponse = z.infer<typeof codeResponseSchema>;
 
 export {
-  refreshTokenGrantTypeParamsSchema,
   authorizationCodeGrantTypeParamsSchema,
   pkceAuthorizationCodeGrantTypeParamsSchema,
   clientCredentialGrantTypeParamsSchema,
-  passwordGrantTypeParamsSchema,
-  tokenResponseSchema,
-  codeResponseSchema,
 };

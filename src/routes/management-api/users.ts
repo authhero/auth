@@ -18,7 +18,7 @@ import { createTypeLog } from "../../tsoa-middlewares/logger";
 import { Var } from "../../types/Var";
 import { waitUntil } from "../../utils/wait-until";
 
-export const usersWithTotalsSchema = totalsSchema.extend({
+const usersWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(userSchema),
 });
 
