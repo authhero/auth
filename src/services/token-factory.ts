@@ -27,7 +27,7 @@ interface IDTokenPayload {
   name?: string;
 }
 
-export interface CreateAccessTokenParams {
+interface CreateAccessTokenParams {
   sub: string;
   iss: string;
   scope?: string;
