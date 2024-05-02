@@ -90,9 +90,6 @@ const successfulExchangeOfAccessTokenForAClientCredentialsGrantSchema =
     hostname: z.string(),
     auth0_client: auth0ClientSchema,
   });
-export type SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant = z.infer<
-  typeof successfulExchangeOfAccessTokenForAClientCredentialsGrantSchema
->;
 
 const successCrossOriginAuthenticationSchema =
   browserLogCommonFieldSchema.extend({

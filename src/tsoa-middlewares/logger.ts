@@ -1,9 +1,7 @@
 import { Context } from "hono";
 import { Env } from "../types";
-import { Next } from "tsoa-hono/Next";
 import { Var } from "../types/Var";
 import instanceToJson from "../utils/instanceToJson";
-import { HTTPException } from "hono/http-exception";
 import {
   LogType,
   // Log,
@@ -201,94 +199,4 @@ export function createTypeLog(
     default:
       throw new Error("Invalid log type");
   }
-}
-
-// const DEBUG_LOG_TYPES = true;
-const DEBUG_LOG_TYPES = false;
-
-export function loggerMiddleware(
-  logTypeInitial?: LogType,
-  description?: string,
-) {
-  return async (
-    ctx: Context<{ Bindings: Env; Variables: Var }>,
-    next: Next,
-  ) => {
-    const { env } = ctx;
-
-    try {
-      const response = await next();
-
-      const logType = ctx.var.logType || logTypeInitial;
-      // ir no logtype set then do not log
-      if (!logType) return response;
-
-      if (DEBUG_LOG_TYPES && !ctx.var.tenantId)
-        throw new Error("tenantId is required for logging");
-
-      let body = {};
-
-      // Gracefully handle JSON parsing errors (e.g. when the request body is not JSON but the client is passing a JSON content-type header)
-      try {
-        if (ctx.req.header("content-type")?.startsWith("application/json")) {
-          body = await ctx.req.json();
-        }
-      } catch (e) {
-        console.error(e);
-      }
-
-      try {
-        const log = createTypeLog(logType, ctx, body, description);
-        await env.data.logs.create(ctx.var.tenantId || "", log);
-      } catch (e: any) {
-        console.error(e);
-        console.log(e.message);
-        if (DEBUG_LOG_TYPES) {
-          throw e;
-        }
-      }
-
-      // Perform any necessary operations or modifications
-      return response;
-    } catch (e) {
-      let body = {};
-
-      // Gracefully handle JSON parsing errors (e.g. when the request body is not JSON but the client is passing a JSON content-type header)
-      try {
-        if (ctx.req.header("content-type")?.startsWith("application/json")) {
-          body = await ctx.req.json();
-        }
-      } catch (e) {
-        console.error(e);
-        if (DEBUG_LOG_TYPES) {
-          throw e;
-        }
-      }
-
-      if (e instanceof HTTPException) {
-        try {
-          const logType = ctx.var.logType || logTypeInitial;
-          if (!logType) return e.getResponse();
-
-          const log = createTypeLog(
-            logType,
-            ctx,
-            body,
-            e.message || description,
-          );
-          await env.data.logs.create(ctx.var.tenantId || "", log);
-        } catch (e) {
-          console.error(e);
-          if (DEBUG_LOG_TYPES) {
-            throw e;
-          }
-        }
-
-        return e.getResponse();
-      }
-
-      console.error(e);
-      throw e;
-    }
-  };
 }
