@@ -1,5 +1,4 @@
 import {
-  Env,
   AuthParams,
   AuthorizationResponseType,
   User,
@@ -59,7 +58,7 @@ async function generateCode(
   return ctx.json(codeResponse);
 }
 
-export async function generateTokens(
+async function generateTokens(
   ctx: Context,
   params:
     | GenerateAuthResponseParamsForToken

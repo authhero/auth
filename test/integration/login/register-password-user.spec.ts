@@ -114,7 +114,7 @@ describe("Register password user", () => {
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
     // Open login page
-    const loginFormResponse = await loginClient.u.login.$get({
+    await loginClient.u.login.$get({
       query: {
         state: query.state,
       },
@@ -123,7 +123,7 @@ describe("Register password user", () => {
     const loginSearchParamsQuery = Object.fromEntries(
       loginSearchParams.entries(),
     );
-    const getSignupResponse = await loginClient.u.signup.$get({
+    await loginClient.u.signup.$get({
       query: {
         state: loginSearchParamsQuery.state,
       },

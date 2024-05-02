@@ -583,9 +583,7 @@ describe("users management API endpoint", () => {
           "tenant-id": "tenantId",
         },
       };
-      const linkUserResponse = await client.api.v2.users[
-        ":user_id"
-      ].identities.$post(typeCoercion, {
+      await client.api.v2.users[":user_id"].identities.$post(typeCoercion, {
         headers,
       });
 

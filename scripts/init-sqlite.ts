@@ -26,7 +26,7 @@ const data = createAdapters(db);
   const newCertificate = await create();
   await data.keys.create(newCertificate);
 
-  const app = await data.applications.create(tenant.id, {
+  await data.applications.create(tenant.id, {
     name: "Default",
     id: "default",
     client_secret: "default",

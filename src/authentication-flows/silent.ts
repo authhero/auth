@@ -8,7 +8,6 @@ import renderAuthIframe from "../templates/authIframe";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { Var } from "../types/Var";
 import { LogTypes } from "../types";
-import { waitUntil } from "../utils/wait-until";
 
 interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;

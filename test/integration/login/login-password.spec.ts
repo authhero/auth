@@ -94,7 +94,7 @@ describe("Login with password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    const loginFormResponse = await loginClient.u.login.$get({
+    await loginClient.u.login.$get({
       query: {
         state: query.state,
       },
