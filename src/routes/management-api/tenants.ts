@@ -5,7 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 
-export const tenantsWithTotalsSchema = totalsSchema.extend({
+const tenantsWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(tenantSchema),
 });
 

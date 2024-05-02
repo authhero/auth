@@ -11,7 +11,7 @@ import {
   connectionSchema,
 } from "../../types/Connection";
 
-export const connectionsWithTotalsSchema = totalsSchema.extend({
+const connectionsWithTotalsSchema = totalsSchema.extend({
   connections: z.array(connectionSchema),
 });
 
