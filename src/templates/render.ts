@@ -3,7 +3,6 @@ import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSess
 import {
   layout,
   forgotPassword,
-  code,
   enterCode,
   signup,
   message,
@@ -23,19 +22,6 @@ export async function renderForgotPassword(
   return engine.render(layoutTemplate, {
     ...context,
     state, // seems inconsistent doing this here... does it need doing in both places?
-    content,
-  });
-}
-
-export async function renderLoginWithCode(context: UniversalLoginSession) {
-  const layoutTemplate = engine.parse(layout);
-
-  const template = engine.parse(code);
-
-  const content = await engine.render(template, context);
-
-  return engine.render(layoutTemplate, {
-    context,
     content,
   });
 }

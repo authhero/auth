@@ -3,12 +3,12 @@ import Layout from "./Layout";
 import Button from "./Button";
 import { VendorSettings } from "../../types";
 
-type ResetPasswordPageProps = {
+type Props = {
   error?: string;
   vendorSettings: VendorSettings;
 };
 
-const LoginPage: FC<ResetPasswordPageProps> = ({ error, vendorSettings }) => {
+const LoginPage: FC<Props> = ({ error, vendorSettings }) => {
   return (
     <Layout title="Login" vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">Login</div>

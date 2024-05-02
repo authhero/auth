@@ -12,9 +12,9 @@ import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
+import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
 import {
   renderMessage,
-  renderLoginWithCode,
   renderEnterCode,
   renderSignup,
 } from "../../templates/render";
@@ -580,7 +580,11 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Session not found" });
       }
 
-      return ctx.html(renderLoginWithCode(session));
+      const vendorSettings = await env.fetchVendorSettings(
+        session.authParams.client_id,
+      );
+
+      return ctx.html(<LoginWithCodePage vendorSettings={vendorSettings} />);
     },
   )
   // --------------------------------
