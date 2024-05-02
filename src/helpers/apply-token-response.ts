@@ -1,11 +1,9 @@
-import { Controller } from "tsoa";
 import {
   AuthParams,
   AuthorizationResponseMode,
   CodeResponse,
   TokenResponse,
 } from "../types";
-import { headers } from "../constants";
 
 function getTokenResponseAsQueryRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
