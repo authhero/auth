@@ -44,7 +44,7 @@ export const userinfoRoutes = new OpenAPIHono<{
       );
       if (!user) {
         throw new HTTPException(405, {
-          message: "User not found " + ctx.var.user.sub + ctx.var.user.azp,
+          message: "User not found",
         });
       }
 
