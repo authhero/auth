@@ -1,3 +1,4 @@
+// TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, User, AuthorizationResponseType } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
@@ -13,7 +14,6 @@ import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import {
   renderMessage,
-  renderLogin,
   renderLoginWithCode,
   renderEnterCode,
   renderSignup,
@@ -179,6 +179,10 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Client not found" });
       }
 
+      const vendorSettings = await env.fetchVendorSettings(
+        session.authParams.client_id,
+      );
+
       const user = await getUserByEmailAndProvider({
         userAdapter: env.data.users,
         tenant_id: client.tenant_id,
@@ -197,17 +201,19 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         });
 
         if (!valid) {
-          const errorLoginPage = await renderLogin(
-            session,
-            state,
-            "Invalid password",
+          return ctx.html(
+            <LoginPage
+              vendorSettings={vendorSettings}
+              error="Invalid password"
+            />,
           );
-          return ctx.html(errorLoginPage);
         }
 
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
-        return ctx.html(renderLogin(session, err.message));
+        return ctx.html(
+          <LoginPage vendorSettings={vendorSettings} error={err.message} />,
+        );
       }
     },
   )

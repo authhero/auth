@@ -3,7 +3,6 @@ import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSess
 import {
   layout,
   forgotPassword,
-  login,
   code,
   enterCode,
   signup,
@@ -26,57 +25,6 @@ export async function renderForgotPassword(
     state, // seems inconsistent doing this here... does it need doing in both places?
     content,
   });
-}
-
-export async function renderLogin(
-  context: UniversalLoginSession,
-  state: string,
-  errorMessage?: string,
-) {
-  const layoutTemplate = engine.parse(layout);
-
-  const template = engine.parse(login);
-
-  const socialLoginQuery = new URLSearchParams({
-    ...context.authParams,
-  });
-
-  // TODO: pull from client instead
-  const connections = [
-    {
-      connection: "apple",
-      href: `/authorize?connection=apple&${socialLoginQuery.toString()}`,
-      icon_class: "apple",
-      bg_class: "bg1",
-    },
-    {
-      connection: "facebook",
-      href: `/authorize?connection=facebook&${socialLoginQuery.toString()}`,
-      icon_class: "facebook",
-      bg_class: "bg2",
-    },
-    {
-      connection: "google-oauth2",
-      href: `/authorize?connection=google-oauth2&${socialLoginQuery.toString()}`,
-      icon_class: "google",
-      bg_class: "bg3",
-    },
-  ];
-
-  const content = await engine.render(template, {
-    ...context,
-    connections,
-    errorMessage,
-    state,
-  });
-
-  // Liquid JS returns any here! typeScript did not pick up the issue
-  const renderedLogin: string = await engine.render(layoutTemplate, {
-    context,
-    content,
-  });
-
-  return renderedLogin;
 }
 
 export async function renderLoginWithCode(context: UniversalLoginSession) {
