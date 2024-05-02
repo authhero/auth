@@ -12,7 +12,7 @@ import {
 } from "../../types/Connection";
 import authenticationMiddleware from "../../middlewares/authentication";
 
-export const connectionsWithTotalsSchema = totalsSchema.extend({
+const connectionsWithTotalsSchema = totalsSchema.extend({
   connections: z.array(connectionSchema),
 });
 

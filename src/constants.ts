@@ -16,12 +16,6 @@ export const headers = {
   tenantId: "tenant-id",
 };
 
-export const contentTypes = {
-  json: "application/json",
-  html: "text/html",
-  text: "text/plain",
-};
-
 export const UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24; // 1 day
 
 export const CLIENT_ID = process.env.CLIENT_ID || "default";

@@ -2,7 +2,7 @@ import { Totals } from "../../types/auth0/Totals";
 import { LogsResponse, SqlLog, Log } from "../../types/";
 import { ListParams } from "./ListParams";
 
-export interface ListLogsResponse extends Totals {
+interface ListLogsResponse extends Totals {
   logs: LogsResponse[];
 }
 

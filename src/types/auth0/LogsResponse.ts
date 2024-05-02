@@ -79,9 +79,6 @@ const browserLogCommonFieldSchema = logCommonFieldsSchema.extend({
   client_id: z.string().optional(),
   client_name: z.string(),
 });
-export type BrowserLogCommonFields = z.infer<
-  typeof browserLogCommonFieldSchema
->;
 
 const successfulExchangeOfAccessTokenForAClientCredentialsGrantSchema =
   browserLogCommonFieldSchema.extend({
@@ -93,9 +90,6 @@ const successfulExchangeOfAccessTokenForAClientCredentialsGrantSchema =
     hostname: z.string(),
     auth0_client: auth0ClientSchema,
   });
-export type SuccessfulExchangeOfAccessTokenForAClientCredentialsGrant = z.infer<
-  typeof successfulExchangeOfAccessTokenForAClientCredentialsGrantSchema
->;
 
 const successCrossOriginAuthenticationSchema =
   browserLogCommonFieldSchema.extend({

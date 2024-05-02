@@ -19,7 +19,7 @@ import { Var } from "../../types/Var";
 import { waitUntil } from "../../utils/wait-until";
 import authenticationMiddleware from "../../middlewares/authentication";
 
-export const usersWithTotalsSchema = totalsSchema.extend({
+const usersWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(userSchema),
 });
 

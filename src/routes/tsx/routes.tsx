@@ -12,11 +12,11 @@ import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import {
-  renderMessageInner as renderMessage,
+  renderMessage,
   renderLogin,
   renderLoginWithCode,
   renderEnterCode,
-  renderSignupInner as renderSignup,
+  renderSignup,
 } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";

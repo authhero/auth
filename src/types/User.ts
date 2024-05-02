@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { baseEntitySchema } from "./BaseEntity";
 
-export const baseUserSchema = z.object({
+const baseUserSchema = z.object({
   // One of the following is required
   email: z.string().optional(),
   username: z.string().optional(),

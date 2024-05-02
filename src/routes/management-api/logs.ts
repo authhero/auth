@@ -5,7 +5,7 @@ import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import authenticationMiddleware from "../../middlewares/authentication";
 
-export const logsWithTotalsSchema = totalsSchema.extend({
+const logsWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(logSchema),
 });
 
