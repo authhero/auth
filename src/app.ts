@@ -43,8 +43,6 @@ const ALLOWED_ORIGINS = [
 
 const rootApp = new OpenAPIHono<{ Bindings: Env; Variables: Var }>();
 
-registerComponent(rootApp);
-
 const app = rootApp
   .onError((err, ctx) => {
     if (err instanceof HTTPException) {
@@ -123,6 +121,8 @@ export const managementApp = new OpenAPIHono<{
   .route("/api/v2/tenants", tenants)
   .route("/api/v2/logs", logs)
   .route("/api/v2/connections", connections);
+
+registerComponent(managementApp);
 
 managementApp.doc("/api/v2/spec", {
   openapi: "3.0.0",
