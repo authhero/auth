@@ -1,3 +1,4 @@
+// TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, User, AuthorizationResponseType } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
@@ -13,7 +14,6 @@ import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import {
   renderMessage,
-  renderLogin,
   renderLoginWithCode,
   renderEnterCode,
   renderSignup,
