@@ -6,6 +6,7 @@ import {
 import { getEnv } from "../helpers/test-client";
 import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
+import { AuthorizationResponseType } from "../../../src/types";
 
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {
@@ -24,20 +25,26 @@ describe("logout", () => {
     });
     expect(loginResponse.status).toBe(200);
     const { login_ticket } = await loginResponse.json();
-    const query = {
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      client_id: "clientId",
-      login_ticket,
-      referrer: "https://login.example.com",
-      response_type: "token id_token",
-      redirect_uri: "http://login.example.com",
-      state: "state",
-      realm: "Username-Password-Authentication",
-    };
+
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
-      query,
-    });
+    const tokenResponse = await loginClient.authorize.$get(
+      {
+        query: {
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+          client_id: "clientId",
+          login_ticket,
+          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+          redirect_uri: "http://login.example.com",
+          state: "state",
+          realm: "Username-Password-Authentication",
+        },
+      },
+      {
+        headers: {
+          referrer: "https://login.example.com",
+        },
+      },
+    );
     expect(tokenResponse.status).toBe(302);
     expect(await tokenResponse.text()).toBe("Redirecting");
     const setCookieHeader = tokenResponse.headers.get("set-cookie")!;
@@ -47,7 +54,7 @@ describe("logout", () => {
     const { accessToken: silentAuthAccessTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookieHeader,
-        client,
+        loginClient,
         "nonce",
         "clientId",
       );
@@ -79,7 +86,7 @@ describe("logout", () => {
     //--------------------------------------------------------------
     const result = await doSilentAuthRequest(
       setCookieHeader,
-      client,
+      loginClient,
       "nonce",
       "clientId",
     );

@@ -197,7 +197,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
           authParams,
         });
 
-        return new Response("Redirecting...", {
+        return new Response("Redirecting", {
           status: 302,
           headers: {
             location: applyTokenResponse(tokenResponse, authParams),

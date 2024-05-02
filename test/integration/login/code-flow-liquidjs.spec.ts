@@ -5,6 +5,7 @@ import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { FOKUS_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import { AuthorizationResponseType } from "../../../src/types";
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
@@ -26,16 +27,14 @@ describe("Login with code on liquidjs template", () => {
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
-    const searchParams = {
-      client_id: "clientId",
-      response_type: "token id_token",
-      scope: "openid",
-      redirect_uri: "http://localhost:3000/callback",
-      state: "state",
-    };
-
-    const response = await client.authorize.$get({
-      query: searchParams,
+    const response = await loginClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
     });
 
     expect(response.status).toBe(302);
@@ -107,16 +106,14 @@ describe("Login with code on liquidjs template", () => {
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
-    const searchParams = {
-      client_id: "clientId",
-      response_type: "token id_token",
-      scope: "openid",
-      redirect_uri: "http://localhost:3000/callback",
-      state: "state",
-    };
-
-    const response = await client.authorize.$get({
-      query: searchParams,
+    const response = await loginClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
     });
 
     const location = response.headers.get("location");

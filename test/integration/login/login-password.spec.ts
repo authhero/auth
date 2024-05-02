@@ -4,6 +4,7 @@ import { tsoaApp, loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import { AuthorizationResponseType } from "../../../src/types";
 
 describe("Login with password user", () => {
   it("should login with password", async () => {
@@ -16,13 +17,13 @@ describe("Login with password user", () => {
 
     const searchParams = {
       client_id: "clientId",
-      response_type: "token id_token",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       scope: "openid",
       redirect_uri: "http://localhost:3000/callback",
       state: "state",
     };
 
-    const response = await client.authorize.$get({
+    const response = await loginClient.authorize.$get({
       query: searchParams,
     });
 
@@ -76,19 +77,16 @@ describe("Login with password user", () => {
 
   it("should reject bad password", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
-    const searchParams = {
-      client_id: "clientId",
-      response_type: "token id_token",
-      scope: "openid",
-      redirect_uri: "http://localhost:3000/callback",
-      state: "state",
-    };
-
-    const response = await client.authorize.$get({
-      query: searchParams,
+    const response = await loginClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
     });
 
     const location = response.headers.get("location");

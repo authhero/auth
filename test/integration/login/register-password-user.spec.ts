@@ -4,6 +4,7 @@ import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { BREAKIT_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import { AuthorizationResponseType } from "../../../src/types";
 
 describe("Register password user", () => {
   it("should register a new user with password", async () => {
@@ -14,17 +15,15 @@ describe("Register password user", () => {
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
-    const searchParams = {
-      client_id: "clientId",
-      response_type: "token id_token",
-      scope: "openid",
-      redirect_uri: "http://localhost:3000/callback",
-      state: "state",
-    };
-
-    const response = await client.authorize.$get(
+    const response = await loginClient.authorize.$get(
       {
-        query: searchParams,
+        query: {
+          client_id: "clientId",
+          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+          scope: "openid",
+          redirect_uri: "http://localhost:3000/callback",
+          state: "state",
+        },
       },
       {
         headers: {
@@ -94,16 +93,16 @@ describe("Register password user", () => {
     const env = await getEnv();
     const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
-    const searchParams = {
-      client_id: "clientId",
-      response_type: "token id_token",
-      scope: "openid",
-      redirect_uri: "http://localhost:3000/callback",
-      state: "state",
-    };
-    const response = await client.authorize.$get(
+
+    const response = await loginClient.authorize.$get(
       {
-        query: searchParams,
+        query: {
+          client_id: "clientId",
+          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+          scope: "openid",
+          redirect_uri: "http://localhost:3000/callback",
+          state: "state",
+        },
       },
       {
         headers: {

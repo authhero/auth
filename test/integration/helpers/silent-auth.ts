@@ -1,9 +1,13 @@
 import { expect } from "vitest";
 import { testClient } from "hono/testing";
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import { tsoaApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
+import {
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "../../../src/types";
 
-const client = testClient(tsoaApp, {});
+const client = testClient(loginApp, {});
 type clientAppType = typeof client;
 
 export async function doSilentAuthRequest(
@@ -15,21 +19,19 @@ export async function doSilentAuthRequest(
   const cookies = setCookiesHeader.split(";").map((c) => c.trim());
   const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
 
-  const query = {
-    client_id: clientId,
-    response_type: "token id_token",
-    scope: "openid profile email",
-    redirect_uri: "http://localhost:3000/callback",
-    state: "state",
-    // silent auth pararms!
-    prompt: "none",
-    nonce: nonce,
-    response_mode: "web_message",
-  };
-
   const silentAuthResponse = await client.authorize.$get(
     {
-      query,
+      query: {
+        client_id: clientId,
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid profile email",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+        // silent auth pararms!
+        prompt: "none",
+        nonce: nonce,
+        response_mode: AuthorizationResponseMode.WEB_MESSAGE,
+      },
     },
     {
       headers: {

@@ -108,7 +108,7 @@ describe("code-flow", () => {
     };
 
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
+    const tokenResponse = await loginClient.authorize.$get({
       query,
     });
 
@@ -141,7 +141,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        client,
+        loginClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -192,18 +192,22 @@ describe("code-flow", () => {
 
     const { login_ticket: loginTicket2 } = await authRes2.json();
 
-    const query2 = {
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      client_id: "clientId",
-      login_ticket: loginTicket2,
-      ...AUTH_PARAMS,
-      referrer: "https://login.example.com",
-      realm: "email",
-    };
-
-    const tokenRes2 = await client.authorize.$get({
-      query: query2,
-    });
+    const tokenRes2 = await loginClient.authorize.$get(
+      {
+        query: {
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+          client_id: "clientId",
+          login_ticket: loginTicket2,
+          ...AUTH_PARAMS,
+          realm: "email",
+        },
+      },
+      {
+        headers: {
+          referrer: "https://login.example.com",
+        },
+      },
+    );
 
     // ----------------------------
     // Now silent auth again - confirms that logging in works
@@ -212,7 +216,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        client,
+        loginClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -328,7 +332,7 @@ describe("code-flow", () => {
     };
 
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
+    const tokenResponse = await loginClient.authorize.$get({
       query,
     });
 
@@ -351,7 +355,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        client,
+        loginClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -419,19 +423,23 @@ describe("code-flow", () => {
 
     const { login_ticket } = await authenticateResponse.json();
 
-    const query = {
-      ...AUTH_PARAMS,
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      client_id: "clientId",
-      login_ticket,
-      referrer: "https://login.example.com",
-      realm: "email",
-    };
-
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
-      query,
-    });
+    const tokenResponse = await loginClient.authorize.$get(
+      {
+        query: {
+          ...AUTH_PARAMS,
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+          client_id: "clientId",
+          login_ticket,
+          realm: "email",
+        },
+      },
+      {
+        headers: {
+          referrer: "https://login.example.com",
+        },
+      },
+    );
 
     const redirectUri = new URL(tokenResponse.headers.get("location")!);
 
@@ -453,7 +461,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        client,
+        loginClient,
         AUTH_PARAMS.nonce,
         "clientId",
       );
@@ -512,22 +520,26 @@ describe("code-flow", () => {
 
     const { login_ticket } = await authenticateResponse.json();
 
-    const query = {
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      client_id: "clientId",
-      login_ticket,
-      nonce,
-      redirect_uri,
-      response_type,
-      scope,
-      state,
-      referrer: "https://login.example.com",
-      realm: "email",
-    };
-
-    const tokenResponse = await client.authorize.$get({
-      query,
-    });
+    const tokenResponse = await loginClient.authorize.$get(
+      {
+        query: {
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+          client_id: "clientId",
+          login_ticket,
+          nonce,
+          redirect_uri,
+          response_type,
+          scope,
+          state,
+          realm: "email",
+        },
+      },
+      {
+        headers: {
+          referrer: "https://login.example.com",
+        },
+      },
+    );
 
     const redirectUri = new URL(tokenResponse.headers.get("location")!);
     const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
@@ -579,7 +591,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader,
-        client,
+        loginClient,
         nonce,
         "clientId",
       );
@@ -647,22 +659,26 @@ describe("code-flow", () => {
     });
 
     const { login_ticket: loginTicket2 } = await authenticateResponse2.json();
-
-    const query2 = {
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      client_id: "clientId",
-      login_ticket: loginTicket2,
-      nonce: "nonce",
-      redirect_uri,
-      response_type,
-      scope,
-      state,
-      referrer: "https://login.example.com",
-      realm: "email",
-    };
-    const tokenResponse2 = await client.authorize.$get({
-      query: query2,
-    });
+    const tokenResponse2 = await loginClient.authorize.$get(
+      {
+        query: {
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+          client_id: "clientId",
+          login_ticket: loginTicket2,
+          nonce: "nonce",
+          redirect_uri,
+          response_type,
+          scope,
+          state,
+          realm: "email",
+        },
+      },
+      {
+        headers: {
+          referrer: "https://login.example.com",
+        },
+      },
+    );
 
     const accessToken2 = parseJwt(
       new URLSearchParams(
@@ -680,7 +696,7 @@ describe("code-flow", () => {
     const { idToken: silentAuthIdTokenPayload2 } =
       await doSilentAuthRequestAndReturnTokens(
         setCookiesHeader2,
-        client,
+        loginClient,
         nonce,
         "clientId",
       );
@@ -800,19 +816,23 @@ describe("code-flow", () => {
 
       const { login_ticket } = await authenticateResponse.json();
 
-      const query = {
-        ...AUTH_PARAMS,
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        realm: "email",
-      };
-
       // Trade the ticket for token
-      const tokenResponse = await client.authorize.$get({
-        query,
-      });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            ...AUTH_PARAMS,
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            realm: "email",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
       const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
@@ -833,7 +853,7 @@ describe("code-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           setCookiesHeader,
-          client,
+          loginClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -1084,7 +1104,7 @@ describe("code-flow", () => {
     };
 
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
+    const tokenResponse = await loginClient.authorize.$get({
       query,
     });
 
@@ -1156,19 +1176,23 @@ describe("code-flow", () => {
 
     const { login_ticket } = await authenticateResponse.json();
 
-    const query = {
-      ...AUTH_PARAMS,
-      auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-      client_id: "clientId",
-      login_ticket,
-      referrer: "https://login.example.com",
-      realm: "email",
-    };
-
     // Trade the ticket for token
-    const tokenResponse = await client.authorize.$get({
-      query,
-    });
+    const tokenResponse = await loginClient.authorize.$get(
+      {
+        query: {
+          ...AUTH_PARAMS,
+          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+          client_id: "clientId",
+          login_ticket,
+          realm: "email",
+        },
+      },
+      {
+        headers: {
+          referrer: "https://login.example.com",
+        },
+      },
+    );
     const redirectUri = new URL(tokenResponse.headers.get("location")!);
     const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
     const accessToken = searchParams.get("access_token");
@@ -1324,19 +1348,23 @@ describe("code-flow", () => {
 
       const { login_ticket } = await authenticateResponse.json();
 
-      const query = {
-        ...AUTH_PARAMS,
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        realm: "email",
-      };
-
       // Trade the ticket for token
-      const tokenResponse = await client.authorize.$get({
-        query,
-      });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            ...AUTH_PARAMS,
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            realm: "email",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
@@ -1415,19 +1443,23 @@ describe("code-flow", () => {
 
       const { login_ticket } = await authenticateResponse.json();
 
-      const query = {
-        ...AUTH_PARAMS,
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        realm: "email",
-      };
-
       // Trade the ticket for token
-      const tokenResponse = await client.authorize.$get({
-        query,
-      });
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query: {
+            ...AUTH_PARAMS,
+            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+            client_id: "clientId",
+            login_ticket,
+            realm: "email",
+          },
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
@@ -1491,22 +1523,28 @@ describe("code-flow", () => {
 
       const { login_ticket } = await authenticateResponse.json();
 
-      const query = {
-        ...AUTH_PARAMS,
-        auth0client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-        client_id: "clientId",
-        login_ticket,
-        referrer: "https://login.example.com",
-        realm: "email",
-      };
-
       // -----------------
       // Trade the ticket for token once so it is used
       // -----------------
 
-      const tokenResponse = await client.authorize.$get({
-        query,
-      });
+      const query = {
+        ...AUTH_PARAMS,
+        auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+        client_id: "clientId",
+        login_ticket,
+        realm: "email",
+      };
+
+      const tokenResponse = await loginClient.authorize.$get(
+        {
+          query,
+        },
+        {
+          headers: {
+            referrer: "https://login.example.com",
+          },
+        },
+      );
 
       expect(tokenResponse.status).toBe(302);
       expect(await tokenResponse.text()).toBe("Redirecting");
@@ -1514,7 +1552,7 @@ describe("code-flow", () => {
       // -----------------
       // Now try trading ticket again and it should not work
       // -----------------
-      const rejectedSecondTicketUsageRes = await client.authorize.$get({
+      const rejectedSecondTicketUsageRes = await loginClient.authorize.$get({
         query,
       });
 

@@ -140,7 +140,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client,
+          loginClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -274,7 +274,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client,
+          loginClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -387,7 +387,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client,
+          loginClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );
@@ -489,7 +489,7 @@ describe("magic link flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          client,
+          loginClient,
           AUTH_PARAMS.nonce,
           "clientId",
         );

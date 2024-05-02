@@ -2,9 +2,7 @@ import { parse, serialize } from "cookie";
 
 const COOKIE_NAME = "auth-token";
 
-export function getStateFromCookie(
-  cookieHeaders: string | null,
-): string | null {
+export function getStateFromCookie(cookieHeaders?: string): string | null {
   if (!cookieHeaders) {
     return null;
   }

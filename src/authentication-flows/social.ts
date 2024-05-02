@@ -1,4 +1,3 @@
-import { Controller } from "@tsoa/runtime";
 import { Context } from "hono";
 import {
   AuthorizationResponseType,
@@ -7,7 +6,6 @@ import {
   Env,
   LoginState,
 } from "../types";
-import { headers } from "../constants";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
@@ -26,7 +24,6 @@ import { serializeStateInCookie } from "../services/cookies";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
-  controller: Controller,
   client: Client,
   connection: string,
   authParams: AuthParams,
@@ -60,9 +57,8 @@ export async function socialAuth(
       connectionInstance.response_mode,
     );
   }
-  controller.setHeader(headers.location, oauthLoginUrl.href);
-  controller.setStatus(302);
-  return `Redirecting to ${connection}`;
+
+  return ctx.redirect(oauthLoginUrl.href);
 }
 
 interface socialAuthCallbackParams {
@@ -234,7 +230,7 @@ export async function socialAuthCallback({
 
   const sessionCookie = serializeStateInCookie(sessionId);
 
-  return new Response("Redirecting...", {
+  return new Response("Redirecting", {
     status: 302,
     headers: {
       Location: redirectUrl,

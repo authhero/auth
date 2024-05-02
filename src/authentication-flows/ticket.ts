@@ -1,9 +1,8 @@
-import { Controller } from "@tsoa/runtime";
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
-import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
-import { applyTokenResponse } from "../helpers/apply-token-response";
+import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
+import { applyTokenResponse } from "../helpers/apply-token-response-new";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
@@ -14,7 +13,7 @@ import {
 } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
-import { headers } from "../constants";
+import { serializeStateInCookie } from "../services/cookies";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -31,7 +30,6 @@ function getProviderFromRealm(realm: string) {
 export async function ticketAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   tenant_id: string,
-  controller: Controller,
   ticketId: string,
   authParams: AuthParams,
   realm: string,
@@ -135,14 +133,12 @@ export async function ticketAuth(
 
       ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
 
-      controller.setHeader(
-        headers.location,
-        login2UniverifiedEmailUrl.toString(),
-      );
-
-      controller.setStatus(302);
-
-      return "Redirecting";
+      return new Response("Redirecting", {
+        status: 302,
+        headers: {
+          location: login2UniverifiedEmailUrl.toString(),
+        },
+      });
     }
   }
 
@@ -189,7 +185,6 @@ export async function ticketAuth(
 
   const sessionId = await setSilentAuthCookies(
     env,
-    controller,
     ticket.tenant_id,
     ticket.client_id,
     user,
@@ -208,5 +203,13 @@ export async function ticketAuth(
     responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 
-  return applyTokenResponse(controller, tokenResponse, authParams);
+  const [sessionCookie] = serializeStateInCookie(sessionId);
+
+  return new Response("Redirecting", {
+    status: 302,
+    headers: {
+      location: applyTokenResponse(tokenResponse, authParams),
+      "set-cookie": sessionCookie,
+    },
+  });
 }

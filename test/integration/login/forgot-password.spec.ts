@@ -1,29 +1,27 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
+import { AuthorizationResponseType } from "../../../src/types";
 
 describe("Forgot password", () => {
   it("should send forgot password email", async () => {
     const env = await getEnv();
 
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
-    const searchParams = {
-      client_id: "clientId",
-      response_type: "token id_token",
-      scope: "openid",
-      redirect_uri: "http://localhost:3000/callback",
-      state: "state",
-    };
-
-    const response = await client.authorize.$get({
-      query: searchParams,
+    const response = await loginClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
     });
 
     const location = response.headers.get("location");
