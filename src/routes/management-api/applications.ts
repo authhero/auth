@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getDbFromEnv } from "../../services/db";
 import { applicationSchema, applicationInsertSchema } from "../../types/sql";
 import { headers } from "../../constants";
-import { Env, totalsSchema } from "../../types";
+import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { nanoid } from "nanoid";
 import { auth0QuerySchema } from "../../types/auth0/Query";

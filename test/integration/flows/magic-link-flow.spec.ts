@@ -4,7 +4,7 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
-import { loginApp, tsoaApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
@@ -46,7 +46,6 @@ describe("magic link flow", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------
@@ -168,7 +167,6 @@ describe("magic link flow", () => {
     it("is an existing primary user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------
@@ -409,7 +407,6 @@ describe("magic link flow", () => {
 
     it("is the same email address as an existing password user", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------
@@ -511,7 +508,6 @@ describe("magic link flow", () => {
   });
   it("should only allow a magic link to be used once", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     // -----------
@@ -682,7 +678,6 @@ describe("magic link flow", () => {
   describe("edge cases", () => {
     it("should ignore un-verified password account when signing up with magic link", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------

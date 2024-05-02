@@ -3,7 +3,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { AuthorizationResponseType, UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
@@ -839,9 +839,6 @@ describe("password-flow", () => {
       const redirectUri = new URL(tokenResponse.headers.get("location")!);
       const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
 
-      const accessToken = searchParams.get("access_token");
-      const accessTokenPayload = parseJwt(accessToken!);
-
       const idToken = searchParams.get("id_token");
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("foo@example.com");
@@ -868,7 +865,7 @@ describe("password-flow", () => {
           connection: "Username-Password-Authentication",
         },
       });
-      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+      const { code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
       // reject when try to set weak password
@@ -910,7 +907,7 @@ describe("password-flow", () => {
           connection: "Username-Password-Authentication",
         },
       });
-      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+      const { code, state } = getCodeStateTo(env.data.emails[0]);
 
       //-------------------
       // reject when confrimation password does not match!

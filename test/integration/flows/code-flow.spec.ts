@@ -3,7 +3,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { tsoaApp, loginApp } from "../../../src/app";
+import { loginApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
@@ -31,7 +31,6 @@ describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     // -----------------
@@ -249,7 +248,6 @@ describe("code-flow", () => {
   it("is an existing primary user", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     // -----------------
@@ -364,7 +362,6 @@ describe("code-flow", () => {
   });
   it("is an existing linked user", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     // -----------------
@@ -473,7 +470,6 @@ describe("code-flow", () => {
   it("should return existing username-primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const nonce = "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM";
@@ -708,7 +704,6 @@ describe("code-flow", () => {
     it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------
@@ -978,7 +973,6 @@ describe("code-flow", () => {
     };
 
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     await loginClient.passwordless.start.$post(
@@ -1016,7 +1010,6 @@ describe("code-flow", () => {
   it("should be case insensitive with email address", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     // -------------------------
@@ -1127,7 +1120,6 @@ describe("code-flow", () => {
 
   it("should store new user email in lowercase", async () => {
     const env = await getEnv();
-    const client = testClient(tsoaApp, env);
     const loginClient = testClient(loginApp, env);
 
     const AUTH_PARAMS = {
@@ -1219,7 +1211,6 @@ describe("code-flow", () => {
       // create a new user with a password
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------
@@ -1383,7 +1374,6 @@ describe("code-flow", () => {
 
     it("should ignore un-verified password account when signing up with code account", async () => {
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       // -----------------
@@ -1488,7 +1478,6 @@ describe("code-flow", () => {
         state: "state",
       };
       const env = await getEnv();
-      const client = testClient(tsoaApp, env);
       const loginClient = testClient(loginApp, env);
 
       await loginClient.passwordless.start.$post(

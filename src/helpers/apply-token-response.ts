@@ -47,21 +47,6 @@ function getTokenResponseAsQueryRedirectUri(
   return redirectUri;
 }
 
-function applyTokenResponseAsFragment(
-  controller: Controller,
-  tokenResponse: TokenResponse | CodeResponse,
-  authParams: AuthParams,
-) {
-  const redirectUri = getTokenResponseAsFragmentRedirectUri(
-    tokenResponse,
-    authParams,
-  );
-  controller.setStatus(302);
-  controller.setHeader(headers.location, redirectUri.href);
-
-  return "Redirecting";
-}
-
 function getTokenResponseAsFragmentRedirectUri(
   tokenResponse: TokenResponse | CodeResponse,
   authParams: AuthParams,

@@ -1,4 +1,4 @@
-import { Database, OTP } from "../../../types";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function remove(db: Kysely<Database>) {

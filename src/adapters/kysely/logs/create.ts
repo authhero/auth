@@ -18,7 +18,7 @@ function flattenScopesIfArray(
 
 function getAuth0ClientValue(log: Log): string | undefined {
   // seems very arbitrary... but it's what auth0 does
-  const AUTH0_CLIENT_LOG_TYPES = ["seccft", "scoa", "fcoa", "fsa", "ssa"];
+  // const AUTH0_CLIENT_LOG_TYPES = ["seccft", "scoa", "fcoa", "fsa", "ssa"];
   if (
     // typescript cannot handle this syntax
     // AUTH0_CLIENT_LOG_TYPES.includes(log.type) &&
