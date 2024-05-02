@@ -61,6 +61,7 @@ export async function silentAuth({
       if (user) {
         const tokenResponse = await generateAuthResponse({
           env,
+          tenantId: tenant_id,
           state,
           nonce,
           userId: session.user_id,

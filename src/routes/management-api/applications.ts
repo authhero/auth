@@ -7,6 +7,7 @@ import { HTTPException } from "hono/http-exception";
 import { nanoid } from "nanoid";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+import authenticationMiddleware from "../../middlewares/authentication";
 
 export const applications = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
@@ -23,9 +24,10 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -66,9 +68,10 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -119,9 +122,10 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -167,9 +171,10 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -219,9 +224,10 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -271,9 +277,10 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {

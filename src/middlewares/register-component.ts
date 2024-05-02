@@ -1,6 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Context, Next } from "hono";
-import { Env } from "../types/Env";
+import { Var, Env } from "../types";
 
 let inititated = false;
 
@@ -8,7 +8,9 @@ let inititated = false;
  * This registers the security scheme for the application. As it uses an environment variable, it can only be registered once the first request arrives.
  * @param app
  */
-export function registerComponent(app: OpenAPIHono<{ Bindings: Env }>) {
+export function registerComponent(
+  app: OpenAPIHono<{ Bindings: Env; Variables: Var }>,
+) {
   app.use(async (ctx: Context<{ Bindings: Env }>, next: Next) => {
     if (!inititated) {
       app.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
@@ -24,11 +26,6 @@ export function registerComponent(app: OpenAPIHono<{ Bindings: Env }>) {
             },
           },
         },
-      });
-
-      app.openAPIRegistry.registerComponent("securitySchemes", "Basic", {
-        type: "http",
-        scheme: "basic",
       });
 
       inititated = true;

@@ -10,6 +10,7 @@ import {
   connectionInsertSchema,
   connectionSchema,
 } from "../../types/Connection";
+import authenticationMiddleware from "../../middlewares/authentication";
 
 const connectionsWithTotalsSchema = totalsSchema.extend({
   connections: z.array(connectionSchema),
@@ -30,9 +31,10 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -82,9 +84,10 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -135,9 +138,10 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -183,9 +187,10 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -235,9 +240,10 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -286,9 +292,10 @@ export const connections = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {

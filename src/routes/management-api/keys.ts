@@ -2,6 +2,7 @@ import { Env, certificateSchema, signingKeySchema } from "../../types";
 import { create } from "../../services/rsa-key";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import authenticationMiddleware from "../../middlewares/authentication";
 
 const DAY = 1000 * 60 * 60 * 24;
 
@@ -19,9 +20,10 @@ export const keys = new OpenAPIHono<{ Bindings: Env }>()
           tenant_id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -66,9 +68,10 @@ export const keys = new OpenAPIHono<{ Bindings: Env }>()
           kid: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -107,9 +110,10 @@ export const keys = new OpenAPIHono<{ Bindings: Env }>()
           tenant_id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -146,9 +150,10 @@ export const keys = new OpenAPIHono<{ Bindings: Env }>()
           kid: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {

@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+import authenticationMiddleware from "../../middlewares/authentication";
 
 const logsWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(logSchema),
@@ -23,9 +24,10 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
           "tenant-id": z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -75,9 +77,10 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {

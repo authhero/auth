@@ -4,6 +4,7 @@ import { tenantSchema } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+import authenticationMiddleware from "../../middlewares/authentication";
 
 const tenantsWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(tenantSchema),
@@ -21,9 +22,10 @@ export const tenants = new OpenAPIHono<{ Bindings: Env }>()
       request: {
         query: auth0QuerySchema,
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -69,9 +71,10 @@ export const tenants = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:read"],
         },
       ],
       responses: {
@@ -112,9 +115,10 @@ export const tenants = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -151,9 +155,10 @@ export const tenants = new OpenAPIHono<{ Bindings: Env }>()
           id: z.string(),
         }),
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {
@@ -188,9 +193,10 @@ export const tenants = new OpenAPIHono<{ Bindings: Env }>()
           },
         },
       },
+      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
       security: [
         {
-          Bearer: [],
+          Bearer: ["auth:write"],
         },
       ],
       responses: {

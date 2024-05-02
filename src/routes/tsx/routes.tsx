@@ -58,6 +58,7 @@ async function handleLogin(
 
     const authResponse = await generateAuthResponse({
       env,
+      tenantId: session.tenant_id,
       userId: user.id,
       sid: nanoid(),
       responseType,
@@ -791,6 +792,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         const authResponse = await generateAuthResponse({
           env,
+          tenantId: session.tenant_id,
           userId: user.id,
           sid: nanoid(),
           responseType:
