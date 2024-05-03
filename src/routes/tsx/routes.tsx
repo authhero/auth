@@ -13,11 +13,8 @@ import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
-import {
-  renderMessage,
-  renderEnterCode,
-  renderSignup,
-} from "../../templates/render";
+import LoginEnterCodePage from "../../utils/components/LoginEnterCodePage";
+import { renderMessage, renderSignup } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
@@ -734,7 +731,11 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Session not found" });
       }
 
-      return ctx.html(renderEnterCode(session));
+      const vendorSettings = await env.fetchVendorSettings(
+        session.authParams.client_id,
+      );
+
+      return ctx.html(<LoginEnterCodePage vendorSettings={vendorSettings} />);
     },
   )
   // --------------------------------
@@ -809,7 +810,16 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         return ctx.redirect(redirectUrl.href);
       } catch (err) {
-        return ctx.html(renderEnterCode(session, "Invalid code"));
+        const vendorSettings = await env.fetchVendorSettings(
+          session.authParams.client_id,
+        );
+
+        return ctx.html(
+          <LoginEnterCodePage
+            vendorSettings={vendorSettings}
+            error="Invalid code"
+          />,
+        );
       }
     },
   )
