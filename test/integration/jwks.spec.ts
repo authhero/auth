@@ -3,12 +3,12 @@ import { testClient } from "hono/testing";
 import { jwksKeySchema, openIDConfigurationSchema } from "../../src/types/jwks";
 import { getAdminToken } from "./helpers/token";
 import { getEnv } from "./helpers/test-client";
-import { loginApp } from "../../src/app";
+import { managementApp, oauthApp } from "../../src/app";
 
 describe("jwks", () => {
   it("should return a list with the test certificate", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const client = testClient(oauthApp, env);
 
     const response = await client[".well-known"]["jwks.json"].$get(
       {
@@ -30,9 +30,10 @@ describe("jwks", () => {
 
   it("should create a new rsa-key and return it", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
-    const initialKey = await loginClient[".well-known"]["jwks.json"].$get(
+    const initialKey = await oauthClient[".well-known"]["jwks.json"].$get(
       {
         param: {},
       },
@@ -49,7 +50,7 @@ describe("jwks", () => {
     const token = await getAdminToken();
 
     const createKeyResponse =
-      await loginClient.api.v2.keys.signing.rotate.$post(
+      await managementClient.api.v2.keys.signing.rotate.$post(
         {
           header: {
             tenant_id: "tenantId",
@@ -64,7 +65,7 @@ describe("jwks", () => {
 
     expect(createKeyResponse.status).toBe(201);
 
-    const response = await loginClient[".well-known"]["jwks.json"].$get(
+    const response = await oauthClient[".well-known"]["jwks.json"].$get(
       {
         param: {},
       },
@@ -87,7 +88,7 @@ describe("jwks", () => {
 
   it("should return an openid-configuration with the current issues", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const client = testClient(oauthApp, env);
 
     const response = await client[".well-known"]["openid-configuration"].$get(
       {

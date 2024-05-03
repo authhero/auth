@@ -52,11 +52,11 @@ function getSwaggerHtml() {
           urls: [
             {
               url: "/spec",
-              name: "TSOA Spec"
+              name: "OAuth api"
             },
             {
-              url: "/u/doc",
-              name: "OpenAPI Spec"
+              url: "/api/v2/spec",
+              name: "Management api"
             }
           ],
           dom_id: "#swagger-ui",

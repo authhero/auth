@@ -30,6 +30,14 @@ export const userSchema = userInsertSchema
     login_count: z.number(),
   });
 
+export const auth0UserResponseSchema = userSchema
+  .extend({
+    user_id: z.string(),
+    // TODO: Type identities
+    identities: z.array(z.any()),
+  })
+  .omit({ id: true });
+
 export interface BaseUser {
   // TODO - Auth0 requires the id OR the email but for our current usage with durable objects and Sesamy's architecture, we need email!
   email: string;

@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
-import { UserResponse } from "../../../src/types/auth0";
+import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
@@ -11,10 +10,10 @@ describe("users management API endpoint", () => {
     // this is different to Auth0 where user_id OR email is required
     it("should return a 400 if try and create a new user for a tenant without an email", async () => {
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const managementClient = testClient(managementApp, env);
 
       const token = await getAdminToken();
-      const createUserResponse = await client.api.v2.users.$post(
+      const createUserResponse = await managementClient.api.v2.users.$post(
         {
           json: {
             username: "test@example.com",
@@ -27,7 +26,6 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "content-type": "application/json",
           },
         },
       );
@@ -39,9 +37,10 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
-      const createUserResponse = await client.api.v2.users.$post(
+      const createUserResponse = await managementClient.api.v2.users.$post(
         {
           json: {
             email: "test@example.com",
@@ -54,14 +53,13 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "content-type": "application/json",
           },
         },
       );
 
       expect(createUserResponse.status).toBe(201);
 
-      const newUser = (await createUserResponse.json()) as UserResponse;
+      const newUser = await createUserResponse.json();
       expect(newUser.email).toBe("test@example.com");
       expect(newUser.user_id).toContain("|");
 
@@ -70,7 +68,7 @@ describe("users management API endpoint", () => {
       expect(provider).toBe("email");
       expect(id).toBeTypeOf("string");
 
-      const usersResponse = await client.api.v2.users.$get(
+      const usersResponse = await managementClient.api.v2.users.$get(
         {
           query: {},
           header: {
@@ -86,7 +84,11 @@ describe("users management API endpoint", () => {
 
       expect(usersResponse.status).toBe(200);
 
-      const body = (await usersResponse.json()) as UserResponse[];
+      const body = await usersResponse.json();
+      if (!Array.isArray(body)) {
+        throw new Error("Expected an array of users");
+      }
+
       expect(body.length).toBe(1);
       expect(body[0].user_id).toBe(newUser.user_id);
       expect(body[0].identities).toEqual([
@@ -105,9 +107,9 @@ describe("users management API endpoint", () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
-        const client = testClient(loginApp, env);
+        const managementClient = testClient(managementApp, env);
 
-        const createUserResponse1 = await client.api.v2.users.$post(
+        const createUserResponse1 = await managementClient.api.v2.users.$post(
           {
             json: {
               email: "test@example.com",
@@ -120,14 +122,13 @@ describe("users management API endpoint", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "content-type": "application/json",
             },
           },
         );
 
         expect(createUserResponse1.status).toBe(201);
 
-        const createUserResponse2 = await client.api.v2.users.$post(
+        const createUserResponse2 = await managementClient.api.v2.users.$post(
           {
             json: {
               email: "test@example.com",
@@ -140,7 +141,6 @@ describe("users management API endpoint", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "content-type": "application/json",
             },
           },
         );
@@ -152,7 +152,8 @@ describe("users management API endpoint", () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
-        const client = testClient(loginApp, env);
+        const client = testClient(oauthApp, env);
+        const managementClient = testClient(managementApp, env);
 
         // ----------------------
         // Inject fixtures for primary and linked users
@@ -184,7 +185,9 @@ describe("users management API endpoint", () => {
         });
 
         // sanity check that primary user is set up correctly
-        const primaryUserRes = await client.api.v2.users[":user_id"].$get(
+        const primaryUserRes = await managementClient.api.v2.users[
+          ":user_id"
+        ].$get(
           {
             param: {
               user_id: "auth2|primaryId",
@@ -199,7 +202,7 @@ describe("users management API endpoint", () => {
             },
           },
         );
-        const primaryUser = (await primaryUserRes.json()) as UserResponse;
+        const primaryUser = await primaryUserRes.json();
         expect(primaryUser.identities).toEqual([
           {
             connection: "Username-Password-Authentication",
@@ -219,23 +222,23 @@ describe("users management API endpoint", () => {
           },
         ]);
 
-        const createDuplicateCodeUserResponse = await client.api.v2.users.$post(
-          {
-            json: {
-              email: "existing-code-user@example.com",
-              connection: "email",
+        const createDuplicateCodeUserResponse =
+          await managementClient.api.v2.users.$post(
+            {
+              json: {
+                email: "existing-code-user@example.com",
+                connection: "email",
+              },
+              header: {
+                "tenant-id": "tenantId",
+              },
             },
-            header: {
-              "tenant-id": "tenantId",
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+              },
             },
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-              "content-type": "application/json",
-            },
-          },
-        );
+          );
 
         expect(createDuplicateCodeUserResponse.status).toBe(409);
       });
@@ -244,12 +247,13 @@ describe("users management API endpoint", () => {
     it("should lowercase email when creating a user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // ----------------------
       // Create user with uppercase email and check response is lower case
       // ----------------------
-      const createUserResponse = await client.api.v2.users.$post(
+      const createUserResponse = await managementClient.api.v2.users.$post(
         {
           json: {
             email: "FOOZ@BAR.COM",
@@ -262,14 +266,12 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-
-            "content-type": "application/json",
           },
         },
       );
 
       expect(createUserResponse.status).toBe(201);
-      const createdUser = (await createUserResponse.json()) as UserResponse;
+      const createdUser = await createUserResponse.json();
       expect(createdUser.email).toBe("fooz@bar.com");
 
       // ----------------------
@@ -281,7 +283,7 @@ describe("users management API endpoint", () => {
       // ----------------------
       // Fetch user through mgmt API get and check email is lower case
       // ----------------------
-      const newUser = await client.api.v2.users[":user_id"].$get(
+      const newUser = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
             // this is not correct! should be user_id... interesting
@@ -299,7 +301,7 @@ describe("users management API endpoint", () => {
       );
 
       expect(newUser.status).toBe(200);
-      const fetchedUser = (await newUser.json()) as UserResponse;
+      const fetchedUser = await newUser.json();
       expect(fetchedUser.email).toBe("fooz@bar.com");
     });
   });
@@ -308,9 +310,9 @@ describe("users management API endpoint", () => {
     it("should update a user", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const managementClient = testClient(managementApp, env);
 
-      const createUserResponse = await client.api.v2.users.$post(
+      const createUserResponse = await managementClient.api.v2.users.$post(
         {
           json: {
             email: "test@example.com",
@@ -330,10 +332,12 @@ describe("users management API endpoint", () => {
 
       expect(createUserResponse.status).toBe(201);
 
-      const newUser = (await createUserResponse.json()) as UserResponse;
+      const newUser = await createUserResponse.json();
       const [provider, id] = newUser.user_id.split("|");
 
-      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
+      const updateUserResponse = await managementClient.api.v2.users[
+        ":user_id"
+      ].$patch(
         {
           json: {
             email_verified: true,
@@ -348,7 +352,6 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "content-type": "application/json",
           },
         },
       );
@@ -359,7 +362,7 @@ describe("users management API endpoint", () => {
 
       expect(updateUserResponse.status).toBe(200);
 
-      const usersResponse = await client.api.v2.users.$get(
+      const usersResponse = await managementClient.api.v2.users.$get(
         {
           query: {},
           header: {
@@ -373,7 +376,11 @@ describe("users management API endpoint", () => {
         },
       );
 
-      const body = (await usersResponse.json()) as UserResponse[];
+      const body = await usersResponse.json();
+      if (!Array.isArray(body)) {
+        throw new Error("Expected an array of users");
+      }
+
       expect(body.length).toBe(2);
       expect(body[1].email_verified).toBe(true);
     });
@@ -382,10 +389,13 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const managementClient = testClient(managementApp, env);
+
       const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
-      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
+      const updateUserResponse = await managementClient.api.v2.users[
+        ":user_id"
+      ].$patch(
         {
           param: { user_id: newUser1.id },
           json: {
@@ -398,7 +408,6 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "content-type": "application/json",
           },
         },
       );
@@ -410,31 +419,31 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // this could be a helper... create linked user for existing primary user... set up with two linked users?
-      const createSecondaryUserResponse = await client.api.v2.users.$post(
-        {
-          json: {
-            email: "secondary-user@example.com",
-            connection: "email",
-            name: "secondary user",
+      const createSecondaryUserResponse =
+        await managementClient.api.v2.users.$post(
+          {
+            json: {
+              email: "secondary-user@example.com",
+              connection: "email",
+              name: "secondary user",
+            },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
-          header: {
-            "tenant-id": "tenantId",
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
           },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-        },
-      );
+        );
 
       expect(createSecondaryUserResponse.status).toBe(201);
-      const secondaryUser =
-        (await createSecondaryUserResponse.json()) as UserResponse;
+      const secondaryUser = await createSecondaryUserResponse.json();
 
       // link the accounts
       const params = {
@@ -448,12 +457,11 @@ describe("users management API endpoint", () => {
           "tenant-id": "tenantId",
         },
       };
-      const linkUserResponse = await client.api.v2.users[
+      const linkUserResponse = await managementClient.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       });
 
@@ -481,15 +489,13 @@ describe("users management API endpoint", () => {
         },
       };
 
-      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
-        params2,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
+      const updateUserResponse = await managementClient.api.v2.users[
+        ":user_id"
+      ].$patch(params2, {
+        headers: {
+          authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       expect(updateUserResponse.status).toBe(404);
     });
@@ -498,7 +504,7 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const managementClient = testClient(managementApp, env);
 
       const params2 = {
         param: {
@@ -512,16 +518,15 @@ describe("users management API endpoint", () => {
         },
       };
 
-      const updateUserResponse = await client.api.v2.users[":user_id"].$patch(
-        params2,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-            "content-type": "application/json",
-          },
+      const updateUserResponse = await managementClient.api.v2.users[
+        ":user_id"
+      ].$patch(params2, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+          "content-type": "application/json",
         },
-      );
+      });
 
       expect(updateUserResponse.status).toBe(404);
     });
@@ -531,14 +536,10 @@ describe("users management API endpoint", () => {
     it("should delete secondary account if delete primary account", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
-      const headers = {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      };
-
-      const createUserResponse1 = await client.api.v2.users.$post(
+      const createUserResponse1 = await managementClient.api.v2.users.$post(
         {
           json: {
             email: "test1@example.com",
@@ -549,13 +550,15 @@ describe("users management API endpoint", () => {
           },
         },
         {
-          headers,
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
         },
       );
 
-      const newUser1 = (await createUserResponse1.json()) as UserResponse;
+      const newUser1 = await createUserResponse1.json();
 
-      const createUserResponse2 = await client.api.v2.users.$post(
+      const createUserResponse2 = await managementClient.api.v2.users.$post(
         {
           json: {
             email: "test2@example.com",
@@ -566,26 +569,33 @@ describe("users management API endpoint", () => {
           },
         },
         {
-          headers,
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
         },
       );
 
-      const newUser2 = (await createUserResponse2.json()) as UserResponse;
+      const newUser2 = await createUserResponse2.json();
 
       const typeCoercion = {
         param: {
-          user_id: newUser2.id,
+          user_id: newUser2.user_id,
         },
         json: {
-          link_with: newUser1.id,
+          link_with: newUser1.user_id,
         },
         header: {
           "tenant-id": "tenantId",
         },
       };
-      await client.api.v2.users[":user_id"].identities.$post(typeCoercion, {
-        headers,
-      });
+      await managementClient.api.v2.users[":user_id"].identities.$post(
+        typeCoercion,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       // inspect the db directly because the GET endpoints don't return linked users
       const { users } = await env.data.users.list("tenantId", {
@@ -597,20 +607,22 @@ describe("users management API endpoint", () => {
       expect(users.length).toBe(3);
 
       // check we have linked user1 to user2
-      const user1 = users.find((u) => u.id === newUser1.id);
-      expect(user1?.linked_to).toBe(newUser2.id);
+      const user1 = users.find((u) => u.id === newUser1.user_id);
+      expect(user1?.linked_to).toBe(newUser2.user_id);
 
       // --------------------------------------------------
       // now delete the primary account - newUser2
       // --------------------------------------------------
 
-      await client.api.v2.users[":user_id"].$delete(
+      await managementClient.api.v2.users[":user_id"].$delete(
         {
-          param: { user_id: newUser2.id },
+          param: { user_id: newUser2.user_id },
           header: { "tenant-id": "tenantId" },
         },
         {
-          headers,
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
         },
       );
 
@@ -624,17 +636,17 @@ describe("users management API endpoint", () => {
 
       expect(usersNowDeleted.length).toBe(1);
 
-      expect(usersNowDeleted[0].id).not.toBe(newUser1.id);
-      expect(usersNowDeleted[0].id).not.toBe(newUser2.id);
+      expect(usersNowDeleted[0].id).not.toBe(newUser1.user_id);
+      expect(usersNowDeleted[0].id).not.toBe(newUser2.user_id);
     });
   });
   // TODO - split these tests up into a new test suite one for each HTTP verb!
   it("should use email for name if not name is not passed", async () => {
     const token = await getAdminToken();
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const managementClient = testClient(managementApp, env);
 
-    const createUserResponse = await client.api.v2.users.$post(
+    const createUserResponse = await managementClient.api.v2.users.$post(
       {
         json: {
           email: "foo@bar.com",
@@ -647,14 +659,13 @@ describe("users management API endpoint", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       },
     );
 
     expect(createUserResponse.status).toBe(201);
 
-    const createdUser = (await createUserResponse.json()) as UserResponse;
+    const createdUser = await createUserResponse.json();
 
     expect(createdUser.name).toBe("foo@bar.com");
   });
@@ -665,10 +676,11 @@ describe("users management API endpoint", () => {
     // - pagination! What I've done won't work of course unless we overfetch...
     it("should return an empty list of users for a tenant", async () => {
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       const token = await getAdminToken();
-      const response = await client.api.v2.users.$get(
+      const response = await managementClient.api.v2.users.$get(
         {
           query: {},
           header: {
@@ -684,39 +696,39 @@ describe("users management API endpoint", () => {
 
       expect(response.status).toBe(200);
 
-      const body = (await response.json()) as UserResponse[];
+      const body = await response.json();
       expect(body.length).toBe(0);
     });
 
     it("should return linked users as identities in primary user, and not in list of results", async () => {
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       const token = await getAdminToken();
 
-      const createSecondaryUserResponse = await client.api.v2.users.$post(
-        {
-          json: {
-            // use a different email here to make sure our implementation is not taking shortcuts
-            email: "secondary-user@example.com",
-            connection: "email",
+      const createSecondaryUserResponse =
+        await managementClient.api.v2.users.$post(
+          {
+            json: {
+              // use a different email here to make sure our implementation is not taking shortcuts
+              email: "secondary-user@example.com",
+              connection: "email",
+            },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
-          header: {
-            "tenant-id": "tenantId",
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "tenant-id": "tenantId",
+            },
           },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
-            "content-type": "application/json",
-          },
-        },
-      );
+        );
 
       expect(createSecondaryUserResponse.status).toBe(201);
-      const secondaryUser =
-        (await createSecondaryUserResponse.json()) as UserResponse;
+      const secondaryUser = await createSecondaryUserResponse.json();
 
       // link the accounts
       const params = {
@@ -730,19 +742,18 @@ describe("users management API endpoint", () => {
           "tenant-id": "tenantId",
         },
       };
-      const linkUserResponse = await client.api.v2.users[
+      const linkUserResponse = await managementClient.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       });
 
       expect(linkUserResponse.status).toBe(201);
 
       // Now we should only get one result from the get endpoint but with nested identities
-      const response = await client.api.v2.users.$get(
+      const response = await managementClient.api.v2.users.$get(
         {
           query: {},
           header: {
@@ -758,8 +769,11 @@ describe("users management API endpoint", () => {
 
       expect(response.status).toBe(200);
 
-      const body = (await response.json()) as UserResponse[];
+      const body = await response.json();
       expect(body.length).toBe(1);
+      if (!Array.isArray(body)) {
+        throw new Error("Expected an array of users");
+      }
 
       expect(body[0].identities).toEqual([
         {
@@ -787,9 +801,10 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
-      const createUserResponse = await client.api.v2.users.$post(
+      const createUserResponse = await managementClient.api.v2.users.$post(
         {
           json: {
             email: "test@example.com",
@@ -802,14 +817,13 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "content-type": "application/json",
           },
         },
       );
 
       expect(createUserResponse.status).toBe(201);
 
-      const usersResponse = await client.api.v2.users.$get(
+      const usersResponse = await managementClient.api.v2.users.$get(
         {
           query: {
             per_page: "2",
@@ -828,13 +842,15 @@ describe("users management API endpoint", () => {
 
       expect(usersResponse.status).toBe(200);
 
-      const body = (await usersResponse.json()) as UserResponse[];
+      const body = await usersResponse.json();
       expect(body.length).toBe(1);
     });
     it("should be able to search on linked user's email address using profile data query", async () => {
       const token = await getAdminToken();
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
       // -----------------
       // user fixtures
@@ -867,7 +883,7 @@ describe("users management API endpoint", () => {
       });
 
       // sanity check - get base user and check identities
-      const baseUserRes = await client.api.v2.users[":user_id"].$get(
+      const baseUserRes = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "auth2|base-user",
@@ -883,7 +899,7 @@ describe("users management API endpoint", () => {
         },
       );
       expect(baseUserRes.status).toBe(200);
-      const baseUser = (await baseUserRes.json()) as UserResponse;
+      const baseUser = await baseUserRes.json();
       expect(baseUser.identities).toEqual([
         {
           connection: "Username-Password-Authentication",
@@ -906,7 +922,7 @@ describe("users management API endpoint", () => {
       // ------------------
       // Now query using profile data
       // ------------------
-      const usersResponse = await client.api.v2.users.$get(
+      const usersResponse = await managementClient.api.v2.users.$get(
         {
           query: {
             per_page: "2",
@@ -923,8 +939,11 @@ describe("users management API endpoint", () => {
         },
       );
       expect(usersResponse.status).toBe(200);
-      const body = (await usersResponse.json()) as UserResponse[];
+      const body = await usersResponse.json();
       expect(body.length).toBe(1);
+      if (!Array.isArray(body)) {
+        throw new Error("Expected an array of users");
+      }
 
       // assert that we get the primary user back
       expect(body[0].identities).toEqual([
@@ -957,8 +976,11 @@ describe("users management API endpoint", () => {
       it("should search for a user by email when lucene query uses colon as separator", async () => {
         const token = await getAdminToken();
         const env = await getEnv();
-        const client = testClient(loginApp, env);
-        const createUserResponse = await client.api.v2.users.$post(
+
+        const client = testClient(oauthApp, env);
+        const managementClient = testClient(managementApp, env);
+
+        const createUserResponse = await managementClient.api.v2.users.$post(
           {
             json: {
               email: "test@example.com",
@@ -971,12 +993,11 @@ describe("users management API endpoint", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "content-type": "application/json",
             },
           },
         );
         expect(createUserResponse.status).toBe(201);
-        const usersResponse = await client.api.v2.users.$get(
+        const usersResponse = await managementClient.api.v2.users.$get(
           {
             query: {
               per_page: "2",
@@ -993,15 +1014,21 @@ describe("users management API endpoint", () => {
           },
         );
         expect(usersResponse.status).toBe(200);
-        const body = (await usersResponse.json()) as UserResponse[];
+        const body = await usersResponse.json();
+        if (!Array.isArray(body)) {
+          throw new Error("Expected an array of users");
+        }
         expect(body.length).toBe(1);
         expect(body[0].email).toBe("test@example.com");
       });
+
       it("should search for a user by email when lucene query uses equal char as separator", async () => {
         const token = await getAdminToken();
         const env = await getEnv();
-        const client = testClient(loginApp, env);
-        const createUserResponse = await client.api.v2.users.$post(
+
+        const managementClient = testClient(managementApp, env);
+
+        const createUserResponse = await managementClient.api.v2.users.$post(
           {
             json: {
               email: "test@example.com",
@@ -1014,12 +1041,11 @@ describe("users management API endpoint", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "content-type": "application/json",
             },
           },
         );
         expect(createUserResponse.status).toBe(201);
-        const usersResponse = await client.api.v2.users.$get(
+        const usersResponse = await managementClient.api.v2.users.$get(
           {
             query: {
               per_page: "2",
@@ -1035,16 +1061,23 @@ describe("users management API endpoint", () => {
             },
           },
         );
+
         expect(usersResponse.status).toBe(200);
-        const body = (await usersResponse.json()) as UserResponse[];
+        const body = await usersResponse.json();
+        if (!Array.isArray(body)) {
+          throw new Error("Expected an array of users");
+        }
         expect(body.length).toBe(1);
         expect(body[0].email).toBe("test@example.com");
       });
+
       it("should search for a user by email and provider when lucene query uses equal char as separator", async () => {
         const token = await getAdminToken();
         const env = await getEnv();
-        const client = testClient(loginApp, env);
-        const createUserResponse = await client.api.v2.users.$post(
+
+        const managementClient = testClient(managementApp, env);
+
+        const createUserResponse = await managementClient.api.v2.users.$post(
           {
             json: {
               // we already have a username-password user in our fixtures
@@ -1058,13 +1091,12 @@ describe("users management API endpoint", () => {
           {
             headers: {
               authorization: `Bearer ${token}`,
-              "content-type": "application/json",
             },
           },
         );
         expect(createUserResponse.status).toBe(201);
 
-        const usersResponse = await client.api.v2.users.$get(
+        const usersResponse = await managementClient.api.v2.users.$get(
           {
             query: {
               per_page: "2",
@@ -1080,9 +1112,13 @@ describe("users management API endpoint", () => {
             },
           },
         );
+
         expect(usersResponse.status).toBe(200);
-        const body = (await usersResponse.json()) as UserResponse[];
+        const body = await usersResponse.json();
         expect(body.length).toBe(1);
+        if (!Array.isArray(body)) {
+          throw new Error("Expected an array of users");
+        }
         expect(body[0].email).toBe("foo@example.com");
         expect(body[0].provider).toBe("email");
       });
@@ -1097,33 +1133,35 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
+
       const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
       const params = {
         param: {
-          user_id: newUser2.id,
+          user_id: newUser2.user_id,
         },
         json: {
-          link_with: newUser1.id,
+          link_with: newUser1.user_id,
         },
         header: {
           "tenant-id": "tenantId",
         },
       };
-      const linkUserResponse = await client.api.v2.users[
+      const linkUserResponse = await managementClient.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       });
 
       expect(linkUserResponse.status).toBe(201);
 
       // Fetch all users
-      const listUsersResponse = await client.api.v2.users.$get(
+      const listUsersResponse = await managementClient.api.v2.users.$get(
         {
           query: {},
           header: {
@@ -1139,12 +1177,15 @@ describe("users management API endpoint", () => {
 
       expect(listUsersResponse.status).toBe(200);
 
-      const usersList = (await listUsersResponse.json()) as UserResponse[];
+      const usersList = await listUsersResponse.json();
+      if (!Array.isArray(usersList)) {
+        throw new Error("Expected an array of users");
+      }
       expect(usersList.length).toBe(2);
       expect(usersList[1].user_id).toBe(newUser2.user_id);
 
       // Fetch a single users
-      const userResponse = await client.api.v2.users[":user_id"].$get(
+      const userResponse = await managementClient.api.v2.users[":user_id"].$get(
         // note we fetch with the user_id prefixed with provider as per the Auth0 standard
         {
           param: { user_id: newUser2.user_id },
@@ -1164,7 +1205,7 @@ describe("users management API endpoint", () => {
       const [, newUser1Id] = newUser1.user_id.split("|");
       const [, newUser2Id] = newUser2.user_id.split("|");
 
-      const body = (await userResponse.json()) as UserResponse;
+      const body = await userResponse.json();
       expect(body.user_id).toBe(newUser2.user_id);
       expect(body.identities).toEqual([
         {
@@ -1185,15 +1226,15 @@ describe("users management API endpoint", () => {
         },
       ]);
 
-      const [provider, linked_user_id] = newUser1.id.split("|");
+      const [provider, linked_user_id] = newUser1.user_id.split("|");
 
       // and now unlink!
-      const unlinkUserResponse = await client.api.v2.users[
+      const unlinkUserResponse = await managementClient.api.v2.users[
         ":user_id"
       ].identities[":provider"][":linked_user_id"].$delete(
         {
           param: {
-            user_id: newUser2.id,
+            user_id: newUser2.user_id,
             provider,
             linked_user_id,
           },
@@ -1207,17 +1248,24 @@ describe("users management API endpoint", () => {
       );
 
       expect(unlinkUserResponse.status).toBe(200);
-      const unlinkUserBody =
-        (await unlinkUserResponse.json()) as UserResponse[];
+      const unlinkUserBody = await unlinkUserResponse.json();
+      if (!Array.isArray(unlinkUserBody)) {
+        throw new Error("Expected an array of users");
+      }
 
       expect(unlinkUserBody[0].user_id).toBe(newUser2.user_id);
 
       // manually check in the db that the linked_to field has been reset
-      const user1Updated = await env.data.users.get("tenantId", newUser1.id);
+      const user1Updated = await env.data.users.get(
+        "tenantId",
+        newUser1.user_id,
+      );
       expect(user1Updated!.linked_to).toBeUndefined();
 
       // now fetch user 2 again to check doesn't have user2 as identity
-      const userResponse2 = await client.api.v2.users[":user_id"].$get(
+      const userResponse2 = await managementClient.api.v2.users[
+        ":user_id"
+      ].$get(
         {
           param: { user_id: newUser2.user_id },
           header: { "tenant-id": "tenantId" },
@@ -1225,13 +1273,13 @@ describe("users management API endpoint", () => {
         {
           headers: {
             authorization: `Bearer ${token}`,
-            "tenant-id": "tenantId",
           },
         },
       );
 
       expect(userResponse2.status).toBe(200);
-      const user2 = (await userResponse2.json()) as UserResponse;
+      const user2 = await userResponse2.json();
+
       expect(user2.identities).toEqual([
         {
           connection: "email",
@@ -1248,34 +1296,34 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const managementClient = testClient(managementApp, env);
+
       const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
 
-      const [provider] = newUser2.id.split("|");
+      const [provider] = newUser2.user_id.split("|");
       const params = {
-        param: { user_id: newUser2.id },
+        param: { user_id: newUser2.user_id },
         json: {
           provider,
-          user_id: newUser1.id,
+          user_id: newUser1.user_id,
         },
         header: {
           "tenant-id": "tenantId",
         },
       };
 
-      const linkUserResponse = await client.api.v2.users[
+      const linkUserResponse = await managementClient.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       });
 
       expect(linkUserResponse.status).toBe(201);
 
       // Fetch a single users
-      const userResponse = await client.api.v2.users[":user_id"].$get(
+      const userResponse = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
             // note we fetch with the user_id prefixed with provider as per the Auth0 standard
@@ -1297,7 +1345,7 @@ describe("users management API endpoint", () => {
       const [, newUser1Id] = newUser1.user_id.split("|");
       const [, newUser2Id] = newUser2.user_id.split("|");
 
-      const body = (await userResponse.json()) as UserResponse;
+      const body = await userResponse.json();
       expect(body.user_id).toBe(newUser2.user_id);
       expect(body.identities).toEqual([
         {
@@ -1325,31 +1373,30 @@ describe("users management API endpoint", () => {
       const token = await getAdminToken();
 
       const env = await getEnv();
-      const client = testClient(loginApp, env);
+      const client = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
 
-      const createSecondaryUserResponse = await client.api.v2.users.$post(
-        {
-          json: {
-            // use a different email here to make sure our implementation is not taking shortcuts
-            email: "secondary-user@example.com",
-            connection: "email",
+      const createSecondaryUserResponse =
+        await managementClient.api.v2.users.$post(
+          {
+            json: {
+              // use a different email here to make sure our implementation is not taking shortcuts
+              email: "secondary-user@example.com",
+              connection: "email",
+            },
+            header: {
+              "tenant-id": "tenantId",
+            },
           },
-          header: {
-            "tenant-id": "tenantId",
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
           },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-
-            "content-type": "application/json",
-          },
-        },
-      );
+        );
 
       expect(createSecondaryUserResponse.status).toBe(201);
-      const secondaryUser =
-        (await createSecondaryUserResponse.json()) as UserResponse;
+      const secondaryUser = await createSecondaryUserResponse.json();
 
       // link the accounts
       const params = {
@@ -1363,19 +1410,18 @@ describe("users management API endpoint", () => {
           "tenant-id": "tenantId",
         },
       };
-      const linkUserResponse = await client.api.v2.users[
+      const linkUserResponse = await managementClient.api.v2.users[
         ":user_id"
       ].identities.$post(params, {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       });
 
       expect(linkUserResponse.status).toBe(201);
 
       // now pull the primary account down
-      const userResponse = await client.api.v2.users[":user_id"].$get(
+      const userResponse = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
             user_id: "auth2|userId",
@@ -1393,7 +1439,7 @@ describe("users management API endpoint", () => {
 
       expect(userResponse.status).toBe(200);
 
-      const user = (await userResponse.json()) as UserResponse;
+      const user = await userResponse.json();
 
       expect(user.email).toBe("foo@example.com");
       expect(user.identities).toEqual([
@@ -1416,7 +1462,9 @@ describe("users management API endpoint", () => {
       ]);
 
       // try getting the secondary user
-      const secondaryUserResponse = await client.api.v2.users[":user_id"].$get(
+      const secondaryUserResponse = await managementClient.api.v2.users[
+        ":user_id"
+      ].$get(
         {
           param: {
             user_id: secondaryUser.user_id,

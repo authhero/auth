@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
-import { loginApp } from "../../../src/app";
+import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import {
   AuthorizationResponseType,
@@ -24,7 +24,7 @@ function getDefaultSilentAuthSearchParams() {
 describe("silent-auth", () => {
   it("should return a 200 when not logged in, with a login_required error", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const client = testClient(oauthApp, env);
 
     const query = {
       client_id: "clientId",
@@ -53,9 +53,9 @@ describe("silent-auth", () => {
 
   it("should set the used_at property on the session when the token is renewed", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const loginResponse = await loginClient.co.authenticate.$post({
+    const loginResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -77,7 +77,7 @@ describe("silent-auth", () => {
       realm: "Username-Password-Authentication",
     };
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get({
+    const tokenResponse = await oauthClient.authorize.$get({
       query,
     });
     expect(tokenResponse.status).toBe(302);
@@ -91,7 +91,7 @@ describe("silent-auth", () => {
     // -------------------------------------------------------------
     const { idToken } = await doSilentAuthRequestAndReturnTokens(
       setCookieHeader,
-      loginClient,
+      oauthClient,
       "nonce",
       "clientId",
     );
@@ -103,9 +103,9 @@ describe("silent-auth", () => {
 
   it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const loginResponse = await loginClient.co.authenticate.$post({
+    const loginResponse = await oauthClient.co.authenticate.$post({
       json: {
         client_id: "clientId",
         credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -117,7 +117,7 @@ describe("silent-auth", () => {
     expect(loginResponse.status).toBe(200);
     const { login_ticket } = await loginResponse.json();
     // Trade the ticket for token
-    const tokenResponse = await loginClient.authorize.$get(
+    const tokenResponse = await oauthClient.authorize.$get(
       {
         query: {
           auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -144,7 +144,7 @@ describe("silent-auth", () => {
     const { accessToken: silentAuthAccessTokenPayload } =
       await doSilentAuthRequestAndReturnTokens(
         setCookieHeader,
-        loginClient,
+        oauthClient,
         "nonce",
         "clientId",
       );
@@ -156,7 +156,7 @@ describe("silent-auth", () => {
     const { accessToken: silentAuthAccessTokenPayloadOtherClient } =
       await doSilentAuthRequestAndReturnTokens(
         setCookieHeader,
-        loginClient,
+        oauthClient,
         "nonce",
         "otherClientId",
       );
@@ -169,7 +169,7 @@ describe("silent-auth", () => {
       client_id: "otherClientIdOnOtherTenant",
     };
 
-    const silentAuthResponseDifferentTenant = await loginClient.authorize.$get(
+    const silentAuthResponseDifferentTenant = await oauthClient.authorize.$get(
       {
         query: silentAuthSearchParamsDifferentTenant,
       },

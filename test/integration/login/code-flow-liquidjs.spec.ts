@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { loginApp } from "../../../src/app";
+import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
@@ -24,9 +24,9 @@ describe("Login with code on liquidjs template", () => {
       vendorSettings: FOKUS_VENDOR_SETTINGS,
       testTenantLanguage: "nb",
     });
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const response = await loginClient.authorize.$get({
+    const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
@@ -46,7 +46,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await loginClient.u.code.$get({
+    const codeInputFormResponse = await oauthClient.u.code.$get({
       query: {
         state: query.state,
       },
@@ -56,7 +56,7 @@ describe("Login with code on liquidjs template", () => {
 
     await snapshotResponse(codeInputFormResponse);
 
-    const postSendCodeResponse = await loginClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u.code.$post({
       query: { state: query.state },
       form: {
         username: "foo@example.com",
@@ -75,13 +75,13 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
-    const enterCodeForm = await loginClient.u["enter-code"].$get({
+    const enterCodeForm = await oauthClient.u["enter-code"].$get({
       query: { state: enterCodeQuery.state },
     });
     expect(enterCodeForm.status).toBe(200);
     await snapshotResponse(enterCodeForm);
 
-    const authenticateResponse = await loginClient.u["enter-code"].$post({
+    const authenticateResponse = await oauthClient.u["enter-code"].$post({
       query: {
         state: enterCodeQuery.state,
       },
@@ -102,9 +102,9 @@ describe("Login with code on liquidjs template", () => {
 
   it("should reject bad code", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const response = await loginClient.authorize.$get({
+    const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
@@ -120,7 +120,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await loginClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u.code.$post({
       query: { state: query.state },
       form: {
         username: "foo@example.com",
@@ -133,7 +133,7 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
-    const incorrectCodeResponse = await loginClient.u["enter-code"].$post({
+    const incorrectCodeResponse = await oauthClient.u["enter-code"].$post({
       query: {
         state: enterCodeQuery.state,
       },

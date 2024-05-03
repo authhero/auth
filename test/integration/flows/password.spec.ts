@@ -3,7 +3,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
+import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { AuthorizationResponseType, UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
@@ -36,9 +36,9 @@ describe("password-flow", () => {
   describe("Register password", () => {
     it("should return a 400 if an invalid client is passed", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const response = await loginClient.dbconnections.signup.$post({
+      const response = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "invalidClientId",
           connection: "Username-Password-Authentication",
@@ -54,9 +54,9 @@ describe("password-flow", () => {
     it("should create a new user with a password and only allow login after email validation", async () => {
       const password = "Password1234!";
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -66,7 +66,7 @@ describe("password-flow", () => {
       });
       expect(createUserResponse.status).toBe(200);
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -80,7 +80,7 @@ describe("password-flow", () => {
       const { login_ticket } = await loginResponse.json();
 
       // cannot login now because email not validated!
-      const loginBlockedRes = await loginClient.authorize.$get(
+      const loginBlockedRes = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -122,7 +122,7 @@ describe("password-flow", () => {
       expect(code).toBeDefined();
       expect(state).toBeTypeOf("string");
 
-      const emailValidatedRes = await loginClient.u["validate-email"].$get({
+      const emailValidatedRes = await oauthClient.u["validate-email"].$get({
         query: {
           state,
           code,
@@ -136,7 +136,7 @@ describe("password-flow", () => {
       // login again now to check that it works
       //-------------------
 
-      const loginResponse2 = await loginClient.co.authenticate.$post({
+      const loginResponse2 = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -148,7 +148,7 @@ describe("password-flow", () => {
 
       const { login_ticket: loginTicket2 } = await loginResponse2.json();
 
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -189,7 +189,7 @@ describe("password-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          loginClient,
+          oauthClient,
           "unique-nonce",
           "clientId",
         );
@@ -216,7 +216,8 @@ describe("password-flow", () => {
     it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
       const password = "Password1234!";
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
       const token = await getAdminToken();
 
       // -------------------------------
@@ -234,7 +235,7 @@ describe("password-flow", () => {
         login_count: 0,
       });
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -252,7 +253,7 @@ describe("password-flow", () => {
       expect(to).toBe("existing-code-user@example.com");
       expect(code).toBeDefined();
 
-      const emailValidatedRes = await loginClient.u["validate-email"].$get({
+      const emailValidatedRes = await oauthClient.u["validate-email"].$get({
         query: {
           state,
           code,
@@ -283,7 +284,7 @@ describe("password-flow", () => {
       // login with password
       // -----------------------------
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -297,7 +298,7 @@ describe("password-flow", () => {
 
       const { login_ticket } = await loginResponse.json();
 
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -332,7 +333,7 @@ describe("password-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          loginClient,
+          oauthClient,
           "unique-nonce",
           "clientId",
         );
@@ -343,7 +344,9 @@ describe("password-flow", () => {
       // -----------------------------
       // get user by id assert that the username-password user info is in the identities array
       // --------------------
-      const primaryUserRes = await loginClient.api.v2.users[":user_id"].$get(
+      const primaryUserRes = await managementClient.api.v2.users[
+        ":user_id"
+      ].$get(
         {
           param: {
             user_id: "email|codeUserId",
@@ -386,9 +389,9 @@ describe("password-flow", () => {
     it("should resend email validation email after login attempts, and this should work", async () => {
       const password = "Password1234!";
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -398,7 +401,7 @@ describe("password-flow", () => {
       });
       expect(createUserResponse.status).toBe(200);
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -414,7 +417,7 @@ describe("password-flow", () => {
       // this will not work because email not validated
       // the user is redirected to a page informing them that they need to validate their email
       // ---------------------------
-      const res = await loginClient.authorize.$get(
+      const res = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -442,7 +445,7 @@ describe("password-flow", () => {
 
       expect(to).toBe("password-login-test@example.com");
 
-      const emailValidatedRes = await loginClient.u["validate-email"].$get({
+      const emailValidatedRes = await oauthClient.u["validate-email"].$get({
         query: {
           state,
           code,
@@ -455,7 +458,7 @@ describe("password-flow", () => {
       // do the login flow again
       // -----------------------------------------
 
-      const loginResponse2 = await loginClient.co.authenticate.$post({
+      const loginResponse2 = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -467,7 +470,7 @@ describe("password-flow", () => {
 
       const { login_ticket: loginTicket2 } = await loginResponse2.json();
 
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -497,9 +500,9 @@ describe("password-flow", () => {
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
       const env = await getEnv();
       const aNewPassword = "A-new-valid-password-1234!";
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -513,7 +516,7 @@ describe("password-flow", () => {
       const body = await createUserResponse.text();
       expect(body).toBe("Invalid sign up");
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -527,9 +530,9 @@ describe("password-flow", () => {
     it("should reject signups for weak passwords", async () => {
       const env = await getEnv();
 
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -548,10 +551,10 @@ describe("password-flow", () => {
   describe("Login with password", () => {
     it("should login with existing user", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
       // foo@example.com is an existing username-password user, with password - Test!
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -565,7 +568,7 @@ describe("password-flow", () => {
       const { login_ticket } = await loginResponse.json();
 
       // Trade the ticket for token
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -612,7 +615,7 @@ describe("password-flow", () => {
       const { idToken: silentAuthIdTokenPayload } =
         await doSilentAuthRequestAndReturnTokens(
           authCookieHeader,
-          loginClient,
+          oauthClient,
           "unique-nonce",
           "clientId",
         );
@@ -632,9 +635,9 @@ describe("password-flow", () => {
     });
     it("should reject login of existing user with incorrect password", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -648,9 +651,9 @@ describe("password-flow", () => {
     });
     it("should not allow password of a different user to be used", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const signupResponse = await loginClient.dbconnections.signup.$post({
+      const signupResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -660,7 +663,7 @@ describe("password-flow", () => {
       });
       expect(signupResponse.status).toBe(200);
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -679,7 +682,7 @@ describe("password-flow", () => {
       // now check we cannot use the wrong user's password
       // ------------------
 
-      const rejectedLoginResponse = await loginClient.co.authenticate.$post({
+      const rejectedLoginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -694,9 +697,9 @@ describe("password-flow", () => {
     });
     it("should not allow non-existent user & password to login", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -709,9 +712,9 @@ describe("password-flow", () => {
     });
     it("should not allow login to username-password but on different tenant", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "otherClientIdOnOtherTenant",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -733,7 +736,7 @@ describe("password-flow", () => {
         vendorSettings: FOKUS_VENDOR_SETTINGS,
         testTenantLanguage: "sv",
       });
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -743,7 +746,7 @@ describe("password-flow", () => {
       //-------------------
 
       const passwordResetSendResponse =
-        await loginClient.dbconnections.change_password.$post({
+        await oauthClient.dbconnections.change_password.$post({
           json: {
             client_id: "clientId",
             email: "foo@example.com",
@@ -767,7 +770,7 @@ describe("password-flow", () => {
       // reset password
       //-------------------
 
-      const resetPasswordForm = await loginClient.u["reset-password"].$get({
+      const resetPasswordForm = await oauthClient.u["reset-password"].$get({
         query: {
           state,
           code,
@@ -777,7 +780,7 @@ describe("password-flow", () => {
       await snapshotResponse(resetPasswordForm);
 
       // NOTE - I'm not testing the GET that loads the webform here... we don't have a browser to interact with here
-      const resetPassword = await loginClient.u["reset-password"].$post({
+      const resetPassword = await oauthClient.u["reset-password"].$post({
         form: {
           password: "New-password-1234!",
           "re-enter-password": "New-password-1234!",
@@ -796,7 +799,7 @@ describe("password-flow", () => {
       // now check we can login with the new password
       // ------------------
 
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -810,7 +813,7 @@ describe("password-flow", () => {
       const { login_ticket } = await loginResponse.json();
 
       // Trade the ticket for token
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
@@ -842,7 +845,7 @@ describe("password-flow", () => {
         vendorSettings: KVARTAL_VENDOR_SETTINGS,
         testTenantLanguage: "nb",
       });
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -850,7 +853,7 @@ describe("password-flow", () => {
       //-------------------
       // get code to call password reset endpoint
       //-------------------
-      await loginClient.dbconnections.change_password.$post({
+      await oauthClient.dbconnections.change_password.$post({
         json: {
           client_id: "clientId",
           email: "foo@example.com",
@@ -862,7 +865,7 @@ describe("password-flow", () => {
       //-------------------
       // reject when try to set weak password
       //-------------------
-      const resetPassword = await loginClient.u["reset-password"].$post({
+      const resetPassword = await oauthClient.u["reset-password"].$post({
         form: {
           // we have unit tests for the util function we use so just doing one unhappy path
           password: "weak-password",
@@ -884,7 +887,7 @@ describe("password-flow", () => {
         testTenantLanguage: "it",
       });
 
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
       // foo@example.com is an existing username-password user
       // with password - Test!
@@ -892,7 +895,7 @@ describe("password-flow", () => {
       //-------------------
       // get code to call password reset endpoint
       //-------------------
-      await loginClient.dbconnections.change_password.$post({
+      await oauthClient.dbconnections.change_password.$post({
         json: {
           client_id: "clientId",
           email: "foo@example.com",
@@ -904,7 +907,7 @@ describe("password-flow", () => {
       //-------------------
       // reject when confrimation password does not match!
       //-------------------
-      const resetPassword = await loginClient.u["reset-password"].$post({
+      const resetPassword = await oauthClient.u["reset-password"].$post({
         form: {
           password: "StrongPassword1234!",
           // this is also strong but does match the previous line
@@ -922,9 +925,9 @@ describe("password-flow", () => {
     });
     it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
       const env = await getEnv();
-      const loginClient = testClient(loginApp, env);
+      const oauthClient = testClient(oauthApp, env);
 
-      const createUserResponse = await loginClient.dbconnections.signup.$post({
+      const createUserResponse = await oauthClient.dbconnections.signup.$post({
         json: {
           client_id: "clientId",
           connection: "Username-Password-Authentication",
@@ -938,7 +941,7 @@ describe("password-flow", () => {
       // send password reset email even though have never logged in
       //-------------------
       const passwordResetSendResponse =
-        await loginClient.dbconnections.change_password.$post({
+        await oauthClient.dbconnections.change_password.$post({
           json: {
             client_id: "clientId",
             email: "reset-new-user@example.com",
@@ -959,7 +962,7 @@ describe("password-flow", () => {
       //-------------------
       // reset password
       //-------------------
-      const resetPassword = await loginClient.u["reset-password"].$post({
+      const resetPassword = await oauthClient.u["reset-password"].$post({
         form: {
           password: "New-password-1234!",
           "re-enter-password": "New-password-1234!",
@@ -974,7 +977,7 @@ describe("password-flow", () => {
       // ------------------
       // now check we can login with the new password, and we are not told to verify our email
       // ------------------
-      const loginResponse = await loginClient.co.authenticate.$post({
+      const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
           credential_type: "http://auth0.com/oauth/grant-type/password-realm",
@@ -985,7 +988,7 @@ describe("password-flow", () => {
       });
       expect(loginResponse.status).toBe(200);
       const { login_ticket } = await loginResponse.json();
-      const tokenResponse = await loginClient.authorize.$get(
+      const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
             auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",

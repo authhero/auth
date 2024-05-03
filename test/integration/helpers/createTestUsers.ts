@@ -3,13 +3,13 @@ import { testClient } from "hono/testing";
 import { getAdminToken } from "./token";
 import { UserResponse } from "../../../src/types/auth0";
 import { EnvType } from "./test-client";
-import { loginApp } from "../../../src/app";
+import { managementApp } from "../../../src/app";
 
 export default async function createTestUsers(env: EnvType, tenantId: string) {
   const token = await getAdminToken();
-  const client = testClient(loginApp, env);
+  const managementClient = testClient(managementApp, env);
 
-  const createUserResponse1 = await client.api.v2.users.$post(
+  const createUserResponse1 = await managementClient.api.v2.users.$post(
     {
       json: {
         email: "test1@example.com",
@@ -22,7 +22,6 @@ export default async function createTestUsers(env: EnvType, tenantId: string) {
     {
       headers: {
         authorization: `Bearer ${token}`,
-        "content-type": "application/json",
       },
     },
   );
@@ -30,7 +29,7 @@ export default async function createTestUsers(env: EnvType, tenantId: string) {
   expect(createUserResponse1.status).toBe(201);
   const newUser1 = (await createUserResponse1.json()) as UserResponse;
 
-  const createUserResponse2 = await client.api.v2.users.$post(
+  const createUserResponse2 = await managementClient.api.v2.users.$post(
     {
       json: {
         email: "test2@example.com",
@@ -43,7 +42,6 @@ export default async function createTestUsers(env: EnvType, tenantId: string) {
     {
       headers: {
         authorization: `Bearer ${token}`,
-        "content-type": "application/json",
       },
     },
   );

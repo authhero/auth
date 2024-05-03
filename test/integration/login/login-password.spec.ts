@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { loginApp } from "../../../src/app";
+import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
@@ -12,7 +12,7 @@ describe("Login with password user", () => {
       vendorSettings: KVARTAL_VENDOR_SETTINGS,
       testTenantLanguage: "en",
     });
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
     const searchParams = {
       client_id: "clientId",
@@ -22,7 +22,7 @@ describe("Login with password user", () => {
       state: "state",
     };
 
-    const response = await loginClient.authorize.$get({
+    const response = await oauthClient.authorize.$get({
       query: searchParams,
     });
 
@@ -35,7 +35,7 @@ describe("Login with password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    const loginFormResponse = await loginClient.u.login.$get({
+    const loginFormResponse = await oauthClient.u.login.$get({
       query: {
         state: query.state,
       },
@@ -49,7 +49,7 @@ describe("Login with password user", () => {
 
     await snapshotResponse(loginFormResponse);
 
-    const postLoginResponse = await loginClient.u.login.$post({
+    const postLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: loginSearchParamsQuery.state,
       },
@@ -76,9 +76,9 @@ describe("Login with password user", () => {
 
   it("should reject bad password", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
 
-    const response = await loginClient.authorize.$get({
+    const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
@@ -94,7 +94,7 @@ describe("Login with password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    await loginClient.u.login.$get({
+    await oauthClient.u.login.$get({
       query: {
         state: query.state,
       },
@@ -105,7 +105,7 @@ describe("Login with password user", () => {
       loginSearchParams.entries(),
     );
 
-    const incorrectPasswordResponse = await loginClient.u.login.$post({
+    const incorrectPasswordResponse = await oauthClient.u.login.$post({
       query: {
         state: loginSearchParamsQuery.state,
       },

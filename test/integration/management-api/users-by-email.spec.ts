@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
+import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { UserResponse } from "../../../src/types/auth0";
@@ -9,10 +9,11 @@ import { Identity } from "../../../src/types/auth0/Identity";
 describe("users by email", () => {
   it("should return empty list if there are no users with queried email address", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const client = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
-    const response = await client.api.v2["users-by-email"].$get(
+    const response = await managementClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "i-do-not-exist@all.com",
@@ -35,11 +36,11 @@ describe("users by email", () => {
 
   it("should return a single user for a simple get by email - no linked accounts", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
 
-    const response = await client.api.v2["users-by-email"].$get(
+    const response = await managementClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "foo@example.com",
@@ -87,7 +88,8 @@ describe("users by email", () => {
 
   it("should return multiple users for a simple get by email - no linked accounts", async () => {
     const env = await getEnv();
-    const loginClient = testClient(loginApp, env);
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
 
@@ -95,30 +97,30 @@ describe("users by email", () => {
     // This assumes the POST endpoint doesn't do automatic account linking...
     // would be better if we could initialise the database with multiple accounts...
     // and different on different test runs... TBD another time
-    const createDuplicateUserResponse = await loginClient.api.v2.users.$post(
-      {
-        json: {
-          name: "Åkesson Þorsteinsson",
-          email: "foo@example.com",
-          connection: "email",
-          // seems odd that this isn't allowed... I think this endpoint needs looking at
-          // maybe it's good we have to use the mgmt API for our test fixtures
-          // provider: "auth2",
+    const createDuplicateUserResponse =
+      await managementClient.api.v2.users.$post(
+        {
+          json: {
+            name: "Åkesson Þorsteinsson",
+            email: "foo@example.com",
+            connection: "email",
+            // seems odd that this isn't allowed... I think this endpoint needs looking at
+            // maybe it's good we have to use the mgmt API for our test fixtures
+            // provider: "auth2",
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
-        header: {
-          "tenant-id": "tenantId",
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
         },
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "content-type": "application/json",
-        },
-      },
-    );
+      );
     expect(createDuplicateUserResponse.status).toBe(201);
 
-    const response = await loginClient.api.v2["users-by-email"].$get(
+    const response = await managementClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "foo@example.com",
@@ -172,10 +174,11 @@ describe("users by email", () => {
 
   it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const client = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
-    const createBarEmailUser = await client.api.v2.users.$post(
+    const createBarEmailUser = await managementClient.api.v2.users.$post(
       {
         json: {
           email: "bar@example.com",
@@ -189,14 +192,13 @@ describe("users by email", () => {
         headers: {
           authorization: `Bearer ${token}`,
           "tenant-id": "tenantId",
-          "content-type": "application/json",
         },
       },
     );
     expect(createBarEmailUser.status).toBe(201);
 
     // both these return one result now
-    const fooEmail = await client.api.v2["users-by-email"].$get(
+    const fooEmail = await managementClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "foo@example.com",
@@ -211,11 +213,12 @@ describe("users by email", () => {
         },
       },
     );
+
     const fooEmailUsers = (await fooEmail.json()) as UserResponse[];
     expect(fooEmailUsers).toHaveLength(1);
     const fooEmailId = fooEmailUsers[0].user_id;
 
-    const barEmail = await client.api.v2["users-by-email"].$get(
+    const barEmail = await managementClient.api.v2["users-by-email"].$get(
       {
         query: {
           email: "bar@example.com",
@@ -234,24 +237,23 @@ describe("users by email", () => {
     expect(barEmailUsers).toHaveLength(1);
     const barEmailId = barEmailUsers[0].user_id;
 
-    const params = {
-      param: {
-        user_id: fooEmailId,
+    const linkResponse = await managementClient.api.v2.users[
+      ":user_id"
+    ].identities.$post(
+      {
+        param: {
+          user_id: fooEmailId,
+        },
+        json: {
+          link_with: barEmailId,
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
       },
-      json: {
-        link_with: barEmailId,
-      },
-      header: {
-        "tenant-id": "tenantId",
-      },
-    };
-
-    const linkResponse = await client.api.v2.users[":user_id"].identities.$post(
-      params,
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       },
     );
@@ -276,7 +278,9 @@ describe("users by email", () => {
     // we can then assert that we have a profileData key on the bar sub account
 
     // foo@example.com should exist with bar as an identity
-    const fooEmailAfterLink = await client.api.v2["users-by-email"].$get(
+    const fooEmailAfterLink = await managementClient.api.v2[
+      "users-by-email"
+    ].$get(
       {
         query: {
           email: "foo@example.com",
@@ -288,7 +292,6 @@ describe("users by email", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "tenant-id": "tenantId",
         },
       },
     );
@@ -317,7 +320,9 @@ describe("users by email", () => {
     ]);
 
     // bar@example.com should not be searchable by email
-    const barEmailAfterLink = await await client.api.v2["users-by-email"].$get(
+    const barEmailAfterLink = await managementClient.api.v2[
+      "users-by-email"
+    ].$get(
       {
         query: {
           email: "bar@example.com",

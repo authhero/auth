@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { loginApp } from "../../../src/app";
+import { managementApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { Tenant } from "../../../src/types";
@@ -8,10 +8,10 @@ import { Tenant } from "../../../src/types";
 describe("tenants", () => {
   it("should add a new tenant", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
-    const tenantsResponse1 = await client.api.v2.tenants.$get(
+    const tenantsResponse1 = await managementClient.api.v2.tenants.$get(
       {
         query: {},
       },
@@ -27,7 +27,7 @@ describe("tenants", () => {
     expect(body1.length).toEqual(3);
 
     // now create the tenant
-    const createTenantResponse = await client.api.v2.tenants.$post(
+    const createTenantResponse = await managementClient.api.v2.tenants.$post(
       {
         json: {
           name: "test",
@@ -39,7 +39,6 @@ describe("tenants", () => {
       {
         headers: {
           authorization: `Bearer ${token}`,
-          "content-type": "application/json",
         },
       },
     );
@@ -50,7 +49,7 @@ describe("tenants", () => {
     expect(createdTenant.name).toBe("test");
 
     // now fetch list of tenants again to assert tenant deleted
-    const tenantsResponse2 = await client.api.v2.tenants.$get(
+    const tenantsResponse2 = await managementClient.api.v2.tenants.$get(
       {
         query: {},
       },
@@ -68,10 +67,10 @@ describe("tenants", () => {
 
   it("should remove a tenant", async () => {
     const env = await getEnv();
-    const client = testClient(loginApp, env);
+    const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
-    const tenantsResponse1 = await client.api.v2.tenants.$get(
+    const tenantsResponse1 = await managementClient.api.v2.tenants.$get(
       { query: {} },
       {
         headers: {
@@ -85,7 +84,9 @@ describe("tenants", () => {
     // base tenant + two tenants in test-server
     expect(body1.length).toEqual(3);
 
-    const deleteTenantResponse = await client.api.v2.tenants[":id"].$delete(
+    const deleteTenantResponse = await managementClient.api.v2.tenants[
+      ":id"
+    ].$delete(
       {
         param: {
           id: "otherTenant",
@@ -101,7 +102,7 @@ describe("tenants", () => {
     expect(deleteTenantResponse.status).toBe(200);
 
     // fetch list of tenants again - assert we are one down
-    const tenantsResponse2 = await client.api.v2.tenants.$get(
+    const tenantsResponse2 = await managementClient.api.v2.tenants.$get(
       { query: {} },
       {
         headers: {
