@@ -14,7 +14,8 @@ import sv from "../../localesLogin2/sv/default.json";
 import LoginPage from "../../utils/components/LoginPage";
 import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
 import LoginEnterCodePage from "../../utils/components/LoginEnterCodePage";
-import { renderMessage, renderSignup } from "../../templates/render";
+import SignupPage from "../../utils/components/SignUpPage";
+import { renderMessage } from "../../templates/render";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
@@ -852,7 +853,14 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Session not found" });
       }
 
-      return ctx.html(renderSignup(session));
+      const vendorSettings = await env.fetchVendorSettings(
+        session.authParams.client_id,
+      );
+
+      // TODO - we need to go through and initialise i18n in all the routes...
+      // we should have tests for this
+
+      return ctx.html(<SignupPage vendorSettings={vendorSettings} />);
     },
   )
   // --------------------------------
@@ -953,7 +961,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
-        return ctx.html(renderSignup(session, err.message));
+        const vendorSettings = await env.fetchVendorSettings(
+          session.authParams.client_id,
+        );
+        return ctx.html(
+          <SignupPage vendorSettings={vendorSettings} error={err.message} />,
+        );
       }
     },
   )
