@@ -52,7 +52,7 @@ function getSwaggerHtml() {
           urls: [
             {
               url: "/spec",
-              name: "Oauth api"
+              name: "OAuth api"
             },
             {
               url: "/api/v2/spec",
