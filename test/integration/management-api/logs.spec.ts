@@ -31,7 +31,7 @@ describe("logs", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as LogsResponse[];
+    const body = await response.json();
     expect(body.length).toBe(0);
   });
 
@@ -80,7 +80,10 @@ describe("logs", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as LogsResponse[];
+    const body = await response.json();
+    if (!Array.isArray(body)) {
+      throw new Error("Expected body to be an array");
+    }
     expect(body.length).toBe(1);
     const [log] = body;
     if (log.type !== "sapi") {
@@ -144,7 +147,10 @@ describe("logs", () => {
 
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as LogsResponse[];
+    const body = await response.json();
+    if (!Array.isArray(body)) {
+      throw new Error("Expected body to be an array");
+    }
     expect(body.length).toBe(1);
     const [log] = body;
     if (log.type !== "fsa") {

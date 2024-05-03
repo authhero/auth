@@ -6,7 +6,7 @@ import { parseSort } from "../../utils/sort";
 import authenticationMiddleware from "../../middlewares/authentication";
 
 const logsWithTotalsSchema = totalsSchema.extend({
-  tenants: z.array(logSchema),
+  logs: z.array(logSchema),
 });
 
 export const logs = new OpenAPIHono<{ Bindings: Env }>()
@@ -33,7 +33,7 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
       responses: {
         200: {
           content: {
-            "tenant/json": {
+            "application/json": {
               schema: z.union([z.array(logSchema), logsWithTotalsSchema]),
             },
           },
@@ -86,7 +86,7 @@ export const logs = new OpenAPIHono<{ Bindings: Env }>()
       responses: {
         200: {
           content: {
-            "tenant/json": {
+            "application/json": {
               schema: logSchema,
             },
           },
