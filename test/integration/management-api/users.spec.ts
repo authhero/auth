@@ -702,7 +702,6 @@ describe("users management API endpoint", () => {
 
     it("should return linked users as identities in primary user, and not in list of results", async () => {
       const env = await getEnv();
-      const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
       const token = await getAdminToken();
@@ -793,6 +792,47 @@ describe("users management API endpoint", () => {
           },
         },
       ]);
+    });
+
+    it("should return a list of users with totals", async () => {
+      const env = await getEnv();
+      const managementClient = testClient(managementApp, env);
+
+      const token = await getAdminToken();
+
+      // Now we should only get one result from the get endpoint but with nested identities
+      const response = await managementClient.api.v2.users.$get(
+        {
+          query: {
+            include_totals: "true",
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (response.status !== 200) {
+        throw new Error(await response.text());
+      }
+
+      expect(response.status).toBe(200);
+
+      const body = await response.json();
+
+      if (!("users" in body)) {
+        throw new Error("Expected an users property");
+      }
+
+      expect(body.users.length).toBe(1);
+      expect(body.start).toBe(0);
+      expect(body.limit).toBe(10);
+      expect(body.length).toBe(1);
     });
   });
 

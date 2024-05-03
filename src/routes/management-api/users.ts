@@ -1,4 +1,3 @@
-import { UserResponse } from "../../types/auth0/UserResponse";
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
@@ -9,7 +8,6 @@ import {
   auth0UserResponseSchema,
   totalsSchema,
   userInsertSchema,
-  userSchema,
 } from "../../types";
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
@@ -21,7 +19,7 @@ import { waitUntil } from "../../utils/wait-until";
 import authenticationMiddleware from "../../middlewares/authentication";
 
 const usersWithTotalsSchema = totalsSchema.extend({
-  tenants: z.array(userSchema),
+  users: z.array(auth0UserResponseSchema),
 });
 
 export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
