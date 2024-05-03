@@ -1114,11 +1114,14 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
     }),
 
     async (ctx) => {
-      return ctx.text(
-        await renderMessage({
-          page_title: "User info",
-          message: `Not implemented`,
-        }),
+      const vendorSettings = await ctx.env.fetchVendorSettings("sesamy");
+
+      return ctx.html(
+        <MessagePage
+          message="Not implemented"
+          pageTitle="User info"
+          vendorSettings={vendorSettings}
+        />,
       );
     },
   );

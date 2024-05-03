@@ -1,6 +1,5 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
-import Button from "./Button";
 import { VendorSettings } from "../../types";
 
 type Props = {
