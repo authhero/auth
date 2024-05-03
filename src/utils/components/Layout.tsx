@@ -7,7 +7,7 @@ import Footer from "./Footer";
 type LayoutProps = {
   title: string;
   vendorSettings: VendorSettings;
-  children: JSX.Element[];
+  children: JSX.Element[] | JSX.Element;
 };
 
 const globalDocStyle = (vendorSettings: VendorSettings) => {
