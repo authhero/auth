@@ -15,7 +15,7 @@ import LoginPage from "../../utils/components/LoginPage";
 import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
 import LoginEnterCodePage from "../../utils/components/LoginEnterCodePage";
 import SignupPage from "../../utils/components/SignUpPage";
-import { renderMessage } from "../../templates/render";
+import MessagePage from "../../utils/components/Message";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
@@ -73,11 +73,17 @@ async function handleLogin(
   }
 
   // This is just a fallback in case no redirect was present
-  return renderMessage({
-    ...session,
-    page_title: "Logged in",
-    message: "You are logged in",
-  });
+  const vendorSettings = await env.fetchVendorSettings(
+    session.authParams.client_id,
+  );
+
+  return ctx.html(
+    <MessagePage
+      message="You are logged in"
+      pageTitle="Logged in"
+      vendorSettings={vendorSettings}
+    />,
+  );
 }
 
 export const login = new OpenAPIHono<{ Bindings: Env }>()
@@ -544,12 +550,16 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         console.log("User not found");
       }
 
+      const vendorSettings = await env.fetchVendorSettings(
+        session.authParams.client_id,
+      );
+
       return ctx.html(
-        renderMessage({
-          ...session,
-          page_title: "Password reset",
-          message: "A code has been sent to your email address",
-        }),
+        <MessagePage
+          message="A code has been sent to your email address"
+          pageTitle="Password reset"
+          vendorSettings={vendorSettings}
+        />,
       );
     },
   )
