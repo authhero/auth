@@ -825,14 +825,14 @@ describe("users management API endpoint", () => {
 
       const body = await response.json();
 
-      if ("users" in body) {
-        expect(body.users.length).toBe(1);
-        expect(body.start).toBe(0);
-        expect(body.limit).toBe(10);
-        expect(body.length).toBe(1);
-      } else {
+      if (!("users" in body)) {
         throw new Error("Expected an users property");
       }
+
+      expect(body.users.length).toBe(1);
+      expect(body.start).toBe(0);
+      expect(body.limit).toBe(10);
+      expect(body.length).toBe(1);
     });
   });
 
