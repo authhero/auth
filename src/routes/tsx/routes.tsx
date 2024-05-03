@@ -21,7 +21,7 @@ import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
 import { Context } from "hono";
-import { renderForgotPassword } from "../../templates/render";
+import ForgotPasswordPage from "../../utils/components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
 import { sendResetPassword, sendLink } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
@@ -458,7 +458,11 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Session not found" });
       }
 
-      return ctx.html(renderForgotPassword(session, state));
+      const vendorSettings = await env.fetchVendorSettings(
+        session.authParams.client_id,
+      );
+
+      return ctx.html(<ForgotPasswordPage vendorSettings={vendorSettings} />);
     },
   )
   // -------------------------------
