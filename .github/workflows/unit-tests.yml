@@ -7,6 +7,7 @@ on: pull_request
 
 jobs:
   node-test:
+    # buildjet has gone down
     # runs-on: buildjet-4vcpu-ubuntu-2204
     # container: mcr.microsoft.com/playwright:v1.43.1-focal@sha256:7439407db913e32c2f948e392f05317c1a7aedecbd8b2052c9cdc51b4f89513c
     runs-on: mcr.microsoft.com/playwright:v1.43.1-focal@sha256:7439407db913e32c2f948e392f05317c1a7aedecbd8b2052c9cdc51b4f89513c
