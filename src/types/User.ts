@@ -9,7 +9,7 @@ const baseUserSchema = z.object({
   family_name: z.string().optional(),
   nickname: z.string().optional(),
   name: z.string().optional(),
-  picture: z.string().optional(),
+  picture: z.string().url().optional(),
   locale: z.string().optional(),
   linked_to: z.string().optional(),
   profileData: z.string().optional(),
