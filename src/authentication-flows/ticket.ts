@@ -207,6 +207,14 @@ export async function ticketAuth(
 
   const [sessionCookie] = serializeStateInCookie(sessionId);
 
+  // Update the user's last login
+  await env.data.users.update(tenant_id, user.id, {
+    last_login: new Date().toISOString(),
+    login_count: user.login_count + 1,
+    // This is specific to cloudflare
+    last_ip: ctx.req.header("cf-connecting-ip") || "",
+  });
+
   return new Response("Redirecting", {
     status: 302,
     headers: {
