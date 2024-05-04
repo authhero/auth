@@ -77,7 +77,7 @@ const app = rootApp
       credentials: true,
     }),
   )
-  // .use(loggerMiddleware)
+  .use(loggerMiddleware)
   .get("/", async (ctx: Context<{ Bindings: Env; Variables: Var }>) => {
     const url = new URL(ctx.req.url);
     const tenantId = url.hostname.split(".")[0];

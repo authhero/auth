@@ -31,7 +31,7 @@ async function log(
   }
 
   const body = ctx.req.header("content-type")?.startsWith("application/json")
-    ? await ctx.req.json()
+    ? await ctx.req.raw.clone().json()
     : {};
 
   // data to log
