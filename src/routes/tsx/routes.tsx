@@ -184,6 +184,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Client not found" });
       }
 
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
+
       const vendorSettings = await env.fetchVendorSettings(
         session.authParams.client_id,
       );
@@ -464,6 +470,17 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "Session not found" });
       }
 
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
+
       const vendorSettings = await env.fetchVendorSettings(
         session.authParams.client_id,
       );
@@ -517,6 +534,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
       }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
 
       if (session.authParams.username !== username) {
         session.authParams.username = username;
@@ -597,6 +620,17 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.client_id,
       );
 
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
+
       return ctx.html(<LoginWithCodePage vendorSettings={vendorSettings} />);
     },
   )
@@ -646,6 +680,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
       }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
 
       const code = generateOTP();
 
@@ -750,6 +790,17 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.client_id,
       );
 
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
+
       return ctx.html(<LoginEnterCodePage vendorSettings={vendorSettings} />);
     },
   )
@@ -798,6 +849,17 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           message: "Username not found in state",
         });
       }
+
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
 
       try {
         const user = await validateCode(env, {
@@ -871,6 +933,17 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.client_id,
       );
 
+      const client = await getClient(env, session.authParams.client_id);
+      if (!client) {
+        throw new HTTPException(400, { message: "Client not found" });
+      }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
+
       // TODO - we need to go through and initialise i18n in all the routes...
       // we should have tests for this
 
@@ -928,6 +1001,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.username = loginParams.username;
         await env.data.universalLoginSessions.update(session.id, session);
       }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
 
       try {
         // TODO - filter by primary user
@@ -1029,6 +1108,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
       }
+
+      const tenant = await env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+      initI18n(tenant.language || "sv");
 
       const user = await getUserByEmailAndProvider({
         userAdapter: env.data.users,
