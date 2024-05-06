@@ -1,4 +1,3 @@
-// can we just initialise this once? It's very globally
 import i18next from "i18next";
 import { VendorSettings } from "../../types";
 
