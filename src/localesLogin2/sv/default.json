@@ -42,6 +42,7 @@
   "forgot_password_title": "Har du glömt lösenordet?",
   "go_back": "Gå tillbaka",
   "invalid-email": "Ogiltig e-postadress",
+  "invalid_password": "Ogiltigt lösenord",
   "link_page_body": "Ange din epost för att låsa upp den här showen på {{service}}",
   "link_page_headline": "Koppla ditt konto till {{service}}",
   "logged_in_as": "Du är inloggad som",

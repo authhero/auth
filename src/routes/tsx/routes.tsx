@@ -215,7 +215,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           return ctx.html(
             <LoginPage
               vendorSettings={vendorSettings}
-              error="Invalid password"
+              error={i18next.t("invalid_password")}
             />,
           );
         }
