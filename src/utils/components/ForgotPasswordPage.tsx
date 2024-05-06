@@ -23,7 +23,7 @@ const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
           <input
             type="text"
             name="email"
-            placeholder={i18next.t("forgot_password_email_placeholder")}
+            placeholder={i18next.t("email_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
           {error && <em class="mb-2 bg-red">{error}</em>}
