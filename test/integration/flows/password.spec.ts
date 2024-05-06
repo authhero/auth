@@ -313,6 +313,7 @@ describe("password-flow", () => {
         {
           headers: {
             referrer: "https://login.example.com",
+            "cf-connecting-ip": "1.2.3.4",
           },
         },
       );
@@ -383,6 +384,13 @@ describe("password-flow", () => {
           },
         },
       ]);
+
+      // Check that the login count and last IP has been updated
+      expect(primaryUser.login_count).toBe(1);
+      expect(primaryUser.last_ip).toBe("1.2.3.4");
+
+      const lastLogin = new Date(primaryUser.last_login!);
+      expect(Date.now() - lastLogin.getTime()).lessThan(1000);
     });
 
     // this test looks like a duplicate of "should create a new user with a password and only allow login after email validation"
