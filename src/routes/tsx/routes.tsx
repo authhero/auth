@@ -426,27 +426,8 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
 
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
-      );
-
-      initI18n("sv");
+      const { vendorSettings } = await initJSXRoute(state, env);
 
       return ctx.html(<ForgotPasswordPage vendorSettings={vendorSettings} />);
     },
@@ -487,21 +468,10 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
+      );
 
       if (session.authParams.username !== username) {
         session.authParams.username = username;
@@ -534,12 +504,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       } else {
         console.log("User not found");
       }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
-      );
-
-      initI18n("sv");
 
       return ctx.html(
         <MessagePage
@@ -575,25 +539,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
-      );
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
+      const { vendorSettings } = await initJSXRoute(state, env);
 
       return ctx.html(<LoginWithCodePage vendorSettings={vendorSettings} />);
     },
@@ -634,22 +580,10 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const params = ctx.req.valid("form");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
+      );
 
       const code = generateOTP();
 
