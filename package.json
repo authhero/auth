@@ -20,7 +20,6 @@
     "pull-translations:auth2": "i18nexus pull -k EWI52U0e8j13AX31kLcS-A --path ./src/locales && prettier --write ./src/locales/**/*.json && yarn sort-translations",
     "pull-translations:login2": "i18nexus pull -k U5P1_tq3Teu7FZx4OrfI9w --path ./src/localesLogin2 && prettier --write ./src/localesLogin2/**/*.json && yarn sort-translations",
     "knip": "knip",
-    "tailwind": "tailwindcss -i ./src/styles/input.css -o ./src/styles/tailwind.css",
     "postcss": "postcss ./src/styles/input.css -o ./src/styles/tailwind.css",
     "sort-translations": "sort-json src/locales/*/*.json src/localesLogin2/*/*.json",
     "e2e:open-docker": "docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.43.1-focal /bin/bash"
