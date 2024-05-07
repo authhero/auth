@@ -91,7 +91,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
 
       <body>
         <div
-          class="row min-h-full w-full overflow-hidden bg-cover bg-center text-sm sm:bg-fixed sm:bg-left-top"
+          class="row min-h-full w-full overflow-hidden bg-cover bg-center text-sm sm:bg-fixed sm:bg-left-top sm:pt-16 py-2"
           style={inlineStyles}
         >
           <div class="row-up-left w-[calc(100%-theme(space.2)-theme(space.2))] max-w-[1295px] !flex-nowrap sm:w-[calc(100%-theme(space.16)-theme(space.16))]">

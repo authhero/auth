@@ -1,3 +1,3 @@
 yarn postcss
 node build-tailwind
-yarn format # could be more targeted and just do tailwind.ts
+npx prettier --write src/styles/tailwind.ts
