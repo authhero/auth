@@ -108,7 +108,7 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
               </div>
 
               <div class="flex w-full items-center px-6 pb-8 pt-4 justify-between">
-                <div className="flex justify-center leading-[0]">
+                <div class="flex justify-center leading-[0]">
                   <a href="https://sesamy.com" target="_blank">
                     <Icon name="sesamy" className="text-xl text-white" />
                   </a>

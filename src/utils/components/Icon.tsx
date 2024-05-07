@@ -5,6 +5,7 @@ type IconSizes = "small" | "medium" | "large";
 type Props = {
   name: string;
   size?: IconSizes;
+  // still need to call prop className because class is a reserved keyword
   className?: string;
 };
 
@@ -19,14 +20,7 @@ const getTailwindSize = (size: IconSizes | undefined) => {
 const Icon = ({ name, size, className = "" }: Props) => {
   const tailwindSize = getTailwindSize(size);
 
-  return (
-    <span
-      className={cn(`uicon-${name}`, {
-        [className]: className,
-        [tailwindSize]: tailwindSize,
-      })}
-    />
-  );
+  return <span class={cn(`uicon-${name}`, className, tailwindSize)} />;
 };
 
 export default Icon;
