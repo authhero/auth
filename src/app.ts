@@ -140,7 +140,7 @@ app.get(
     const css = tailwindCss;
 
     return ctx.text(css, 200, {
-      "content-type": "text/css",
+      "content-type": "text/css; charset=utf-8",
     });
   },
 );
