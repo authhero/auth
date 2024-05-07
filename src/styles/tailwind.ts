@@ -855,6 +855,10 @@ h6{
   padding-top: 2.5rem;
   padding-bottom: 2.5rem;
 }
+.py-2{
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
 .py-5{
   padding-top: 1.25rem;
   padding-bottom: 1.25rem;
@@ -1052,6 +1056,10 @@ input[type="number"] {
   .sm\\:py-14{
     padding-top: 3.5rem;
     padding-bottom: 3.5rem;
+  }
+
+  .sm\\:pt-16{
+    padding-top: 4rem;
   }
 
   .sm\\:text-2xl{
