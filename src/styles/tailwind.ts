@@ -1,7 +1,5 @@
 export const tailwindCss = `
     /* @import "./fonts.css"; */
-
-/* TODO - do ALL these fonts need faillbacks? */
 @font-face {
   font-display: swap;
   font-family: "KHTeka";
@@ -28,14 +26,6 @@ export const tailwindCss = `
 }
 
 /* @import "./uicon.css"; */
-
-/* 
-I thought we could just import this here but I've no idea what other kind of magic is happening here... 
-https://login2.sesamy.dev/_next/static/media/uicon.0b00e08a.woff2
-
-
-We could get Kim involved or I could have a look last
-*/
 @font-face {
   font-family: "uicon";
   src: url("https://login2.sesamy.dev/_next/static/media/uicon.0b00e08a.woff2");
