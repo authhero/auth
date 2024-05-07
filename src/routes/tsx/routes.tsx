@@ -924,10 +924,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
+      const { client, session } = await initJSXRoute(state, env);
 
       const email = session.authParams.username;
       if (!email) {
@@ -935,17 +932,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           message: "Username not found in state",
         });
       }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
 
       const user = await getUserByEmailAndProvider({
         userAdapter: env.data.users,
