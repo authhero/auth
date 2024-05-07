@@ -771,19 +771,19 @@ h6{
 .max-h-full{
   max-height: 100%;
 }
-.min-h-\[calc\(100vh-83px\)\]{
+.min-h-\\[calc\\(100vh-83px\\)\\]{
   min-height: calc(100vh - 83px);
 }
 .min-h-full{
   min-height: 100%;
 }
-.w-\[calc\(100\%-theme\(space\.2\)-theme\(space\.2\)\)\]{
+.w-\\[calc\\(100\\%-theme\\(space\\.2\\)-theme\\(space\\.2\\)\\)\\]{
   width: calc(100% - 0.5rem - 0.5rem);
 }
 .w-full{
   width: 100%;
 }
-.max-w-\[1295px\]{
+.max-w-\\[1295px\\]{
   max-width: 1295px;
 }
 .flex-1{
@@ -792,7 +792,7 @@ h6{
 .flex-col{
   flex-direction: column;
 }
-.\!flex-nowrap{
+.\\!flex-nowrap{
   flex-wrap: nowrap !important;
 }
 .items-center{
@@ -981,80 +981,80 @@ input[type="number"] {
   letter-spacing: 0;
 }
 
-.placeholder\:text-gray-300::-moz-placeholder{
+.placeholder\\:text-gray-300::-moz-placeholder{
   --tw-text-opacity: 1;
   color: rgb(136 134 159 / var(--tw-text-opacity));
 }
 
-.placeholder\:text-gray-300::placeholder{
+.placeholder\\:text-gray-300::placeholder{
   --tw-text-opacity: 1;
   color: rgb(136 134 159 / var(--tw-text-opacity));
 }
 
-.hover\:bg-primaryHover:hover{
+.hover\\:bg-primaryHover:hover{
   background-color: var(--primary-hover);
 }
 
-.hover\:underline:hover{
+.hover\\:underline:hover{
   text-decoration-line: underline;
 }
 
-.dark\:bg-gray-600:is(.dark *){
+.dark\\:bg-gray-600:is(.dark *){
   --tw-bg-opacity: 1;
   background-color: rgb(40 40 52 / var(--tw-bg-opacity));
 }
 
-.dark\:bg-gray-800:is(.dark *){
+.dark\\:bg-gray-800:is(.dark *){
   --tw-bg-opacity: 1;
   background-color: rgb(20 20 26 / var(--tw-bg-opacity));
 }
 
-.dark\:text-white:is(.dark *){
+.dark\\:text-white:is(.dark *){
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
 @media (min-width: 640px){
 
-  .sm\:min-h-\[700px\]{
+  .sm\\:min-h-\\[700px\\]{
     min-height: 700px;
   }
 
-  .sm\:w-\[calc\(100\%-theme\(space\.16\)-theme\(space\.16\)\)\]{
+  .sm\\:w-\\[calc\\(100\\%-theme\\(space\\.16\\)-theme\\(space\\.16\\)\\)\\]{
     width: calc(100% - 4rem - 4rem);
   }
 
-  .sm\:w-auto{
+  .sm\\:w-auto{
     width: auto;
   }
 
-  .sm\:max-w-md{
+  .sm\\:max-w-md{
     max-width: 28rem;
   }
 
-  .sm\:justify-normal{
+  .sm\\:justify-normal{
     justify-content: normal;
   }
 
-  .sm\:bg-fixed{
+  .sm\\:bg-fixed{
     background-attachment: fixed;
   }
 
-  .sm\:bg-left-top{
+  .sm\\:bg-left-top{
     background-position: left top;
   }
 
-  .sm\:px-14{
+  .sm\\:px-14{
     padding-left: 3.5rem;
     padding-right: 3.5rem;
   }
 
-  .sm\:py-14{
+  .sm\\:py-14{
     padding-top: 3.5rem;
     padding-bottom: 3.5rem;
   }
 
-  .sm\:text-2xl{
+  .sm\\:text-2xl{
     font-size: 1.5rem;
     line-height: 120%;
   }
@@ -1062,16 +1062,16 @@ input[type="number"] {
 
 @media (min-width: 1280px){
 
-  .md\:min-w-\[448px\]{
+  .md\\:min-w-\\[448px\\]{
     min-width: 448px;
   }
 
-  .md\:text-base{
+  .md\\:text-base{
     font-size: 1rem;
     line-height: 120%;
   }
 
-  .md\:text-xs{
+  .md\\:text-xs{
     font-size: 0.75rem;
     line-height: 135%;
   }
@@ -1079,7 +1079,7 @@ input[type="number"] {
 
 @media (max-height: 900px) and (min-width: 640px){
 
-  .short\:min-h-\[558px\]{
+  .short\\:min-h-\\[558px\\]{
     min-height: 558px;
   }
 }
