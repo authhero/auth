@@ -872,6 +872,14 @@ h6{
 .text-center{
   text-align: center;
 }
+.text-2xl{
+  font-size: 1.5rem;
+  line-height: 120%;
+}
+.text-3xl{
+  font-size: 2rem;
+  line-height: 120%;
+}
 .text-base{
   font-size: 1rem;
   line-height: 120%;
@@ -884,12 +892,19 @@ h6{
   font-size: 0.875rem;
   line-height: 120%;
 }
+.text-xl{
+  font-size: 1.25rem;
+  line-height: 120%;
+}
 .text-xs{
   font-size: 0.75rem;
   line-height: 135%;
 }
 .font-medium{
   font-weight: 500;
+}
+.leading-\\[0\\]{
+  line-height: 0;
 }
 .text-gray-300{
   --tw-text-opacity: 1;
