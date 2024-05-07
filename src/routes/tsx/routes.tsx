@@ -485,6 +485,8 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.client_id,
       );
 
+      initI18n("sv");
+
       return ctx.html(<ForgotPasswordPage vendorSettings={vendorSettings} />);
     },
   )
