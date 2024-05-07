@@ -102,9 +102,6 @@ async function handleLogin(
     session.authParams.client_id,
   );
 
-  // cannot use helper here because do not have state... would need to change this slightly
-  // const { vendorSettings } = await initJSXRoute(state, env);
-
   return ctx.html(
     <MessagePage
       message="You are logged in"
@@ -309,13 +306,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         state,
         env,
       );
-
-      // Why do I have this fix here?
-      // const tenantNameInVendorStyles = tenant.name.toLowerCase();
-
-      // const vendorSettings = await env.fetchVendorSettings(
-      //   tenantNameInVendorStyles,
-      // );
 
       if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
