@@ -679,25 +679,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
-      );
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
+      const { vendorSettings } = await initJSXRoute(state, env);
 
       return ctx.html(<LoginEnterCodePage vendorSettings={vendorSettings} />);
     },
@@ -737,27 +719,14 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { code } = ctx.req.valid("form");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
+
+      const { vendorSettings, session } = await initJSXRoute(state, env);
 
       if (!session.authParams.username) {
         throw new HTTPException(400, {
           message: "Username not found in state",
         });
       }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
 
       try {
         const user = await validateCode(env, {
@@ -785,10 +754,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
         return ctx.redirect(redirectUrl.href);
       } catch (err) {
-        const vendorSettings = await env.fetchVendorSettings(
-          session.authParams.client_id,
-        );
-
         return ctx.html(
           <LoginEnterCodePage
             vendorSettings={vendorSettings}
@@ -822,28 +787,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
-      );
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
-
-      // TODO - we need to go through and initialise i18n in all the routes...
-      // we should have tests for this
+      const { vendorSettings } = await initJSXRoute(state, env);
 
       return ctx.html(<SignupPage vendorSettings={vendorSettings} />);
     },
@@ -885,26 +829,16 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
       const loginParams = ctx.req.valid("form");
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
 
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
+      );
 
       if (session.authParams.username !== loginParams.username) {
         session.authParams.username = loginParams.username;
         await env.data.universalLoginSessions.update(session.id, session);
       }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
 
       try {
         // TODO - filter by primary user
