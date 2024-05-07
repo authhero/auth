@@ -39,8 +39,7 @@ describe("Login with code on liquidjs template", () => {
     expect(response.status).toBe(302);
     const location = response.headers.get("location");
 
-    // this redirects to the password entry page... TBD
-    expect(location!.startsWith("/u/login")).toBeTruthy;
+    expect(location!.startsWith("/u/code")).toBeTruthy();
 
     const stateParam = new URLSearchParams(location!.split("?")[1]);
 
