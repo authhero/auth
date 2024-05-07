@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "bun run src/bun.ts --watch",
+    "dev": "bun  --watch src/bun.ts",
     "dev:wrangler": "wrangler dev --remote",
     "dev:https": "wrangler dev --remote --local-protocol=https",
     "format": "prettier --write '**/*.{ts,css,json,md}'",
