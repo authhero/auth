@@ -669,9 +669,20 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const { vendorSettings } = await initJSXRoute(state, env);
+      const { vendorSettings, session } = await initJSXRoute(state, env);
 
-      return ctx.html(<LoginEnterCodePage vendorSettings={vendorSettings} />);
+      if (!session.authParams.username) {
+        throw new HTTPException(400, {
+          message: "Username not found in state",
+        });
+      }
+
+      return ctx.html(
+        <LoginEnterCodePage
+          vendorSettings={vendorSettings}
+          email={session.authParams.username}
+        />,
+      );
     },
   )
   // --------------------------------
@@ -748,6 +759,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           <LoginEnterCodePage
             vendorSettings={vendorSettings}
             error="Invalid code"
+            email={session.authParams.username}
           />,
         );
       }

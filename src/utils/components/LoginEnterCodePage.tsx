@@ -20,15 +20,23 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
         {i18next.t("verify_your_email")}
       </div>
       <div class="mb-6 text-gray-300">
-        {/* Enter your code to login */}
-        {/* not sure how to do this... see if similar component... or some way to manually do it */}
-        <Trans
+        {/* 
+          not sure how to do this in i18next. translation string looks like 
+          "Please check your email at <0>{{email}}</0> and enter the six-digit code that we've sent you."
+          I'm not sure if this is just a react-i18next thing or if it's possible with i18next...
+        */}
+        {/* <Trans
           i18nKey="we_sent_a_code_to"
           components={[
             <span className="text-black dark:text-white" key="span" />,
           ]}
           values={{ email }}
-        />
+        /> */}
+        {i18next
+          .t("we_sent_a_code_to", { email })
+          // this strips out what may be react-i18next specific syntax
+          .replace("<0>", "")
+          .replace("</0>", "")}
       </div>
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">
