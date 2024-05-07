@@ -570,10 +570,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const params = ctx.req.valid("form");
 
       const { env } = ctx;
-      const { vendorSettings, client, session } = await initJSXRoute(
-        state,
-        env,
-      );
+      const { client, session } = await initJSXRoute(state, env);
 
       const code = generateOTP();
 
@@ -636,7 +633,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       magicLink.searchParams.set("client_id", session.authParams.client_id);
       magicLink.searchParams.set("email", session.authParams.username);
       magicLink.searchParams.set("verification_code", code);
-      // TEMP FIX, NOT CORRECT THOUGH
       magicLink.searchParams.set("nonce", "nonce");
 
       await sendLink(env, client, params.username, code, magicLink.href);
