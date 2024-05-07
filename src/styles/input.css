@@ -1,5 +1,6 @@
 /* @import "./fonts.css"; */
 
+/* TODO - do ALL these fonts need faillbacks? */
 @font-face {
   font-display: swap;
   font-family: "KHTeka";
@@ -84,6 +85,7 @@ We could get Kim involved or I could have a look last
 .uicon-spinner-inner:before {
   content: "\ea0c";
 }
+/* ------  */
 
 @tailwind base;
 @tailwind components;
