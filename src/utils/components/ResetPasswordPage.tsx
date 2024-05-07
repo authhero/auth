@@ -2,12 +2,16 @@ import type { FC } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
 import { VendorSettings } from "../../types";
+import i18next from "i18next";
 
 type ResetPasswordPageProps = {
   error?: string;
   vendorSettings: VendorSettings;
   email: string;
 };
+
+// {i18next.t("agree_to")}{" "}
+//
 
 const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
   error,
@@ -16,32 +20,28 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
 }) => {
   return (
     <Layout title="Reset Password" vendorSettings={vendorSettings}>
-      <div class="mb-4 text-lg font-medium sm:text-2xl">Reset password</div>
+      <div class="mb-4 text-lg font-medium sm:text-2xl">
+        {i18next.t("reset_password_title")}
+      </div>
       <div class="mb-6 text-gray-300">
-        {`Enter your new password below for the email account: ${email}`}
+        {`${i18next.t("reset_password_description")} ${email}`}
       </div>
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">
           <input
             type="text"
             name="password"
-            placeholder="enter new password"
+            placeholder={i18next.t("enter_new_password_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
-          {/*
-            this page is not following Auth0's naming. just this field
-            auth0 does password matching serverside
-            BUT password strength is done clientside
-            ALSO the inputs have the eye-button toggle to show the password
-          */}
           <input
             type="text"
             name="re-enter-password"
-            placeholder="confirm password"
+            placeholder={i18next.t("reenter_new_password_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
           {error && <em class="mb-2 bg-red">{error}</em>}
-          <Button>Change password</Button>
+          <Button>{i18next.t("reset_password_cta")}</Button>
         </form>
       </div>
     </Layout>
