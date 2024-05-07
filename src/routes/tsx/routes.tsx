@@ -493,7 +493,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
   // -------------------------------
   // POST /u/forgot-password
   // -------------------------------
-
   .openapi(
     createRoute({
       tags: ["login"],
@@ -579,10 +578,12 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.client_id,
       );
 
+      initI18n("sv");
+
       return ctx.html(
         <MessagePage
-          message="A code has been sent to your email address"
-          pageTitle="Password reset"
+          message={i18next.t("forgot_password_email_sent")}
+          pageTitle={i18next.t("forgot_password_title")}
           vendorSettings={vendorSettings}
         />,
       );
