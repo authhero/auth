@@ -28,6 +28,31 @@ import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
 
+async function initJSXRoute(state: string, env: Env) {
+  const session = await env.data.universalLoginSessions.get(state);
+  if (!session) {
+    throw new HTTPException(400, { message: "Session not found" });
+  }
+
+  const client = await getClient(env, session.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
+
+  const tenant = await env.data.tenants.get(client.tenant_id);
+  if (!tenant) {
+    throw new HTTPException(400, { message: "Tenant not found" });
+  }
+
+  const vendorSettings = await env.fetchVendorSettings(
+    session.authParams.client_id,
+  );
+
+  initI18n(tenant.language || "sv");
+
+  return vendorSettings;
+}
+
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -113,26 +138,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
-      );
-
-      initI18n(tenant.language || "sv");
+      const vendorSettings = await initJSXRoute(state, env);
 
       return ctx.html(<LoginPage vendorSettings={vendorSettings} />);
     },
