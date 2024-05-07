@@ -215,7 +215,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           return ctx.html(
             <LoginPage
               vendorSettings={vendorSettings}
-              error="Invalid password"
+              error={i18next.t("invalid_password")}
             />,
           );
         }
@@ -363,7 +363,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       if (password !== reEnterPassword) {
         return ctx.html(
           <ResetPasswordPage
-            error="Passwords do not match"
+            error={i18next.t("create_account_passwords_didnt_match")}
             vendorSettings={vendorSettings}
             email={session.authParams.username}
           />,
@@ -374,7 +374,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       if (!validatePassword(password)) {
         return ctx.html(
           <ResetPasswordPage
-            error="Password does not meet the requirements"
+            error={i18next.t("create_account_weak_password")}
             vendorSettings={vendorSettings}
             email={session.authParams.username}
           />,

@@ -42,6 +42,7 @@
   "forgot_password_title": "Forgot password?",
   "go_back": "Go back",
   "invalid-email": "Invalid email",
+  "invalid_password": "Invalid password",
   "link_page_body": "Enter your email address to unlock this show on {{service}}",
   "link_page_headline": "Link your account with {{service}}",
   "logged_in_as": "You are logged in as",

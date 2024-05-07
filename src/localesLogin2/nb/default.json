@@ -42,6 +42,7 @@
   "forgot_password_title": "Har du glemt passordet?",
   "go_back": "Gå tilbake",
   "invalid-email": "Ugyldig epost",
+  "invalid_password": "Ugyldig passord",
   "link_page_body": "Skriv inn e-postadressen din for å låse opp dette programmet på {{service}}",
   "link_page_headline": "Koble kontoen din til {{service}}",
   "logged_in_as": "Du er innlogget som",

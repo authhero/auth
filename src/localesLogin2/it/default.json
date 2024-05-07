@@ -42,6 +42,7 @@
   "forgot_password_title": "Hai dimenticato la password?",
   "go_back": "Torna indietro",
   "invalid-email": "Email non valida",
+  "invalid_password": "Password non valida",
   "link_page_body": "Inserisci il tuo indirizzo e-mail per sbloccare questo spettacolo su {{service}}",
   "link_page_headline": "Collegate il vostro account con {{service}}",
   "logged_in_as": "L'utente ha effettuato l'accesso come",
