@@ -50,7 +50,7 @@ async function initJSXRoute(state: string, env: Env) {
 
   initI18n(tenant.language || "sv");
 
-  return vendorSettings;
+  return { vendorSettings, client, tenant, session };
 }
 
 // duplicated from /passwordless route
@@ -102,6 +102,9 @@ async function handleLogin(
     session.authParams.client_id,
   );
 
+  // cannot use helper here because do not have state... would need to change this slightly
+  // const { vendorSettings } = await initJSXRoute(state, env);
+
   return ctx.html(
     <MessagePage
       message="You are logged in"
@@ -138,7 +141,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const vendorSettings = await initJSXRoute(state, env);
+      const { vendorSettings } = await initJSXRoute(state, env);
 
       return ctx.html(<LoginPage vendorSettings={vendorSettings} />);
     },
@@ -179,25 +182,9 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
       const { username, password } = ctx.req.valid("form");
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-      initI18n(tenant.language || "sv");
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
       );
 
       const user = await getUserByEmailAndProvider({
@@ -263,32 +250,11 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        // Note this will not be correct because in login2 we are styling based on vendor_id
-        // the tenant IDs here are nanoids, where as the vendor ids in HQ are human readable albeit lower case
-        // I figure we can worry about this as we do it and don't get styled flows
-        session.authParams.client_id,
-      );
+      const { vendorSettings, session } = await initJSXRoute(state, env);
 
       if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
       }
-      initI18n(tenant.language || "sv");
 
       return ctx.html(
         <ResetPasswordPage
@@ -339,28 +305,17 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      initI18n(tenant.language || "sv");
-
-      const tenantNameInVendorStyles = tenant.name.toLowerCase();
-
-      const vendorSettings = await env.fetchVendorSettings(
-        tenantNameInVendorStyles,
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
       );
+
+      // Why do I have this fix here?
+      // const tenantNameInVendorStyles = tenant.name.toLowerCase();
+
+      // const vendorSettings = await env.fetchVendorSettings(
+      //   tenantNameInVendorStyles,
+      // );
 
       if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
