@@ -3,6 +3,7 @@ import { VendorSettings } from "../../types";
 import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";
+import Icon from "./Icon";
 
 type LayoutProps = {
   title: string;
@@ -107,6 +108,11 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
               </div>
 
               <div class="flex w-full items-center px-6 pb-8 pt-4 justify-between">
+                <div class="flex justify-center leading-[0]">
+                  <a href="https://sesamy.com" target="_blank">
+                    <Icon name="sesamy" className="text-xl text-white" />
+                  </a>
+                </div>
                 <div class="flex justify-center space-x-2 text-xs text-white sm:justify-normal md:text-xs">
                   {vendorSettings.supportUrl && (
                     <a
