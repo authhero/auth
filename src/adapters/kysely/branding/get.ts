@@ -1,6 +1,7 @@
 import { Branding } from "../../../types/Branding";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { removeNullProperties } from "../helpers/remove-nulls";
 
 export function get(db: Kysely<Database>) {
   return async (tenant_id: string): Promise<Branding | null> => {
@@ -24,7 +25,7 @@ export function get(db: Kysely<Database>) {
       ...rest
     } = branding;
 
-    return {
+    return removeNullProperties({
       ...rest,
       colors: {
         type: colors_type,
@@ -33,6 +34,6 @@ export function get(db: Kysely<Database>) {
         angle_deg: colors_angle_dev,
       },
       font: font_url ? { url: font_url } : undefined,
-    };
+    });
   };
 }
