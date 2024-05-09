@@ -11,10 +11,12 @@ export function set(db: Kysely<Database>) {
         .insertInto("branding")
         .values({
           ...rest,
-          colors_type: branding.colors?.type,
-          colors_start: branding.colors?.start,
-          colors_end: branding.colors?.end,
-          colors_angle_dev: branding.colors?.angle_deg,
+          colors_primary: colors?.primary,
+          colors_page_background_type: branding.colors?.page_background?.type,
+          colors_page_background_start: branding.colors?.page_background?.start,
+          colors_page_background_end: branding.colors?.page_background?.end,
+          colors_page_background_angle_dev:
+            branding.colors?.page_background?.angle_deg,
           font_url: branding.font?.url,
           tenant_id,
         })
@@ -24,10 +26,12 @@ export function set(db: Kysely<Database>) {
         .updateTable("branding")
         .set({
           ...rest,
-          colors_type: branding.colors?.type,
-          colors_start: branding.colors?.start,
-          colors_end: branding.colors?.end,
-          colors_angle_dev: branding.colors?.angle_deg,
+          colors_primary: colors?.primary,
+          colors_page_background_type: branding.colors?.page_background?.type,
+          colors_page_background_start: branding.colors?.page_background?.start,
+          colors_page_background_end: branding.colors?.page_background?.end,
+          colors_page_background_angle_dev:
+            branding.colors?.page_background?.angle_deg,
           font_url: branding.font?.url,
         })
         .where("tenant_id", "=", tenant_id)

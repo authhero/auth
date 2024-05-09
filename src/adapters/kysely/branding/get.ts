@@ -17,10 +17,11 @@ export function get(db: Kysely<Database>) {
 
     const {
       tenant_id: _,
-      colors_angle_dev,
-      colors_end,
-      colors_start,
-      colors_type,
+      colors_primary,
+      colors_page_background_type,
+      colors_page_background_start,
+      colors_page_background_end,
+      colors_page_background_angle_dev,
       font_url,
       ...rest
     } = branding;
@@ -28,10 +29,13 @@ export function get(db: Kysely<Database>) {
     return removeNullProperties({
       ...rest,
       colors: {
-        type: colors_type,
-        start: colors_start,
-        end: colors_end,
-        angle_deg: colors_angle_dev,
+        colors_primary,
+        background_color: {
+          type: colors_page_background_type,
+          start: colors_page_background_start,
+          end: colors_page_background_end,
+          angle_deg: colors_page_background_angle_dev,
+        },
       },
       font: font_url ? { url: font_url } : undefined,
     });
