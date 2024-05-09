@@ -14,12 +14,25 @@ export function get(db: Kysely<Database>) {
       return null;
     }
 
-    const { tenant_id: _, colors, font, ...rest } = branding;
+    const {
+      tenant_id: _,
+      colors_angle_dev,
+      colors_end,
+      colors_start,
+      colors_type,
+      font_url,
+      ...rest
+    } = branding;
 
     return {
       ...rest,
-      colors: JSON.parse(colors),
-      font: JSON.parse(font),
+      colors: {
+        type: colors_type,
+        start: colors_start,
+        end: colors_end,
+        angle_deg: colors_angle_dev,
+      },
+      font: font_url ? { url: font_url } : undefined,
     };
   };
 }

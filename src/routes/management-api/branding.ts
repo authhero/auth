@@ -1,9 +1,7 @@
 import { Env } from "../../types";
-import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import authenticationMiddleware from "../../middlewares/authentication";
 import { brandingSchema } from "../../types/Branding";
-24;
 
 export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
@@ -42,12 +40,7 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const branding = await ctx.env.data.branding.get(tenant_id);
 
       if (!branding) {
-        return ctx.json({
-          font: { url: "" },
-          colors: { type: "", start: "", end: "", angle_deg: 0 },
-          logo_url: "",
-          favicon_url: "",
-        });
+        return ctx.json({});
       }
 
       return ctx.json(branding);

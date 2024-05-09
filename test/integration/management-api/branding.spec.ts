@@ -25,12 +25,7 @@ describe("branding", () => {
     expect(emptyBrandingResponse.status).toBe(200);
     const emptyBranding = await emptyBrandingResponse.json();
 
-    expect(emptyBranding).toEqual({
-      font: { url: "" },
-      colors: { type: "", start: "", end: "", angle_deg: 0 },
-      logo_url: "",
-      favicon_url: "",
-    });
+    expect(emptyBranding).toEqual({});
 
     const brandingData = {
       font: { url: "https://example.com/font" },
