@@ -13,7 +13,7 @@ describe("branding", () => {
     const emptyBrandingResponse = await managementClient.api.v2.branding.$get(
       {
         header: {
-          tenant_id: "tenantId",
+          "tenant-id": "tenantId",
         },
       },
       {
@@ -39,7 +39,7 @@ describe("branding", () => {
       await managementClient.api.v2.branding.$patch(
         {
           header: {
-            tenant_id: "tenantId",
+            "tenant-id": "tenantId",
           },
           json: brandingData,
         },
@@ -56,7 +56,7 @@ describe("branding", () => {
     const brandingResponse = await managementClient.api.v2.branding.$get(
       {
         header: {
-          tenant_id: "tenantId",
+          "tenant-id": "tenantId",
         },
       },
       {
