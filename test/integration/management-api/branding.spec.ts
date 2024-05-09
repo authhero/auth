@@ -29,7 +29,15 @@ describe("branding", () => {
 
     const brandingData = {
       font: { url: "https://example.com/font" },
-      colors: { type: "type", start: "start", end: "end", angle_deg: 180 },
+      colors: {
+        primary: "#123456",
+        page_background: {
+          type: "type",
+          start: "start",
+          end: "end",
+          angle_deg: 180,
+        },
+      },
       logo_url: "https://example.com/logo",
       favicon_url: "https://example.com/favicon",
     };

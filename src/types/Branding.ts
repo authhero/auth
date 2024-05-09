@@ -3,10 +3,15 @@ import { z } from "zod";
 export const brandingSchema = z.object({
   colors: z
     .object({
-      type: z.string().optional(),
-      start: z.string().optional(),
-      end: z.string().optional(),
-      angle_deg: z.number().optional(),
+      primary: z.string(),
+      page_background: z
+        .object({
+          type: z.string().optional(),
+          start: z.string().optional(),
+          end: z.string().optional(),
+          angle_deg: z.number().optional(),
+        })
+        .optional(),
     })
     .optional(),
   logo_url: z.string().optional(),
