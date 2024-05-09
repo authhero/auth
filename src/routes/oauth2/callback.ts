@@ -6,7 +6,10 @@ import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Var } from "../../types/Var";
 
-export const callback = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
+export const callbackRoutes = new OpenAPIHono<{
+  Bindings: Env;
+  Variables: Var;
+}>()
   // --------------------------------
   // GET /callback
   // --------------------------------

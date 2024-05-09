@@ -12,7 +12,7 @@ const domainWithTotalsSchema = totalsSchema.extend({
   domains: z.array(domainSchema),
 });
 
-export const domains = new OpenAPIHono<{ Bindings: Env }>()
+export const domainRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /domains
   // --------------------------------

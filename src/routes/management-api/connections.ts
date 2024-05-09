@@ -16,7 +16,7 @@ const connectionsWithTotalsSchema = totalsSchema.extend({
   connections: z.array(connectionSchema),
 });
 
-export const connections = new OpenAPIHono<{ Bindings: Env }>()
+export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /api/v2/connections
   // --------------------------------

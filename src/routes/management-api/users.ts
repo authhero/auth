@@ -22,7 +22,7 @@ const usersWithTotalsSchema = totalsSchema.extend({
   users: z.array(auth0UserResponseSchema),
 });
 
-export const users = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
+export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
   // GET /api/v2/users
   // --------------------------------

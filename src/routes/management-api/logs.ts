@@ -9,7 +9,7 @@ const logsWithTotalsSchema = totalsSchema.extend({
   logs: z.array(logSchema),
 });
 
-export const logs = new OpenAPIHono<{ Bindings: Env }>()
+export const logRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /logs
   // --------------------------------
