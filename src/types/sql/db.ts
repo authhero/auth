@@ -15,9 +15,11 @@ import {
   SqlLog,
 } from "../";
 import { Connection } from "../Connection";
+import { SqlBranding } from "./Branding";
 
 // Keys of this interface are table names.
 export interface Database {
+  branding: SqlBranding;
   codes: SqlCode;
   domains: Domain & { tenant_id: string };
   keys: Certificate;

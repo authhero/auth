@@ -28,6 +28,7 @@ import { tokenRoutes } from "./routes/oauth2/token";
 import { authenticateRoutes } from "./routes/oauth2/authenticate";
 import { authorizeRoutes } from "./routes/oauth2/authorize";
 import { userinfoRoutes } from "./routes/oauth2/userinfo";
+import { brandingRoutes } from "./routes/management-api/branding";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -113,6 +114,7 @@ export const managementApp = new OpenAPIHono<{
   Bindings: Env;
   Variables: Var;
 }>()
+  .route("/api/v2/branding", brandingRoutes)
   .route("/api/v2/domains", domains)
   .route("/api/v2/users", users)
   .route("/api/v2/keys/signing", keys)

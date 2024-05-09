@@ -14,9 +14,11 @@ import { TemplatesAdapter } from "./Templates";
 import { ConnectionsAdapter } from "./Connections";
 import { DomainsAdapter } from "./Domains";
 import { KeysAdapter } from "./Keys";
+import { BrandingAdapter } from "./Branding";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;
+  branding: BrandingAdapter;
   codes: CodesAdapter;
   clients: ClientsAdapter;
   members: MembersDataAdapter;
