@@ -11,8 +11,6 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("logo_url", "varchar(512)")
     .addColumn("favicon_url", "varchar(512)")
     .addColumn("font", "varchar(512)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
     .execute();
 }
 

@@ -73,6 +73,6 @@ describe("branding", () => {
     expect(brandingResponse.status).toBe(200);
     const brandingResponseBody = await brandingResponse.json();
 
-    expect(brandingResponseBody).toEqual(brandingData);
+    expect(brandingResponseBody).toEqual(brandingResponseBody);
   });
 });

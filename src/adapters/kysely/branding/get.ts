@@ -14,10 +14,12 @@ export function get(db: Kysely<Database>) {
       return null;
     }
 
+    const { tenant_id: _, colors, font, ...rest } = branding;
+
     return {
-      ...branding,
-      colors: JSON.parse(branding.colors),
-      font: JSON.parse(branding.font),
+      ...rest,
+      colors: JSON.parse(colors),
+      font: JSON.parse(font),
     };
   };
 }
