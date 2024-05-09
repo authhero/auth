@@ -1,22 +1,21 @@
+import { createJWT } from "oslo/jwt";
 import {
   IOAuth2ClientFactory,
   OAuthProviderParams,
   IOAuth2Client,
 } from "../../src/services/oauth2-client";
-import { createToken } from "../../src/utils/jwt";
 import { getCertificate } from "./helpers/token";
+import { pemToBuffer } from "../../src/utils/jwt";
 
 function createTokenExample(payload: {
   [key: string]: string | string[] | number | boolean;
 }) {
-  return createToken({
-    alg: "RS256",
-    headerAdditions: {
+  const keyBuffer = pemToBuffer(getCertificate().private_key);
+
+  return createJWT("RS256", keyBuffer, payload, {
+    headers: {
       kid: "test",
     },
-    payload,
-    // Would be good to use different certificates for each social provider and then test we are verifying the signature
-    pemKey: getCertificate().private_key,
   });
 }
 
