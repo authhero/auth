@@ -30,7 +30,7 @@ export function get(db: Kysely<Database>) {
       ...rest,
       colors: {
         primary: colors_primary,
-        background_color: {
+        page_background: {
           type: colors_page_background_type,
           start: colors_page_background_start,
           end: colors_page_background_end,
