@@ -14,7 +14,7 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
       path: "/",
       request: {
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
       },
       middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
@@ -35,7 +35,7 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
       const branding = await ctx.env.data.branding.get(tenant_id);
 
@@ -56,7 +56,7 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
       path: "/",
       request: {
         headers: z.object({
-          tenant_id: z.string(),
+          "tenant-id": z.string(),
         }),
         body: {
           content: {
@@ -79,7 +79,8 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { tenant_id } = ctx.req.valid("header");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+
       const branding = ctx.req.valid("json");
 
       await ctx.env.data.branding.set(tenant_id, branding);
