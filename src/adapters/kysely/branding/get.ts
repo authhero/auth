@@ -29,7 +29,7 @@ export function get(db: Kysely<Database>) {
     return removeNullProperties({
       ...rest,
       colors: {
-        colors_primary,
+        primary: colors_primary,
         background_color: {
           type: colors_page_background_type,
           start: colors_page_background_start,
