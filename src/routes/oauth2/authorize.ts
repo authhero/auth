@@ -96,8 +96,10 @@ export const authorizeRoutes = new OpenAPIHono<{
       };
 
       const origin = ctx.req.header("origin");
-      if (origin) {
-        verifyRequestOrigin(origin, client.allowed_web_origins);
+      if (origin && !verifyRequestOrigin(origin, client.allowed_web_origins)) {
+        throw new HTTPException(403, {
+          message: `Origin ${origin} not allowed`,
+        });
       }
 
       if (authParams.redirect_uri) {
