@@ -1,5 +1,6 @@
 import { HTTPException } from "hono/http-exception";
-import { createToken } from "../utils/jwt";
+import { createJWT } from "oslo/jwt";
+import { pemToBuffer } from "../utils/jwt";
 
 export interface TokenResponse {
   access_token: string;
@@ -71,21 +72,23 @@ export class OAuth2Client implements IOAuth2Client {
     const now = Math.floor(Date.now() / 1000);
 
     const DAY_IN_SECONDS = 60 * 60 * 24;
+    const keyBuffer = pemToBuffer(this.params.private_key);
 
-    return createToken({
-      pemKey: this.params.private_key,
-      alg: "ES256",
-      payload: {
+    return createJWT(
+      "RS256",
+      keyBuffer,
+      {
         iss: this.params.team_id,
         aud: "https://appleid.apple.com",
         sub: this.params.client_id,
-        iat: now,
-        exp: now + DAY_IN_SECONDS,
       },
-      headerAdditions: {
-        kid: this.params.kid,
+      {
+        headers: {
+          kid: this.params.kid,
+          expiresIn: DAY_IN_SECONDS,
+        },
       },
-    });
+    );
   }
 
   async exchangeCodeForTokenResponse(

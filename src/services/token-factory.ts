@@ -1,4 +1,5 @@
-import { createToken } from "../utils/jwt";
+import { pemToBuffer } from "../utils/jwt";
+import { createJWT } from "oslo/jwt";
 
 const DAY_IN_SECONDS = 60 * 60 * 24;
 
@@ -65,18 +66,12 @@ export class TokenFactory {
   }
 
   async getJwt(payload: AccessTokenPayload): Promise<string> {
-    const now = Math.floor(Date.now() / 1000);
+    const keyBuffer = pemToBuffer(this.privateKeyPEM);
 
-    return createToken({
-      pemKey: this.privateKeyPEM,
-      payload: {
-        ...payload,
-        iat: now,
-        exp: now + DAY_IN_SECONDS,
-      },
-      alg: "RS256",
-      headerAdditions: {
+    return createJWT("RS256", keyBuffer, payload, {
+      headers: {
         kid: this.keyId,
+        expiresIn: DAY_IN_SECONDS,
       },
     });
   }
