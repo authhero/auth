@@ -1,8 +1,15 @@
 import type { FC } from "hono/jsx";
+import cn from "classnames";
 
-const Button: FC<{ children: string | string[] }> = ({ children }) => {
+type Props = {
+  children: JSX.Element[] | JSX.Element;
+  className?: string;
+};
+
+const Button: FC<Props> = ({ children, className }) => {
   return (
     <button
+      // TODO - use this here
       class="relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover"
       type="submit"
     >
