@@ -2,7 +2,7 @@ import type { FC } from "hono/jsx";
 import cn from "classnames";
 
 type Props = {
-  children: JSX.Element[] | JSX.Element;
+  children: JSX.Element[] | JSX.Element | string | string[];
   className?: string;
 };
 
