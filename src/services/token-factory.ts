@@ -67,13 +67,19 @@ export class TokenFactory {
 
   async getJwt(payload: AccessTokenPayload): Promise<string> {
     const keyBuffer = pemToBuffer(this.privateKeyPEM);
+    const now = Math.floor(Date.now() / 1000);
 
-    return createJWT("RS256", keyBuffer, payload, {
-      headers: {
-        kid: this.keyId,
-        expiresIn: DAY_IN_SECONDS,
+    return createJWT(
+      "RS256",
+      keyBuffer,
+      { ...payload, exp: now + DAY_IN_SECONDS, iat: now },
+      {
+        headers: {
+          kid: this.keyId,
+          expiresIn: DAY_IN_SECONDS,
+        },
       },
-    });
+    );
   }
 
   async createAccessToken({
