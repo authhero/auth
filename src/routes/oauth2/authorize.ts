@@ -1,3 +1,4 @@
+import { verifyRequestOrigin } from "oslo/request";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -94,9 +95,12 @@ export const authorizeRoutes = new OpenAPIHono<{
         code_challenge_method,
       };
 
-      // if (referer) {
-      // validateRedirectUrl(client.allowed_web_origins, referer);
-      // }
+      const origin = ctx.req.header("origin");
+      if (origin && !verifyRequestOrigin(origin, client.allowed_web_origins)) {
+        throw new HTTPException(403, {
+          message: `Origin ${origin} not allowed`,
+        });
+      }
 
       if (authParams.redirect_uri) {
         if (
