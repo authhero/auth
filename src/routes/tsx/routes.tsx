@@ -111,7 +111,7 @@ async function handleLogin(
   );
 }
 
-export const login = new OpenAPIHono<{ Bindings: Env }>()
+export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /u/login
   // --------------------------------

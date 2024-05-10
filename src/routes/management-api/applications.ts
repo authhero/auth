@@ -9,7 +9,7 @@ import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import authenticationMiddleware from "../../middlewares/authentication";
 
-export const applications = new OpenAPIHono<{ Bindings: Env }>()
+export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /applications
   // --------------------------------

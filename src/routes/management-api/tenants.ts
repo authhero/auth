@@ -10,7 +10,7 @@ const tenantsWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(tenantSchema),
 });
 
-export const tenants = new OpenAPIHono<{ Bindings: Env }>()
+export const tenantRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /tenants
   // --------------------------------

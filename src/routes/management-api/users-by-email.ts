@@ -6,7 +6,10 @@ import { Env, userSchema } from "../../types";
 import { Var } from "../../types/Var";
 import authenticationMiddleware from "../../middlewares/authentication";
 
-export const usersByEmail = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
+export const usersByEmailRoutes = new OpenAPIHono<{
+  Bindings: Env;
+  Variables: Var;
+}>()
   // --------------------------------
   // GET /api/v2/users-by-email
   // --------------------------------

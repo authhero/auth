@@ -7,7 +7,7 @@ import {
 import { Env } from "../../types";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 
-export const wellKnown = new OpenAPIHono<{ Bindings: Env }>()
+export const wellKnownRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /.well-known/jwks.json
   // --------------------------------
