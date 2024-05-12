@@ -1,5 +1,6 @@
 import { pemToBuffer } from "../utils/jwt";
 import { createJWT } from "oslo/jwt";
+import { TimeSpan } from "oslo";
 
 const DAY_IN_SECONDS = 60 * 60 * 24;
 
@@ -69,17 +70,13 @@ export class TokenFactory {
     const keyBuffer = pemToBuffer(this.privateKeyPEM);
     const now = Math.floor(Date.now() / 1000);
 
-    return createJWT(
-      "RS256",
-      keyBuffer,
-      { ...payload, exp: now + DAY_IN_SECONDS, iat: now },
-      {
-        headers: {
-          kid: this.keyId,
-          expiresIn: DAY_IN_SECONDS,
-        },
+    return createJWT("RS256", keyBuffer, payload, {
+      includeIssuedTimestamp: true,
+      expiresIn: new TimeSpan(1, "d"),
+      headers: {
+        kid: this.keyId,
       },
-    );
+    });
   }
 
   async createAccessToken({

@@ -1,4 +1,5 @@
 import { createJWT } from "oslo/jwt";
+import { TimeSpan } from "oslo";
 import {
   IOAuth2ClientFactory,
   OAuthProviderParams,
@@ -13,6 +14,8 @@ function createTokenExample(payload: {
   const keyBuffer = pemToBuffer(getCertificate().private_key);
 
   return createJWT("RS256", keyBuffer, payload, {
+    includeIssuedTimestamp: true,
+    expiresIn: new TimeSpan(1, "d"),
     headers: {
       kid: "test",
     },
