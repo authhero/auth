@@ -1,5 +1,6 @@
 import { HTTPException } from "hono/http-exception";
 import { createJWT } from "oslo/jwt";
+import { TimeSpan, TimeSpanUnit } from "oslo";
 import { pemToBuffer } from "../utils/jwt";
 
 export interface TokenResponse {
@@ -81,13 +82,12 @@ export class OAuth2Client implements IOAuth2Client {
         iss: this.params.team_id,
         aud: "https://appleid.apple.com",
         sub: this.params.client_id,
-        exp: now + DAY_IN_SECONDS,
-        iat: now,
       },
       {
+        includeIssuedTimestamp: true,
+        expiresIn: new TimeSpan(1, "d"),
         headers: {
           kid: this.params.kid,
-          expiresIn: DAY_IN_SECONDS,
         },
       },
     );
