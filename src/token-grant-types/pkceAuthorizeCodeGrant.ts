@@ -8,10 +8,11 @@ import {
 } from "../types";
 import { getClient } from "../services/clients";
 import { computeCodeChallenge } from "../helpers/pkce";
-import { generateAuthResponse } from "../helpers/generate-auth-response-new";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
+import { t } from "i18next";
 
 export async function pkceAuthorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -49,8 +50,10 @@ export async function pkceAuthorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Code Challange" });
   }
 
-  return generateAuthResponse(ctx, {
+  return generateAuthResponse({
     ...state,
+    env: ctx.env,
+    tenantId: client.tenant_id,
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
   });
 }

@@ -7,7 +7,7 @@ import {
   LoginState,
 } from "../types";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
+import { generateAuthData } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
 import { applyTokenResponse } from "../helpers/apply-token-response-new";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
@@ -214,7 +214,7 @@ export async function socialAuthCallback({
     user,
   );
 
-  const tokenResponse = await generateAuthResponse({
+  const tokenResponse = await generateAuthData({
     env,
     tenantId: client.tenant_id,
     userId: user.id,

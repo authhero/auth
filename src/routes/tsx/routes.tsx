@@ -18,7 +18,7 @@ import SignupPage from "../../utils/components/SignUpPage";
 import MessagePage from "../../utils/components/Message";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
-import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { generateAuthData } from "../../helpers/generate-auth-response";
 import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
 import { Context } from "hono";
 import ForgotPasswordPage from "../../utils/components/ForgotPasswordPage";
@@ -79,7 +79,7 @@ async function handleLogin(
       session.authParams.response_type ||
       AuthorizationResponseType.TOKEN_ID_TOKEN;
 
-    const authResponse = await generateAuthResponse({
+    const authResponse = await generateAuthData({
       env,
       tenantId: session.tenant_id,
       userId: user.id,
@@ -734,7 +734,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           verification_code: code,
         });
 
-        const authResponse = await generateAuthResponse({
+        const authResponse = await generateAuthData({
           env,
           tenantId: session.tenant_id,
           userId: user.id,

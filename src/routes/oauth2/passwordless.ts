@@ -13,7 +13,7 @@ import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
-import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { generateAuthData } from "../../helpers/generate-auth-response";
 import { applyTokenResponse } from "../../helpers/apply-token-response-new";
 import { serializeStateInCookie } from "../../services/cookies";
 
@@ -186,7 +186,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
         );
         const [sessionCookie] = serializeStateInCookie(sessionId);
 
-        const tokenResponse = await generateAuthResponse({
+        const tokenResponse = await generateAuthData({
           responseType: response_type,
           env,
           tenantId: client.tenant_id,

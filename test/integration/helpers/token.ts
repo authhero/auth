@@ -1,5 +1,7 @@
+import { createJWT } from "oslo/jwt";
 import { Certificate } from "../../../src/types";
-import { TokenFactory } from "../../../src/services/token-factory";
+import { pemToBuffer } from "../../../src/utils/jwt";
+import { TimeSpan } from "oslo";
 
 export function getCertificate(): Certificate {
   return {
@@ -20,16 +22,24 @@ export function getCertificate(): Certificate {
 export async function getAdminToken() {
   const certificate = getCertificate();
 
-  const tokenFactory = new TokenFactory(
-    certificate.private_key,
-    certificate.kid,
-  );
+  const keyBuffer = pemToBuffer(certificate.private_key);
 
-  return tokenFactory.createAccessToken({
-    aud: "example.com",
-    scope: "openid email profile",
-    permissions: ["auth:read", "auth:write"],
-    sub: "userId",
-    iss: "test.example.com",
-  });
+  return createJWT(
+    "RS256",
+    keyBuffer,
+    {
+      aud: "example.com",
+      scope: "openid email profile",
+      permissions: ["auth:read", "auth:write"],
+      sub: "userId",
+      iss: "test.example.com",
+    },
+    {
+      includeIssuedTimestamp: true,
+      expiresIn: new TimeSpan(1, "h"),
+      headers: {
+        kid: certificate.kid,
+      },
+    },
+  );
 }

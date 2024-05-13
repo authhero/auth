@@ -5,7 +5,7 @@ import {
 } from "../services/cookies";
 import { AuthorizationResponseType, CodeChallengeMethod, Env } from "../types";
 import renderAuthIframe from "../templates/authIframe";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
+import { generateAuthData } from "../helpers/generate-auth-response";
 import { Var } from "../types/Var";
 import { LogTypes } from "../types";
 
@@ -59,7 +59,7 @@ export async function silentAuth({
       const user = await env.data.users.get(tenant_id, session.user_id);
       ctx.set("userName", user?.email);
       if (user) {
-        const tokenResponse = await generateAuthResponse({
+        const tokenResponse = await generateAuthData({
           env,
           tenantId: tenant_id,
           state,
