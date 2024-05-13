@@ -813,6 +813,10 @@ h6 {
 .top-1\\/2 {
   top: 50%;
 }
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -1196,6 +1200,10 @@ input[type="number"] {
 
 .hover\\:bg-primaryHover:hover {
   background-color: var(--primary-hover);
+}
+
+.hover\\:text-primaryHover:hover {
+  color: var(--primary-hover);
 }
 
 .hover\\:underline:hover {

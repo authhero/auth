@@ -79,6 +79,12 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
               {i18next.t("sent_code_spam")}
             </div>
           </div>
+          <a
+            className="mx-auto block text-primary hover:text-primaryHover"
+            href="javascript:history.go(-1)"
+          >
+            {i18next.t("go_back")}
+          </a>
         </form>
       </div>
     </Layout>
