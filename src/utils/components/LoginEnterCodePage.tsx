@@ -16,10 +16,10 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
       title={i18next.t("verify_your_email")}
       vendorSettings={vendorSettings}
     >
-      <div class="mb-4 text-lg font-medium sm:text-2xl">
+      <div class="mb-4 text-2xl font-medium">
         {i18next.t("verify_your_email")}
       </div>
-      <div class="mb-6 text-gray-300">
+      <div class="mb-8 text-gray-300">
         {/* 
           not sure how to do this in i18next. translation string looks like 
           "Please check your email at <0>{{email}}</0> and enter the six-digit code that we've sent you."
@@ -33,7 +33,10 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
           values={{ email }}
         /> */}
         {i18next
-          .t("we_sent_a_code_to", { email })
+          .t("we_sent_a_code_to", {
+            // email: `<span class="text-black dark:text-white">${email}</span>`,
+            email,
+          })
           // this strips out what may be react-i18next specific syntax
           .replace("<0>", "")
           .replace("</0>", "")}
