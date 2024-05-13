@@ -8,6 +8,9 @@ type Props = {
   canResize?: boolean;
 };
 
+// how should these work then?
+// make them into anchors that redirect to /authorize with the params??
+// update snapshots first so can check don't break anything...
 const SocialButton = ({
   social,
   text,
