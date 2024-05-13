@@ -12,7 +12,6 @@ import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
-import { t } from "i18next";
 
 export async function pkceAuthorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
