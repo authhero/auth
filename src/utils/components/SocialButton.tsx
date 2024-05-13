@@ -44,26 +44,22 @@ const SocialButton = ({
 
   return (
     <a
-      // should be class... does this still work either way now? but did it not??? hmmmm
       className={cn(
         "block",
-        // copied from Button.tsx
+        // copied from Button.tsx as this component is now an anchor
         "relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover",
         "border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-400 dark:bg-black dark:hover:bg-black/90",
         {
-          // what is this? is this why looks broken?
           ["px-0 py-3 sm:px-10 sm:py-4 short:px-0 short:py-3"]: canResize,
           ["px-10 py-3"]: !canResize,
         },
       )}
-      //   variant="custom"
       aria-label={text}
       href={href}
     >
       <span className="flex items-center justify-center space-x-2">
         {icon || ""}
         <div
-          // should be class... does this still work either way now? but did it not??? hmmmm
           className={cn("text-left text-black dark:text-white sm:text-base", {
             ["hidden sm:inline short:hidden"]: canResize,
           })}
