@@ -2,7 +2,8 @@ import type { FC } from "hono/jsx";
 import cn from "classnames";
 
 type Props = {
-  children: JSX.Element[] | JSX.Element | string | string[];
+  children: (string | JSX.Element)[] | string | JSX.Element;
+  // TODO - used on another PR
   className?: string;
 };
 
