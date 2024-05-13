@@ -46,6 +46,9 @@ const SocialButton = ({
     <a
       // should be class... does this still work either way now? but did it not??? hmmmm
       className={cn(
+        "block",
+        // copied from Button.tsx
+        "relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover",
         "border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-400 dark:bg-black dark:hover:bg-black/90",
         {
           // what is this? is this why looks broken?
