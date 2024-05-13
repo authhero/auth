@@ -99,6 +99,70 @@ describe("Login with code on liquidjs template", () => {
     expect(idToken).toBeTruthy();
   });
 
+  it('snapshot desktop "enter code" form', async () => {
+    const env = await getEnv({
+      vendorSettings: FOKUS_VENDOR_SETTINGS,
+      testTenantLanguage: "nb",
+    });
+    const oauthClient = testClient(oauthApp, env);
+
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+
+    const query = Object.fromEntries(stateParam.entries());
+
+    const codeInputFormResponse = await oauthClient.u.code.$get({
+      query: {
+        state: query.state,
+      },
+    });
+
+    expect(codeInputFormResponse.status).toBe(200);
+
+    await snapshotResponse(codeInputFormResponse, "lg");
+  });
+
+  it('snapshot mobile "enter code" form', async () => {
+    const env = await getEnv({
+      vendorSettings: FOKUS_VENDOR_SETTINGS,
+      testTenantLanguage: "nb",
+    });
+    const oauthClient = testClient(oauthApp, env);
+
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+
+    const query = Object.fromEntries(stateParam.entries());
+
+    const codeInputFormResponse = await oauthClient.u.code.$get({
+      query: {
+        state: query.state,
+      },
+    });
+
+    expect(codeInputFormResponse.status).toBe(200);
+
+    await snapshotResponse(codeInputFormResponse, "sm");
+  });
+
   it("should reject bad code", async () => {
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
