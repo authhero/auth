@@ -801,6 +801,10 @@ h6 {
 .relative {
   position: relative;
 }
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
 .mb-16 {
   margin-bottom: 4rem;
 }
@@ -993,6 +997,10 @@ h6 {
 .leading-\\[0\\] {
   line-height: 0;
 }
+.text-\\[\\#B2B2B2\\] {
+  --tw-text-opacity: 1;
+  color: rgb(178 178 178 / var(--tw-text-opacity));
+}
 .text-black {
   --tw-text-opacity: 1;
   color: rgb(0 0 0 / var(--tw-text-opacity));
@@ -1142,6 +1150,9 @@ input[type="number"] {
 }
 
 @media (min-width: 640px) {
+  .sm\\:mt-2 {
+    margin-top: 0.5rem;
+  }
   .sm\\:min-h-\\[700px\\] {
     min-height: 700px;
   }
@@ -1190,6 +1201,10 @@ input[type="number"] {
   }
   .md\\:text-base {
     font-size: 1rem;
+    line-height: 120%;
+  }
+  .md\\:text-sm {
+    font-size: 0.875rem;
     line-height: 120%;
   }
   .md\\:text-xs {

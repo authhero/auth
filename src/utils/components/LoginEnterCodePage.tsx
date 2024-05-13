@@ -4,6 +4,7 @@ import Button from "./Button";
 import { VendorSettings } from "../../types";
 import i18next from "i18next";
 import cn from "classnames";
+import Icon from "./Icon";
 
 type Props = {
   error?: string;
@@ -63,7 +64,20 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
             )}
           />
           {error && <em class="mb-2 bg-red">{error}</em>}
-          <Button>{i18next.t("validate_code")}</Button>
+          <div class="text-center sm:mt-2">
+            <Button
+            // how to do this without clientside JS?
+            // disabled={when 6 digits are not entered}
+            >
+              {i18next.t("validate_code")}
+            </Button>
+          </div>
+          <div class="my-4 flex space-x-2 text-sm text-[#B2B2B2]">
+            <Icon className="text-base" name="info-bubble" />
+            <div class="text-sm text-gray-300 md:text-sm">
+              {i18next.t("sent_code_spam")}
+            </div>
+          </div>
         </form>
       </div>
     </Layout>
