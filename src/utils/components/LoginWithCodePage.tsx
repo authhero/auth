@@ -7,6 +7,7 @@ import cn from "classnames";
 import Icon from "./Icon";
 import ErrorMessage from "./ErrorMessage";
 import SocialButton from "./SocialButton";
+import Google from "./GoogleLogo";
 
 type Props = {
   error?: string;
