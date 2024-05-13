@@ -55,7 +55,7 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
             inputMode="numeric"
             name="code"
             placeholder="******"
-            className={cn(
+            class={cn(
               "mb-2 w-full rounded-lg border bg-gray-100 px-4 pb-2 pt-2.5 text-center indent-[5px] font-mono text-3xl placeholder:text-gray-300 dark:bg-gray-600 md:text-3xl",
               {
                 "border-red": error,
