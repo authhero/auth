@@ -817,6 +817,9 @@ h6 {
 .mb-6 {
   margin-bottom: 1.5rem;
 }
+.mb-7 {
+  margin-bottom: 1.75rem;
+}
 .mb-8 {
   margin-bottom: 2rem;
 }
@@ -1152,6 +1155,9 @@ input[type="number"] {
 @media (min-width: 640px) {
   .sm\\:mt-2 {
     margin-top: 0.5rem;
+  }
+  .sm\\:mt-4 {
+    margin-top: 1rem;
   }
   .sm\\:min-h-\\[700px\\] {
     min-height: 700px;
