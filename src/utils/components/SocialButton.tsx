@@ -60,15 +60,17 @@ const SocialButton = ({
       aria-label={text}
       href={href}
     >
-      {icon || ""}
-      <div
-        // should be class... does this still work either way now? but did it not??? hmmmm
-        className={cn("text-left text-black dark:text-white sm:text-base", {
-          ["hidden sm:inline short:hidden"]: canResize,
-        })}
-      >
-        {text}
-      </div>
+      <span className="flex items-center justify-center space-x-2">
+        {icon || ""}
+        <div
+          // should be class... does this still work either way now? but did it not??? hmmmm
+          className={cn("text-left text-black dark:text-white sm:text-base", {
+            ["hidden sm:inline short:hidden"]: canResize,
+          })}
+        >
+          {text}
+        </div>
+      </span>
     </a>
   );
 };
