@@ -2,11 +2,12 @@ import type { FC } from "hono/jsx";
 import cn from "classnames";
 
 type Props = {
-  children: JSX.Element[] | JSX.Element | string | string[];
+  children: (string | JSX.Element)[];
+  // TODO - used on another PR
   className?: string;
 };
 
-const Button: FC<Props> = ({ children, className }) => {
+const Button: FC<Props> = ({ children }) => {
   return (
     <button
       class={cn(
