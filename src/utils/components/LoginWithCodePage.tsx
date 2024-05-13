@@ -5,6 +5,7 @@ import { VendorSettings } from "../../types";
 import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";
+import ErrorMessage from "./ErrorMessage";
 
 type Props = {
   error?: string;
@@ -41,7 +42,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings }) => {
               },
             )}
           />
-          {error && <em class="mb-2 bg-red">{error}</em>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
           <Button className="text-base sm:mt-4 md:text-base">
             <div className="flex items-center space-x-2">
               <span>{i18next.t("continue")}</span>
