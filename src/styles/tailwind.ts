@@ -904,10 +904,6 @@ h6 {
 .bg-primary {
   background-color: var(--primary-color);
 }
-.bg-red {
-  --tw-bg-opacity: 1;
-  background-color: rgb(252 90 90 / var(--tw-bg-opacity));
-}
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
