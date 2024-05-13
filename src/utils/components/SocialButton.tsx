@@ -16,11 +16,11 @@ const SocialButton = ({
   canResize = false,
   session,
 }: Props) => {
-  session.authParams.client_id;
+  const connection = social === "google" ? "google-oauth2" : social;
 
   const queryString = new URLSearchParams({
     client_id: session.authParams.client_id,
-    connection: social,
+    connection,
   });
   if (session.authParams.response_type) {
     queryString.set("response_type", session.authParams.response_type);
@@ -37,13 +37,18 @@ const SocialButton = ({
   if (session.authParams.response_type) {
     queryString.set("response_type", session.authParams.response_type);
   }
+  if (session.authParams.state) {
+    queryString.set("state", session.authParams.state);
+  }
   const href = `/authorize?${queryString.toString()}`;
 
   return (
     <a
+      // should be class... does this still work either way now? but did it not??? hmmmm
       className={cn(
         "border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-400 dark:bg-black dark:hover:bg-black/90",
         {
+          // what is this? is this why looks broken?
           ["px-0 py-3 sm:px-10 sm:py-4 short:px-0 short:py-3"]: canResize,
           ["px-10 py-3"]: !canResize,
         },
@@ -54,6 +59,7 @@ const SocialButton = ({
     >
       {icon || ""}
       <div
+        // should be class... does this still work either way now? but did it not??? hmmmm
         className={cn("text-left text-black dark:text-white sm:text-base", {
           ["hidden sm:inline short:hidden"]: canResize,
         })}
