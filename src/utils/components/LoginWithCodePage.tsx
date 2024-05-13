@@ -6,6 +6,7 @@ import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";
 import ErrorMessage from "./ErrorMessage";
+import SocialButton from "./SocialButton";
 
 type Props = {
   error?: string;
@@ -50,6 +51,47 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings }) => {
             </div>
           </Button>
         </form>
+        <>
+          <div class="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
+            <div class="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
+            <div class="relative inline-block bg-white px-2 dark:bg-gray-800">
+              {i18next.t("continue_social_login")}
+            </div>
+          </div>
+
+          <div class="flex space-x-4 sm:flex-col sm:space-x-0 sm:space-y-4 short:flex-row short:space-x-4 short:space-y-0">
+            <SocialButton
+              social="facebook"
+              text={i18next.t("continue_with", { provider: "Facebook" })}
+              canResize={true}
+              icon={
+                <Icon
+                  className="text-xl text-[#1196F5] sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 sm:text-2xl short:static short:left-auto short:top-auto short:translate-y-0 short:text-xl"
+                  name="facebook"
+                />
+              }
+            />
+            <SocialButton
+              social="google"
+              text={i18next.t("continue_with", { provider: "Google" })}
+              canResize={true}
+              icon={
+                <Google className="h-5 w-5 sm:absolute sm:left-4 sm:top-1/2 sm:h-6 sm:w-6 sm:-translate-y-1/2 short:static short:left-auto short:top-auto short:h-5 short:w-5 short:translate-y-0" />
+              }
+            />
+            <SocialButton
+              social="apple"
+              text={i18next.t("continue_with", { provider: "Apple" })}
+              canResize={true}
+              icon={
+                <Icon
+                  className="text-xl text-black dark:text-white sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 sm:text-2xl short:static short:left-auto short:top-auto short:translate-y-0 short:text-xl"
+                  name="apple"
+                />
+              }
+            />
+          </div>
+        </>
       </div>
     </Layout>
   );
