@@ -1015,6 +1015,10 @@ h6 {
 .text-primary {
   color: var(--primary-color);
 }
+.text-red {
+  --tw-text-opacity: 1;
+  color: rgb(252 90 90 / var(--tw-text-opacity));
+}
 .text-textOnPrimary {
   color: var(--text-on-primary);
 }

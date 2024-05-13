@@ -5,6 +5,7 @@ import { VendorSettings } from "../../types";
 import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";
+import ErrorMessage from "./ErrorMessage";
 
 type Props = {
   error?: string;
@@ -63,7 +64,7 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
               },
             )}
           />
-          {error && <em class="mb-2 bg-red">{error}</em>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
           <div class="text-center sm:mt-2">
             <Button
             // how to do this without clientside JS?
