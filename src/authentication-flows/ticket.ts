@@ -1,6 +1,6 @@
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
+import { generateAuthData } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
 import { applyTokenResponse } from "../helpers/apply-token-response-new";
 import { HTTPException } from "hono/http-exception";
@@ -190,7 +190,7 @@ export async function ticketAuth(
     user,
   );
 
-  const tokenResponse = await generateAuthResponse({
+  const tokenResponse = await generateAuthData({
     env,
     userId: user.id,
     state: authParams.state,
