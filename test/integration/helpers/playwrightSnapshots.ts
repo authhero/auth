@@ -17,8 +17,8 @@ const RESOLUTIONS = {
     height: 720,
   },
   sm: {
-    width: 640,
-    height: 360,
+    width: 375,
+    height: 667,
   },
 };
 
