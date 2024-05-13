@@ -9,8 +9,10 @@ type Props = {
 const Button: FC<Props> = ({ children, className }) => {
   return (
     <button
-      // TODO - use this here
-      class="relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover"
+      class={cn(
+        "relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover",
+        className,
+      )}
       type="submit"
     >
       <span class="flex items-center justify-center space-x-2">{children}</span>
