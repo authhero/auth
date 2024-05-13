@@ -7,7 +7,7 @@ type Props = {
   className?: string;
 };
 
-const Button: FC<Props> = ({ children }) => {
+const Button: FC<Props> = ({ children, className }) => {
   return (
     <button
       class={cn(
