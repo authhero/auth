@@ -529,9 +529,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const { vendorSettings } = await initJSXRoute(state, env);
+      const { vendorSettings, session } = await initJSXRoute(state, env);
 
-      return ctx.html(<LoginWithCodePage vendorSettings={vendorSettings} />);
+      return ctx.html(
+        <LoginWithCodePage vendorSettings={vendorSettings} session={session} />,
+      );
     },
   )
   // --------------------------------
