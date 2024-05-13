@@ -813,6 +813,9 @@ h6 {
 .mb-6 {
   margin-bottom: 1.5rem;
 }
+.mb-8 {
+  margin-bottom: 2rem;
+}
 .mt-8 {
   margin-top: 2rem;
 }
@@ -872,6 +875,21 @@ h6 {
 .rounded-lg {
   border-radius: 0.625rem;
 }
+.border {
+  border-width: 1px;
+}
+.border-gray-100 {
+  --tw-border-opacity: 1;
+  border-color: rgb(248 249 251 / var(--tw-border-opacity));
+}
+.border-gray-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(59 57 70 / var(--tw-border-opacity));
+}
+.border-red {
+  --tw-border-opacity: 1;
+  border-color: rgb(252 90 90 / var(--tw-border-opacity));
+}
 .bg-gray-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(248 249 251 / var(--tw-bg-opacity));
@@ -917,14 +935,29 @@ h6 {
   padding-top: 1.25rem;
   padding-bottom: 1.25rem;
 }
+.pb-2 {
+  padding-bottom: 0.5rem;
+}
 .pb-8 {
   padding-bottom: 2rem;
+}
+.pt-2 {
+  padding-top: 0.5rem;
+}
+.pt-2\\.5 {
+  padding-top: 0.625rem;
 }
 .pt-4 {
   padding-top: 1rem;
 }
 .text-center {
   text-align: center;
+}
+.indent-\\[5px\\] {
+  text-indent: 5px;
+}
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 .text-2xl {
   font-size: 1.5rem;
@@ -1088,6 +1121,11 @@ input[type="number"] {
   text-decoration-line: underline;
 }
 
+.dark\\:border-gray-500:is(.dark *) {
+  --tw-border-opacity: 1;
+  border-color: rgb(59 57 70 / var(--tw-border-opacity));
+}
+
 .dark\\:bg-gray-600:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(40 40 52 / var(--tw-bg-opacity));
@@ -1145,6 +1183,10 @@ input[type="number"] {
 @media (min-width: 1280px) {
   .md\\:min-w-\\[448px\\] {
     min-width: 448px;
+  }
+  .md\\:text-3xl {
+    font-size: 2rem;
+    line-height: 120%;
   }
   .md\\:text-base {
     font-size: 1rem;
