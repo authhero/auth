@@ -3,6 +3,8 @@ import Layout from "./Layout";
 import Button from "./Button";
 import { VendorSettings } from "../../types";
 import i18next from "i18next";
+import cn from "classnames";
+import Icon from "./Icon";
 
 type Props = {
   error?: string;
@@ -24,17 +26,28 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings }) => {
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("welcome")}
       </div>
-      <div class="mb-6 text-gray-300">{loginDescriptionText}</div>
+      <div class="mb-8 text-gray-300">{loginDescriptionText}</div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post">
+        <form method="post" className="mb-7">
           <input
             type="text"
             name="username"
             placeholder={i18next.t("email_placeholder")}
-            class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
+            className={cn(
+              "mb-2 w-full rounded-lg border bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base",
+              {
+                "border-red": error,
+                "border-gray-100 dark:border-gray-500": !error,
+              },
+            )}
           />
           {error && <em class="mb-2 bg-red">{error}</em>}
-          <Button>{i18next.t("continue")}</Button>
+          <Button className="text-base sm:mt-4 md:text-base">
+            <div className="flex items-center space-x-2">
+              <span>{i18next.t("continue")}</span>
+              <Icon className="text-xs" name="arrow-right" />
+            </div>
+          </Button>
         </form>
       </div>
     </Layout>

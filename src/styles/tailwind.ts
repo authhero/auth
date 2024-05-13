@@ -960,6 +960,10 @@ h6 {
 .leading-\\[0\\] {
   line-height: 0;
 }
+.text-black {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+}
 .text-gray-300 {
   --tw-text-opacity: 1;
   color: rgb(136 134 159 / var(--tw-text-opacity));
