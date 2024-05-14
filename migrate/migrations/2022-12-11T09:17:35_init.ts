@@ -13,8 +13,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("logo", "varchar(255)")
     .addColumn("primary_color", "varchar(255)")
     .addColumn("secondary_color", "varchar(255)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
+    .addColumn("created_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .execute();
 
   await db.schema
@@ -34,8 +34,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     // .addColumn("picture", "varchar(255)")
     .addColumn("picture", "varchar(2083)")
     .addColumn("tags", "varchar(255)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
+    .addColumn("created_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .addPrimaryKeyConstraint("users_tenants", ["id", "tenant_id"])
     // Added in later migration
     // .addColumn("linked_to", "varchar(255)", (col) =>
@@ -51,12 +51,12 @@ export async function up(db: Kysely<Database>): Promise<void> {
       // (cb) => cb.onDelete("cascade"),
     )
     .addColumn("last_ip", "varchar(255)")
-    .addColumn("login_count", "integer")
+    .addColumn("login_count", "integer", (col) => col.notNull())
     .addColumn("last_login", "varchar(255)")
-    .addColumn("provider", "varchar(255)")
+    .addColumn("provider", "varchar(255)", (col) => col.notNull())
     .addColumn("connection", "varchar(255)")
-    .addColumn("email_verified", "boolean")
-    .addColumn("is_social", "boolean")
+    .addColumn("email_verified", "boolean", (col) => col.notNull())
+    .addColumn("is_social", "boolean", (col) => col.notNull())
     .addColumn("app_metadata", "varchar(8092)")
     .addUniqueConstraint("unique_email_provider", [
       "email",
@@ -80,8 +80,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     // Changed to 2083 in later migration
     // .addColumn("picture", "varchar(255)")
     .addColumn("picture", "varchar(2083)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
+    .addColumn("created_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .execute();
 
   await db.schema
@@ -98,8 +98,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("authentication_settings", "varchar(255)")
     .addColumn("styling_settings", "varchar(255)")
     .addColumn("email_validation", "varchar(255)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
+    .addColumn("created_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .execute();
 
   await db.schema
@@ -119,8 +119,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("private_key", "varchar(767)")
     .addColumn("kid", "varchar(255)")
     .addColumn("team_id", "varchar(255)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
+    .addColumn("created_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .execute();
 
   await db.schema
@@ -133,8 +133,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("client_id", "varchar(255)")
     .addColumn("origin", "varchar(255)")
     .addColumn("domain", "varchar(255)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
+    .addColumn("created_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .execute();
 
   await db.schema
@@ -148,8 +148,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("email_api_key", "varchar(255)")
     .addColumn("dkim_private_key", "varchar(2048)")
     .addColumn("dkim_public_key", "varchar(2048)")
-    .addColumn("created_at", "varchar(255)")
-    .addColumn("modified_at", "varchar(255)")
+    .addColumn("created_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .execute();
 }
 
