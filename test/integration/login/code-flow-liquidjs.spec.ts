@@ -18,7 +18,7 @@ function getCodeAndTo(email: EmailOptions) {
   return { code, to };
 }
 
-describe("Universal Auth login with code", () => {
+describe("Login with code on liquidjs template", () => {
   it("should return a 400 if there's no code", async () => {
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
