@@ -24,6 +24,7 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
       <div class="mb-4 text-2xl font-medium">
         {i18next.t("verify_your_email")}
       </div>
+      <p>testing snapshots</p>
       <div class="mb-8 text-gray-300">
         {/* 
           not sure how to do this in i18next. translation string looks like 
