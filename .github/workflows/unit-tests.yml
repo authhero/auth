@@ -27,3 +27,7 @@ jobs:
       - run: yarn format:ci-cd
       - run: yarn type-check
       - run: yarn test:snapshots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          path: test/**/__diff_output__/*.png
