@@ -7,6 +7,7 @@ import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { FOKUS_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 import { AuthorizationResponseType } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
+import { parseJwt } from "../../../src/utils/parse-jwt";
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
@@ -241,11 +242,15 @@ describe("Login with code on liquidjs template", () => {
     const hash = new URLSearchParams(redirectUrl.hash.slice(1));
     const accessToken = hash.get("access_token");
     expect(accessToken).toBeTruthy();
+    const accessTokenPayload = parseJwt(accessToken!);
     const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
+    const idTokenPayload = parseJwt(idToken!);
+    // assert we get the same user back that we created at the start of this test
+    expect(accessTokenPayload.sub).toBe("email|userId2");
+    expect(idTokenPayload.email).toBe("bar@example.com");
 
     // TO TEST
-    // - that we are getting the same user back
     // - same things as on previous test
   });
 
