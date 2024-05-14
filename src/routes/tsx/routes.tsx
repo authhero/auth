@@ -570,6 +570,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
       // backwards compatible to maintain pasted code
       const params = ctx.req.valid("form");
+      const postedUsername = params.username.toLowerCase();
 
       const { env } = ctx;
       const { client, session } = await initJSXRoute(state, env);
@@ -589,7 +590,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         id: nanoid(),
         code,
         // is this a reasonable assumption?
-        email: params.username,
+        email: postedUsername,
         client_id: session.authParams.client_id,
         send: "code",
         authParams: otpAuthParams,
@@ -601,7 +602,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       // request.ctx.set("log", `Code: ${code}`);
 
       // Add the username to the state
-      session.authParams.username = params.username;
+      session.authParams.username = postedUsername;
       await env.data.universalLoginSessions.update(session.id, session);
 
       const magicLink = new URL(env.ISSUER);
@@ -637,10 +638,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       magicLink.searchParams.set("verification_code", code);
       magicLink.searchParams.set("nonce", "nonce");
 
-      await sendLink(env, client, params.username, code, magicLink.href);
+      await sendLink(env, client, postedUsername, code, magicLink.href);
 
       return ctx.redirect(
-        `/u/enter-code?state=${state}&username=${params.username}`,
+        `/u/enter-code?state=${state}&username=${postedUsername}`,
       );
     },
   )
