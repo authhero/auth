@@ -224,11 +224,11 @@ describe("code-flow", () => {
       );
 
     const {
-      // these are the fields that change on every test run
+      sub: sub2,
+      // TO TEST? that these fields are the same as on the first silent auth?
       exp: exp2,
       iat: iat2,
       sid: sid2,
-      sub: sub2,
       //
       family_name: family_name2,
       given_name: given_name2,
@@ -238,7 +238,7 @@ describe("code-flow", () => {
       ...restOfIdTokenPayload2
     } = silentAuthIdTokenPayload2;
 
-    expect(sub2).toContain("email|");
+    expect(sub2).toEqual(sub);
     expect(restOfIdTokenPayload2).toEqual({
       aud: "clientId",
       name: "test@example.com",
