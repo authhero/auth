@@ -24,7 +24,9 @@ function getOTP(email: EmailOptions) {
   const otps = codeEmailBody.match(/(?!#).[0-9]{6}/g)!;
   const otp = otps[0].slice(1);
 
-  return otp;
+  const to = email.to[0].email;
+
+  return { otp, to };
 }
 
 describe("code-flow", () => {
@@ -75,7 +77,7 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    const otp = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(env.data.emails[0]);
 
     await snapshotEmail(env.data.emails[0], true);
 
@@ -180,7 +182,7 @@ describe("code-flow", () => {
       },
     });
 
-    const otpLogin = getOTP(env.data.emails[1]);
+    const { otp: otpLogin } = getOTP(env.data.emails[1]);
 
     const authRes2 = await oauthClient.co.authenticate.$post({
       json: {
@@ -304,7 +306,7 @@ describe("code-flow", () => {
       },
     });
 
-    const otp = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -404,7 +406,7 @@ describe("code-flow", () => {
       },
     );
 
-    const otp = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(env.data.emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -495,7 +497,7 @@ describe("code-flow", () => {
       },
     });
 
-    const otp = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(env.data.emails[0]);
 
     const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
@@ -628,7 +630,7 @@ describe("code-flow", () => {
       },
     });
 
-    const otp2 = getOTP(env.data.emails[1]);
+    const { otp: otp2 } = getOTP(env.data.emails[1]);
 
     const authenticateResponse2 = await oauthClient.co.authenticate.$post({
       json: {
@@ -782,7 +784,7 @@ describe("code-flow", () => {
       });
       expect(passwordlessStartRes.status).toBe(200);
 
-      const otp = getOTP(env.data.emails[0]);
+      const { otp } = getOTP(env.data.emails[0]);
 
       // Authenticate using the code
       const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -918,7 +920,7 @@ describe("code-flow", () => {
       },
     });
 
-    const otp = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(env.data.emails[0]);
 
     const authRes = await oauthClient.co.authenticate.$post({
       json: {
@@ -1048,7 +1050,8 @@ describe("code-flow", () => {
     });
 
     expect(env.data.emails.length).toBe(1);
-    const otp = getOTP(env.data.emails[0]);
+    const { otp, to } = getOTP(env.data.emails[0]);
+    expect(to).toBe("john-doe@example.com");
 
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -1124,7 +1127,7 @@ describe("code-flow", () => {
       },
     });
 
-    const otp = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(env.data.emails[0]);
     expect(otp).toBeTypeOf("string");
 
     // Authenticate using the code
@@ -1288,7 +1291,7 @@ describe("code-flow", () => {
       expect(response.status).toBe(200);
 
       // first email is email validation from sign up above
-      const otp = getOTP(env.data.emails[1]);
+      const { otp } = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -1385,7 +1388,7 @@ describe("code-flow", () => {
       }
 
       // first email will be email verification
-      const otp = getOTP(env.data.emails[1]);
+      const { otp } = getOTP(env.data.emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -1457,7 +1460,7 @@ describe("code-flow", () => {
           send: "code",
         },
       });
-      const otp = getOTP(env.data.emails[0]);
+      const { otp } = getOTP(env.data.emails[0]);
 
       const authenticateResponse = await oauthClient.co.authenticate.$post({
         json: {
