@@ -16,6 +16,10 @@ type Props = {
 const CODE_LENGTH = 6;
 
 const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
+  const i18nText = i18next.t("we_sent_a_code_to", { email });
+  const startText = i18nText.slice(0, i18nText.indexOf("<0>"));
+  const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
+
   return (
     <Layout
       title={i18next.t("verify_your_email")}
@@ -25,26 +29,9 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
         {i18next.t("verify_your_email")}
       </div>
       <div class="mb-8 text-gray-300">
-        {/* 
-          not sure how to do this in i18next. translation string looks like 
-          "Please check your email at <0>{{email}}</0> and enter the six-digit code that we've sent you."
-          I'm not sure if this is just a react-i18next thing or if it's possible with i18next...
-        */}
-        {/* <Trans
-          i18nKey="we_sent_a_code_to"
-          components={[
-            <span className="text-black dark:text-white" key="span" />,
-          ]}
-          values={{ email }}
-        /> */}
-        {i18next
-          .t("we_sent_a_code_to", {
-            // email: `<span class="text-black dark:text-white">${email}</span>`,
-            email,
-          })
-          // this strips out what may be react-i18next specific syntax
-          .replace("<0>", "")
-          .replace("</0>", "")}
+        {startText}
+        <span class="text-black dark:text-white">{email}</span>
+        {endText}
       </div>
       <div class="flex flex-1 flex-col justify-center">
         <form method="post" class="pt-2">
@@ -79,6 +66,12 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
               {i18next.t("sent_code_spam")}
             </div>
           </div>
+          <a
+            className="block text-primary hover:text-primaryHover text-center"
+            href="javascript:history.go(-1)"
+          >
+            {i18next.t("go_back")}
+          </a>
         </form>
       </div>
     </Layout>

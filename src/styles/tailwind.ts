@@ -1198,6 +1198,10 @@ input[type="number"] {
   background-color: var(--primary-hover);
 }
 
+.hover\\:text-primaryHover:hover {
+  color: var(--primary-hover);
+}
+
 .hover\\:underline:hover {
   text-decoration-line: underline;
 }
