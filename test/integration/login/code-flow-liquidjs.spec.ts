@@ -540,4 +540,65 @@ describe("Login with code on liquidjs template", () => {
 
     await snapshotResponse(incorrectCodeResponse);
   });
+
+  it("should be case insensitive with email address", async () => {
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
+    });
+
+    const location = response.headers.get("location");
+
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+
+    const query = Object.fromEntries(stateParam.entries());
+
+    const postSendCodeResponse = await oauthClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "JOHN-DOE@example.com",
+      },
+    });
+
+    const enterCodeLocation = postSendCodeResponse.headers.get("location");
+
+    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    expect(to).toBe("john-doe@example.com");
+
+    const enterCodeParams = enterCodeLocation!.split("?")[1];
+    const enterCodeQuery = Object.fromEntries(
+      new URLSearchParams(enterCodeParams).entries(),
+    );
+
+    const authenticateResponse = await oauthClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
+      },
+      form: {
+        code,
+      },
+    });
+
+    const codeLoginRedirectUri = authenticateResponse.headers.get("location");
+
+    const redirectUrl = new URL(codeLoginRedirectUri!);
+    expect(redirectUrl.pathname).toBe("/callback");
+    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+    const accessToken = hash.get("access_token");
+    expect(accessToken).toBeTruthy();
+    const idToken = hash.get("id_token");
+    const idTokenPayload = parseJwt(idToken!);
+
+    expect(idTokenPayload.email).toBe("john-doe@example.com");
+  });
+  // TO TEST
+  // it should store new user email in lowercase
 });
