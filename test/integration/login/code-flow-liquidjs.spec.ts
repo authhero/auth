@@ -142,10 +142,111 @@ describe("Login with code on liquidjs template", () => {
     expect(accessToken).toBeTruthy();
     const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
+    // TO TEST - assert more params on tokens. copy from other tests. e.g. user_id
 
     // TO TEST
     // - silent auth request? Should still work right?
     // - login again: previous flow was sign up
+  });
+
+  it("is an existing primary user", async () => {
+    const token = await getAdminToken();
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
+
+    // -----------------
+    // Create the user to log in with the code
+    // -----------------
+    env.data.users.create("tenantId", {
+      id: "email|userId2",
+      email: "bar@example.com",
+      email_verified: true,
+      name: "",
+      nickname: "",
+      picture: "https://example.com/foo.png",
+      login_count: 0,
+      provider: "email",
+      connection: "email",
+      is_social: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    const resInitialQuery = await managementClient.api.v2[
+      "users-by-email"
+    ].$get(
+      {
+        query: {
+          email: "bar@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    expect(resInitialQuery.status).toBe(200);
+
+    // -----------------
+    // Code login flow
+    // -----------------
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
+    });
+
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    const postSendCodeResponse = await oauthClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "bar@example.com",
+      },
+    });
+    const enterCodeLocation = postSendCodeResponse.headers.get("location");
+
+    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    expect(to).toBe("bar@example.com");
+
+    // Authenticate using the code
+    const enterCodeParams = enterCodeLocation!.split("?")[1];
+    const enterCodeQuery = Object.fromEntries(
+      new URLSearchParams(enterCodeParams).entries(),
+    );
+
+    const authenticateResponse = await oauthClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
+      },
+      form: {
+        code,
+      },
+    });
+
+    const codeLoginRedirectUri = authenticateResponse.headers.get("location");
+    const redirectUrl = new URL(codeLoginRedirectUri!);
+    expect(redirectUrl.pathname).toBe("/callback");
+    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+    const accessToken = hash.get("access_token");
+    expect(accessToken).toBeTruthy();
+    const idToken = hash.get("id_token");
+    expect(idToken).toBeTruthy();
+
+    // TO TEST
+    // - that we are getting the same user back
+    // - same things as on previous test
   });
 
   test('snapshot desktop "enter code" form', async () => {
