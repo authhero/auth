@@ -29,6 +29,7 @@ import * as n28_usersEmailConstrain from "./2024-02-19T20:14:00_users-email-cons
 import * as n29_increaseOtpStateLength from "./2024-03-11T12:45:00_increase-otp-state-length";
 import * as n30_increaseTicketStateLength from "./2024-04-22T14:48:00_increase-ticket-state-length";
 import * as n31_branding from "./2024-05-09T08:50:00_branding";
+import * as n32_indexesAndNotNull from "./2024-05-14T07:53:00_indexes_and_not_null";
 
 // These need to be in alphabetic order
 export default {
@@ -63,4 +64,5 @@ export default {
   n29_increaseOtpStateLength,
   n30_increaseTicketStateLength,
   n31_branding,
+  n32_indexesAndNotNull,
 };
