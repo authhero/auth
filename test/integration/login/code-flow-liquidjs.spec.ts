@@ -1,11 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, test, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { oauthApp, managementApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { FOKUS_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 import { AuthorizationResponseType } from "../../../src/types";
+import { getAdminToken } from "../helpers/token";
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;
@@ -34,13 +35,42 @@ describe("Login with code on liquidjs template", () => {
 
     expect(incorrectCodeResponse.status).toBe(400);
   });
-  it("should login with code", async () => {
+  it("should create new user when email does not exist", async () => {
     const env = await getEnv({
       vendorSettings: FOKUS_VENDOR_SETTINGS,
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
+    const token = await getAdminToken();
 
+    // -----------------
+    // Doing a new signup here, so expect this email not to exist
+    // -----------------
+    const resInitialQuery = await managementClient.api.v2[
+      "users-by-email"
+    ].$get(
+      {
+        query: {
+          email: "test@example.com",
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    const results = await resInitialQuery.json();
+    //no users found with this email
+    expect(results).toEqual([]);
+
+    // -----------------
+    // Code login flow
+    // -----------------
     const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
@@ -73,7 +103,7 @@ describe("Login with code on liquidjs template", () => {
     const postSendCodeResponse = await oauthClient.u.code.$post({
       query: { state: query.state },
       form: {
-        username: "foo@example.com",
+        username: "test@example.com",
       },
     });
 
@@ -81,7 +111,7 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     const { to, code } = getCodeAndTo(env.data.emails[0]);
-    expect(to).toBe("foo@example.com");
+    expect(to).toBe("test@example.com");
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -112,9 +142,13 @@ describe("Login with code on liquidjs template", () => {
     expect(accessToken).toBeTruthy();
     const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
+
+    // TO TEST
+    // - silent auth request? Should still work right?
+    // - login again: previous flow was sign up
   });
 
-  it('snapshot desktop "enter code" form', async () => {
+  test('snapshot desktop "enter code" form', async () => {
     const env = await getEnv({
       vendorSettings: FOKUS_VENDOR_SETTINGS,
       testTenantLanguage: "nb",
@@ -146,7 +180,7 @@ describe("Login with code on liquidjs template", () => {
     await snapshotResponse(codeInputFormResponse, "lg");
   });
 
-  it('snapshot mobile "enter code" form', async () => {
+  test('snapshot mobile "enter code" form', async () => {
     const env = await getEnv({
       vendorSettings: FOKUS_VENDOR_SETTINGS,
       testTenantLanguage: "nb",
