@@ -758,8 +758,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         return ctx.html(
           <LoginEnterCodePage
             vendorSettings={vendorSettings}
-            // TODO - i18n: what does login2 use?
-            error="Invalid or expired code"
+            error={i18next.t("Wrong email or verification code.")}
             email={session.authParams.username}
           />,
           400,
