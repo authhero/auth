@@ -80,7 +80,7 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
             </div>
           </div>
           <a
-            className="mx-auto block text-primary hover:text-primaryHover"
+            className="block text-primary hover:text-primaryHover text-center"
             href="javascript:history.go(-1)"
           >
             {i18next.t("go_back")}
