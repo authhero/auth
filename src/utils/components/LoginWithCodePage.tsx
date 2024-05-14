@@ -33,6 +33,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
       </div>
       <div class="mb-8 text-gray-300">{loginDescriptionText}</div>
       <div class="flex flex-1 flex-col justify-center">
+        <p>does this work?</p>
         <form method="post" className="mb-7">
           <input
             type="text"
