@@ -29,8 +29,8 @@ export async function up(db: Kysely<Database>): Promise<void> {
       (cb) => cb.onDelete("cascade"),
     )
     .addColumn("ip", "varchar(255)")
-    .addColumn("type", "varchar(255)")
-    .addColumn("date", "varchar(255)")
+    .addColumn("type", "varchar(255)", (col) => col.notNull())
+    .addColumn("date", "varchar(255)", (col) => col.notNull())
     .addColumn("client_id", "varchar(255)")
     .addColumn("client_name", "varchar(255)")
     .addColumn("user_agent", "varchar(255)")
