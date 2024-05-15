@@ -758,9 +758,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         return ctx.html(
           <LoginEnterCodePage
             vendorSettings={vendorSettings}
-            error="Invalid code"
+            error={i18next.t("Wrong email or verification code.")}
             email={session.authParams.username}
           />,
+          400,
         );
       }
     },
