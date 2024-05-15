@@ -554,7 +554,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string(),
+                username: z.string().transform((u) => u.toLowerCase()),
               }),
             },
           },
