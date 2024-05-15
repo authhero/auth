@@ -35,7 +35,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
       <div class="flex flex-1 flex-col justify-center">
         <form method="post" className="mb-7">
           <input
-            type="text"
+            type="email"
             name="username"
             placeholder={i18next.t("email_placeholder")}
             className={cn(
