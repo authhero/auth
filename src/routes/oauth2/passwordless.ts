@@ -13,9 +13,7 @@ import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
-import { generateAuthData } from "../../helpers/generate-auth-response";
-import { applyTokenResponse } from "../../helpers/apply-token-response-new";
-import { serializeStateInCookie } from "../../services/cookies";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -184,9 +182,8 @@ export const passwordlessRoutes = new OpenAPIHono<{
           client.id,
           user,
         );
-        const [sessionCookie] = serializeStateInCookie(sessionId);
 
-        const tokenResponse = await generateAuthData({
+        return generateAuthResponse({
           responseType: response_type,
           env,
           tenantId: client.tenant_id,
@@ -196,14 +193,6 @@ export const passwordlessRoutes = new OpenAPIHono<{
           nonce,
           user,
           authParams,
-        });
-
-        return new Response("Redirecting", {
-          status: 302,
-          headers: {
-            location: applyTokenResponse(tokenResponse, authParams),
-            "set-cookie": sessionCookie,
-          },
         });
       } catch (e) {
         // Ideally here only catch AuthenticationCodeExpiredError

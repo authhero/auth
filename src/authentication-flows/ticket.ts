@@ -1,8 +1,7 @@
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
-import { generateAuthData } from "../helpers/generate-auth-response";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
-import { applyTokenResponse } from "../helpers/apply-token-response-new";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
@@ -190,7 +189,15 @@ export async function ticketAuth(
     user,
   );
 
-  const tokenResponse = await generateAuthData({
+  // Update the user's last login
+  await env.data.users.update(tenant_id, user.id, {
+    last_login: new Date().toISOString(),
+    login_count: user.login_count + 1,
+    // This is specific to cloudflare
+    last_ip: ctx.req.header("cf-connecting-ip") || "",
+  });
+
+  return generateAuthResponse({
     env,
     userId: user.id,
     state: authParams.state,
@@ -203,23 +210,5 @@ export async function ticketAuth(
     user,
     responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
     tenantId: ticket.tenant_id,
-  });
-
-  const [sessionCookie] = serializeStateInCookie(sessionId);
-
-  // Update the user's last login
-  await env.data.users.update(tenant_id, user.id, {
-    last_login: new Date().toISOString(),
-    login_count: user.login_count + 1,
-    // This is specific to cloudflare
-    last_ip: ctx.req.header("cf-connecting-ip") || "",
-  });
-
-  return new Response("Redirecting", {
-    status: 302,
-    headers: {
-      location: applyTokenResponse(tokenResponse, authParams),
-      "set-cookie": sessionCookie,
-    },
   });
 }
