@@ -26,6 +26,7 @@ export function get(db: Kysely<Database>) {
       code_challenge_method,
       code_challenge,
       username,
+      vendor_id,
       ...rest
     } = session;
 
@@ -33,6 +34,7 @@ export function get(db: Kysely<Database>) {
       ...rest,
       authParams: {
         client_id: rest.client_id,
+        vendor_id,
         response_type,
         response_mode,
         redirect_uri,
