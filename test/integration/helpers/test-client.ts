@@ -14,15 +14,19 @@ import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { SESAMY_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import {
+  SESAMY_VENDOR_SETTINGS,
+  KVARTAL_VENDOR_SETTINGS,
+  BREAKIT_VENDOR_SETTINGS,
+  FOKUS_VENDOR_SETTINGS,
+} from "../../fixtures/vendorSettings";
 
 type getEnvParams = {
-  vendorSettings?: VendorSettings;
   testTenantLanguage?: string;
 };
 
 export async function getEnv(args?: getEnvParams) {
-  const vendorSettings = args?.vendorSettings ?? SESAMY_VENDOR_SETTINGS;
+  // const vendorSettings = args?.vendorSettings ?? SESAMY_VENDOR_SETTINGS;
   const testTenantLanguage = args?.testTenantLanguage;
 
   const dialect = new SqliteDialect({
@@ -218,7 +222,23 @@ export async function getEnv(args?: getEnvParams) {
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
     fetchVendorSettings: async (tenantName: string) => {
-      return vendorSettings;
+      if (tenantName === "sesamy") {
+        return SESAMY_VENDOR_SETTINGS;
+      }
+
+      if (tenantName === "kvartal") {
+        return KVARTAL_VENDOR_SETTINGS;
+      }
+
+      if (tenantName === "breakit") {
+        return BREAKIT_VENDOR_SETTINGS;
+      }
+
+      if (tenantName === "fokus") {
+        return FOKUS_VENDOR_SETTINGS;
+      }
+
+      return SESAMY_VENDOR_SETTINGS;
     },
   };
 }
