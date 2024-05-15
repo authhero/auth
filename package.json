@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@ape-egg/tailwind-rows-columns": "1.0.2",
-    "@cloudflare/workers-types": "4.20240423.0",
+    "@cloudflare/workers-types": "4.20240512.0",
     "@semantic-release/git": "10.0.1",
     "@types/bcryptjs": "2.4.6",
     "@types/better-sqlite3": "7.6.10",
