@@ -702,6 +702,68 @@ describe("Login with code on liquidjs template", () => {
     await snapshotResponse(codeInputFormResponse, "sm");
   });
 
+  it("should only allow a code to be used once", async () => {
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
+    });
+
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+
+    const query = Object.fromEntries(stateParam.entries());
+
+    const postSendCodeResponse = await oauthClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "foo@example.com",
+      },
+    });
+
+    const enterCodeLocation = postSendCodeResponse.headers.get("location");
+
+    const enterCodeParams = enterCodeLocation!.split("?")[1];
+    const enterCodeQuery = Object.fromEntries(
+      new URLSearchParams(enterCodeParams).entries(),
+    );
+
+    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    expect(to).toBe("foo@example.com");
+
+    const authenticateResponse = await oauthClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
+      },
+      form: {
+        code,
+      },
+    });
+
+    const codeLoginRedirectUri = authenticateResponse.headers.get("location");
+    const redirectUrl = new URL(codeLoginRedirectUri!);
+    expect(redirectUrl.pathname).toBe("/callback");
+
+    // Try to use the same code again
+    const secondAuthenticateResponse = await oauthClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
+      },
+      form: {
+        code,
+      },
+    });
+
+    expect(secondAuthenticateResponse.status).toBe(400);
+  });
+
   it("should reject bad code", async () => {
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
@@ -809,3 +871,6 @@ describe("Login with code on liquidjs template", () => {
   // TO TEST
   // it should store new user email in lowercase
 });
+
+// TESTS TO COPY OVER
+// - edge cases block: probably this relies on the same validateCode() helper so isn't strictly necessary BUT would be a nice-to-have
