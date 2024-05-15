@@ -47,13 +47,13 @@ const server = {
           ...createR2Adapter(env),
         },
         sendEmail,
-        fetchVendorSettings: async (tenantName?: string) => {
-          if (!tenantName) {
+        fetchVendorSettings: async (vendor_id?: string) => {
+          if (!vendor_id) {
             return DEFAULT_SESAMY_VENDOR;
           }
 
           const vendorSettingsRes = await fetch(
-            `https://api.sesamy.dev/profile/vendors/${tenantName}/style`,
+            `https://api.sesamy.dev/profile/vendors/${vendor_id}/style`,
           );
 
           // TODO - Zod this not type cast!

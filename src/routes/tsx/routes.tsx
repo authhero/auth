@@ -45,7 +45,7 @@ async function initJSXRoute(state: string, env: Env) {
   }
 
   const vendorSettings = await env.fetchVendorSettings(
-    session.authParams.client_id,
+    session.authParams.vendor_id,
   );
 
   initI18n(tenant.language || "sv");
