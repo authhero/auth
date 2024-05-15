@@ -43,8 +43,8 @@ export const authorizeRoutes = new OpenAPIHono<{
           connection: z.string().optional(),
           username: z
             .string()
-            .optional()
-            .transform((u) => u && u.toLowerCase()),
+            .transform((u) => u.toLowerCase())
+            .optional(),
           nonce: z.string().optional(),
           max_age: z.string().optional(),
           login_ticket: z.string().optional(),
