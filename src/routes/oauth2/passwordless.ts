@@ -127,7 +127,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
           verification_code: z.string(),
           connection: z.string(),
           client_id: z.string(),
-          email: z.string(),
+          email: z.string().transform((u) => u.toLowerCase()),
           audience: z.string().optional(),
         }),
       },

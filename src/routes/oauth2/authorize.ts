@@ -41,7 +41,10 @@ export const authorizeRoutes = new OpenAPIHono<{
           response_type: z.nativeEnum(AuthorizationResponseType).optional(),
           audience: z.string().optional(),
           connection: z.string().optional(),
-          username: z.string().optional(),
+          username: z
+            .string()
+            .optional()
+            .transform((u) => u && u.toLowerCase()),
           nonce: z.string().optional(),
           max_age: z.string().optional(),
           login_ticket: z.string().optional(),
