@@ -37,7 +37,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
                 client_id: z.string(),
                 client_secret: z.string().optional(),
                 connection: z.string(),
-                email: z.string(),
+                email: z.string().transform((u) => u.toLowerCase()),
                 send: z.enum(["link", "code"]),
                 authParams: authParamsSchema.omit({ client_id: true }),
               }),
