@@ -431,6 +431,213 @@ describe("Login with code on liquidjs template", () => {
     });
   });
 
+  describe("most complex linking flow I can think of", () => {
+    it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
+      const token = await getAdminToken();
+      const env = await getEnv();
+      const oauthClient = testClient(oauthApp, env);
+      const managementClient = testClient(managementApp, env);
+
+      // -----------------
+      // create code user - the base user
+      // -----------------
+
+      await env.data.users.create("tenantId", {
+        id: "email|the-base-user",
+        email: "the-base-user@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      // -----------------
+      // create username-password user with different email address and link to the above user
+      // -----------------
+
+      await env.data.users.create("tenantId", {
+        id: "auth2|the-auth2-same-email-user",
+        email: "same-email@example.com",
+        email_verified: true,
+        login_count: 0,
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        linked_to: "email|the-base-user",
+      });
+
+      // -----------------
+      // sanity check these users are linked
+      // -----------------
+
+      const baseUserRes = await managementClient.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|the-base-user",
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const baseUser = (await baseUserRes.json()) as UserResponse;
+
+      expect(baseUser.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "the-base-user",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "the-auth2-same-email-user",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+        },
+      ]);
+
+      // -----------------
+      // Now do a new universal auth code flow with a new user with email same-email@example.com
+      // -----------------
+
+      const response = await oauthClient.authorize.$get({
+        query: {
+          client_id: "clientId",
+          response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+          scope: "openid",
+          redirect_uri: "http://localhost:3000/callback",
+          state: "state",
+        },
+      });
+
+      const location = response.headers.get("location");
+
+      const stateParam = new URLSearchParams(location!.split("?")[1]);
+
+      const query = Object.fromEntries(stateParam.entries());
+
+      const postSendCodeResponse = await oauthClient.u.code.$post({
+        query: { state: query.state },
+        form: {
+          username: "same-email@example.com",
+        },
+      });
+
+      const enterCodeLocation = postSendCodeResponse.headers.get("location");
+
+      const { to, code } = getCodeAndTo(env.data.emails[0]);
+
+      expect(to).toBe("same-email@example.com");
+
+      // Authenticate using the code
+
+      const enterCodeParams = enterCodeLocation!.split("?")[1];
+      const enterCodeQuery = Object.fromEntries(
+        new URLSearchParams(enterCodeParams).entries(),
+      );
+
+      const authenticateResponse = await oauthClient.u["enter-code"].$post({
+        query: {
+          state: enterCodeQuery.state,
+        },
+        form: {
+          code,
+        },
+      });
+
+      const codeLoginRedirectUri = authenticateResponse.headers.get("location");
+
+      const redirectUrl = new URL(codeLoginRedirectUri!);
+
+      expect(redirectUrl.pathname).toBe("/callback");
+
+      const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+
+      const accessToken = hash.get("access_token");
+      expect(accessToken).toBeTruthy();
+      const accessTokenPayload = parseJwt(accessToken!);
+
+      const idToken = hash.get("id_token");
+
+      expect(idToken).toBeTruthy();
+
+      const idTokenPayload = parseJwt(idToken!);
+
+      // this proves that we are following the linked user chain
+
+      expect(accessTokenPayload.sub).toBe("email|the-base-user");
+
+      expect(idTokenPayload.email).toBe("the-base-user@example.com");
+
+      //------------------------------------------------------------------------------------------------
+      // fetch the base user again now and check we have THREE identities in there
+      //------------------------------------------------------------------------------------------------
+
+      const baseUserRes2 = await managementClient.api.v2.users[":user_id"].$get(
+        {
+          param: {
+            user_id: "email|the-base-user",
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const baseUser2 = (await baseUserRes2.json()) as UserResponse;
+
+      expect(baseUser2.identities).toEqual([
+        {
+          connection: "email",
+          provider: "email",
+          user_id: "the-base-user",
+          isSocial: false,
+        },
+        {
+          connection: "Username-Password-Authentication",
+          provider: "auth2",
+          user_id: "the-auth2-same-email-user",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+        },
+        {
+          connection: "email",
+          isSocial: false,
+          profileData: {
+            email: "same-email@example.com",
+            email_verified: true,
+          },
+          provider: "email",
+          user_id: baseUser2.identities[2].user_id,
+        },
+      ]);
+    });
+  });
+
   test('snapshot desktop "enter code" form', async () => {
     const env = await getEnv({
       vendorSettings: FOKUS_VENDOR_SETTINGS,
