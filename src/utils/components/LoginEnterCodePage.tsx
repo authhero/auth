@@ -50,15 +50,12 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
                 "border-gray-100 dark:border-gray-500": !error,
               },
             )}
+            minLength={CODE_LENGTH}
+            required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <div class="text-center sm:mt-2">
-            <Button
-            // how to do this without clientside JS?
-            // disabled={when 6 digits are not entered}
-            >
-              {i18next.t("validate_code")}
-            </Button>
+            <Button>{i18next.t("validate_code")}</Button>
           </div>
           <div class="my-4 flex space-x-2 text-sm text-[#B2B2B2]">
             <Icon className="text-base" name="info-bubble" />
