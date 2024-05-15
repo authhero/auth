@@ -161,7 +161,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string(),
+                username: z.string().transform((u) => u.toLowerCase()),
                 password: z.string(),
               }),
             },
@@ -813,7 +813,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string(),
+                username: z.string().transform((u) => u.toLowerCase()),
                 password: z.string(),
                 // TODO - something like this
                 // "re-enter-password": z.string(),

@@ -34,7 +34,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
               schema: z.object({
                 client_id: z.string(),
                 connection: z.literal("Username-Password-Authentication"),
-                email: z.string(),
+                email: z.string().transform((u) => u.toLowerCase()),
                 password: z.string(),
               }),
             },
@@ -133,7 +133,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
               schema: z.object({
                 client_id: z.string(),
                 connection: z.literal("Username-Password-Authentication"),
-                email: z.string(),
+                email: z.string().transform((u) => u.toLowerCase()),
               }),
             },
           },
