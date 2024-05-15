@@ -45,6 +45,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
                 "border-gray-100 dark:border-gray-500": !error,
               },
             )}
+            required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <Button className="text-base sm:mt-4 md:text-base">
