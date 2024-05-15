@@ -798,6 +798,9 @@ h6 {
   --tw-contain-paint:  ;
   --tw-contain-style:  ;
 }
+.pointer-events-none {
+  pointer-events: none;
+}
 .absolute {
   position: absolute;
 }
@@ -885,6 +888,9 @@ h6 {
 }
 .flex-1 {
   flex: 1 1 0%;
+}
+.cursor-not-allowed {
+  cursor: not-allowed;
 }
 .flex-col {
   flex-direction: column;
@@ -1096,6 +1102,9 @@ h6 {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+.opacity-40 {
+  opacity: 0.4;
 }
 .row-up-left {
   display: flex;
