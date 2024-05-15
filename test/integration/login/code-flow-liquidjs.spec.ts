@@ -254,6 +254,92 @@ describe("Login with code on liquidjs template", () => {
     // - same things as on previous test
   });
 
+  it("is an existing linked user", async () => {
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    // -----------------
+    // Create the linked user to log in with the magic link
+    // -----------------
+    env.data.users.create("tenantId", {
+      id: "email|userId2",
+      // same email address as existing primary user... but this isn't necessary it could be any email address
+      // do we need more tests where this is different? In case I've taken shortcuts looking up by email address...
+      email: "foo@example.com",
+      email_verified: true,
+      name: "",
+      nickname: "",
+      picture: "https://example.com/foo.png",
+      login_count: 0,
+      provider: "email",
+      connection: "email",
+      is_social: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      linked_to: "auth2|userId",
+    });
+
+    // -----------------
+    // Code login flow
+    // -----------------
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
+    });
+
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    const postSendCodeResponse = await oauthClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "foo@example.com",
+      },
+    });
+    const enterCodeLocation = postSendCodeResponse.headers.get("location");
+
+    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    expect(to).toBe("foo@example.com");
+
+    // Authenticate using the code
+    const enterCodeParams = enterCodeLocation!.split("?")[1];
+    const enterCodeQuery = Object.fromEntries(
+      new URLSearchParams(enterCodeParams).entries(),
+    );
+
+    const authenticateResponse = await oauthClient.u["enter-code"].$post({
+      query: {
+        state: enterCodeQuery.state,
+      },
+      form: {
+        code,
+      },
+    });
+
+    const codeLoginRedirectUri = authenticateResponse.headers.get("location");
+    const redirectUrl = new URL(codeLoginRedirectUri!);
+    expect(redirectUrl.pathname).toBe("/callback");
+    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+    const accessToken = hash.get("access_token");
+    expect(accessToken).toBeTruthy();
+    const accessTokenPayload = parseJwt(accessToken!);
+    const idToken = hash.get("id_token");
+    expect(idToken).toBeTruthy();
+    const idTokenPayload = parseJwt(idToken!);
+    // this shows we are getting the primary user
+    expect(accessTokenPayload.sub).toBe("auth2|userId");
+    expect(idTokenPayload.email).toBe("foo@example.com");
+
+    // TO TEST
+    // - same things as on previous test
+  });
+
   test('snapshot desktop "enter code" form', async () => {
     const env = await getEnv({
       vendorSettings: FOKUS_VENDOR_SETTINGS,
