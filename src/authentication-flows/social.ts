@@ -1,4 +1,5 @@
 import { Context } from "hono";
+import { Apple } from "arctic";
 import {
   AuthorizationResponseType,
   AuthParams,
@@ -19,7 +20,6 @@ import {
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
-import { serializeStateInCookie } from "../services/cookies";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -125,37 +125,26 @@ export async function socialAuthCallback({
     });
   }
 
-  const oauth2Client = env.oauth2ClientFactory.create(
+  const apple = new Apple(
     {
-      // TODO: The types here are optional which isn't correct..
-      ...connection,
-      client_id: connection.client_id!,
-      authorization_endpoint: connection.authorization_endpoint!,
-      token_endpoint: connection.token_endpoint!,
-      scope: connection.scope!,
+      clientId: connection.client_id!,
+      teamId: connection.team_id!,
+      keyId: connection.kid!,
+      certificate: connection
+        .private_key!.replace(/^-----BEGIN PRIVATE KEY-----/, "")
+        .replace(/-----END PRIVATE KEY-----/, "")
+        .replace(/\s/g, ""),
     },
     `${env.ISSUER}callback`,
   );
 
-  const token = await oauth2Client.exchangeCodeForTokenResponse(
-    code,
-    connection.token_exchange_basic_auth,
-  );
+  const tokens = await apple.validateAuthorizationCode(code);
 
-  let userinfo: any;
-  if (connection.userinfo_endpoint) {
-    userinfo = getProfileData(
-      await oauth2Client.getUserProfile(token.access_token),
-    );
-  } else if (token.id_token) {
-    userinfo = getProfileData(parseJwt(token.id_token));
-  } else {
-    throw new HTTPException(500, {
-      message: "No id_token or userinfo endpoint availeble",
-    });
-  }
-
-  const { sub, email: emailRaw, ...profileData } = userinfo;
+  const {
+    sub,
+    email: emailRaw,
+    ...profileData
+  } = getProfileData(parseJwt(tokens.idToken));
 
   const email = emailRaw.toLocaleLowerCase();
   const strictEmailVerified = !!profileData.email_verified;
