@@ -7,9 +7,8 @@ import {
   LoginState,
 } from "../types";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
-import { generateAuthData } from "../helpers/generate-auth-response";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
-import { applyTokenResponse } from "../helpers/apply-token-response-new";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
 import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
@@ -214,7 +213,7 @@ export async function socialAuthCallback({
     user,
   );
 
-  const tokenResponse = await generateAuthData({
+  return generateAuthResponse({
     env,
     tenantId: client.tenant_id,
     userId: user.id,
@@ -225,17 +224,5 @@ export async function socialAuthCallback({
     user,
     responseType:
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
-  });
-
-  const redirectUrl = applyTokenResponse(tokenResponse, state.authParams);
-
-  const sessionCookie = serializeStateInCookie(sessionId);
-
-  return new Response("Redirecting", {
-    status: 302,
-    headers: {
-      Location: redirectUrl,
-      "Set-Cookie": sessionCookie[0],
-    },
   });
 }
