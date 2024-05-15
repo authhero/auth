@@ -52,9 +52,16 @@ export const passwordlessRoutes = new OpenAPIHono<{
       },
     }),
     async (ctx) => {
-      const { client_id, email, send, authParams, connection } =
-        ctx.req.valid("json");
+      const {
+        client_id,
+        email: emailRaw,
+        send,
+        authParams,
+        connection,
+      } = ctx.req.valid("json");
       const client = await getClient(ctx.env, client_id);
+
+      const email = emailRaw.toLowerCase();
 
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
@@ -65,7 +72,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
       await ctx.env.data.OTP.create({
         id: nanoid(),
         code,
-        email: email.toLowerCase(),
+        email,
         client_id: client_id,
         send: send,
         authParams: authParams,
