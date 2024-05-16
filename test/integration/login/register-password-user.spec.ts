@@ -9,7 +9,7 @@ import { AuthorizationResponseType } from "../../../src/types";
 describe("Register password user", () => {
   it("should register a new user with password", async () => {
     const env = await getEnv({
-      vendorSettings: BREAKIT_VENDOR_SETTINGS,
+      vendor_id: "breakit",
       testTenantLanguage: "it",
     });
     const oauthClient = testClient(oauthApp, env);

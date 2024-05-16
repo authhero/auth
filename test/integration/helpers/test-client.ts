@@ -22,11 +22,12 @@ import {
 } from "../../fixtures/vendorSettings";
 
 type getEnvParams = {
+  // TODO - get this from /authorize params in UniversalLoginSession next
+  vendor_id?: string;
   testTenantLanguage?: string;
 };
 
 export async function getEnv(args?: getEnvParams) {
-  // const vendorSettings = args?.vendorSettings ?? SESAMY_VENDOR_SETTINGS;
   const testTenantLanguage = args?.testTenantLanguage;
 
   const dialect = new SqliteDialect({
@@ -222,19 +223,23 @@ export async function getEnv(args?: getEnvParams) {
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
     fetchVendorSettings: async (tenantName: string) => {
-      if (tenantName === "sesamy") {
+      if (!args || !args.vendor_id) {
         return SESAMY_VENDOR_SETTINGS;
       }
 
-      if (tenantName === "kvartal") {
+      if (args.vendor_id === "sesamy") {
+        return SESAMY_VENDOR_SETTINGS;
+      }
+
+      if (args.vendor_id === "kvartal") {
         return KVARTAL_VENDOR_SETTINGS;
       }
 
-      if (tenantName === "breakit") {
+      if (args.vendor_id === "breakit") {
         return BREAKIT_VENDOR_SETTINGS;
       }
 
-      if (tenantName === "fokus") {
+      if (args.vendor_id === "fokus") {
         return FOKUS_VENDOR_SETTINGS;
       }
 

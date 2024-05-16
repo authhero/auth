@@ -741,7 +741,7 @@ describe("password-flow", () => {
   describe("Password reset", () => {
     it("should send password reset email for existing user, and allow password to be changed", async () => {
       const env = await getEnv({
-        vendorSettings: FOKUS_VENDOR_SETTINGS,
+        vendor_id: "fokus",
         testTenantLanguage: "sv",
       });
       const oauthClient = testClient(oauthApp, env);
@@ -850,7 +850,7 @@ describe("password-flow", () => {
     });
     it("should reject weak passwords", async () => {
       const env = await getEnv({
-        vendorSettings: KVARTAL_VENDOR_SETTINGS,
+        vendor_id: "kvartal",
         testTenantLanguage: "nb",
       });
       const oauthClient = testClient(oauthApp, env);
@@ -891,7 +891,7 @@ describe("password-flow", () => {
     });
     it("should reject non-matching confirmation password", async () => {
       const env = await getEnv({
-        vendorSettings: BREAKIT_VENDOR_SETTINGS,
+        vendor_id: "breakit",
         testTenantLanguage: "it",
       });
 
