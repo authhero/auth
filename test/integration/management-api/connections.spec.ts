@@ -4,6 +4,7 @@ import { managementApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { Tenant } from "../../../src/types";
+import exp from "constants";
 
 describe("connections", () => {
   it("should add a new connection", async () => {
@@ -34,5 +35,8 @@ describe("connections", () => {
     const { created_at, updated_at, id, ...rest } = createdConnection;
 
     expect(rest).toEqual({ name: "apple" });
+    expect(created_at).toBeTypeOf("string");
+    expect(updated_at).toBeTypeOf("string");
+    expect(id).toBeTypeOf("string");
   });
 });
