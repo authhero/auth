@@ -741,7 +741,8 @@ describe("password-flow", () => {
   describe("Password reset", () => {
     it("should send password reset email for existing user, and allow password to be changed", async () => {
       const env = await getEnv({
-        vendor_id: "fokus",
+        // emails are based on tenant styling... I'm surprised we don't already have bugs
+        // vendor_id: "fokus",
         testTenantLanguage: "sv",
       });
       const oauthClient = testClient(oauthApp, env);
@@ -850,7 +851,7 @@ describe("password-flow", () => {
     });
     it("should reject weak passwords", async () => {
       const env = await getEnv({
-        vendor_id: "kvartal",
+        // vendor_id: "kvartal",
         testTenantLanguage: "nb",
       });
       const oauthClient = testClient(oauthApp, env);
@@ -891,7 +892,7 @@ describe("password-flow", () => {
     });
     it("should reject non-matching confirmation password", async () => {
       const env = await getEnv({
-        vendor_id: "breakit",
+        // vendor_id: "breakit",
         testTenantLanguage: "it",
       });
 

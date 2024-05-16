@@ -8,6 +8,23 @@ import { getDb } from "./services/db";
 import { VendorSettings } from "./types";
 import sendEmail from "./services/email";
 
+const DEFAULT_SESAMY_VENDOR = {
+  name: "sesamy",
+  logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
+  style: {
+    primaryColor: "#7D68F4",
+    buttonTextColor: "#7D68F4",
+    primaryHoverColor: "#7D68F4",
+  },
+  loginBackgroundImage: "",
+  checkoutHideSocial: false,
+  supportEmail: "support@sesamy.com",
+  supportUrl: "https://support.sesamy.com",
+  siteUrl: "https://sesamy.com",
+  termsAndConditionsUrl: "https://store.sesamy.com/pages/terms-of-service",
+  manageSubscriptionsUrl: "https://account.sesamy.com/manage-subscriptions",
+};
+
 const server = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const dialect = new PlanetScaleDialect({
@@ -30,9 +47,13 @@ const server = {
           ...createR2Adapter(env),
         },
         sendEmail,
-        fetchVendorSettings: async (tenantName: string) => {
+        fetchVendorSettings: async (vendor_id?: string) => {
+          if (!vendor_id) {
+            return DEFAULT_SESAMY_VENDOR;
+          }
+
           const vendorSettingsRes = await fetch(
-            `https://api.sesamy.dev/profile/vendors/${tenantName}/style`,
+            `https://api.sesamy.dev/profile/vendors/${vendor_id}/style`,
           );
 
           // TODO - Zod this not type cast!

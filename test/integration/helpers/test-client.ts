@@ -22,8 +22,6 @@ import {
 } from "../../fixtures/vendorSettings";
 
 type getEnvParams = {
-  // TODO - get this from /authorize params in UniversalLoginSession next
-  vendor_id?: string;
   testTenantLanguage?: string;
 };
 
@@ -222,24 +220,20 @@ export async function getEnv(args?: getEnvParams) {
     LOGIN2_URL: "https://login2.sesamy.dev",
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
-    fetchVendorSettings: async (tenantName: string) => {
-      if (!args || !args.vendor_id) {
+    fetchVendorSettings: async (vendor_id: string) => {
+      if (vendor_id === "sesamy") {
         return SESAMY_VENDOR_SETTINGS;
       }
 
-      if (args.vendor_id === "sesamy") {
-        return SESAMY_VENDOR_SETTINGS;
-      }
-
-      if (args.vendor_id === "kvartal") {
+      if (vendor_id === "kvartal") {
         return KVARTAL_VENDOR_SETTINGS;
       }
 
-      if (args.vendor_id === "breakit") {
+      if (vendor_id === "breakit") {
         return BREAKIT_VENDOR_SETTINGS;
       }
 
-      if (args.vendor_id === "fokus") {
+      if (vendor_id === "fokus") {
         return FOKUS_VENDOR_SETTINGS;
       }
 

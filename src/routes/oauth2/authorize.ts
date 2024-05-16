@@ -33,6 +33,7 @@ export const authorizeRoutes = new OpenAPIHono<{
       request: {
         query: z.object({
           client_id: z.string(),
+          vendor_id: z.string().optional(),
           redirect_uri: z.string(),
           scope: z.string().optional(),
           state: z.string(),
@@ -67,6 +68,7 @@ export const authorizeRoutes = new OpenAPIHono<{
       const { env } = ctx;
       const {
         client_id,
+        vendor_id,
         redirect_uri,
         scope,
         state,
@@ -91,6 +93,7 @@ export const authorizeRoutes = new OpenAPIHono<{
         scope,
         state,
         client_id,
+        vendor_id,
         audience,
         nonce,
         response_type,

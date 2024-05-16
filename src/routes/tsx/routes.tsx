@@ -45,7 +45,7 @@ async function initJSXRoute(state: string, env: Env) {
   }
 
   const vendorSettings = await env.fetchVendorSettings(
-    session.authParams.client_id,
+    session.authParams.vendor_id,
   );
 
   initI18n(tenant.language || "sv");
@@ -97,9 +97,8 @@ async function handleLogin(
     return ctx.redirect(redirectUrl.href);
   }
 
-  // This is just a fallback in case no redirect was present
   const vendorSettings = await env.fetchVendorSettings(
-    session.authParams.client_id,
+    session.authParams.vendor_id,
   );
 
   return ctx.html(
@@ -582,6 +581,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         code_challenge_method,
         code_challenge,
         username,
+        vendor_id,
         ...otpAuthParams
       } = session.authParams;
 
@@ -890,7 +890,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
         const vendorSettings = await env.fetchVendorSettings(
-          session.authParams.client_id,
+          session.authParams.vendor_id,
         );
         return ctx.html(
           <SignupPage vendorSettings={vendorSettings} error={err.message} />,
@@ -1020,7 +1020,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
     }),
 
     async (ctx) => {
-      const vendorSettings = await ctx.env.fetchVendorSettings("sesamy");
+      const vendorSettings = await ctx.env.fetchVendorSettings();
 
       return ctx.html(
         <MessagePage

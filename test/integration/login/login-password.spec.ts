@@ -9,13 +9,13 @@ import { AuthorizationResponseType } from "../../../src/types";
 describe("Login with password user", () => {
   it("should login with password", async () => {
     const env = await getEnv({
-      vendor_id: "kvartal",
       testTenantLanguage: "en",
     });
     const oauthClient = testClient(oauthApp, env);
 
     const searchParams = {
       client_id: "clientId",
+      vendor_id: "kvartal",
       response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
       scope: "openid",
       redirect_uri: "http://localhost:3000/callback",
