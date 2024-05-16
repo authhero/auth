@@ -10,7 +10,6 @@ import {
 export const APPLICATION_FIXTURE: Application = {
   id: "clientId",
   name: "clientName",
-  tenant_id: "tenantId",
   allowed_callback_urls: "http://localhost:3000, https://example.com",
   allowed_logout_urls: "http://localhost:3000, https://example.com",
   allowed_web_origins: "http://localhost:3000, https://example.com",
