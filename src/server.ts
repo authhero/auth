@@ -5,7 +5,7 @@ import createAdapters from "./adapters/kysely";
 import createR2Adapter from "./adapters/r2";
 import { PlanetScaleDialect } from "kysely-planetscale";
 import { getDb } from "./services/db";
-import { VendorSettings } from "./types";
+import { vendorSettingsSchema } from "./types";
 import sendEmail from "./services/email";
 
 const DEFAULT_SESAMY_VENDOR = {
@@ -57,9 +57,10 @@ const server = {
               `https://api.sesamy.dev/profile/vendors/${vendor_id}/style`,
             );
 
-            // TODO - Zod this not type cast!
+            const vendorSettingsRaw = await vendorSettingsRes.json();
+
             const vendorSettings =
-              (await vendorSettingsRes.json()) as VendorSettings;
+              vendorSettingsSchema.parse(vendorSettingsRaw);
 
             return vendorSettings;
           } catch (e) {

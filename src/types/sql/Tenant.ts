@@ -30,33 +30,35 @@ export interface Tenant {
   updated_at: string;
 }
 
-type StyleType = {
-  primaryColor: string;
-  buttonTextColor: string;
-  primaryHoverColor: string;
-};
+export const vendorSettingsSchema = z.object({
+  logoUrl: z.string(),
+  loginBackgroundImage: z.string().optional(),
+  style: z.object({
+    primaryColor: z.string(),
+    buttonTextColor: z.string(),
+    primaryHoverColor: z.string(),
+  }),
+  supportEmail: z.string().nullable(),
+  supportUrl: z.string().nullable(),
+  name: z.string(),
+  showGreyishBackground: z.boolean().optional(),
+  termsAndConditionsUrl: z.string().nullable(),
+  companyName: z.string().optional(),
+  checkoutHideSocial: z.boolean().optional(),
+  siteUrl: z.string().nullable(),
+  invoiceInfo: z
+    .object({
+      selfHandlesVat: z.boolean(),
+      invoiceAddress: z.object({
+        country: z.string(),
+        zipCode: z.string(),
+        city: z.string(),
+        street: z.string(),
+      }),
+      taxId: z.string(),
+    })
+    .optional(),
+  manageSubscriptionsUrl: z.string().optional(),
+});
 
-export type VendorSettings = {
-  logoUrl: string;
-  loginBackgroundImage?: string;
-  style: StyleType;
-  supportEmail?: string | null;
-  supportUrl?: string | null;
-  name: string;
-  showGreyishBackground?: boolean;
-  termsAndConditionsUrl?: string | null;
-  companyName?: string;
-  checkoutHideSocial?: boolean;
-  siteUrl?: string | null;
-  invoiceInfo?: {
-    selfHandlesVat: boolean;
-    invoiceAddress: {
-      country: string;
-      zipCode: string;
-      city: string;
-      street: string;
-    };
-    taxId: string;
-  };
-  manageSubscriptionsUrl?: string;
-};
+export type VendorSettings = z.infer<typeof vendorSettingsSchema>;
