@@ -247,7 +247,7 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       ],
       responses: {
-        200: {
+        201: {
           content: {
             "application/json": {
               schema: connectionSchema,

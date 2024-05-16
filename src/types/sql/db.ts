@@ -25,7 +25,7 @@ export interface Database {
   keys: Certificate;
   users: SqlUser;
   members: Member;
-  applications: Application;
+  applications: Application & { tenant_id: string };
   connections: Connection & { tenant_id: string };
   migrations: Migration;
   otps: SqlOTP;

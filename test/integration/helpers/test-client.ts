@@ -106,7 +106,6 @@ export async function getEnv(args?: getEnvParams) {
   const testApplication: Application = {
     id: "clientId",
     name: "Test Client",
-    tenant_id: "tenantId",
     client_secret: "XjI8-WPndjtNHDu4ybXrD",
     allowed_callback_urls: "",
     allowed_logout_urls: "",
@@ -119,7 +118,6 @@ export async function getEnv(args?: getEnvParams) {
   const testApplication2: Application = {
     id: "otherClientId",
     name: "Test Other Client",
-    tenant_id: "tenantId",
     client_secret: "3nwvu0mzibzb0spr7z5d2g",
     allowed_callback_urls: "",
     allowed_logout_urls: "",
@@ -155,7 +153,6 @@ export async function getEnv(args?: getEnvParams) {
   const anotherAppOnAnotherTenant: Application = {
     id: "otherClientIdOnOtherTenant",
     name: "Test Client",
-    tenant_id: "otherTenant",
     client_secret: "XjI8-WPndjtNHDu4ybXrD",
     allowed_callback_urls: "",
     allowed_logout_urls: "",

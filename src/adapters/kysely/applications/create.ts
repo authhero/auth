@@ -7,14 +7,16 @@ export function create(db: Kysely<Database>) {
     tenant_id: string,
     params: CreateApplicationParams,
   ): Promise<Application> => {
-    const application: Application = {
+    const application = {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      tenant_id,
       ...params,
     };
 
-    await db.insertInto("applications").values(application).execute();
+    await db
+      .insertInto("applications")
+      .values({ ...application, tenant_id })
+      .execute();
 
     return application;
   };

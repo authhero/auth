@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getDbFromEnv } from "../../services/db";
-import { applicationSchema, applicationInsertSchema } from "../../types/sql";
+import { applicationSchema, applicationInsertSchema } from "../../types";
 import { headers } from "../../constants";
 import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
@@ -231,7 +231,7 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       ],
       responses: {
-        200: {
+        201: {
           content: {
             "application/json": {
               schema: applicationSchema,
@@ -251,7 +251,7 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
         client_secret: body.client_secret || nanoid(),
       });
 
-      return ctx.json(application);
+      return ctx.json(application, { status: 201 });
     },
   )
   // --------------------------------
