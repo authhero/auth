@@ -27,6 +27,24 @@ import { sendResetPassword, sendLink } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
+import { vendorSettingsSchema } from "../../types";
+
+const DEFAULT_SESAMY_VENDOR = {
+  name: "sesamy",
+  logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
+  style: {
+    primaryColor: "#7D68F4",
+    buttonTextColor: "#7D68F4",
+    primaryHoverColor: "#7D68F4",
+  },
+  loginBackgroundImage: "",
+  checkoutHideSocial: false,
+  supportEmail: "support@sesamy.com",
+  supportUrl: "https://support.sesamy.com",
+  siteUrl: "https://sesamy.com",
+  termsAndConditionsUrl: "https://store.sesamy.com/pages/terms-of-service",
+  manageSubscriptionsUrl: "https://account.sesamy.com/manage-subscriptions",
+};
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -44,13 +62,34 @@ async function initJSXRoute(state: string, env: Env) {
     throw new HTTPException(400, { message: "Tenant not found" });
   }
 
-  const vendorSettings = await env.fetchVendorSettings(
+  const vendorSettings = await fetchVendorSettings(
     session.authParams.vendor_id,
   );
 
   initI18n(tenant.language || "sv");
 
   return { vendorSettings, client, tenant, session };
+}
+
+async function fetchVendorSettings(vendor_id?: string) {
+  if (!vendor_id) {
+    return DEFAULT_SESAMY_VENDOR;
+  }
+
+  try {
+    const vendorSettingsRes = await fetch(
+      `https://api.sesamy.dev/profile/vendors/${vendor_id}/style`,
+    );
+
+    const vendorSettingsRaw = await vendorSettingsRes.json();
+
+    const vendorSettings = vendorSettingsSchema.parse(vendorSettingsRaw);
+
+    return vendorSettings;
+  } catch (e) {
+    console.error(e);
+    return DEFAULT_SESAMY_VENDOR;
+  }
 }
 
 // duplicated from /passwordless route
@@ -97,7 +136,7 @@ async function handleLogin(
     return ctx.redirect(redirectUrl.href);
   }
 
-  const vendorSettings = await env.fetchVendorSettings(
+  const vendorSettings = await fetchVendorSettings(
     session.authParams.vendor_id,
   );
 
@@ -889,7 +928,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
-        const vendorSettings = await env.fetchVendorSettings(
+        const vendorSettings = await fetchVendorSettings(
           session.authParams.vendor_id,
         );
         return ctx.html(
@@ -1020,7 +1059,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
     }),
 
     async (ctx) => {
-      const vendorSettings = await ctx.env.fetchVendorSettings();
+      const vendorSettings = await fetchVendorSettings();
 
       return ctx.html(
         <MessagePage

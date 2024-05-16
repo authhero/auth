@@ -217,25 +217,6 @@ export async function getEnv(args?: getEnvParams) {
     LOGIN2_URL: "https://login2.sesamy.dev",
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
-    fetchVendorSettings: async (vendor_id: string) => {
-      if (vendor_id === "sesamy") {
-        return SESAMY_VENDOR_SETTINGS;
-      }
-
-      if (vendor_id === "kvartal") {
-        return KVARTAL_VENDOR_SETTINGS;
-      }
-
-      if (vendor_id === "breakit") {
-        return BREAKIT_VENDOR_SETTINGS;
-      }
-
-      if (vendor_id === "fokus") {
-        return FOKUS_VENDOR_SETTINGS;
-      }
-
-      return SESAMY_VENDOR_SETTINGS;
-    },
   };
 }
 
