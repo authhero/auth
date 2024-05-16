@@ -581,6 +581,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         code_challenge_method,
         code_challenge,
         username,
+        vendor_id,
         ...otpAuthParams
       } = session.authParams;
 
