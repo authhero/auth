@@ -39,7 +39,7 @@ describe("Login with code on liquidjs template", () => {
   });
   it("should create new user when email does not exist", async () => {
     const env = await getEnv({
-      vendorSettings: FOKUS_VENDOR_SETTINGS,
+      vendor_id: "fokus",
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -640,7 +640,7 @@ describe("Login with code on liquidjs template", () => {
 
   test('snapshot desktop "enter code" form', async () => {
     const env = await getEnv({
-      vendorSettings: FOKUS_VENDOR_SETTINGS,
+      vendor_id: "fokus",
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -672,7 +672,7 @@ describe("Login with code on liquidjs template", () => {
 
   test('snapshot mobile "enter code" form', async () => {
     const env = await getEnv({
-      vendorSettings: FOKUS_VENDOR_SETTINGS,
+      vendor_id: "fokus",
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);

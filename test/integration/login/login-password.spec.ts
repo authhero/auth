@@ -9,7 +9,7 @@ import { AuthorizationResponseType } from "../../../src/types";
 describe("Login with password user", () => {
   it("should login with password", async () => {
     const env = await getEnv({
-      vendorSettings: KVARTAL_VENDOR_SETTINGS,
+      vendor_id: "kvartal",
       testTenantLanguage: "en",
     });
     const oauthClient = testClient(oauthApp, env);
