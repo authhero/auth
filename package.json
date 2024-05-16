@@ -89,7 +89,7 @@
     "i18next": "23.11.4",
     "i18nexus-cli": "3.4.0",
     "jest-image-snapshot": "6.4.0",
-    "knip": "5.11.0",
+    "knip": "5.16.0",
     "lint-staged": "15.2.2",
     "mjml": "4.15.3",
     "postcss-cli": "^11.0.0",
