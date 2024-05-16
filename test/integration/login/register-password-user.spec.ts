@@ -9,7 +9,6 @@ import { AuthorizationResponseType } from "../../../src/types";
 describe("Register password user", () => {
   it("should register a new user with password", async () => {
     const env = await getEnv({
-      vendor_id: "breakit",
       testTenantLanguage: "it",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -18,6 +17,7 @@ describe("Register password user", () => {
       {
         query: {
           client_id: "clientId",
+          vendor_id: "breakit",
           response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
           scope: "openid",
           redirect_uri: "http://localhost:3000/callback",

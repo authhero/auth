@@ -39,7 +39,6 @@ describe("Login with code on liquidjs template", () => {
   });
   it("should create new user when email does not exist", async () => {
     const env = await getEnv({
-      vendor_id: "fokus",
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -76,6 +75,7 @@ describe("Login with code on liquidjs template", () => {
     const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
+        vendor_id: "fokus",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
         scope: "openid",
         redirect_uri: "http://localhost:3000/callback",
@@ -640,7 +640,6 @@ describe("Login with code on liquidjs template", () => {
 
   test('snapshot desktop "enter code" form', async () => {
     const env = await getEnv({
-      vendor_id: "fokus",
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -648,6 +647,7 @@ describe("Login with code on liquidjs template", () => {
     const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
+        vendor_id: "fokus",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
         scope: "openid",
         redirect_uri: "http://localhost:3000/callback",
@@ -672,7 +672,6 @@ describe("Login with code on liquidjs template", () => {
 
   test('snapshot mobile "enter code" form', async () => {
     const env = await getEnv({
-      vendor_id: "fokus",
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -680,6 +679,7 @@ describe("Login with code on liquidjs template", () => {
     const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
+        vendor_id: "fokus",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
         scope: "openid",
         redirect_uri: "http://localhost:3000/callback",
