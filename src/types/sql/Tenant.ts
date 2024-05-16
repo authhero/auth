@@ -46,19 +46,6 @@ export const vendorSettingsSchema = z.object({
   companyName: z.string().optional(),
   checkoutHideSocial: z.boolean().optional(),
   siteUrl: z.string().nullable(),
-  // zipcode is number... but we don't need this
-  // invoiceInfo: z
-  //   .object({
-  //     selfHandlesVat: z.boolean(),
-  //     invoiceAddress: z.object({
-  //       country: z.string(),
-  //       zipCode: z.string(),
-  //       city: z.string(),
-  //       street: z.string(),
-  //     }),
-  //     taxId: z.string(),
-  //   })
-  //   .optional(),
   manageSubscriptionsUrl: z.string().optional(),
 });
 
