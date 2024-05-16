@@ -34,16 +34,16 @@ export const BREAKIT_VENDOR_SETTINGS: VendorSettings = {
   supportUrl: "https://www.breakit.se/kontakta-oss",
   siteUrl: "https://www.breakit.se/",
   termsAndConditionsUrl: "https://www.breakit.se/anvandarvillkor",
-  invoiceInfo: {
-    selfHandlesVat: true,
-    invoiceAddress: {
-      country: "SE",
-      zipCode: "113 59",
-      city: "Stockholm",
-      street: "TEGNÉRGATAN 28",
-    },
-    taxId: "SE556994782201",
-  },
+  // invoiceInfo: {
+  //   selfHandlesVat: true,
+  //   invoiceAddress: {
+  //     country: "SE",
+  //     zipCode: "113 59",
+  //     city: "Stockholm",
+  //     street: "TEGNÉRGATAN 28",
+  //   },
+  //   taxId: "SE556994782201",
+  // },
 };
 
 export const KVARTAL_VENDOR_SETTINGS: VendorSettings = {
