@@ -817,6 +817,9 @@ h6 {
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
+.mb-12 {
+  margin-bottom: 3rem;
+}
 .mb-16 {
   margin-bottom: 4rem;
 }
@@ -931,6 +934,10 @@ h6 {
   --tw-border-opacity: 1;
   border-color: rgb(191 188 215 / var(--tw-border-opacity));
 }
+.border-gray-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(136 134 159 / var(--tw-border-opacity));
+}
 .border-gray-500 {
   --tw-border-opacity: 1;
   border-color: rgb(59 57 70 / var(--tw-border-opacity));
@@ -945,6 +952,9 @@ h6 {
 }
 .bg-primary {
   background-color: var(--primary-color);
+}
+.bg-primaryHover {
+  background-color: var(--primary-hover);
 }
 .bg-white {
   --tw-bg-opacity: 1;
