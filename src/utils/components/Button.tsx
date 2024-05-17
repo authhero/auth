@@ -6,6 +6,8 @@ type Props = {
   className?: string;
   Component?: string;
   variant?: "primary" | "secondary";
+  // in Nextjs & React we use default DOM element types...
+  href?: string;
 };
 
 const Button: FC<Props> = ({
@@ -13,7 +15,9 @@ const Button: FC<Props> = ({
   className,
   Component = "button",
   variant = "primary",
+  href,
 }) => {
+  const hrefProps = Component === "a" ? { href } : {};
   return (
     <Component
       class={cn("relative w-full rounded-lg text-center px-4 py-5", className, {
@@ -22,6 +26,7 @@ const Button: FC<Props> = ({
         "border border-gray-300 bg-white text-black": variant === "secondary",
       })}
       type="submit"
+      {...hrefProps}
     >
       <span class="flex items-center justify-center space-x-2">{children}</span>
     </Component>

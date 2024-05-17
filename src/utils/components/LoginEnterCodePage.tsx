@@ -21,7 +21,8 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
   const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
 
   // TODO! need to only set on auth2.dev, not .com... is this an env var on cloudflare?
-  const passwordLoginFeatureyFlag = false;
+  // const passwordLoginFeatureyFlag = false;
+  const passwordLoginFeatureyFlag = true;
 
   return (
     <Layout
@@ -80,11 +81,16 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
                 Can extract this out? what was the back button?
               
               */}
-              {/* <a href={`/enter-password?${state}`} legacyBehavior passHref>
-                <Button Component="a" variant="secondary" className="block">
-                  {t("enter_your_password_btn")}
-                </Button>
-              </a> */}
+              <Button
+                Component="a"
+                // TODO - where should this go and how? needs same state param? manually create the link
+                // href={`/enter-password?${state}`}
+                href="https://www.example.com"
+                variant="secondary"
+                className="block"
+              >
+                {i18next.t("enter_your_password_btn")}
+              </Button>
             </div>
           )}
           <a
