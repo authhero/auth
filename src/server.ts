@@ -52,15 +52,20 @@ const server = {
             return DEFAULT_SESAMY_VENDOR;
           }
 
-          const vendorSettingsRes = await fetch(
-            `https://api.sesamy.dev/profile/vendors/${vendor_id}/style`,
-          );
+          try {
+            const vendorSettingsRes = await fetch(
+              `https://api.sesamy.dev/profile/vendors/${vendor_id}/style`,
+            );
 
-          // TODO - Zod this not type cast!
-          const vendorSettings =
-            (await vendorSettingsRes.json()) as VendorSettings;
+            // TODO - Zod this not type cast!
+            const vendorSettings =
+              (await vendorSettingsRes.json()) as VendorSettings;
 
-          return vendorSettings;
+            return vendorSettings;
+          } catch (e) {
+            console.error(e);
+            return DEFAULT_SESAMY_VENDOR;
+          }
         },
       },
       ctx,
