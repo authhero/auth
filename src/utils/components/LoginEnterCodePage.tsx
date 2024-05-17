@@ -11,11 +11,17 @@ type Props = {
   error?: string;
   vendorSettings: VendorSettings;
   email: string;
+  state: string;
 };
 
 const CODE_LENGTH = 6;
 
-const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
+const LoginEnterCodePage: FC<Props> = ({
+  error,
+  vendorSettings,
+  email,
+  state,
+}) => {
   const i18nText = i18next.t("we_sent_a_code_to", { email });
   const startText = i18nText.slice(0, i18nText.indexOf("<0>"));
   const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
@@ -23,6 +29,11 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
   // TODO! need to only set on auth2.dev, not .com... is this an env var on cloudflare?
   // const passwordLoginFeatureyFlag = false;
   const passwordLoginFeatureyFlag = true;
+
+  const passwordLoginLinkParams = new URLSearchParams({
+    state,
+    email,
+  });
 
   return (
     <Layout
@@ -75,17 +86,9 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
                   or
                 </div>
               </div>
-              {/* 
-                secondary variant button! sounds like this needs implementing...
-                BUT it's not actually a button... it's a link
-                Can extract this out? what was the back button?
-              
-              */}
               <Button
                 Component="a"
-                // TODO - where should this go and how? needs same state param? manually create the link
-                // href={`/enter-password?${state}`}
-                href="https://www.example.com"
+                href={`/u/login?${passwordLoginLinkParams.toString()}`}
                 variant="secondary"
                 className="block"
               >

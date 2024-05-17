@@ -46,7 +46,8 @@ const SocialButton = ({
     <a
       className={cn(
         "block",
-        // copied from Button.tsx as this component is now an anchor
+        // copied from Button.tsx as this component is now an anchor -
+        // could be done like on login2 by implementing variant="custom"
         "relative w-full rounded-lg text-center px-4 py-5 bg-primary text-textOnPrimary hover:bg-primaryHover",
         "border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-400 dark:bg-black dark:hover:bg-black/90",
         {
