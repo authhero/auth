@@ -21,7 +21,7 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
   const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
 
   // TODO! need to only set on auth2.dev, not .com... is this an env var on cloudflare?
-  const passwordLoginFeatureyFlag = true;
+  const passwordLoginFeatureyFlag = false;
 
   return (
     <Layout
