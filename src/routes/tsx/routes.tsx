@@ -124,7 +124,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          email: z.string().optional(),
+          username: z.string().optional(),
         }),
       },
       responses: {
@@ -134,14 +134,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { state, email } = ctx.req.valid("query");
+      const { state, username } = ctx.req.valid("query");
 
       const { env } = ctx;
 
       const { vendorSettings } = await initJSXRoute(state, env);
 
       return ctx.html(
-        <LoginPage vendorSettings={vendorSettings} email={email} />,
+        <LoginPage vendorSettings={vendorSettings} email={username} />,
       );
     },
   )
