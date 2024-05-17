@@ -20,6 +20,9 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
   const startText = i18nText.slice(0, i18nText.indexOf("<0>"));
   const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
 
+  // TODO! need to only set on auth2.dev, not .com... is this an env var on cloudflare?
+  const passwordLoginFeatureyFlag = true;
+
   return (
     <Layout
       title={i18next.t("verify_your_email")}
@@ -63,6 +66,27 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
               {i18next.t("sent_code_spam")}
             </div>
           </div>
+          {passwordLoginFeatureyFlag && (
+            <div className="text-center mb-12">
+              <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
+                <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
+                <div className="relative inline-block bg-white px-2 dark:bg-gray-800">
+                  or
+                </div>
+              </div>
+              {/* 
+                secondary variant button! sounds like this needs implementing...
+                BUT it's not actually a button... it's a link
+                Can extract this out? what was the back button?
+              
+              */}
+              {/* <a href={`/enter-password?${state}`} legacyBehavior passHref>
+                <Button Component="a" variant="secondary" className="block">
+                  {t("enter_your_password_btn")}
+                </Button>
+              </a> */}
+            </div>
+          )}
           <a
             className="block text-primary hover:text-primaryHover text-center"
             href="javascript:history.go(-1)"
