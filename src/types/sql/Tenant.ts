@@ -32,7 +32,7 @@ export interface Tenant {
 
 export const vendorSettingsSchema = z.object({
   logoUrl: z.string(),
-  loginBackgroundImage: z.string().optional(),
+  loginBackgroundImage: z.string().nullish(),
   style: z.object({
     primaryColor: z.string(),
     buttonTextColor: z.string(),
@@ -46,18 +46,6 @@ export const vendorSettingsSchema = z.object({
   companyName: z.string().optional(),
   checkoutHideSocial: z.boolean().optional(),
   siteUrl: z.string().nullable(),
-  invoiceInfo: z
-    .object({
-      selfHandlesVat: z.boolean(),
-      invoiceAddress: z.object({
-        country: z.string(),
-        zipCode: z.string(),
-        city: z.string(),
-        street: z.string(),
-      }),
-      taxId: z.string(),
-    })
-    .optional(),
   manageSubscriptionsUrl: z.string().optional(),
 });
 
