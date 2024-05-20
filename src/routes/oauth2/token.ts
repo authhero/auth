@@ -31,7 +31,18 @@ export const tokenRoutes = new OpenAPIHono<{
             "application/json": {
               schema: z.object({
                 grant_type: z.string(),
-                client_id: z.string(),
+                client_id: z.string().optional(),
+                client_secret: z.string().optional(),
+                code: z.string().optional(),
+                redirect_uri: z.string().optional(),
+                code_verifier: z.string().optional(),
+                scope: z.string().optional(),
+              }),
+            },
+            "application/x-www-form-urlencoded": {
+              schema: z.object({
+                grant_type: z.string(),
+                client_id: z.string().optional(),
                 client_secret: z.string().optional(),
                 code: z.string().optional(),
                 redirect_uri: z.string().optional(),
@@ -50,6 +61,23 @@ export const tokenRoutes = new OpenAPIHono<{
     }),
     async (ctx) => {
       const body = ctx.req.valid("json");
+
+      const authHeader = ctx.req.header("authorization");
+      if (authHeader) {
+        const [type, token] = authHeader.split(" ");
+        if (type.toLowerCase() === "basic") {
+          const [client_id, client_secret] = Buffer.from(token, "base64")
+            .toString()
+            .split(":");
+          body.client_id = body.client_id || client_id;
+          body.client_secret = body.client_secret || client_secret;
+        }
+      }
+
+      if (!body.client_id) {
+        throw new HTTPException(400, { message: "client_id is required" });
+      }
+
       switch (body.grant_type) {
         case GrantType.AuthorizationCode:
           if ("client_secret" in body) {
