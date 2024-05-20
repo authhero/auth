@@ -8,9 +8,10 @@ import ErrorMessage from "./ErrorMessage";
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
+  email?: string;
 };
 
-const LoginPage: FC<Props> = ({ error, vendorSettings }) => {
+const LoginPage: FC<Props> = ({ error, vendorSettings, email }) => {
   return (
     <Layout title="Login" vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">
@@ -26,6 +27,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings }) => {
             name="email"
             placeholder={i18next.t("email_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
+            value={email}
           />
           <input
             type="text"

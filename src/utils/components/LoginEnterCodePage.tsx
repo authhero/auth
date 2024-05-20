@@ -11,14 +11,29 @@ type Props = {
   error?: string;
   vendorSettings: VendorSettings;
   email: string;
+  state: string;
 };
 
 const CODE_LENGTH = 6;
 
-const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
+const LoginEnterCodePage: FC<Props> = ({
+  error,
+  vendorSettings,
+  email,
+  state,
+}) => {
   const i18nText = i18next.t("we_sent_a_code_to", { email });
   const startText = i18nText.slice(0, i18nText.indexOf("<0>"));
   const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
+
+  // TODO! need to only set on auth2.dev, not .com... is this an env var on cloudflare?
+  // const passwordLoginFeatureyFlag = false;
+  const passwordLoginFeatureyFlag = true;
+
+  const passwordLoginLinkParams = new URLSearchParams({
+    state,
+    username: email,
+  });
 
   return (
     <Layout
@@ -63,6 +78,24 @@ const LoginEnterCodePage: FC<Props> = ({ error, vendorSettings, email }) => {
               {i18next.t("sent_code_spam")}
             </div>
           </div>
+          {passwordLoginFeatureyFlag && (
+            <div className="text-center mb-12">
+              <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
+                <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
+                <div className="relative inline-block bg-white px-2 dark:bg-gray-800">
+                  or
+                </div>
+              </div>
+              <Button
+                Component="a"
+                href={`/u/login?${passwordLoginLinkParams.toString()}`}
+                variant="secondary"
+                className="block"
+              >
+                {i18next.t("enter_your_password_btn")}
+              </Button>
+            </div>
+          )}
           <a
             className="block text-primary hover:text-primaryHover text-center"
             href="javascript:history.go(-1)"

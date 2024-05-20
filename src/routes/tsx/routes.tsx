@@ -163,6 +163,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
+          username: z.string().optional(),
         }),
       },
       responses: {
@@ -172,13 +173,15 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { state } = ctx.req.valid("query");
+      const { state, username } = ctx.req.valid("query");
 
       const { env } = ctx;
 
       const { vendorSettings } = await initJSXRoute(state, env);
 
-      return ctx.html(<LoginPage vendorSettings={vendorSettings} />);
+      return ctx.html(
+        <LoginPage vendorSettings={vendorSettings} email={username} />,
+      );
     },
   )
   // --------------------------------
@@ -720,6 +723,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         <LoginEnterCodePage
           vendorSettings={vendorSettings}
           email={session.authParams.username}
+          state={state}
         />,
       );
     },
@@ -799,6 +803,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
             vendorSettings={vendorSettings}
             error={i18next.t("Wrong email or verification code.")}
             email={session.authParams.username}
+            state={state}
           />,
           400,
         );
