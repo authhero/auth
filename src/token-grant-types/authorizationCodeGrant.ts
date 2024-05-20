@@ -42,11 +42,13 @@ export async function authorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Secret" });
   }
 
-  const tokens = generateAuthData({
+  const tokens = await generateAuthData({
     ...state,
     env: ctx.env,
     tenantId: client.tenant_id,
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
   });
+
+  console.log("tokens", tokens);
   return ctx.json(tokens);
 }
