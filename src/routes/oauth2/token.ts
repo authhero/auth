@@ -28,17 +28,6 @@ export const tokenRoutes = new OpenAPIHono<{
       request: {
         body: {
           content: {
-            "application/json": {
-              schema: z.object({
-                grant_type: z.string(),
-                client_id: z.string().optional(),
-                client_secret: z.string().optional(),
-                code: z.string().optional(),
-                redirect_uri: z.string().optional(),
-                code_verifier: z.string().optional(),
-                scope: z.string().optional(),
-              }),
-            },
             "application/x-www-form-urlencoded": {
               schema: z.object({
                 grant_type: z.string(),
@@ -60,7 +49,7 @@ export const tokenRoutes = new OpenAPIHono<{
       },
     }),
     async (ctx) => {
-      const body = ctx.req.valid("json");
+      const body = ctx.req.valid("form");
 
       const authHeader = ctx.req.header("authorization");
       if (authHeader) {
