@@ -7,10 +7,9 @@ import {
   Var,
 } from "../types";
 import { getClient } from "../services/clients";
-import hash from "../utils/hash";
 import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
+import { generateAuthData } from "../helpers/generate-auth-response";
 import { Context } from "hono";
 
 export async function authorizeCodeGrant(
@@ -43,7 +42,7 @@ export async function authorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Secret" });
   }
 
-  return generateAuthResponse({
+  return generateAuthData({
     ...state,
     env: ctx.env,
     tenantId: client.tenant_id,
