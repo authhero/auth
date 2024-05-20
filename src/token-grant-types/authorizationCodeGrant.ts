@@ -49,6 +49,5 @@ export async function authorizeCodeGrant(
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
   });
 
-  console.log("tokens", tokens);
   return ctx.json(tokens);
 }
