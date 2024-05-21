@@ -86,7 +86,7 @@ async function fetchVendorSettings(
 
   try {
     const vendorSettingsRes = await fetch(
-      `https://${env.API_URL}/profile/vendors/${vendorId}/style`,
+      `${env.API_URL}/profile/vendors/${vendorId}/style`,
     );
 
     const vendorSettingsRaw = await vendorSettingsRes.json();
