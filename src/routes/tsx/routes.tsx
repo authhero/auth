@@ -1,6 +1,6 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, User, AuthorizationResponseType } from "../../types";
+import { Env, User, AuthorizationResponseType, Client } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import { getUserByEmailAndProvider } from "../../utils/users";
@@ -63,6 +63,8 @@ async function initJSXRoute(state: string, env: Env) {
   }
 
   const vendorSettings = await fetchVendorSettings(
+    env,
+    client.id,
     session.authParams.vendor_id,
   );
 
@@ -71,14 +73,20 @@ async function initJSXRoute(state: string, env: Env) {
   return { vendorSettings, client, tenant, session };
 }
 
-async function fetchVendorSettings(vendor_id?: string) {
-  if (!vendor_id) {
+async function fetchVendorSettings(
+  env: Env,
+  client_id?: string,
+  vendor_id?: string,
+) {
+  if (!vendor_id && !client_id) {
     return DEFAULT_SESAMY_VENDOR;
   }
 
+  const vendorId = vendor_id || client_id;
+
   try {
     const vendorSettingsRes = await fetch(
-      `https://api.sesamy.dev/profile/vendors/${vendor_id}/style`,
+      `${env.API_URL}/profile/vendors/${vendorId}/style`,
     );
 
     const vendorSettingsRaw = await vendorSettingsRes.json();
@@ -112,6 +120,7 @@ async function handleLogin(
   user: User,
   session: UniversalLoginSession,
   ctx: Context<{ Bindings: Env }>,
+  client: Client,
 ) {
   if (session.authParams.redirect_uri) {
     const responseType =
@@ -137,6 +146,8 @@ async function handleLogin(
   }
 
   const vendorSettings = await fetchVendorSettings(
+    env,
+    client.id,
     session.authParams.vendor_id,
   );
 
@@ -252,7 +263,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           );
         }
 
-        return handleLogin(env, user, session, ctx);
+        return handleLogin(env, user, session, ctx, client);
       } catch (err: any) {
         return ctx.html(
           <LoginPage
@@ -936,9 +947,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
         // }
 
-        return handleLogin(env, user, session, ctx);
+        return handleLogin(env, user, session, ctx, client);
       } catch (err: any) {
         const vendorSettings = await fetchVendorSettings(
+          env,
+          client.id,
           session.authParams.vendor_id,
         );
         return ctx.html(
@@ -1069,7 +1082,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
     }),
 
     async (ctx) => {
-      const vendorSettings = await fetchVendorSettings();
+      const vendorSettings = await fetchVendorSettings(ctx.env);
 
       return ctx.html(
         <MessagePage

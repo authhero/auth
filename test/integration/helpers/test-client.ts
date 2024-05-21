@@ -215,6 +215,7 @@ export async function getEnv(args?: getEnvParams) {
     READ_PERMISSION: "auth:read",
     WRITE_PERMISSION: "auth:write",
     LOGIN2_URL: "https://login2.sesamy.dev",
+    API_URL: "https://api.sesamy.dev",
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
   };

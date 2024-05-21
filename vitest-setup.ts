@@ -26,6 +26,10 @@ export const restHandlers = [
     return HttpResponse.json(SESAMY_VENDOR_SETTINGS);
   }),
 
+  http.get("https://api.sesamy.dev/profile/vendors/clientId/style", () => {
+    return HttpResponse.json(SESAMY_VENDOR_SETTINGS);
+  }),
+
   http.get("https://api.sesamy.dev/profile/vendors/bad-vendor/style", () => {
     return HttpResponse.json({
       bad: "vendor",
