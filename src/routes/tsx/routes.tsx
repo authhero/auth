@@ -174,7 +174,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          username: z.string().optional(),
+          username: z.string(),
         }),
       },
       responses: {
@@ -208,12 +208,12 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
+          username: z.string(),
         }),
         body: {
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string().transform((u) => u.toLowerCase()),
                 password: z.string(),
               }),
             },
@@ -228,8 +228,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
     }),
     async (ctx) => {
       const { env } = ctx;
-      const { state } = ctx.req.valid("query");
-      const { username, password } = ctx.req.valid("form");
+      const { state, username } = ctx.req.valid("query");
+      const { password } = ctx.req.valid("form");
 
       const { vendorSettings, client, session } = await initJSXRoute(
         state,
