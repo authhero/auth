@@ -30,7 +30,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email }) => {
             value={email}
           />
           <input
-            type="text"
+            type="password"
             name="password"
             placeholder={i18next.t("password") || ""}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"

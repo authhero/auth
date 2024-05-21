@@ -30,7 +30,7 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">
           <input
-            type="text"
+            type="password"
             name="password"
             placeholder={i18next.t("enter_new_password_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
