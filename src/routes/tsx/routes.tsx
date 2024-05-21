@@ -751,6 +751,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           vendorSettings={vendorSettings}
           email={session.authParams.username}
           state={state}
+          env={env}
         />,
       );
     },
@@ -831,6 +832,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
             error={i18next.t("Wrong email or verification code.")}
             email={session.authParams.username}
             state={state}
+            env={env}
           />,
           400,
         );
