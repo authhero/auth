@@ -246,6 +246,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           return ctx.html(
             <LoginPage
               vendorSettings={vendorSettings}
+              email={username}
               error={i18next.t("invalid_password")}
             />,
           );
@@ -254,7 +255,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         return handleLogin(env, user, session, ctx);
       } catch (err: any) {
         return ctx.html(
-          <LoginPage vendorSettings={vendorSettings} error={err.message} />,
+          <LoginPage
+            vendorSettings={vendorSettings}
+            email={username}
+            error={err.message}
+          />,
         );
       }
     },

@@ -24,7 +24,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email }) => {
         <form method="post">
           <input
             type="text"
-            name="email"
+            name="username"
             placeholder={i18next.t("email_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
             value={email}
