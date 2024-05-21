@@ -167,6 +167,7 @@ export async function contextFixture(
       ISSUER: "https://auth.example.com/",
       LOGIN2_URL: "https://login2.sesamy.dev",
       API_URL: "https://api.sesamy.dev",
+      ENVIRONMENT: "dev",
       oauth2ClientFactory: {
         create: oAuth2ClientFactory,
       },
