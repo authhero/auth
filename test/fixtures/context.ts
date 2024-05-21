@@ -166,6 +166,7 @@ export async function contextFixture(
       AUTH_TEMPLATES: mockedR2Bucket(),
       ISSUER: "https://auth.example.com/",
       LOGIN2_URL: "https://login2.sesamy.dev",
+      API_URL: "https://api.sesamy.dev",
       oauth2ClientFactory: {
         create: oAuth2ClientFactory,
       },
