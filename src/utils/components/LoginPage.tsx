@@ -54,7 +54,8 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
           {i18next.t("forgot_password_link")}
         </a>
         <a
-          href={`/signup?${loginLinkParams.toString()}`}
+          // How does a user get to this step then without having entered an email address?
+          href={`/u/signup?${loginLinkParams.toString()}`}
           className="text-primary hover:underline font-bold"
         >
           {i18next.t("create_new_account_link")}
