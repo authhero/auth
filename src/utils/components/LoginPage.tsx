@@ -8,10 +8,16 @@ import ErrorMessage from "./ErrorMessage";
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
-  email?: string;
+  email: string;
+  state: string;
 };
 
-const LoginPage: FC<Props> = ({ error, vendorSettings, email }) => {
+const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
+  const loginLinkParams = new URLSearchParams({
+    state,
+    username: email,
+  });
+
   return (
     <Layout title="Login" vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">
@@ -37,6 +43,28 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email }) => {
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
+          <div className="text-center mb-12">
+            <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
+              <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
+              <div className="relative inline-block bg-white px-2 dark:bg-gray-800">
+                {i18next.t("or")}
+              </div>
+            </div>
+            <Button
+              Component="a"
+              // TODO - if we persist the cookie and the user comes straight here, then we need to also SEND
+              // a code email when clicking this link...
+              // we don't want to send the code email everytime we refresh the enter-code page
+              // as we previously did that BUT then we changed it, but I think we should really
+              // otherwise we end up not resending (we've had this a few times)
+              // the downside is we send lots of emails when developing...
+              href={`/u/enter-code?${loginLinkParams.toString()}`}
+              variant="secondary"
+              className="block"
+            >
+              {i18next.t("enter_your_password_btn")}
+            </Button>
+          </div>
           <Button>{i18next.t("login")}</Button>
         </form>
       </div>
