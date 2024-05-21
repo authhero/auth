@@ -25,6 +25,7 @@ AUTH_URL = 'https://token.sesamy.dev'
 JWKS_URL = "https://token.sesamy.dev/.well-known/jwks.json"
 READ_PERMISSION = "auth:read"
 WRITE_PERMISSION = "auth:write"
+ENVIRONMENT = 'dev'
 
 
 [[r2_buckets]]
@@ -60,6 +61,7 @@ AUTH_URL = 'https://token.sesamy.com'
 JWKS_URL = "https://token.sesamy.com/.well-known/jwks.json"
 READ_PERMISSION = 'auth:read'
 WRITE_PERMISSION = 'auth:write'
+ENVIRONMENT = 'prod'
 IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"
 
 [[env.production.r2_buckets]]
