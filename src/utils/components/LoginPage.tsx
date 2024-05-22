@@ -66,12 +66,6 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
           </div>
           <Button
             Component="a"
-            // TODO - if we persist the cookie and the user comes straight here, then we need to also SEND
-            // a code email when clicking this link...
-            // we don't want to send the code email everytime we refresh the enter-code page
-            // as we previously did that BUT then we changed it, but I think we should really
-            // otherwise we end up not resending (we've had this a few times)
-            // the downside is we send lots of emails when developing...
             href={`/u/enter-code?${loginLinkParams.toString()}`}
             variant="secondary"
             className="block"
