@@ -55,7 +55,6 @@ describe("Login with password user", () => {
         state: loginSearchParamsQuery.state,
       },
       form: {
-        // there's no reason to require this in the submission then if the field is readonly AND a required querystring param
         username: "foo@example.com",
         password: "Test1234!",
       },
