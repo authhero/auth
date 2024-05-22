@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
-import { VendorSettings } from "../../types";
+import { VendorSettings, Env, Client } from "../../types";
 import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";
@@ -12,23 +12,28 @@ type Props = {
   vendorSettings: VendorSettings;
   email: string;
   state: string;
+  env: Env;
+  client: Client;
 };
 
 const CODE_LENGTH = 6;
+
+const SESAMY_DEMO_VENDOR = "demo";
 
 const LoginEnterCodePage: FC<Props> = ({
   error,
   vendorSettings,
   email,
   state,
+  env,
+  client,
 }) => {
   const i18nText = i18next.t("we_sent_a_code_to", { email });
   const startText = i18nText.slice(0, i18nText.indexOf("<0>"));
   const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
 
-  // TODO! need to only set on auth2.dev, not .com... is this an env var on cloudflare?
-  // const passwordLoginFeatureyFlag = false;
-  const passwordLoginFeatureyFlag = true;
+  const passwordLoginFeatureyFlag =
+    env.ENVIRONMENT === "dev" || client.id === SESAMY_DEMO_VENDOR;
 
   const passwordLoginLinkParams = new URLSearchParams({
     state,

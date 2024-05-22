@@ -738,7 +738,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const { vendorSettings, session } = await initJSXRoute(state, env);
+      const { vendorSettings, session, client } = await initJSXRoute(
+        state,
+        env,
+      );
 
       if (!session.authParams.username) {
         throw new HTTPException(400, {
@@ -751,6 +754,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           vendorSettings={vendorSettings}
           email={session.authParams.username}
           state={state}
+          env={env}
+          client={client}
         />,
       );
     },
@@ -791,7 +796,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const { vendorSettings, session } = await initJSXRoute(state, env);
+      const { vendorSettings, session, client } = await initJSXRoute(
+        state,
+        env,
+      );
 
       if (!session.authParams.username) {
         throw new HTTPException(400, {
@@ -831,6 +839,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
             error={i18next.t("Wrong email or verification code.")}
             email={session.authParams.username}
             state={state}
+            env={env}
+            client={client}
           />,
           400,
         );

@@ -22,6 +22,7 @@ export type Env = {
   EMAIL_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
   WRITE_PERMISSION?: string;
+  ENVIRONMENT: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   data: DataAdapters;
   sendEmail: (client: Client, email: EmailOptions) => Promise<void>;
