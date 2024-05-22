@@ -134,7 +134,7 @@ describe("Register password user", () => {
     const signupSearchParamsQuery = Object.fromEntries(
       signupSearchParams.entries(),
     );
-    // Enter weak passworrd
+    // Enter weak password
     const postSignupResponse = await oauthClient.u.signup.$post({
       query: { state: signupSearchParamsQuery.state },
       form: {
@@ -143,7 +143,7 @@ describe("Register password user", () => {
       },
     });
 
-    expect(postSignupResponse.status).toBe(200);
+    expect(postSignupResponse.status).toBe(400);
 
     await snapshotResponse(postSignupResponse);
   });
