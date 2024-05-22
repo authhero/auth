@@ -15,18 +15,13 @@ type Props = {
   error?: string;
   vendorSettings: VendorSettings;
   session: UniversalLoginSession;
-  auth0ClientHeader?: string;
 };
 
 // this page is called enter-email on login2... maybe we should copy those page names
-const LoginWithCodePage: FC<Props> = ({
-  error,
-  vendorSettings,
-  session,
-  auth0ClientHeader,
-}) => {
-  // TODO - get this from auth0header
-  const sendType = getSendParamFromAuth0ClientHeader(auth0ClientHeader);
+const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
+  const sendType = getSendParamFromAuth0ClientHeader(
+    session.authParams.auth0Client,
+  );
 
   const loginDescriptionText =
     sendType === "code"

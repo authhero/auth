@@ -31,6 +31,7 @@ export const authParamsSchema = z.object({
   code_challenge_method: z.nativeEnum(CodeChallengeMethod).optional(),
   code_challenge: z.string().optional(),
   username: z.string().optional(),
+  auth0Client: z.string().optional(),
 });
 
 export type AuthParams = z.infer<typeof authParamsSchema>;

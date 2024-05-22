@@ -81,6 +81,7 @@ export const authorizeRoutes = new OpenAPIHono<{
         prompt,
         login_ticket,
         realm,
+        auth0Client,
       } = ctx.req.valid("query");
 
       const client = await getClient(env, client_id);
@@ -99,6 +100,7 @@ export const authorizeRoutes = new OpenAPIHono<{
         response_type,
         code_challenge,
         code_challenge_method,
+        auth0Client,
       };
 
       const origin = ctx.req.header("origin");
