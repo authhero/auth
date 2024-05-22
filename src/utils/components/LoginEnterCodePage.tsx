@@ -83,7 +83,7 @@ const LoginEnterCodePage: FC<Props> = ({
               <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
                 <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
                 <div className="relative inline-block bg-white px-2 dark:bg-gray-800">
-                  or
+                  {i18next.t("or")}
                 </div>
               </div>
               <Button
