@@ -110,7 +110,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
     },
   )
   // --------------------------------
-  // POST /passwordless/verify_redirect
+  // GET /passwordless/verify_redirect
   // --------------------------------
   .openapi(
     createRoute({
@@ -174,6 +174,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
           state,
           scope,
           audience,
+          response_type,
         };
 
         const sessionId = await setSilentAuthCookies(
