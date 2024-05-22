@@ -17,7 +17,7 @@ const globalDocStyle = (vendorSettings: VendorSettings) => {
   return `
     body {
       --primary-color: ${style.primaryColor};
-      --secondary-hover: ${style.primaryHoverColor};
+      --primary-hover: ${style.primaryHoverColor};
       --text-on-primary: ${style.buttonTextColor};
     }
   `;
