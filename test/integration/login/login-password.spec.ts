@@ -38,6 +38,7 @@ describe("Login with password user", () => {
     const loginFormResponse = await oauthClient.u.login.$get({
       query: {
         state: query.state,
+        username: "foo@example.com",
       },
     });
 
@@ -53,7 +54,6 @@ describe("Login with password user", () => {
       query: {
         state: loginSearchParamsQuery.state,
       },
-
       form: {
         username: "foo@example.com",
         password: "Test1234!",
@@ -97,6 +97,7 @@ describe("Login with password user", () => {
     await oauthClient.u.login.$get({
       query: {
         state: query.state,
+        username: "foo@example.com",
       },
     });
 

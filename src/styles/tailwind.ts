@@ -1067,6 +1067,9 @@ h6 {
   font-size: 0.75rem;
   line-height: 135%;
 }
+.font-bold {
+  font-weight: 700;
+}
 .font-medium {
   font-weight: 500;
 }

@@ -174,7 +174,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          username: z.string().optional(),
+          username: z.string(),
         }),
       },
       responses: {
@@ -191,7 +191,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { vendorSettings } = await initJSXRoute(state, env);
 
       return ctx.html(
-        <LoginPage vendorSettings={vendorSettings} email={username} />,
+        <LoginPage
+          vendorSettings={vendorSettings}
+          email={username}
+          state={state}
+        />,
       );
     },
   )
@@ -259,6 +263,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
               vendorSettings={vendorSettings}
               email={username}
               error={i18next.t("invalid_password")}
+              state={state}
             />,
           );
         }
@@ -270,6 +275,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
             vendorSettings={vendorSettings}
             email={username}
             error={err.message}
+            state={state}
           />,
         );
       }

@@ -8,10 +8,16 @@ import ErrorMessage from "./ErrorMessage";
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
-  email?: string;
+  email: string;
+  state: string;
 };
 
-const LoginPage: FC<Props> = ({ error, vendorSettings, email }) => {
+const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
+  const loginLinkParams = new URLSearchParams({
+    state,
+    username: email,
+  });
+
   return (
     <Layout title="Login" vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">
@@ -39,6 +45,34 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email }) => {
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <Button>{i18next.t("login")}</Button>
         </form>
+        <a
+          href={`/u/forgot-password?${loginLinkParams.toString()}`}
+          className="text-primary hover:underline mb-4"
+        >
+          {i18next.t("forgot_password_link")}
+        </a>
+        <a
+          href={`/u/signup?${loginLinkParams.toString()}`}
+          className="text-primary hover:underline font-bold"
+        >
+          {i18next.t("create_new_account_link")}
+        </a>
+        <div className="text-center mb-12">
+          <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
+            <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
+            <div className="relative inline-block bg-white px-2 dark:bg-gray-800">
+              {i18next.t("or")}
+            </div>
+          </div>
+          <Button
+            Component="a"
+            href={`/u/enter-code?${loginLinkParams.toString()}`}
+            variant="secondary"
+            className="block"
+          >
+            {i18next.t("enter_your_password_btn")}
+          </Button>
+        </div>
       </div>
     </Layout>
   );
