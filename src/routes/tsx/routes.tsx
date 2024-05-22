@@ -450,8 +450,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         );
       }
 
-      // need JSX success here
-      return ctx.text("The password has been reset", 200);
+      return ctx.html(
+        <MessagePage
+          message={i18next.t("password_has_been_reset")}
+          pageTitle={i18next.t("password_has_been_reset_title")}
+          vendorSettings={vendorSettings}
+        />,
+      );
     },
   )
   // --------------------------------

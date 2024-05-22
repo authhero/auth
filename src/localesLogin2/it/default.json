@@ -53,6 +53,8 @@
   "no_use_another": "No, voglio usare un altro account",
   "or": "o",
   "password": "Password",
+  "password_has_been_reset": "La password è stata reimpostata",
+  "password_has_been_reset_title": "Il successo",
   "privacy_policy": "Informativa sulla privacy",
   "redirecting": "Reindirizzamento",
   "reenter_new_password_placeholder": "Confermare la password",

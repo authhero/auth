@@ -53,6 +53,8 @@
   "no_use_another": "Nei, jeg vil bruke en annen konto",
   "or": "eller",
   "password": "Passord",
+  "password_has_been_reset": "Passordet har blitt tilbakestilt",
+  "password_has_been_reset_title": "Suksess",
   "privacy_policy": "Personvernerklæring",
   "redirecting": "Omdirigerer",
   "reenter_new_password_placeholder": "Bekreft passord",
