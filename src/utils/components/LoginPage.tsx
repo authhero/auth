@@ -46,8 +46,6 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
           <Button>{i18next.t("login")}</Button>
         </form>
         <a
-          // why actually have this step? We already have the email here... at least going to this step
-          // confirms we want to send an email out... but we're not prefilling the email input...
           href={`/u/forgot-password?${loginLinkParams.toString()}`}
           className="text-primary hover:underline mb-4"
         >
