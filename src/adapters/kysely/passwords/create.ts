@@ -2,6 +2,7 @@ import { Database, PasswordParams } from "../../../types";
 import { Kysely } from "kysely";
 import bcrypt from "bcryptjs";
 import validatePassword from "../../../utils/validatePassword";
+import i18next from "i18next";
 
 export function create(db: Kysely<Database>) {
   return async (tenant_id: string, params: PasswordParams) => {
@@ -12,7 +13,7 @@ export function create(db: Kysely<Database>) {
     // BUT password resets will rely on this in universal auth - so let's see what happens
     // AND There are some routes we won't use on u/login - so we might not be testing everything
     if (!validatePassword(params.password)) {
-      throw new Error("Password does not meet the requirements");
+      throw new Error(i18next.t("create_account_weak_password"));
     }
 
     const passwordHash = bcrypt.hashSync(params.password, 10);
