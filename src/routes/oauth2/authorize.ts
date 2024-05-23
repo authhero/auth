@@ -100,7 +100,6 @@ export const authorizeRoutes = new OpenAPIHono<{
         response_type,
         code_challenge,
         code_challenge_method,
-        auth0Client,
       };
 
       const origin = ctx.req.header("origin");
@@ -160,6 +159,6 @@ export const authorizeRoutes = new OpenAPIHono<{
         );
       }
 
-      return universalAuth({ ctx, authParams });
+      return universalAuth({ ctx, authParams, auth0Client });
     },
   );

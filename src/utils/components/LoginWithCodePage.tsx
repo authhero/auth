@@ -19,9 +19,7 @@ type Props = {
 
 // this page is called enter-email on login2... maybe we should copy those page names
 const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
-  const sendType = getSendParamFromAuth0ClientHeader(
-    session.authParams.auth0Client,
-  );
+  const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
   const loginDescriptionText =
     sendType === "code"

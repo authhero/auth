@@ -27,7 +27,6 @@ export function get(db: Kysely<Database>) {
       code_challenge,
       username,
       vendor_id,
-      auth0Client,
       ...rest
     } = session;
 
@@ -46,7 +45,6 @@ export function get(db: Kysely<Database>) {
         code_challenge_method,
         code_challenge,
         username,
-        auth0Client,
       },
     };
   };

@@ -9,9 +9,14 @@ import { getClient } from "../services/clients";
 interface UniversalAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
   authParams: AuthParams;
+  auth0Client?: string;
 }
 
-export async function universalAuth({ ctx, authParams }: UniversalAuthParams) {
+export async function universalAuth({
+  ctx,
+  authParams,
+  auth0Client,
+}: UniversalAuthParams) {
   const client = await getClient(ctx.env, authParams.client_id);
 
   if (!client) {
@@ -28,6 +33,7 @@ export async function universalAuth({ ctx, authParams }: UniversalAuthParams) {
       Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
     ).toISOString(),
     authParams,
+    auth0Client,
   };
 
   await ctx.env.data.universalLoginSessions.create(session);

@@ -676,9 +676,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       session.authParams.username = params.username;
       await env.data.universalLoginSessions.update(session.id, session);
 
-      const sendType = getSendParamFromAuth0ClientHeader(
-        session.authParams.auth0Client,
-      );
+      const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
       if (sendType === "link") {
         const magicLink = new URL(env.ISSUER);
