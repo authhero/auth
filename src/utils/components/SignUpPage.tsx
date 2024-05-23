@@ -8,9 +8,10 @@ import DisabledSubmitButton from "./DisabledSubmitButton";
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
+  email?: string;
 };
 
-const SignupPage: FC<Props> = ({ error, vendorSettings }) => {
+const SignupPage: FC<Props> = ({ error, vendorSettings, email }) => {
   return (
     <Layout
       title={i18next.t("create_account_title")}
@@ -30,6 +31,7 @@ const SignupPage: FC<Props> = ({ error, vendorSettings }) => {
             placeholder={i18next.t("email_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
             required
+            value={email}
           />
           <input
             type="password"
