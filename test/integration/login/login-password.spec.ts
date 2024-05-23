@@ -164,16 +164,17 @@ describe("Register password", () => {
     // -----------------------------
     // validate email
     // -----------------------------
-    // const { to, code, state } = getCodeStateTo(env.data.emails[0]);
-    // expect(to).toBe("existing-code-user@example.com");
-    // expect(code).toBeDefined();
-    // const emailValidatedRes = await oauthClient.u["validate-email"].$get({
-    //   query: {
-    //     state,
-    //     code,
-    //   },
-    // });
-    // expect(emailValidatedRes.status).toBe(200);
+    const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+    expect(to).toBe("existing-code-user@example.com");
+    expect(code).toBeDefined();
+    const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+    console.log(await emailValidatedRes.text());
+    expect(emailValidatedRes.status).toBe(200);
 
     // -----------------------------
     // sanity check that linking has happened!
