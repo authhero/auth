@@ -98,6 +98,17 @@ describe("Register password", () => {
     //-------------------
     // login again now to check that it works
     //-------------------
+
+    const workingLoginResponse = await oauthClient.u.login.$post({
+      query: {
+        state: query.state,
+        username: "password-login-test@example.com",
+      },
+      form: {
+        password,
+      },
+    });
+    expect(workingLoginResponse.status).toBe(302);
   });
 });
 
