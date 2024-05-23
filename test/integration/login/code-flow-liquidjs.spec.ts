@@ -716,9 +716,6 @@ describe("Login with code on liquidjs template", () => {
     // JSON stringify and base64 encode this
     const auth0ClientSwiftParam = btoa(JSON.stringify(auth0ClientSwift));
 
-    // -----------------
-    // Code login flow
-    // -----------------
     const response = await oauthClient.authorize.$get({
       query: {
         client_id: "clientId",
@@ -734,17 +731,15 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    await oauthClient.u.code.$post({
       query: { state: query.state },
       form: {
         username: "test@example.com",
       },
     });
 
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
-
     // this should not have a magic link in it
-    await snapshotEmail(env.data.emails[0]);
+    await snapshotEmail(env.data.emails[0], true);
   });
 
   it("should only allow a code to be used once", async () => {
