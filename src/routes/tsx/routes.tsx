@@ -945,17 +945,21 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const loginParams = ctx.req.valid("form");
       const { env } = ctx;
 
-      // auth0 returns a detailed JSON response with the way the password does match the strength rules
-      if (!validatePassword(loginParams.password)) {
-        throw new HTTPException(400, {
-          message: "Password does not meet the requirements",
-        });
-      }
-
       const { vendorSettings, client, session } = await initJSXRoute(
         state,
         env,
       );
+
+      // auth0 returns a detailed JSON response with the way the password does match the strength rules
+      if (!validatePassword(loginParams.password)) {
+        return ctx.html(
+          <SignupPage
+            vendorSettings={vendorSettings}
+            error={i18next.t("create_account_weak_password")}
+          />,
+          400,
+        );
+      }
 
       if (session.authParams.username !== loginParams.username) {
         session.authParams.username = loginParams.username;
