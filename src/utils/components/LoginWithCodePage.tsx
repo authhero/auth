@@ -48,7 +48,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
             required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          <Button className="text-base sm:mt-4 md:text-base">
+          <Button className="text-base sm:mt-4 md:text-base" isLoading>
             <div className="flex items-center space-x-2">
               <span>{i18next.t("continue")}</span>
               <Icon className="text-xs" name="arrow-right" />

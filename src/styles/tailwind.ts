@@ -1127,6 +1127,9 @@ h6 {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
+.opacity-0 {
+  opacity: 0;
+}
 .opacity-40 {
   opacity: 0.4;
 }

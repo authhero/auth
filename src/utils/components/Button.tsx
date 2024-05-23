@@ -38,7 +38,14 @@ const Button: FC<Props> = ({
       disabled={disabled}
       {...hrefProps}
     >
-      <span class="flex items-center justify-center space-x-2">{children}</span>
+      <span
+        className={`
+      flex items-center justify-center space-x-2
+      ${isLoading ? "opacity-0" : ""}
+    `}
+      >
+        {children}
+      </span>
       {isLoading && (
         <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
           <Spinner size="medium" />
