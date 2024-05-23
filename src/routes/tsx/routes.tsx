@@ -964,20 +964,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           password: loginParams.password,
         });
 
-        // if (client.email_validation === "enforced") {
-        //   // Update the username in the state
-        //   await setLoginState(env, state, {
-        //     ...loginState,
-        //     authParams: {
-        //       ...loginState.authParams,
-        //       username: loginParams.username,
-        //     },
-        //   });
-
-        //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-        // }
-
-        return handleLogin(env, user, session, ctx, client);
+        return ctx.html(
+          <MessagePage
+            // TODO - what text? & i18n
+            message="Check your inbox for email validation instructions."
+            pageTitle="Signed up"
+            vendorSettings={vendorSettings}
+          />,
+        );
       } catch (err: any) {
         const vendorSettings = await fetchVendorSettings(
           env,
