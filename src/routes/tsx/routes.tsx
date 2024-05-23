@@ -28,6 +28,7 @@ import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { vendorSettingsSchema } from "../../types";
+import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 
 const DEFAULT_SESAMY_VENDOR = {
   name: "sesamy",
@@ -969,6 +970,12 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         await env.data.passwords.create(client.tenant_id, {
           user_id: user.id,
           password: loginParams.password,
+        });
+
+        await sendEmailVerificationEmail({
+          env: ctx.env,
+          client,
+          user,
         });
 
         // if (client.email_validation === "enforced") {
