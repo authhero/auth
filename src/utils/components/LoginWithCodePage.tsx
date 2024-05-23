@@ -27,7 +27,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
       : i18next.t("login_description_link");
 
   return (
-    <Layout title="Login with Code" vendorSettings={vendorSettings}>
+    <Layout title={i18next.t("welcome")} vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("welcome")}
       </div>

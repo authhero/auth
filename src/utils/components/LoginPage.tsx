@@ -19,7 +19,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
   });
 
   return (
-    <Layout title="Login" vendorSettings={vendorSettings}>
+    <Layout title={i18next.t("enter_password")} vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("enter_password")}
       </div>
