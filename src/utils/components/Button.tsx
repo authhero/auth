@@ -1,5 +1,6 @@
 import type { FC } from "hono/jsx";
 import cn from "classnames";
+import Spinner from "./Spinner";
 
 // in React we would do
 // interface Props extends ButtonHTMLAttributes<HTMLButtonElement>
@@ -12,6 +13,8 @@ type Props = {
   // in Nextjs & React we use default DOM element types...
   href?: string;
   disabled?: boolean;
+  isLoading?: boolean;
+  id?: string;
 };
 
 const Button: FC<Props> = ({
@@ -21,6 +24,8 @@ const Button: FC<Props> = ({
   variant = "primary",
   href,
   disabled,
+  isLoading,
+  id,
 }) => {
   const hrefProps = Component === "a" ? { href } : {};
   return (
@@ -33,9 +38,22 @@ const Button: FC<Props> = ({
       })}
       type="submit"
       disabled={disabled}
+      id={id}
       {...hrefProps}
     >
-      <span class="flex items-center justify-center space-x-2">{children}</span>
+      <span
+        className={`
+      flex items-center justify-center space-x-2
+      ${isLoading ? "opacity-0" : ""}
+    `}
+      >
+        {children}
+      </span>
+      {isLoading && (
+        <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
+          <Spinner size="medium" />
+        </div>
+      )}
     </Component>
   );
 };

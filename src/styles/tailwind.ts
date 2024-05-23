@@ -807,11 +807,17 @@ h6 {
 .relative {
   position: relative;
 }
+.inset-0 {
+  inset: 0px;
+}
 .left-0 {
   left: 0px;
 }
 .right-0 {
   right: 0px;
+}
+.top-0 {
+  top: 0px;
 }
 .top-1\\/2 {
   top: 50%;
@@ -865,6 +871,9 @@ h6 {
 .h-9 {
   height: 2.25rem;
 }
+.h-full {
+  height: 100%;
+}
 .max-h-full {
   max-height: 100%;
 }
@@ -888,6 +897,14 @@ h6 {
 }
 .flex-1 {
   flex: 1 1 0%;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 .cursor-not-allowed {
   cursor: not-allowed;
@@ -1088,6 +1105,10 @@ h6 {
   --tw-text-opacity: 1;
   color: rgb(0 0 0 / var(--tw-text-opacity));
 }
+.text-gray-200 {
+  --tw-text-opacity: 1;
+  color: rgb(191 188 215 / var(--tw-text-opacity));
+}
 .text-gray-300 {
   --tw-text-opacity: 1;
   color: rgb(136 134 159 / var(--tw-text-opacity));
@@ -1105,6 +1126,9 @@ h6 {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+.opacity-0 {
+  opacity: 0;
 }
 .opacity-40 {
   opacity: 0.4;
@@ -1256,6 +1280,11 @@ input[type="number"] {
 .dark\\:bg-gray-800:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(20 20 26 / var(--tw-bg-opacity));
+}
+
+.dark\\:text-\\[\\#201a41\\]:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(32 26 65 / var(--tw-text-opacity));
 }
 
 .dark\\:text-gray-300:is(.dark *) {
