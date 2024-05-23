@@ -1,13 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { oauthApp, managementApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
+import { getAdminToken } from "../helpers/token";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -104,6 +105,189 @@ describe("Register password", () => {
       },
     });
     expect(workingLoginResponse.status).toBe(302);
+  });
+
+  it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
+    const password = "Password1234!";
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+    const managementClient = testClient(managementApp, env);
+    const token = await getAdminToken();
+
+    // -------------------------------
+    // create code user
+    // -------------------------------
+    await env.data.users.create("tenantId", {
+      id: "email|codeUserId",
+      email: "existing-code-user@example.com",
+      email_verified: true,
+      provider: "email",
+      connection: "email",
+      is_social: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      login_count: 0,
+    });
+    // -------------------------------
+    // Universal Login Session
+    // -------------------------------
+    const searchParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: searchParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    // -------------------------------
+    // sign up new password user with same email address with universal login flow
+    // -------------------------------
+
+    const createUserResponse = await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "existing-code-user@example.com",
+        password,
+      },
+    });
+    expect(createUserResponse.status).toBe(200);
+
+    // -----------------------------
+    // validate email
+    // -----------------------------
+    // const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+    // expect(to).toBe("existing-code-user@example.com");
+    // expect(code).toBeDefined();
+    // const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+    //   query: {
+    //     state,
+    //     code,
+    //   },
+    // });
+    // expect(emailValidatedRes.status).toBe(200);
+
+    // -----------------------------
+    // sanity check that linking has happened!
+    // -----------------------------
+    // const users = await env.data.users.list("tenantId", {
+    //   page: 0,
+    //   per_page: 10,
+    //   include_totals: false,
+    //   q: "",
+    // });
+    // const [linkedPasswordUser] = users.users.filter(
+    //   (u) =>
+    //     u.email === "existing-code-user@example.com" &&
+    //     u.provider === "auth2",
+    // );
+    // expect(linkedPasswordUser.linked_to).toBe("email|codeUserId");
+    // // -----------------------------
+    // // login with password
+    // // -----------------------------
+    // const loginResponse = await oauthClient.co.authenticate.$post({
+    //   json: {
+    //     client_id: "clientId",
+    //     credential_type: "http://auth0.com/oauth/grant-type/password-realm",
+    //     realm: "Username-Password-Authentication",
+    //     password,
+    //     username: "existing-code-user@example.com",
+    //   },
+    // });
+    // expect(loginResponse.status).toBe(200);
+    // const { login_ticket } = await loginResponse.json();
+    // const tokenResponse = await oauthClient.authorize.$get(
+    //   {
+    //     query: {
+    //       auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
+    //       client_id: "clientId",
+    //       login_ticket,
+    //       response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+    //       redirect_uri: "http://login.example.com",
+    //       state: "state",
+    //       realm: "Username-Password-Authentication",
+    //     },
+    //   },
+    //   {
+    //     headers: {
+    //       referrer: "https://login.example.com",
+    //       "cf-connecting-ip": "1.2.3.4",
+    //     },
+    //   },
+    // );
+    // expect(tokenResponse.status).toBe(302);
+    // expect(await tokenResponse.text()).toBe("Redirecting");
+    // const redirectUri = new URL(tokenResponse.headers.get("location")!);
+    // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
+    // expect(redirectUri.hostname).toBe("login.example.com");
+    // expect(searchParams.get("state")).toBe("state");
+    // const idTokenPayload = parseJwt(searchParams.get("id_token")!);
+    // expect(idTokenPayload.email).toBe("existing-code-user@example.com");
+    // expect(idTokenPayload.sub).toBe("email|codeUserId");
+    // const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
+    // // now check silent auth works after password login
+    // const { idToken: silentAuthIdTokenPayload } =
+    //   await doSilentAuthRequestAndReturnTokens(
+    //     authCookieHeader,
+    //     oauthClient,
+    //     "unique-nonce",
+    //     "clientId",
+    //   );
+    // // this proves that account linking has happened
+    // expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
+    // // -----------------------------
+    // // get user by id assert that the username-password user info is in the identities array
+    // // --------------------
+    // const primaryUserRes = await managementClient.api.v2.users[
+    //   ":user_id"
+    // ].$get(
+    //   {
+    //     param: {
+    //       user_id: "email|codeUserId",
+    //     },
+    //     header: {
+    //       "tenant-id": "tenantId",
+    //     },
+    //   },
+    //   {
+    //     headers: {
+    //       authorization: `Bearer ${token}`,
+    //       "tenant-id": "tenantId",
+    //     },
+    //   },
+    // );
+    // const primaryUser = (await primaryUserRes.json()) as UserResponse;
+    // expect(primaryUser.identities).toEqual([
+    //   {
+    //     connection: "email",
+    //     provider: "email",
+    //     user_id: "codeUserId",
+    //     isSocial: false,
+    //   },
+    //   {
+    //     connection: "Username-Password-Authentication",
+    //     provider: "auth2",
+    //     user_id: primaryUser.identities[1].user_id,
+    //     isSocial: false,
+    //     profileData: {
+    //       email: "existing-code-user@example.com",
+    //       email_verified: true,
+    //     },
+    //   },
+    // ]);
+    // // Check that the login count and last IP has been updated
+    // expect(primaryUser.login_count).toBe(1);
+    // expect(primaryUser.last_ip).toBe("1.2.3.4");
+    // const lastLogin = new Date(primaryUser.last_login!);
+    // expect(Date.now() - lastLogin.getTime()).lessThan(1000);
   });
 });
 
