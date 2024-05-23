@@ -10,6 +10,7 @@ import SocialButton from "./SocialButton";
 import Google from "./GoogleLogo";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getSendParamFromAuth0ClientHeader } from "../getSendParamFromAuth0ClientHeader";
+import DisabledSubmitButton from "./DisabledSubmitButton";
 
 type Props = {
   error?: string;
@@ -48,12 +49,12 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
             required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          <Button className="text-base sm:mt-4 md:text-base">
+          <DisabledSubmitButton>
             <div className="flex items-center space-x-2">
               <span>{i18next.t("continue")}</span>
               <Icon className="text-xs" name="arrow-right" />
             </div>
-          </Button>
+          </DisabledSubmitButton>
         </form>
         <div class="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
           <div class="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
