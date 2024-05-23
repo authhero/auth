@@ -23,12 +23,13 @@ import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response"
 import { Context } from "hono";
 import ForgotPasswordPage from "../../utils/components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
-import { sendResetPassword, sendLink } from "../../controllers/email";
+import { sendResetPassword, sendLink, sendCode } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { vendorSettingsSchema } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
+import { getSendParamFromAuth0ClientHeader } from "../../utils/getSendParamFromAuth0ClientHeader";
 
 const DEFAULT_SESAMY_VENDOR = {
   name: "sesamy",
@@ -690,40 +691,46 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       session.authParams.username = params.username;
       await env.data.universalLoginSessions.update(session.id, session);
 
-      const magicLink = new URL(env.ISSUER);
-      magicLink.pathname = "passwordless/verify_redirect";
-      if (session.authParams.scope) {
-        magicLink.searchParams.set("scope", session.authParams.scope);
-      }
-      if (session.authParams.response_type) {
-        magicLink.searchParams.set(
-          "response_type",
-          session.authParams.response_type,
-        );
-      }
-      if (session.authParams.redirect_uri) {
-        magicLink.searchParams.set(
-          "redirect_uri",
-          session.authParams.redirect_uri,
-        );
-      }
-      if (session.authParams.audience) {
-        magicLink.searchParams.set("audience", session.authParams.audience);
-      }
-      if (session.authParams.state) {
-        magicLink.searchParams.set("state", session.authParams.state);
-      }
-      if (session.authParams.nonce) {
-        magicLink.searchParams.set("nonce", session.authParams.nonce);
-      }
+      const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
-      magicLink.searchParams.set("connection", "email");
-      magicLink.searchParams.set("client_id", session.authParams.client_id);
-      magicLink.searchParams.set("email", session.authParams.username);
-      magicLink.searchParams.set("verification_code", code);
-      magicLink.searchParams.set("nonce", "nonce");
+      if (sendType === "link") {
+        const magicLink = new URL(env.ISSUER);
+        magicLink.pathname = "passwordless/verify_redirect";
+        if (session.authParams.scope) {
+          magicLink.searchParams.set("scope", session.authParams.scope);
+        }
+        if (session.authParams.response_type) {
+          magicLink.searchParams.set(
+            "response_type",
+            session.authParams.response_type,
+          );
+        }
+        if (session.authParams.redirect_uri) {
+          magicLink.searchParams.set(
+            "redirect_uri",
+            session.authParams.redirect_uri,
+          );
+        }
+        if (session.authParams.audience) {
+          magicLink.searchParams.set("audience", session.authParams.audience);
+        }
+        if (session.authParams.state) {
+          magicLink.searchParams.set("state", session.authParams.state);
+        }
+        if (session.authParams.nonce) {
+          magicLink.searchParams.set("nonce", session.authParams.nonce);
+        }
 
-      await sendLink(env, client, params.username, code, magicLink.href);
+        magicLink.searchParams.set("connection", "email");
+        magicLink.searchParams.set("client_id", session.authParams.client_id);
+        magicLink.searchParams.set("email", session.authParams.username);
+        magicLink.searchParams.set("verification_code", code);
+        magicLink.searchParams.set("nonce", "nonce");
+
+        await sendLink(env, client, params.username, code, magicLink.href);
+      } else {
+        await sendCode(env, client, params.username, code);
+      }
 
       return ctx.redirect(
         `/u/enter-code?state=${state}&username=${params.username}`,
@@ -978,20 +985,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           user,
         });
 
-        // if (client.email_validation === "enforced") {
-        //   // Update the username in the state
-        //   await setLoginState(env, state, {
-        //     ...loginState,
-        //     authParams: {
-        //       ...loginState.authParams,
-        //       username: loginParams.username,
-        //     },
-        //   });
-
-        //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-        // }
-
-        return handleLogin(env, user, session, ctx, client);
+        return ctx.html(
+          <MessagePage
+            // TODO - what text? & i18n
+            message="Check your inbox for email validation instructions."
+            pageTitle="Signed up"
+            vendorSettings={vendorSettings}
+          />,
+        );
       } catch (err: any) {
         const vendorSettings = await fetchVendorSettings(
           env,

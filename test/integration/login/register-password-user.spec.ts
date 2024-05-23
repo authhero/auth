@@ -77,16 +77,8 @@ describe("Register password user", () => {
       },
     });
 
-    expect(postSignupResponse.status).toBe(302);
-    const signupLocation: string = postSignupResponse.headers.get("location")!;
-    const redirectUrl = new URL(signupLocation);
-    expect(redirectUrl.pathname).toBe("/callback");
-    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
-
-    const accessToken = hash.get("access_token");
-    expect(accessToken).toBeTruthy();
-    const idToken = hash.get("id_token");
-    expect(idToken).toBeTruthy();
+    expect(postSignupResponse.status).toBe(200);
+    await snapshotResponse(postSignupResponse);
   });
 
   it("should reject a weak password", async () => {

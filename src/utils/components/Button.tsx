@@ -9,7 +9,7 @@ type Props = {
   children: (string | JSX.Element)[] | string | JSX.Element;
   className?: string;
   Component?: string;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "custom";
   // in Nextjs & React we use default DOM element types...
   href?: string;
   disabled?: boolean;
@@ -30,12 +30,19 @@ const Button: FC<Props> = ({
   const hrefProps = Component === "a" ? { href } : {};
   return (
     <Component
-      class={cn("relative w-full rounded-lg text-center px-4 py-5", className, {
-        "bg-primary text-textOnPrimary hover:bg-primaryHover":
-          variant === "primary",
-        "border border-gray-300 bg-white text-black": variant === "secondary",
-        "pointer-events-none cursor-not-allowed opacity-40": disabled,
-      })}
+      class={cn(
+        "relative w-full rounded-lg text-center",
+        className,
+        {
+          "px-4 py-5": variant !== "custom",
+          "bg-primary text-textOnPrimary hover:bg-primaryHover":
+            variant === "primary",
+          "border border-gray-300 bg-white text-black": variant === "secondary",
+          "pointer-events-none cursor-not-allowed opacity-40": disabled,
+        },
+        // focus styles
+        "focus:outline-none focus:ring",
+      )}
       type="submit"
       disabled={disabled}
       id={id}

@@ -9,6 +9,8 @@ import ErrorMessage from "./ErrorMessage";
 import SocialButton from "./SocialButton";
 import Google from "./GoogleLogo";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { getSendParamFromAuth0ClientHeader } from "../getSendParamFromAuth0ClientHeader";
+import DisabledSubmitButton from "./DisabledSubmitButton";
 
 type Props = {
   error?: string;
@@ -18,8 +20,7 @@ type Props = {
 
 // this page is called enter-email on login2... maybe we should copy those page names
 const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
-  // TODO - get this from auth0header
-  const sendType = "code";
+  const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
   const loginDescriptionText =
     sendType === "code"
@@ -27,7 +28,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
       : i18next.t("login_description_link");
 
   return (
-    <Layout title="Login with Code" vendorSettings={vendorSettings}>
+    <Layout title={i18next.t("welcome")} vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("welcome")}
       </div>
@@ -48,12 +49,12 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
             required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          <Button className="text-base sm:mt-4 md:text-base">
+          <DisabledSubmitButton className="text-base sm:mt-4 md:text-base">
             <div className="flex items-center space-x-2">
               <span>{i18next.t("continue")}</span>
               <Icon className="text-xs" name="arrow-right" />
             </div>
-          </Button>
+          </DisabledSubmitButton>
         </form>
         <div class="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
           <div class="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />

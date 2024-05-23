@@ -81,6 +81,7 @@ export const authorizeRoutes = new OpenAPIHono<{
         prompt,
         login_ticket,
         realm,
+        auth0Client,
       } = ctx.req.valid("query");
 
       const client = await getClient(env, client_id);
@@ -158,6 +159,6 @@ export const authorizeRoutes = new OpenAPIHono<{
         );
       }
 
-      return universalAuth({ ctx, authParams });
+      return universalAuth({ ctx, authParams, auth0Client });
     },
   );
