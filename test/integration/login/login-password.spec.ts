@@ -6,6 +6,72 @@ import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 import { AuthorizationResponseType } from "../../../src/types";
 
+describe("Register password", () => {
+  // TODO - "and only allow login after email validation"
+  it("should create a new user with a password", async () => {
+    const password = "Password1234!";
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const searchParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: searchParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    const createUserResponse = await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "password-login-test@example.com",
+        password,
+      },
+    });
+    expect(createUserResponse.status).toBe(302);
+
+    // what should happen here? where should go after signup?
+    // seems like we're logging in and then redirect back to redirect_uri with the tokens in the URL
+    // console.log(await createUserResponse.text());
+    // console.log(createUserResponse.headers.get("location"));
+    // what does login2 do? Surely we need to tell the user to verify their email before logging in
+
+    const postLoginResponse = await oauthClient.u.login.$post({
+      query: {
+        state: query.state,
+        // TODO - this should be in the body. Need to change these pages to match Auth0
+        username: "password-login-test@example.com",
+      },
+      form: {
+        password,
+      },
+    });
+    // this means a successful login - NOT CORRECT! we need to force the user to validate the email first
+    expect(postLoginResponse.status).toBe(302);
+    const loginLocation = postLoginResponse.headers.get("location");
+    const redirectUrl = new URL(loginLocation!);
+    expect(redirectUrl.pathname).toBe("/callback");
+
+    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+
+    const accessToken = hash.get("access_token");
+    expect(accessToken).toBeTruthy();
+    const idToken = hash.get("id_token");
+    expect(idToken).toBeTruthy();
+
+    // TO TEST - copy over from existing password flow
+  });
+});
+
 describe("Login with password user", () => {
   it("should login with password", async () => {
     const env = await getEnv({
@@ -72,6 +138,7 @@ describe("Login with password user", () => {
     expect(accessToken).toBeTruthy();
     const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
+    // TODO - decode this and assert params
   });
 
   it("should reject bad password", async () => {
