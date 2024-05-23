@@ -235,6 +235,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       },
     }),
+    // very similar to authenticate + ticket flow
     async (ctx) => {
       const { env } = ctx;
       const { state, username } = ctx.req.valid("query");
@@ -246,20 +247,56 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       );
 
       const user = await getUserByEmailAndProvider({
-        userAdapter: env.data.users,
+        userAdapter: ctx.env.data.users,
         tenant_id: client.tenant_id,
         email: username,
         provider: "auth2",
       });
 
       if (!user) {
-        throw new HTTPException(400, { message: "User not found" });
+        // TODO - should be error page. M made ticket about this
+        throw new HTTPException(403);
+      }
+
+      const { valid } = await env.data.passwords.validate(client.tenant_id, {
+        user_id: user.id,
+        password: password,
+      });
+
+      if (!valid) {
+        return ctx.html(
+          <LoginPage
+            vendorSettings={vendorSettings}
+            email={username}
+            error={i18next.t("invalid_password")}
+            state={state}
+          />,
+          400,
+        );
+      }
+
+      // want to return primary user if different BUT password is linked to auth2 user
+      const primaryUser = await getPrimaryUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email: username,
+        provider: "auth2",
+      });
+
+      console.log("primaryUser", primaryUser);
+
+      if (!primaryUser) {
+        // TODO - should be error page. M made ticket about this
+        throw new HTTPException(400, { message: "primaryUser User not found" });
       }
 
       if (!user.email_verified) {
         // TODO - what to show here? Should we echo back out the login form?
         // on login2 we show https://login2.sesamy.dev/unverified-email
         // after sending another email validation email to the user in the ticket flow here on auth2
+
+        // TODO! should do same as on ticket flow - send another validation email...
+        // can then test for this
         return ctx.html(
           <MessagePage
             message={i18next.t("sent_code_spam")}
@@ -271,23 +308,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       try {
-        const { valid } = await env.data.passwords.validate(client.tenant_id, {
-          user_id: user.id,
-          password: password,
-        });
-
-        if (!valid) {
-          return ctx.html(
-            <LoginPage
-              vendorSettings={vendorSettings}
-              email={username}
-              error={i18next.t("invalid_password")}
-              state={state}
-            />,
-            400,
-          );
-        }
-
         return handleLogin(env, user, session, ctx, client);
       } catch (err: any) {
         return ctx.html(
