@@ -72,10 +72,14 @@ const LoginEnterCodePage: FC<Props> = ({
             )}
             minLength={CODE_LENGTH}
             required
+            id="code-input"
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <div class="text-center sm:mt-2">
-            <Button>{i18next.t("validate_code")}</Button>
+            <Button id="initial-btn"> {i18next.t("validate_code")}</Button>
+            <Button isLoading className="hidden" id="loading-btn">
+              {i18next.t("validate_code")}
+            </Button>
           </div>
           <div class="my-4 flex space-x-2 text-sm text-[#B2B2B2]">
             <Icon className="text-base" name="info-bubble" />

@@ -4,6 +4,7 @@ import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";
 import Icon from "./Icon";
+import { html } from "hono/html";
 
 type LayoutProps = {
   title: string;
@@ -130,6 +131,34 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
           </div>
         </div>
       </body>
+      {html`
+        <script>
+          // No need to use dangerouslySetInnerHTML.
+          // If you write it here, it will not be escaped.
+          console.log("Init");
+
+          const initialBtn = document.getElementById("initial-btn");
+
+          if (initialBtn) {
+            document.getElementById("initial-btn").onclick = function () {
+              console.log("Clicked");
+
+              console.log(document.getElementById("code-input").value);
+
+              const code = document.getElementById("code-input").value;
+
+              if (code.length >= 6) {
+                console.log("Valid code");
+
+                document.getElementById("initial-btn").classList.add("hidden");
+                document
+                  .getElementById("loading-btn")
+                  .classList.remove("hidden");
+              }
+            };
+          }
+        </script>
+      `}
     </html>
   );
 };
