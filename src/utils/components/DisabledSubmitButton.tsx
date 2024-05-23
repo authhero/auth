@@ -9,7 +9,6 @@ const DisabledSubmitButton = ({ children }: Props) => {
     <>
       <Button id="initial-btn">{children}</Button>
       <Button isLoading className="hidden" id="loading-btn" disabled>
-        {/* might not need anything here... */}
         {children}
       </Button>
     </>
