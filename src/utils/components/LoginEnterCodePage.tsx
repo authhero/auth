@@ -6,6 +6,7 @@ import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";
 import ErrorMessage from "./ErrorMessage";
+import DisabledSubmitButton from "./DisabledSubmitButton";
 
 type Props = {
   error?: string;
@@ -76,10 +77,9 @@ const LoginEnterCodePage: FC<Props> = ({
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <div class="text-center sm:mt-2">
-            <Button id="initial-btn"> {i18next.t("validate_code")}</Button>
-            <Button isLoading className="hidden" id="loading-btn" disabled>
+            <DisabledSubmitButton>
               {i18next.t("validate_code")}
-            </Button>
+            </DisabledSubmitButton>
           </div>
           <div class="my-4 flex space-x-2 text-sm text-[#B2B2B2]">
             <Icon className="text-base" name="info-bubble" />
