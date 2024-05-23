@@ -37,13 +37,8 @@ describe("Register password", () => {
         password,
       },
     });
-    expect(createUserResponse.status).toBe(302);
-
-    // what should happen here? where should go after signup?
-    // seems like we're logging in and then redirect back to redirect_uri with the tokens in the URL
-    // console.log(await createUserResponse.text());
-    // console.log(createUserResponse.headers.get("location"));
-    // what does login2 do? Surely we need to tell the user to verify their email before logging in
+    expect(createUserResponse.status).toBe(200);
+    await snapshotResponse(createUserResponse);
 
     const blockedLoginResponse = await oauthClient.u.login.$post({
       query: {

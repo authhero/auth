@@ -133,17 +133,26 @@ const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
       </body>
       {html`
         <script>
+          function swapButtons() {
+            document.getElementById("initial-btn").classList.add("hidden");
+            document.getElementById("loading-btn").classList.remove("hidden");
+          }
+
           const initialBtn = document.getElementById("initial-btn");
 
           if (initialBtn) {
             document.getElementById("initial-btn").onclick = function () {
-              const code = document.getElementById("code-input").value;
+              const codeInput = document.getElementById("code-input");
+
+              if (!codeInput) {
+                swapButtons();
+                return;
+              }
+
+              const code = codeInput.value;
 
               if (code.length >= 6) {
-                document.getElementById("initial-btn").classList.add("hidden");
-                document
-                  .getElementById("loading-btn")
-                  .classList.remove("hidden");
+                swapButtons();
               }
             };
           }

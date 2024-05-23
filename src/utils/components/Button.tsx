@@ -30,12 +30,18 @@ const Button: FC<Props> = ({
   const hrefProps = Component === "a" ? { href } : {};
   return (
     <Component
-      class={cn("relative w-full rounded-lg text-center px-4 py-5", className, {
-        "bg-primary text-textOnPrimary hover:bg-primaryHover":
-          variant === "primary",
-        "border border-gray-300 bg-white text-black": variant === "secondary",
-        "pointer-events-none cursor-not-allowed opacity-40": disabled,
-      })}
+      class={cn(
+        "relative w-full rounded-lg text-center px-4 py-5",
+        className,
+        {
+          "bg-primary text-textOnPrimary hover:bg-primaryHover":
+            variant === "primary",
+          "border border-gray-300 bg-white text-black": variant === "secondary",
+          "pointer-events-none cursor-not-allowed opacity-40": disabled,
+        },
+        // focus styles
+        "focus:outline-none focus:ring focus:ring-violet-300",
+      )}
       type="submit"
       disabled={disabled}
       id={id}
