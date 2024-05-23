@@ -7,8 +7,7 @@ import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
 import { AuthorizationResponseType } from "../../../src/types";
 
 describe("Register password", () => {
-  // TODO - "and only allow login after email validation"
-  it("should create a new user with a password", async () => {
+  it("should create a new user with a password and only allow login after email validation", async () => {
     const password = "Password1234!";
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
