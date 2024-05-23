@@ -17,7 +17,6 @@ const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
   client_id: "clientId",
   nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
   response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-  auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
 };
 
 // same on each test
@@ -77,7 +76,6 @@ describe("social sign on", () => {
         query: {
           ...SOCIAL_STATE_PARAM_AUTH_PARAMS,
           connection: "demo-social-provider",
-          auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
         },
       });
 
