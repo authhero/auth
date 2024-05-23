@@ -30,7 +30,8 @@ import * as n29_increaseOtpStateLength from "./2024-03-11T12:45:00_increase-otp-
 import * as n30_increaseTicketStateLength from "./2024-04-22T14:48:00_increase-ticket-state-length";
 import * as n31_branding from "./2024-05-09T08:50:00_branding";
 import * as n32_indexesAndNotNull from "./2024-05-14T07:53:00_indexes_and_not_null";
-import * as n33_vendorIdInUniversalLoginSession from "./2024-05-1610:45:00_vendor_id_in_universal_login_session";
+import * as n33_vendorIdInUniversalLoginSession from "./2024-05-16T10:45:00_vendor_id_in_universal_login_session";
+import * as n34_auth0ClientInUniversalLoginSession from "./2024-05-23T15:53:00_auth0client_in_universal_login_session";
 
 // These need to be in alphabetic order
 export default {
@@ -67,4 +68,5 @@ export default {
   n31_branding,
   n32_indexesAndNotNull,
   n33_vendorIdInUniversalLoginSession,
+  n34_auth0ClientInUniversalLoginSession,
 };
