@@ -959,8 +959,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
         return ctx.html(
           <MessagePage
-            // TODO - i18n
-            message="You are signed up"
+            // TODO - what text? & i18n
+            message="Check your inbox for email validation instructions."
             pageTitle="Signed up"
             vendorSettings={vendorSettings}
           />,
