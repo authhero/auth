@@ -9,6 +9,7 @@ export interface UniversalLoginSession {
   expires_at: string;
   authParams: AuthParams;
   username?: string;
+  auth0Client?: string;
 }
 
 export interface UniversalLoginSessionsAdapter {

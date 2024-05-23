@@ -9,6 +9,7 @@ import ErrorMessage from "./ErrorMessage";
 import SocialButton from "./SocialButton";
 import Google from "./GoogleLogo";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { getSendParamFromAuth0ClientHeader } from "../getSendParamFromAuth0ClientHeader";
 
 type Props = {
   error?: string;
@@ -18,8 +19,7 @@ type Props = {
 
 // this page is called enter-email on login2... maybe we should copy those page names
 const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
-  // TODO - get this from auth0header
-  const sendType = "code";
+  const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
   const loginDescriptionText =
     sendType === "code"
