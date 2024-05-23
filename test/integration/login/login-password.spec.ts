@@ -1,10 +1,28 @@
 import { describe, it, expect } from "vitest";
+import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import { snapshotResponse } from "../helpers/playwrightSnapshots";
-import { KVARTAL_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import {
+  snapshotResponse,
+  snapshotEmail,
+} from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
+
+function getCodeStateTo(email: EmailOptions) {
+  const verifyEmailBody = email.content[0].value;
+  // this gets the space before so we don't match CSS colours
+  const codes = verifyEmailBody.match(/(?!#).[0-9]{6}/g)!;
+
+  const code = codes[0].slice(1);
+
+  const to = email.to[0].email;
+
+  // this is a param on the verify email magic link
+  const state = verifyEmailBody.match(/state=([^&]+)/)![1];
+
+  return { code, state, to };
+}
 
 describe("Register password", () => {
   it("should create a new user with a password and only allow login after email validation", async () => {
@@ -58,6 +76,15 @@ describe("Register password", () => {
     await snapshotResponse(blockedLoginResponse);
 
     // TO TEST - copy over from existing password flow
+
+    // this is the original email sent after signing up
+    const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+
+    await snapshotEmail(env.data.emails[0]);
+
+    expect(to).toBe("password-login-test@example.com");
+    expect(code).toBeDefined();
+    expect(state).toBeTypeOf("string");
   });
 });
 
