@@ -275,21 +275,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         );
       }
 
-      // want to return primary user if different BUT password is linked to auth2 user
-      const primaryUser = await getPrimaryUserByEmailAndProvider({
-        userAdapter: env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      console.log("primaryUser", primaryUser);
-
-      if (!primaryUser) {
-        // TODO - should be error page. M made ticket about this
-        throw new HTTPException(400, { message: "primaryUser User not found" });
-      }
-
       if (!user.email_verified) {
         // TODO - what to show here? Should we echo back out the login form?
         // on login2 we show https://login2.sesamy.dev/unverified-email
@@ -307,8 +292,29 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         );
       }
 
+      // want to return primary user if different BUT password is linked to auth2 user
+      const primaryUser = await getPrimaryUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email: username,
+        provider: "auth2",
+      });
+
+      if (!primaryUser) {
+        // this should never really happen...
+        throw new HTTPException(400, { message: "primaryUser User not found" });
+      }
+
       try {
-        return handleLogin(env, user, session, ctx, client);
+        // Update the user's last login
+        await env.data.users.update(client.tenant_id, primaryUser.id, {
+          last_login: new Date().toISOString(),
+          login_count: user.login_count + 1,
+          // This is specific to cloudflare
+          last_ip: ctx.req.header("cf-connecting-ip") || "",
+        });
+
+        return handleLogin(env, primaryUser, session, ctx, client);
       } catch (err: any) {
         return ctx.html(
           <LoginPage

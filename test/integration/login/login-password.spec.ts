@@ -7,7 +7,7 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
-import { AuthorizationResponseType } from "../../../src/types";
+import { AuthorizationResponseType, UserResponse } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 
@@ -108,7 +108,7 @@ describe("Register password", () => {
     expect(workingLoginResponse.status).toBe(302);
   });
 
-  it.only("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
+  it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
     const password = "Password1234!";
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
@@ -216,73 +216,59 @@ describe("Register password", () => {
 
     const accessToken = hash.get("access_token");
     const accessTokenPayload = parseJwt(accessToken!);
+    // this proves the linking has worked
+    expect(accessTokenPayload.sub).toBe("email|codeUserId");
 
     expect(accessToken).toBeTruthy();
     const idToken = hash.get("id_token");
     const idTokenPayload = parseJwt(idToken!);
 
-    // this proves the linking has worked - WHICH IT DOES NOT NOW!
-    // IIRC the linking happens on the meail validation step... but surely that's the same endpoint?
-    // check the helpers on login then... compare to AJAX endpoint
-    // expect(idTokenPayload.email).toBe("existing-code-user@example.com");
-    // expect(idTokenPayload.sub).toBe("email|codeUserId");
+    // this proves the linking has worked
+    expect(idTokenPayload.email).toBe("existing-code-user@example.com");
+    expect(idTokenPayload.sub).toBe("email|codeUserId");
 
-    // const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
-    // // now check silent auth works after password login
-    // const { idToken: silentAuthIdTokenPayload } =
-    //   await doSilentAuthRequestAndReturnTokens(
-    //     authCookieHeader,
-    //     oauthClient,
-    //     "unique-nonce",
-    //     "clientId",
-    //   );
-    // // this proves that account linking has happened
-    // expect(silentAuthIdTokenPayload.sub).toBe("email|codeUserId");
-    // // -----------------------------
-    // // get user by id assert that the username-password user info is in the identities array
-    // // --------------------
-    // const primaryUserRes = await managementClient.api.v2.users[
-    //   ":user_id"
-    // ].$get(
-    //   {
-    //     param: {
-    //       user_id: "email|codeUserId",
-    //     },
-    //     header: {
-    //       "tenant-id": "tenantId",
-    //     },
-    //   },
-    //   {
-    //     headers: {
-    //       authorization: `Bearer ${token}`,
-    //       "tenant-id": "tenantId",
-    //     },
-    //   },
-    // );
-    // const primaryUser = (await primaryUserRes.json()) as UserResponse;
-    // expect(primaryUser.identities).toEqual([
-    //   {
-    //     connection: "email",
-    //     provider: "email",
-    //     user_id: "codeUserId",
-    //     isSocial: false,
-    //   },
-    //   {
-    //     connection: "Username-Password-Authentication",
-    //     provider: "auth2",
-    //     user_id: primaryUser.identities[1].user_id,
-    //     isSocial: false,
-    //     profileData: {
-    //       email: "existing-code-user@example.com",
-    //       email_verified: true,
-    //     },
-    //   },
-    // ]);
-    // // Check that the login count and last IP has been updated
-    // expect(primaryUser.login_count).toBe(1);
-    // expect(primaryUser.last_ip).toBe("1.2.3.4");
-    // const lastLogin = new Date(primaryUser.last_login!);
-    // expect(Date.now() - lastLogin.getTime()).lessThan(1000);
+    // -----------------------------
+    // get user by id assert that the username-password user info is in the identities array
+    // --------------------
+    const primaryUserRes = await managementClient.api.v2.users[":user_id"].$get(
+      {
+        param: {
+          user_id: "email|codeUserId",
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "tenant-id": "tenantId",
+        },
+      },
+    );
+    const primaryUser = (await primaryUserRes.json()) as UserResponse;
+    expect(primaryUser.identities).toEqual([
+      {
+        connection: "email",
+        provider: "email",
+        user_id: "codeUserId",
+        isSocial: false,
+      },
+      {
+        connection: "Username-Password-Authentication",
+        provider: "auth2",
+        user_id: primaryUser.identities[1].user_id,
+        isSocial: false,
+        profileData: {
+          email: "existing-code-user@example.com",
+          email_verified: true,
+        },
+      },
+    ]);
+    // Check that the login count has been updated
+    expect(primaryUser.login_count).toBe(1);
+    const lastLogin = new Date(primaryUser.last_login!);
+    expect(Date.now() - lastLogin.getTime()).lessThan(1000);
   });
 });
 
