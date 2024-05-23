@@ -12,7 +12,10 @@ type Props = {
 
 const SignupPage: FC<Props> = ({ error, vendorSettings }) => {
   return (
-    <Layout title="Login" vendorSettings={vendorSettings}>
+    <Layout
+      title={i18next.t("create_account_title")}
+      vendorSettings={vendorSettings}
+    >
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("create_account_title")}
       </div>

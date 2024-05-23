@@ -20,7 +20,10 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
   email,
 }) => {
   return (
-    <Layout title="Reset Password" vendorSettings={vendorSettings}>
+    <Layout
+      title={i18next.t("reset_password_title")}
+      vendorSettings={vendorSettings}
+    >
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("reset_password_title")}
       </div>
