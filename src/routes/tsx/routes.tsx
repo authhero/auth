@@ -251,6 +251,20 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(400, { message: "User not found" });
       }
 
+      if (!user.email_verified) {
+        // TODO - what to show here? Should we echo back out the login form?
+        // on login2 we show https://login2.sesamy.dev/unverified-email
+        // after sending another email validation email to the user in the ticket flow here on auth2
+        return ctx.html(
+          <MessagePage
+            message={i18next.t("sent_code_spam")}
+            pageTitle={i18next.t("unverified_email")}
+            vendorSettings={vendorSettings}
+          />,
+          400,
+        );
+      }
+
       try {
         const { valid } = await env.data.passwords.validate(client.tenant_id, {
           user_id: user.id,

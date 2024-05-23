@@ -45,7 +45,7 @@ describe("Register password", () => {
     // console.log(createUserResponse.headers.get("location"));
     // what does login2 do? Surely we need to tell the user to verify their email before logging in
 
-    const postLoginResponse = await oauthClient.u.login.$post({
+    const blockedLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
         // TODO - this should be in the body. Need to change these pages to match Auth0
@@ -55,18 +55,8 @@ describe("Register password", () => {
         password,
       },
     });
-    // this means a successful login - NOT CORRECT! we need to force the user to validate the email first
-    expect(postLoginResponse.status).toBe(302);
-    const loginLocation = postLoginResponse.headers.get("location");
-    const redirectUrl = new URL(loginLocation!);
-    expect(redirectUrl.pathname).toBe("/callback");
-
-    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
-
-    const accessToken = hash.get("access_token");
-    expect(accessToken).toBeTruthy();
-    const idToken = hash.get("id_token");
-    expect(idToken).toBeTruthy();
+    expect(blockedLoginResponse.status).toBe(400);
+    await snapshotResponse(blockedLoginResponse);
 
     // TO TEST - copy over from existing password flow
   });
