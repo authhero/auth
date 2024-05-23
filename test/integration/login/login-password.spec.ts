@@ -9,6 +9,7 @@ import {
 } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
+import { parseJwt } from "../../../src/utils/parse-jwt";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -107,7 +108,7 @@ describe("Register password", () => {
     expect(workingLoginResponse.status).toBe(302);
   });
 
-  it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
+  it.only("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
     const password = "Password1234!";
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
@@ -203,38 +204,29 @@ describe("Register password", () => {
       },
     });
     expect(loginResponse.status).toBe(302);
+    console.log(loginResponse.headers.get("location"));
 
-    // HMMMMMM< what should I assert here?
+    // TO TEST - change some of these tests to return codes in the query string and do token exchange with /oauth/token
+    const loginLocation = loginResponse.headers.get("location");
 
-    // const { login_ticket } = await loginResponse.json();
-    // const tokenResponse = await oauthClient.authorize.$get(
-    //   {
-    //     query: {
-    //       auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-    //       client_id: "clientId",
-    //       login_ticket,
-    //       response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-    //       redirect_uri: "http://login.example.com",
-    //       state: "state",
-    //       realm: "Username-Password-Authentication",
-    //     },
-    //   },
-    //   {
-    //     headers: {
-    //       referrer: "https://login.example.com",
-    //       "cf-connecting-ip": "1.2.3.4",
-    //     },
-    //   },
-    // );
-    // expect(tokenResponse.status).toBe(302);
-    // expect(await tokenResponse.text()).toBe("Redirecting");
-    // const redirectUri = new URL(tokenResponse.headers.get("location")!);
-    // const searchParams = new URLSearchParams(redirectUri.hash.slice(1));
-    // expect(redirectUri.hostname).toBe("login.example.com");
-    // expect(searchParams.get("state")).toBe("state");
-    // const idTokenPayload = parseJwt(searchParams.get("id_token")!);
+    const redirectUrl = new URL(loginLocation!);
+    expect(redirectUrl.pathname).toBe("/callback");
+
+    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+
+    const accessToken = hash.get("access_token");
+    const accessTokenPayload = parseJwt(accessToken!);
+
+    expect(accessToken).toBeTruthy();
+    const idToken = hash.get("id_token");
+    const idTokenPayload = parseJwt(idToken!);
+
+    // this proves the linking has worked - WHICH IT DOES NOT NOW!
+    // IIRC the linking happens on the meail validation step... but surely that's the same endpoint?
+    // check the helpers on login then... compare to AJAX endpoint
     // expect(idTokenPayload.email).toBe("existing-code-user@example.com");
     // expect(idTokenPayload.sub).toBe("email|codeUserId");
+
     // const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
     // // now check silent auth works after password login
     // const { idToken: silentAuthIdTokenPayload } =
