@@ -25,10 +25,11 @@ const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
       <div class="flex flex-1 flex-col justify-center">
         <form method="post">
           <input
-            type="text"
+            type="email"
             name="username"
             placeholder={i18next.t("email_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
+            required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <DisabledSubmitButton>
