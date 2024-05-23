@@ -37,7 +37,8 @@ describe("Register password", () => {
         password,
       },
     });
-    expect(createUserResponse.status).toBe(302);
+    expect(createUserResponse.status).toBe(200);
+    await snapshotResponse(createUserResponse);
 
     // what should happen here? where should go after signup?
     // seems like we're logging in and then redirect back to redirect_uri with the tokens in the URL
