@@ -77,7 +77,7 @@ const LoginEnterCodePage: FC<Props> = ({
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <div class="text-center sm:mt-2">
             <Button id="initial-btn"> {i18next.t("validate_code")}</Button>
-            <Button isLoading className="hidden" id="loading-btn">
+            <Button isLoading className="hidden" id="loading-btn" disabled>
               {i18next.t("validate_code")}
             </Button>
           </div>
