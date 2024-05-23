@@ -179,31 +179,33 @@ describe("Register password", () => {
     // -----------------------------
     // sanity check that linking has happened!
     // -----------------------------
-    // const users = await env.data.users.list("tenantId", {
-    //   page: 0,
-    //   per_page: 10,
-    //   include_totals: false,
-    //   q: "",
-    // });
-    // const [linkedPasswordUser] = users.users.filter(
-    //   (u) =>
-    //     u.email === "existing-code-user@example.com" &&
-    //     u.provider === "auth2",
-    // );
-    // expect(linkedPasswordUser.linked_to).toBe("email|codeUserId");
-    // // -----------------------------
-    // // login with password
-    // // -----------------------------
-    // const loginResponse = await oauthClient.co.authenticate.$post({
-    //   json: {
-    //     client_id: "clientId",
-    //     credential_type: "http://auth0.com/oauth/grant-type/password-realm",
-    //     realm: "Username-Password-Authentication",
-    //     password,
-    //     username: "existing-code-user@example.com",
-    //   },
-    // });
-    // expect(loginResponse.status).toBe(200);
+    const users = await env.data.users.list("tenantId", {
+      page: 0,
+      per_page: 10,
+      include_totals: false,
+      q: "",
+    });
+    const [linkedPasswordUser] = users.users.filter(
+      (u) =>
+        u.email === "existing-code-user@example.com" && u.provider === "auth2",
+    );
+    expect(linkedPasswordUser.linked_to).toBe("email|codeUserId");
+    // -----------------------------
+    // login with password
+    // -----------------------------
+    const loginResponse = await oauthClient.u.login.$post({
+      query: {
+        state: query.state,
+        username: "existing-code-user@example.com",
+      },
+      form: {
+        password,
+      },
+    });
+    expect(loginResponse.status).toBe(302);
+
+    // HMMMMMM< what should I assert here?
+
     // const { login_ticket } = await loginResponse.json();
     // const tokenResponse = await oauthClient.authorize.$get(
     //   {
