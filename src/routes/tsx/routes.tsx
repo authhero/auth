@@ -3,7 +3,10 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, User, AuthorizationResponseType, Client } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
-import { getUserByEmailAndProvider } from "../../utils/users";
+import {
+  getUserByEmailAndProvider,
+  getPrimaryUserByEmailAndProvider,
+} from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import i18next from "i18next";
@@ -936,10 +939,18 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       },
     }),
+    // very similar to dbconnections/signup
     async (ctx) => {
       const { state } = ctx.req.valid("query");
       const loginParams = ctx.req.valid("form");
       const { env } = ctx;
+
+      // auth0 returns a detailed JSON response with the way the password does match the strength rules
+      if (!validatePassword(loginParams.password)) {
+        throw new HTTPException(400, {
+          message: "Password does not meet the requirements",
+        });
+      }
 
       const { vendorSettings, client, session } = await initJSXRoute(
         state,
@@ -952,40 +963,39 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       try {
-        // TODO - filter by primary user
-        let [user] = await getUsersByEmail(
-          env.data.users,
-          client.tenant_id,
-          loginParams.username,
-        );
+        const existingUser = await getPrimaryUserByEmailAndProvider({
+          userAdapter: ctx.env.data.users,
+          tenant_id: client.tenant_id,
+          email: loginParams.username,
+          provider: "auth2",
+        });
 
-        if (!user) {
-          // Create the user if it doesn't exist
-          user = await env.data.users.create(client.tenant_id, {
-            id: `auth2|${userIdGenerate()}`,
-            email: loginParams.username,
-            name: loginParams.username,
-            provider: "auth2",
-            connection: "Username-Password-Authentication",
-            email_verified: false,
-            last_ip: "",
-            login_count: 0,
-            is_social: false,
-            last_login: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+        if (existingUser) {
+          // Auth0 doesn't inform that the user already exists
+          throw new HTTPException(400, { message: "Invalid sign up" });
         }
 
+        const newUser = await ctx.env.data.users.create(client.tenant_id, {
+          id: `auth2|${userIdGenerate()}`,
+          email: loginParams.username,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          email_verified: false,
+          provider: "auth2",
+          connection: "Username-Password-Authentication",
+          is_social: false,
+          login_count: 0,
+        });
+
         await env.data.passwords.create(client.tenant_id, {
-          user_id: user.id,
+          user_id: newUser.id,
           password: loginParams.password,
         });
 
         await sendEmailVerificationEmail({
           env: ctx.env,
           client,
-          user,
+          user: newUser,
         });
 
         return ctx.html(
