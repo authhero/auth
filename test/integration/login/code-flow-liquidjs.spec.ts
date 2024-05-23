@@ -731,6 +731,17 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
+    const codeInputFormResponse = await oauthClient.u.code.$get({
+      query: {
+        state: query.state,
+      },
+    });
+
+    expect(codeInputFormResponse.status).toBe(200);
+
+    // this should have the text saying code
+    await snapshotResponse(codeInputFormResponse);
+
     await oauthClient.u.code.$post({
       query: { state: query.state },
       form: {
