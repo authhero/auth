@@ -75,8 +75,6 @@ describe("Register password", () => {
     expect(blockedLoginResponse.status).toBe(400);
     await snapshotResponse(blockedLoginResponse);
 
-    // TO TEST - copy over from existing password flow
-
     // this is the original email sent after signing up
     const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
@@ -85,6 +83,21 @@ describe("Register password", () => {
     expect(to).toBe("password-login-test@example.com");
     expect(code).toBeDefined();
     expect(state).toBeTypeOf("string");
+
+    const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+
+    expect(emailValidatedRes.status).toBe(200);
+    // TODO - should be a JSX page? (or should even continue on the login flow... somehow)
+    expect(await emailValidatedRes.text()).toBe("email validated");
+
+    //-------------------
+    // login again now to check that it works
+    //-------------------
   });
 });
 
