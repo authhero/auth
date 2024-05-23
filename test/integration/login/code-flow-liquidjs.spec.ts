@@ -3,8 +3,10 @@ import { getEnv } from "../helpers/test-client";
 import { oauthApp, managementApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { snapshotResponse } from "../helpers/playwrightSnapshots";
-import { FOKUS_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import {
+  snapshotResponse,
+  snapshotEmail,
+} from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { parseJwt } from "../../../src/utils/parse-jwt";
@@ -700,6 +702,49 @@ describe("Login with code on liquidjs template", () => {
     expect(codeInputFormResponse.status).toBe(200);
 
     await snapshotResponse(codeInputFormResponse, "sm");
+  });
+
+  it("should send a code email if auth0client is swift", async () => {
+    const env = await getEnv({});
+    const oauthClient = testClient(oauthApp, env);
+
+    const auth0ClientSwift = {
+      name: "Auth0.swift",
+      version: "2.5.0",
+      env: { iOS: "17.1", swift: "5.x" },
+    };
+    // JSON stringify and base64 encode this
+    const auth0ClientSwiftParam = btoa(JSON.stringify(auth0ClientSwift));
+
+    // -----------------
+    // Code login flow
+    // -----------------
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        vendor_id: "fokus",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+        auth0Client: auth0ClientSwiftParam,
+      },
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    const postSendCodeResponse = await oauthClient.u.code.$post({
+      query: { state: query.state },
+      form: {
+        username: "test@example.com",
+      },
+    });
+
+    const { to, code } = getCodeAndTo(env.data.emails[0]);
+
+    // this should not have a magic link in it
+    await snapshotEmail(env.data.emails[0]);
   });
 
   it("should only allow a code to be used once", async () => {
