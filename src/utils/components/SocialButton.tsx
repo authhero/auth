@@ -44,58 +44,27 @@ const SocialButton = ({
   const href = `/authorize?${queryString.toString()}`;
 
   return (
-    // <a
-    //   className={cn(
-    //     "block",
-    //     // copied from Button.tsx as this component is now an anchor -
-    //     // could be done like on login2 by implementing variant="custom"
-    //     "relative w-full rounded-lg text-center px-4 py-5",
-    //     "border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-400 dark:bg-black dark:hover:bg-black/90",
-    //     {
-    //       ["px-0 py-3 sm:px-10 sm:py-4 short:px-0 short:py-3"]: canResize,
-    //       ["px-10 py-3"]: !canResize,
-    //     },
-    //   )}
-    //   aria-label={text}
-    //   href={href}
-    // >
-    //   <span className="flex items-center justify-center space-x-2">
-    //     {icon || ""}
-    //     <div
-    //       className={cn("text-left text-black dark:text-white sm:text-base", {
-    //         ["hidden sm:inline short:hidden"]: canResize,
-    //       })}
-    //     >
-    //       {text}
-    //     </div>
-    //   </span>
-    // </a>
     <Button
-      Component="a"
       className={cn(
-        "block",
-        // copied from Button.tsx as this component is now an anchor -
-        // could be done like on login2 by implementing variant="custom"
-        "relative w-full rounded-lg text-center px-4 py-5",
         "border border-gray-200 bg-white hover:bg-gray-100 dark:border-gray-400 dark:bg-black dark:hover:bg-black/90",
         {
           ["px-0 py-3 sm:px-10 sm:py-4 short:px-0 short:py-3"]: canResize,
           ["px-10 py-3"]: !canResize,
         },
       )}
-      href={href}
+      variant="custom"
       aria-label={text}
+      Component="a"
+      href={href}
     >
-      <span className="flex items-center justify-center space-x-2">
-        {icon || ""}
-        <div
-          className={cn("text-left text-black dark:text-white sm:text-base", {
-            ["hidden sm:inline short:hidden"]: canResize,
-          })}
-        >
-          {text}
-        </div>
-      </span>
+      {icon || ""}
+      <div
+        className={cn("text-left text-black dark:text-white sm:text-base", {
+          ["hidden sm:inline short:hidden"]: canResize,
+        })}
+      >
+        {text}
+      </div>
     </Button>
   );
 };
