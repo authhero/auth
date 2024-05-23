@@ -1,14 +1,23 @@
 import Button from "./Button";
+import cn from "classnames";
 
 type Props = {
   children: (string | JSX.Element)[] | string | JSX.Element;
+  className?: string;
 };
 
-const DisabledSubmitButton = ({ children }: Props) => {
+const DisabledSubmitButton = ({ children, className }: Props) => {
   return (
     <>
-      <Button id="initial-btn">{children}</Button>
-      <Button isLoading className="hidden" id="loading-btn" disabled>
+      <Button className={className} id="initial-btn">
+        {children}
+      </Button>
+      <Button
+        className={cn(className, "hidden")}
+        isLoading
+        id="loading-btn"
+        disabled
+      >
         {children}
       </Button>
     </>
