@@ -884,6 +884,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
+          username: z.string().optional(),
         }),
       },
       responses: {
@@ -893,11 +894,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { state } = ctx.req.valid("query");
+      const { state, username } = ctx.req.valid("query");
       const { env } = ctx;
       const { vendorSettings } = await initJSXRoute(state, env);
 
-      return ctx.html(<SignupPage vendorSettings={vendorSettings} />);
+      return ctx.html(
+        <SignupPage vendorSettings={vendorSettings} email={username} />,
+      );
     },
   )
   // --------------------------------
@@ -1000,7 +1003,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           session.authParams.vendor_id,
         );
         return ctx.html(
-          <SignupPage vendorSettings={vendorSettings} error={err.message} />,
+          <SignupPage
+            vendorSettings={vendorSettings}
+            error={err.message}
+            email={loginParams.username}
+          />,
           400,
         );
       }
