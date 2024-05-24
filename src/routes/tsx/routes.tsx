@@ -976,7 +976,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         env,
       );
 
-      // auth0 returns a detailed JSON response with the way the password does match the strength rules
       if (!validatePassword(loginParams.password)) {
         return ctx.html(
           <SignupPage
@@ -1001,7 +1000,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         });
 
         if (existingUser) {
-          // Auth0 doesn't inform that the user already exists
           throw new HTTPException(400, { message: "Invalid sign up" });
         }
 
