@@ -33,8 +33,9 @@ import { getSendParamFromAuth0ClientHeader } from "../../utils/getSendParamFromA
 import {
   getPasswordLoginSelectionCookieName,
   SesamyPasswordLoginSelection,
+  parsePasswordLoginSelectionCookie,
 } from "../../utils/authCookies";
-import { setCookie } from "hono/cookie";
+import { setCookie, getCookie } from "hono/cookie";
 
 const DEFAULT_SESAMY_VENDOR = {
   name: "sesamy",
@@ -678,8 +679,16 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { env } = ctx;
       const { client, session } = await initJSXRoute(state, env);
 
-      // TODO! read cookie here and redirect to password if exists...
-      // copy logic from login2
+      const passwordLoginSelection =
+        parsePasswordLoginSelectionCookie(
+          getCookie(ctx, getPasswordLoginSelectionCookieName(client.id)),
+        ) || SesamyPasswordLoginSelection.code;
+
+      if (passwordLoginSelection === SesamyPasswordLoginSelection.password) {
+        return ctx.redirect(
+          `/u/login?state=${state}&username=${params.username}`,
+        );
+      }
 
       const code = generateOTP();
 
