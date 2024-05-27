@@ -1,4 +1,3 @@
-import type { FC, ReactElement } from "hono/jsx";
 import cn from "classnames";
 import Spinner from "./Spinner";
 import { PropsWithChildren } from "hono/jsx";
