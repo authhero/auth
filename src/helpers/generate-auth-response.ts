@@ -1,12 +1,12 @@
 import { Env, AuthParams, AuthorizationResponseType, User } from "../types";
 import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
-import { stateEncode } from "../utils/stateEncode";
 import { pemToBuffer } from "../utils/jwt";
 import { createJWT } from "oslo/jwt";
 import { TimeSpan } from "oslo";
 import { serializeStateInCookie } from "../services/cookies";
 import { applyTokenResponse } from "./apply-token-response-new";
+import { nanoid } from "nanoid";
 
 interface GenerateAuthResponseParamsBase {
   env: Env;
@@ -36,14 +36,25 @@ interface GenerateAuthResponseParamsForIdToken
 }
 
 async function generateCode({
+  env,
+  tenantId,
   userId,
   state,
   nonce,
   authParams,
   sid,
-  user,
 }: GenerateAuthResponseParamsForCode) {
-  const code = stateEncode({ userId, authParams, nonce, state, sid, user });
+  const code = nanoid();
+
+  await env.data.authenticationCodes.create(tenantId, {
+    user_id: userId,
+    authParams,
+    nonce,
+    created_at: new Date().toISOString(),
+    expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
+    sid,
+    code,
+  });
 
   const codeResponse: CodeResponse = {
     code,

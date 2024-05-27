@@ -1,13 +1,10 @@
 import {
   AuthorizationCodeGrantTypeParams,
   AuthorizationResponseType,
-  AuthParams,
   Env,
-  User,
   Var,
 } from "../types";
 import { getClient } from "../services/clients";
-import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
 import { generateAuthData } from "../helpers/generate-auth-response";
 import { Context } from "hono";
@@ -16,20 +13,20 @@ export async function authorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   params: AuthorizationCodeGrantTypeParams,
 ) {
-  const state: {
-    userId: string;
-    authParams: AuthParams;
-    user: User;
-    sid: string;
-  } = stateDecode(params.code); // this "code" is actually a stringified base64 encoded state object...
-
-  if (params.client_id && state.authParams.client_id !== params.client_id) {
-    throw new HTTPException(403, { message: "Invalid Client" });
-  }
-
-  const client = await getClient(ctx.env, state.authParams.client_id);
+  const client = await getClient(ctx.env, params.client_id);
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
+  }
+
+  const { user_id, nonce, sid, authParams } =
+    await ctx.env.data.authenticationCodes.validate(
+      client.tenant_id,
+      params.code,
+    );
+
+  const user = await ctx.env.data.users.get(authParams.client_id, user_id);
+  if (!user) {
+    throw new HTTPException(400, { message: "User not found" });
   }
 
   // TODO: Temporary fix for the default client
@@ -43,10 +40,14 @@ export async function authorizeCodeGrant(
   }
 
   const tokens = await generateAuthData({
-    ...state,
+    userId: user_id,
+    authParams,
+    nonce,
+    user,
+    sid,
+    responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
     env: ctx.env,
     tenantId: client.tenant_id,
-    responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
   });
 
   return ctx.json(tokens);

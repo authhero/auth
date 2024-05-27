@@ -1,6 +1,5 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { DataAdapters } from "../adapters/interfaces";
-import { VendorSettings } from "./sql";
 import type { Client } from "./Client";
 import type { EmailOptions } from "../services/email/EmailOptions";
 
