@@ -981,6 +981,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           <SignupPage
             vendorSettings={vendorSettings}
             error={i18next.t("create_account_weak_password")}
+            email={loginParams.username}
           />,
           400,
         );
