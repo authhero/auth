@@ -31,6 +31,7 @@ import { vendorSettingsSchema } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import { getSendParamFromAuth0ClientHeader } from "../../utils/getSendParamFromAuth0ClientHeader";
 import { getPasswordLoginSelectionCookieName } from "../../utils/authCookies";
+import { setCookie } from "hono/cookie";
 
 const DEFAULT_SESAMY_VENDOR = {
   name: "sesamy",
@@ -187,12 +188,24 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      // TODO - set cookie here saying password flow is preferred
       const { state, username } = ctx.req.valid("query");
 
       const { env } = ctx;
 
-      const { vendorSettings } = await initJSXRoute(state, env);
+      const { vendorSettings, client } = await initJSXRoute(state, env);
+
+      setCookie(
+        ctx,
+        getPasswordLoginSelectionCookieName(client.id),
+        "password",
+        {
+          path: "/",
+          secure: true,
+          httpOnly: true,
+          sameSite: "Strict",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
+      );
 
       return ctx.html(
         <LoginPage
