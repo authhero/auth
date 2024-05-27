@@ -77,7 +77,9 @@ describe("password-flow", () => {
       });
 
       // this will not work! need to validate the email before allowing a login
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       // cannot login now because email not validated!
       const loginBlockedRes = await oauthClient.authorize.$get(
@@ -146,7 +148,9 @@ describe("password-flow", () => {
         },
       });
 
-      const { login_ticket: loginTicket2 } = await loginResponse2.json();
+      const { login_ticket: loginTicket2 } = (await loginResponse2.json()) as {
+        login_ticket: string;
+      };
 
       const tokenResponse = await oauthClient.authorize.$get(
         {
@@ -296,7 +300,9 @@ describe("password-flow", () => {
 
       expect(loginResponse.status).toBe(200);
 
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       const tokenResponse = await oauthClient.authorize.$get(
         {
@@ -419,7 +425,9 @@ describe("password-flow", () => {
         },
       });
 
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       // ---------------------------
       // this will not work because email not validated
@@ -476,7 +484,9 @@ describe("password-flow", () => {
         },
       });
 
-      const { login_ticket: loginTicket2 } = await loginResponse2.json();
+      const { login_ticket: loginTicket2 } = (await loginResponse2.json()) as {
+        login_ticket: string;
+      };
 
       const tokenResponse = await oauthClient.authorize.$get(
         {
@@ -573,7 +583,9 @@ describe("password-flow", () => {
       });
 
       expect(loginResponse.status).toBe(200);
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       // Trade the ticket for token
       const tokenResponse = await oauthClient.authorize.$get(
@@ -819,7 +831,9 @@ describe("password-flow", () => {
       });
 
       expect(loginResponse.status).toBe(200);
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       // Trade the ticket for token
       const tokenResponse = await oauthClient.authorize.$get(
@@ -996,7 +1010,9 @@ describe("password-flow", () => {
         },
       });
       expect(loginResponse.status).toBe(200);
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
       const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {
