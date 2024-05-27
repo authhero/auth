@@ -5,11 +5,11 @@ import i18next from "i18next";
 import Footer from "./Footer";
 import Icon from "./Icon";
 import { html } from "hono/html";
+import { PropsWithChildren } from "hono/jsx";
 
 type LayoutProps = {
   title: string;
   vendorSettings: VendorSettings;
-  children: JSX.Element[] | JSX.Element;
 };
 
 const globalDocStyle = (vendorSettings: VendorSettings) => {
@@ -26,7 +26,11 @@ const globalDocStyle = (vendorSettings: VendorSettings) => {
 
 const DEFAULT_BG = "https://assets.sesamy.com/images/login-bg.jpg";
 
-const Layout: FC<LayoutProps> = ({ title, children, vendorSettings }) => {
+const Layout = ({
+  title,
+  children,
+  vendorSettings,
+}: PropsWithChildren<LayoutProps>) => {
   const inlineStyles = {
     backgroundImage: `url(${
       vendorSettings?.loginBackgroundImage || DEFAULT_BG

@@ -52,12 +52,12 @@
     ]
   },
   "dependencies": {
-    "@hono/zod-openapi": "0.11.0",
+    "@hono/zod-openapi": "0.14.0",
     "@planetscale/database": "1.16.0",
     "arctic": "^1.8.1",
     "bcryptjs": "^2.4.3",
     "cookie": "^0.6.0",
-    "hono": "4.2.9",
+    "hono": "4.4.0",
     "kysely": "^0.27.3",
     "kysely-bun-sqlite": "^0.3.2",
     "kysely-planetscale": "^1.4.0",

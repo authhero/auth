@@ -1,10 +1,11 @@
 import cn from "classnames";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import Button from "./Button";
+import type { ReactElement } from "hono/jsx";
 
 type Props = {
   social: string;
-  icon: JSX.Element | null;
+  icon: ReactElement | null;
   text: string;
   canResize?: boolean;
   session: UniversalLoginSession;
