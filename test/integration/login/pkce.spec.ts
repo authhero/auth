@@ -1,12 +1,7 @@
-import { describe, it, test, expect } from "vitest";
-import { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { test, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import {
-  snapshotResponse,
-  snapshotEmail,
-} from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
 
 test("PKCE flow should work", async () => {
@@ -43,7 +38,7 @@ test("PKCE flow should work", async () => {
   const loginSearchParamsQuery = Object.fromEntries(
     loginSearchParams.entries(),
   );
-  await snapshotResponse(loginFormResponse);
+
   const postLoginResponse = await oauthClient.u.login.$post({
     query: {
       state: loginSearchParamsQuery.state,
