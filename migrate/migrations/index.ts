@@ -32,6 +32,7 @@ import * as n31_branding from "./2024-05-09T08:50:00_branding";
 import * as n32_indexesAndNotNull from "./2024-05-14T07:53:00_indexes_and_not_null";
 import * as n33_vendorIdInUniversalLoginSession from "./2024-05-16T10:45:00_vendor_id_in_universal_login_session";
 import * as n34_auth0ClientInUniversalLoginSession from "./2024-05-23T15:53:00_auth0client_in_universal_login_session";
+import * as n35_increaseUniversalSessionStateLength from "./2024-05-24T16:25:00_increase-universal-auth-state-length";
 
 // These need to be in alphabetic order
 export default {
@@ -69,4 +70,5 @@ export default {
   n32_indexesAndNotNull,
   n33_vendorIdInUniversalLoginSession,
   n34_auth0ClientInUniversalLoginSession,
+  n35_increaseUniversalSessionStateLength,
 };
