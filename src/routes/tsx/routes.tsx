@@ -30,6 +30,7 @@ import userIdGenerate from "../../utils/userIdGenerate";
 import { vendorSettingsSchema } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import { getSendParamFromAuth0ClientHeader } from "../../utils/getSendParamFromAuth0ClientHeader";
+import { getPasswordLoginSelectionCookieName } from "../../utils/authCookies";
 
 const DEFAULT_SESAMY_VENDOR = {
   name: "sesamy",
@@ -186,6 +187,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
+      // TODO - set cookie here saying password flow is preferred
       const { state, username } = ctx.req.valid("query");
 
       const { env } = ctx;
@@ -660,6 +662,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { env } = ctx;
       const { client, session } = await initJSXRoute(state, env);
 
+      // TODO! read cookie here and redirect to password if exists...
+      // copy logic from login2
+
       const code = generateOTP();
 
       // fields in universalLoginSessions don't match fields in OTP
@@ -759,6 +764,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
+      // TODO - set cookie saying this route is preffered for this vendor... or tenant? or what? client right?
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
