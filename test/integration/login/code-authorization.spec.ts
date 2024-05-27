@@ -4,11 +4,16 @@ import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { AuthorizationResponseType } from "../../../src/types";
 
-test("PKCE flow should work", async () => {
+test("code authorization flow should work", async () => {
   const env = await getEnv({
     testTenantLanguage: "en",
   });
   const oauthClient = testClient(oauthApp, env);
+
+  // --------------------------------
+  // start universal auth session where response_type is code
+  // --------------------------------
+
   const searchParams = {
     client_id: "clientId",
     vendor_id: "kvartal",
@@ -26,22 +31,13 @@ test("PKCE flow should work", async () => {
   expect(location!.startsWith("/u/login")).toBeTruthy;
   const stateParam = new URLSearchParams(location!.split("?")[1]);
   const query = Object.fromEntries(stateParam.entries());
-  // Open login page
-  const loginFormResponse = await oauthClient.u.login.$get({
-    query: {
-      state: query.state,
-      username: "foo@example.com",
-    },
-  });
-  expect(loginFormResponse.status).toBe(200);
-  const loginSearchParams = new URLSearchParams(location!.split("?")[1]);
-  const loginSearchParamsQuery = Object.fromEntries(
-    loginSearchParams.entries(),
-  );
 
+  // --------------------------------
+  // Login to get PKCE code
+  // --------------------------------
   const postLoginResponse = await oauthClient.u.login.$post({
     query: {
-      state: loginSearchParamsQuery.state,
+      state: query.state,
       username: "foo@example.com",
     },
     form: {
