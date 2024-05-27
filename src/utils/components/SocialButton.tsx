@@ -1,11 +1,11 @@
 import cn from "classnames";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import Button from "./Button";
-import type { ReactElement } from "hono/jsx";
 
 type Props = {
   social: string;
-  icon: ReactElement | null;
+  // TODO - what is the correct type here in hono/jsx? OR use a children prop
+  icon: any;
   text: string;
   canResize?: boolean;
   session: UniversalLoginSession;
