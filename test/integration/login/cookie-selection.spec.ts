@@ -26,6 +26,7 @@ test("after entering email should go to enter code step if no cookie set", async
   const env = await getEnv();
   const oauthClient = testClient(oauthApp, env);
 
+  // shortcut instead of visiting the /authorize endpoint
   await env.data.universalLoginSessions.create(SESSION_FIXTURE);
 
   const enterEmailResponse = await oauthClient.u.code.$post({
@@ -41,16 +42,61 @@ test("after entering email should go to enter code step if no cookie set", async
   expect(enterEmailResponseLocation!.startsWith("/u/enter-code")).toBeTruthy();
 });
 
-// test("after entering email should go to enter code step if code cookie is set", async () => {
-//
+test("after entering email should go to enter code step if code cookie is set", async () => {
+  const env = await getEnv();
+  const oauthClient = testClient(oauthApp, env);
 
-// test("after entering email should go to enter password step if password cookie is set", async () => {
+  await env.data.universalLoginSessions.create(SESSION_FIXTURE);
+
+  const enterEmailResponse = await oauthClient.u.code.$post(
+    {
+      query: { state: "session-id" },
+      form: {
+        username: "test@example.com",
+      },
+    },
+    {
+      headers: {
+        cookie: "sesamy-password-login-selection-clientId=code",
+      },
+    },
+  );
+
+  const enterEmailResponseLocation = enterEmailResponse.headers.get("location");
+
+  // this is the default functionality
+  expect(enterEmailResponseLocation!.startsWith("/u/enter-code")).toBeTruthy();
+});
+
+test("after entering email should go to enter password step if password cookie is set", async () => {
+  const env = await getEnv();
+  const oauthClient = testClient(oauthApp, env);
+
+  await env.data.universalLoginSessions.create(SESSION_FIXTURE);
+
+  const enterEmailResponse = await oauthClient.u.code.$post(
+    {
+      query: { state: "session-id" },
+      form: {
+        username: "test@example.com",
+      },
+    },
+    {
+      headers: {
+        cookie: "sesamy-password-login-selection-clientId=password",
+      },
+    },
+  );
+
+  const enterEmailResponseLocation = enterEmailResponse.headers.get("location");
+
+  expect(enterEmailResponseLocation!.startsWith("/u/login")).toBeTruthy();
+});
 
 test("should set cookie as code when visit enter code page", async () => {
   const env = await getEnv();
   const oauthClient = testClient(oauthApp, env);
 
-  // shortcut instead of visiting the /authorize endpoint
   await env.data.universalLoginSessions.create(SESSION_FIXTURE);
 
   const enterCodeForm = await oauthClient.u["enter-code"].$get({
