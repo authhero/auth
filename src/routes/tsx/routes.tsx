@@ -30,7 +30,10 @@ import userIdGenerate from "../../utils/userIdGenerate";
 import { vendorSettingsSchema } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import { getSendParamFromAuth0ClientHeader } from "../../utils/getSendParamFromAuth0ClientHeader";
-import { getPasswordLoginSelectionCookieName } from "../../utils/authCookies";
+import {
+  getPasswordLoginSelectionCookieName,
+  SesamyPasswordLoginSelection,
+} from "../../utils/authCookies";
 import { setCookie } from "hono/cookie";
 
 const DEFAULT_SESAMY_VENDOR = {
@@ -197,7 +200,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       setCookie(
         ctx,
         getPasswordLoginSelectionCookieName(client.id),
-        "password",
+        SesamyPasswordLoginSelection.password,
         {
           path: "/",
           secure: true,
@@ -777,13 +780,25 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      // TODO - set cookie saying this route is preffered for this vendor... or tenant? or what? client right?
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
       const { vendorSettings, session, client } = await initJSXRoute(
         state,
         env,
+      );
+
+      setCookie(
+        ctx,
+        getPasswordLoginSelectionCookieName(client.id),
+        SesamyPasswordLoginSelection.code,
+        {
+          path: "/",
+          secure: true,
+          httpOnly: true,
+          sameSite: "Strict",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
       );
 
       if (!session.authParams.username) {
