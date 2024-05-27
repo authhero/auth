@@ -174,7 +174,6 @@ describe("Register password", () => {
         code,
       },
     });
-    console.log(await emailValidatedRes.text());
     expect(emailValidatedRes.status).toBe(200);
 
     // -----------------------------
@@ -204,7 +203,6 @@ describe("Register password", () => {
       },
     });
     expect(loginResponse.status).toBe(302);
-    console.log(loginResponse.headers.get("location"));
 
     // TO TEST - change some of these tests to return codes in the query string and do token exchange with /oauth/token
     const loginLocation = loginResponse.headers.get("location");
