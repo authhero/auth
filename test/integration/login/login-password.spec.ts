@@ -339,6 +339,52 @@ describe("Login with password user", () => {
     // TODO - decode this and assert params
   });
 
+  it("should reject non-existent email", async () => {
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const response = await oauthClient.authorize.$get({
+      query: {
+        client_id: "clientId",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        scope: "openid",
+        redirect_uri: "http://localhost:3000/callback",
+        state: "state",
+      },
+    });
+
+    const location = response.headers.get("location");
+
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    // Open login page
+    await oauthClient.u.login.$get({
+      query: {
+        state: query.state,
+        // assume this has been entered on the first step
+        username: "not-an-existing-user@example.com",
+      },
+    });
+
+    const loginSearchParams = new URLSearchParams(location!.split("?")[1]);
+    const loginSearchParamsQuery = Object.fromEntries(
+      loginSearchParams.entries(),
+    );
+
+    const nonexistingUserResponse = await oauthClient.u.login.$post({
+      query: {
+        state: loginSearchParamsQuery.state,
+        username: "not-an-existing-user@example.com",
+      },
+      form: {
+        password: "password",
+      },
+    });
+
+    await snapshotResponse(nonexistingUserResponse);
+  });
+
   it("should reject bad password", async () => {
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);

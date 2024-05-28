@@ -273,8 +273,15 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       });
 
       if (!user) {
-        // TODO - should be error page. M made ticket about this
-        throw new HTTPException(403);
+        return ctx.html(
+          <LoginPage
+            vendorSettings={vendorSettings}
+            email={username}
+            error={i18next.t("invalid_password")}
+            state={state}
+          />,
+          400,
+        );
       }
 
       const { valid } = await env.data.passwords.validate(client.tenant_id, {
