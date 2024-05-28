@@ -930,8 +930,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           verification_code: code,
         });
 
-        console.log("UserId", user.id);
-
         return generateAuthResponse({
           env,
           tenantId: session.tenant_id,
