@@ -48,7 +48,14 @@ async function generateCode({
 
   await env.data.authenticationCodes.create(tenantId, {
     user_id: userId,
-    authParams,
+    authParams: {
+      client_id: authParams.client_id,
+      redirect_uri: authParams.redirect_uri,
+      response_type: authParams.response_type,
+      response_mode: authParams.response_mode,
+      scope: authParams.scope,
+      nonce,
+    },
     nonce,
     created_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
