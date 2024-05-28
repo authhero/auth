@@ -2,7 +2,7 @@ import { HTTPException } from "hono/http-exception";
 import { AuthenticationCode, Database } from "../../../types";
 import { Kysely } from "kysely";
 
-export function validate(db: Kysely<Database>) {
+export function get(db: Kysely<Database>) {
   return async (
     tenant_id: string,
     code: string,

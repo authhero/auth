@@ -19,11 +19,9 @@ export async function authorizeCodeGrant(
     throw new HTTPException(400, { message: "Client not found" });
   }
 
+  // TODO: this does not set the used_at attribute
   const { user_id, nonce, authParams } =
-    await ctx.env.data.authenticationCodes.validate(
-      client.tenant_id,
-      params.code,
-    );
+    await ctx.env.data.authenticationCodes.get(client.tenant_id, params.code);
 
   const user = await ctx.env.data.users.get(client.tenant_id, user_id);
   if (!user) {
