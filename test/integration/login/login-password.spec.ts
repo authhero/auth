@@ -268,6 +268,78 @@ describe("Register password", () => {
     const lastLogin = new Date(primaryUser.last_login!);
     expect(Date.now() - lastLogin.getTime()).lessThan(1000);
   });
+
+  it("should resend email validation email after attempted login on unverified account", async () => {
+    const password = "Password1234!";
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+    const searchParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: searchParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+    const createUserResponse = await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "password-login-test@example.com",
+        password,
+      },
+    });
+    expect(createUserResponse.status).toBe(200);
+    const blockedLoginResponse = await oauthClient.u.login.$post({
+      query: {
+        state: query.state,
+        // TODO - this should be in the body. Need to change these pages to match Auth0
+        username: "password-login-test@example.com",
+      },
+      form: {
+        password,
+      },
+    });
+    expect(blockedLoginResponse.status).toBe(400);
+
+    // -------------------------------
+    // THIS IS THE ONLY CHANGE HERE - we're not using the initially sent email, we're using the email sent
+    // after a failed login
+    // -------------------------------
+    const { to, code, state } = getCodeStateTo(env.data.emails[1]);
+    await snapshotEmail(env.data.emails[1]);
+    expect(to).toBe("password-login-test@example.com");
+    expect(code).toBeDefined();
+    expect(state).toBeTypeOf("string");
+    const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+    expect(emailValidatedRes.status).toBe(200);
+    expect(await emailValidatedRes.text()).toBe("email validated");
+    //-------------------
+    // login again now to check that it works
+    //-------------------
+    const workingLoginResponse = await oauthClient.u.login.$post({
+      query: {
+        state: query.state,
+        username: "password-login-test@example.com",
+      },
+      form: {
+        password,
+      },
+    });
+    expect(workingLoginResponse.status).toBe(302);
+  });
 });
 
 describe("Login with password user", () => {
