@@ -22,7 +22,7 @@
     "knip": "knip",
     "postcss": "postcss ./src/styles/input.css -o ./src/styles/tailwind.css",
     "sort-translations": "sort-json src/locales/*/*.json src/localesLogin2/*/*.json",
-    "e2e:open-docker": "docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.43.1-focal /bin/bash"
+    "e2e:open-docker": "docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.44.1-focal /bin/bash"
   },
   "author": "",
   "license": "MIT",
@@ -66,7 +66,7 @@
     "mime": "4.0.3",
     "nanoid": "5.0.7",
     "oslo": "^1.2.0",
-    "playwright": "^1.43.1",
+    "playwright": "^1.44.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
