@@ -46,18 +46,14 @@ async function generateCode({
 }: GenerateAuthResponseParamsForCode) {
   let code = nanoid();
 
-  try {
-    await env.data.authenticationCodes.create(tenantId, {
-      user_id: userId,
-      authParams,
-      nonce,
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
-      code,
-    });
-  } catch (e: any) {
-    code = e.message;
-  }
+  await env.data.authenticationCodes.create(tenantId, {
+    user_id: userId,
+    authParams,
+    nonce,
+    created_at: new Date().toISOString(),
+    expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
+    code,
+  });
 
   const codeResponse: CodeResponse = {
     code,
