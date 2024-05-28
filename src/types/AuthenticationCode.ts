@@ -8,7 +8,7 @@ export const authenticationCodeSchema = z.object({
   user_id: z.string(),
   created_at: z.string(),
   expires_at: z.string(),
-  user_at: z.string().optional(),
+  used_at: z.string().optional(),
 });
 
 export type AuthenticationCode = z.infer<typeof authenticationCodeSchema>;

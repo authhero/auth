@@ -20,8 +20,12 @@ export async function authorizeCodeGrant(
   }
 
   // TODO: this does not set the used_at attribute
-  const { user_id, nonce, authParams } =
+  const { user_id, nonce, authParams, used_at, expires_at } =
     await ctx.env.data.authenticationCodes.get(client.tenant_id, params.code);
+
+  if (used_at || new Date(expires_at) < new Date()) {
+    throw new HTTPException(400, { message: "Code not found or expired" });
+  }
 
   const user = await ctx.env.data.users.get(client.tenant_id, user_id);
   if (!user) {
