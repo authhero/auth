@@ -3,7 +3,10 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, User, AuthorizationResponseType, Client } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
-import { getUserByEmailAndProvider } from "../../utils/users";
+import {
+  getUserByEmailAndProvider,
+  getPrimaryUserByEmailAndProvider,
+} from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import i18next from "i18next";
@@ -251,6 +254,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       },
     }),
+    // very similar to authenticate + ticket flow
     async (ctx) => {
       const { env } = ctx;
       const { state, username } = ctx.req.valid("query");
@@ -262,20 +266,41 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       );
 
       const user = await getUserByEmailAndProvider({
-        userAdapter: env.data.users,
+        userAdapter: ctx.env.data.users,
         tenant_id: client.tenant_id,
         email: username,
         provider: "auth2",
       });
 
       if (!user) {
-        throw new HTTPException(400, { message: "User not found" });
+        // TODO - should be error page. M made ticket about this
+        throw new HTTPException(403);
+      }
+
+      const { valid } = await env.data.passwords.validate(client.tenant_id, {
+        user_id: user.id,
+        password: password,
+      });
+
+      if (!valid) {
+        return ctx.html(
+          <LoginPage
+            vendorSettings={vendorSettings}
+            email={username}
+            error={i18next.t("invalid_password")}
+            state={state}
+          />,
+          400,
+        );
       }
 
       if (!user.email_verified) {
         // TODO - what to show here? Should we echo back out the login form?
         // on login2 we show https://login2.sesamy.dev/unverified-email
         // after sending another email validation email to the user in the ticket flow here on auth2
+
+        // TODO! should do same as on ticket flow - send another validation email...
+        // can then test for this
         return ctx.html(
           <MessagePage
             message={i18next.t("sent_code_spam")}
@@ -286,25 +311,29 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         );
       }
 
+      // want to return primary user if different BUT password is linked to auth2 user
+      const primaryUser = await getPrimaryUserByEmailAndProvider({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email: username,
+        provider: "auth2",
+      });
+
+      if (!primaryUser) {
+        // this should never really happen...
+        throw new HTTPException(400, { message: "primaryUser User not found" });
+      }
+
       try {
-        const { valid } = await env.data.passwords.validate(client.tenant_id, {
-          user_id: user.id,
-          password: password,
+        // Update the user's last login
+        await env.data.users.update(client.tenant_id, primaryUser.id, {
+          last_login: new Date().toISOString(),
+          login_count: user.login_count + 1,
+          // This is specific to cloudflare
+          last_ip: ctx.req.header("cf-connecting-ip") || "",
         });
 
-        if (!valid) {
-          return ctx.html(
-            <LoginPage
-              vendorSettings={vendorSettings}
-              email={username}
-              error={i18next.t("invalid_password")}
-              state={state}
-            />,
-            400,
-          );
-        }
-
-        return handleLogin(env, user, session, ctx, client);
+        return handleLogin(env, primaryUser, session, ctx, client);
       } catch (err: any) {
         return ctx.html(
           <LoginPage
@@ -979,6 +1008,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       },
     }),
+    // very similar to dbconnections/signup
     async (ctx) => {
       const { state } = ctx.req.valid("query");
       const loginParams = ctx.req.valid("form");
@@ -989,46 +1019,55 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         env,
       );
 
+      if (!validatePassword(loginParams.password)) {
+        return ctx.html(
+          <SignupPage
+            vendorSettings={vendorSettings}
+            error={i18next.t("create_account_weak_password")}
+            email={loginParams.username}
+          />,
+          400,
+        );
+      }
+
       if (session.authParams.username !== loginParams.username) {
         session.authParams.username = loginParams.username;
         await env.data.universalLoginSessions.update(session.id, session);
       }
 
       try {
-        // TODO - filter by primary user
-        let [user] = await getUsersByEmail(
-          env.data.users,
-          client.tenant_id,
-          loginParams.username,
-        );
+        const existingUser = await getPrimaryUserByEmailAndProvider({
+          userAdapter: ctx.env.data.users,
+          tenant_id: client.tenant_id,
+          email: loginParams.username,
+          provider: "auth2",
+        });
 
-        if (!user) {
-          // Create the user if it doesn't exist
-          user = await env.data.users.create(client.tenant_id, {
-            id: `auth2|${userIdGenerate()}`,
-            email: loginParams.username,
-            name: loginParams.username,
-            provider: "auth2",
-            connection: "Username-Password-Authentication",
-            email_verified: false,
-            last_ip: "",
-            login_count: 0,
-            is_social: false,
-            last_login: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+        if (existingUser) {
+          throw new HTTPException(400, { message: "Invalid sign up" });
         }
 
+        const newUser = await ctx.env.data.users.create(client.tenant_id, {
+          id: `auth2|${userIdGenerate()}`,
+          email: loginParams.username,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          email_verified: false,
+          provider: "auth2",
+          connection: "Username-Password-Authentication",
+          is_social: false,
+          login_count: 0,
+        });
+
         await env.data.passwords.create(client.tenant_id, {
-          user_id: user.id,
+          user_id: newUser.id,
           password: loginParams.password,
         });
 
         await sendEmailVerificationEmail({
           env: ctx.env,
           client,
-          user,
+          user: newUser,
         });
 
         return ctx.html(

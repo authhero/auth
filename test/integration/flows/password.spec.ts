@@ -11,11 +11,6 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
-import {
-  FOKUS_VENDOR_SETTINGS,
-  KVARTAL_VENDOR_SETTINGS,
-  BREAKIT_VENDOR_SETTINGS,
-} from "../../fixtures/vendorSettings";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
