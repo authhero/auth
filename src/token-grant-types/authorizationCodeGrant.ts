@@ -8,6 +8,7 @@ import { getClient } from "../services/clients";
 import { HTTPException } from "hono/http-exception";
 import { generateAuthData } from "../helpers/generate-auth-response";
 import { Context } from "hono";
+import { nanoid } from "nanoid";
 
 export async function authorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -18,15 +19,15 @@ export async function authorizeCodeGrant(
     throw new HTTPException(400, { message: "Client not found" });
   }
 
-  const { user_id, nonce, sid, authParams } =
+  const { user_id, nonce, authParams } =
     await ctx.env.data.authenticationCodes.validate(
       client.tenant_id,
       params.code,
     );
 
-  const user = await ctx.env.data.users.get(authParams.client_id, user_id);
+  const user = await ctx.env.data.users.get(client.tenant_id, user_id);
   if (!user) {
-    throw new HTTPException(400, { message: "User not found" });
+    throw new HTTPException(400, { message: "User not found" + user_id });
   }
 
   // TODO: Temporary fix for the default client
@@ -44,7 +45,7 @@ export async function authorizeCodeGrant(
     authParams,
     nonce,
     user,
-    sid,
+    sid: nanoid(),
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
     env: ctx.env,
     tenantId: client.tenant_id,

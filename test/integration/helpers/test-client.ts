@@ -3,7 +3,7 @@ import SQLite from "better-sqlite3";
 import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
 import { getCertificate } from "./token";
-import { Database, VendorSettings } from "../../../src/types";
+import { Database } from "../../../src/types";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -14,12 +14,6 @@ import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
-import {
-  SESAMY_VENDOR_SETTINGS,
-  KVARTAL_VENDOR_SETTINGS,
-  BREAKIT_VENDOR_SETTINGS,
-  FOKUS_VENDOR_SETTINGS,
-} from "../../fixtures/vendorSettings";
 
 type getEnvParams = {
   testTenantLanguage?: string;
@@ -106,10 +100,10 @@ export async function getEnv(args?: getEnvParams) {
   const testApplication: Application = {
     id: "clientId",
     name: "Test Client",
-    client_secret: "XjI8-WPndjtNHDu4ybXrD",
-    allowed_callback_urls: "",
+    client_secret: "clientSecret",
+    allowed_callback_urls: "https://example.com/callback",
     allowed_logout_urls: "",
-    allowed_web_origins: "",
+    allowed_web_origins: "example.com",
     email_validation: "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
@@ -119,7 +113,7 @@ export async function getEnv(args?: getEnvParams) {
     id: "otherClientId",
     name: "Test Other Client",
     client_secret: "3nwvu0mzibzb0spr7z5d2g",
-    allowed_callback_urls: "",
+    allowed_callback_urls: "https://example.com/callback2",
     allowed_logout_urls: "",
     allowed_web_origins: "",
     email_validation: "enforced",

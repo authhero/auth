@@ -4,7 +4,6 @@ import { authParamsSchema } from "./AuthParams";
 export const authenticationCodeSchema = z.object({
   authParams: authParamsSchema,
   nonce: z.string().optional(),
-  sid: z.string(),
   code: z.string(),
   user_id: z.string(),
   created_at: z.string(),

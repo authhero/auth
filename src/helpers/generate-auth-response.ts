@@ -44,17 +44,20 @@ async function generateCode({
   authParams,
   sid,
 }: GenerateAuthResponseParamsForCode) {
-  const code = nanoid();
+  let code = nanoid();
 
-  await env.data.authenticationCodes.create(tenantId, {
-    user_id: userId,
-    authParams,
-    nonce,
-    created_at: new Date().toISOString(),
-    expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
-    sid,
-    code,
-  });
+  try {
+    await env.data.authenticationCodes.create(tenantId, {
+      user_id: userId,
+      authParams,
+      nonce,
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
+      code,
+    });
+  } catch (e: any) {
+    code = e.message;
+  }
 
   const codeResponse: CodeResponse = {
     code,
@@ -169,6 +172,7 @@ export async function generateAuthResponse(params: GenerateAuthResponseParams) {
 
   const sessionCookie = serializeStateInCookie(sid);
 
+  // TODO: should we have different response for different response modes?
   return new Response("Redirecting", {
     status: 302,
     headers: {

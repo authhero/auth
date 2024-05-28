@@ -12,7 +12,6 @@ import {
 } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
-import { serializeStateInCookie } from "../services/cookies";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -202,7 +201,6 @@ export async function ticketAuth(
     userId: user.id,
     state: authParams.state,
     authParams: {
-      // TODO: Should it be possibe to change the scope when using a ticket?
       scope: ticket.authParams?.scope,
       ...authParams,
     },
