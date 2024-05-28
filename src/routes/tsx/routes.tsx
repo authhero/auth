@@ -21,7 +21,10 @@ import SignupPage from "../../utils/components/SignUpPage";
 import MessagePage from "../../utils/components/Message";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
-import { generateAuthData } from "../../helpers/generate-auth-response";
+import {
+  generateAuthData,
+  generateAuthResponse,
+} from "../../helpers/generate-auth-response";
 import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
 import { Context } from "hono";
 import ForgotPasswordPage from "../../utils/components/ForgotPasswordPage";
@@ -927,7 +930,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           verification_code: code,
         });
 
-        const authResponse = await generateAuthData({
+        return generateAuthResponse({
           env,
           tenantId: session.tenant_id,
           userId: user.id,
@@ -938,13 +941,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           authParams: session.authParams,
           user,
         });
-
-        const redirectUrl = getTokenResponseRedirectUri(
-          authResponse,
-          session.authParams,
-        );
-
-        return ctx.redirect(redirectUrl.href);
       } catch (err) {
         return ctx.html(
           <LoginEnterCodePage
