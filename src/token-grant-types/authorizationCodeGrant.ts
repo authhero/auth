@@ -25,7 +25,7 @@ export async function authorizeCodeGrant(
 
   const user = await ctx.env.data.users.get(client.tenant_id, user_id);
   if (!user) {
-    throw new HTTPException(400, { message: "User not found" + user_id });
+    throw new HTTPException(400, { message: "User not found" });
   }
 
   // TODO: Temporary fix for the default client
