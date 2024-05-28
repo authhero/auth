@@ -138,13 +138,23 @@ async function handleLogin(
       session.authParams.response_type ||
       AuthorizationResponseType.TOKEN_ID_TOKEN;
 
+    // these don't exist in authentication_codes
+    const {
+      vendor_id,
+      audience,
+      code_challenge_method,
+      code_challenge,
+      username,
+      ...authParams
+    } = session.authParams;
+
     const authResponse = await generateAuthData({
       env,
       tenantId: session.tenant_id,
       userId: user.id,
       sid: nanoid(),
       responseType,
-      authParams: session.authParams,
+      authParams,
       user,
     });
 
