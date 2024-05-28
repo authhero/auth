@@ -20,7 +20,6 @@ import {
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
-import { serializeStateInCookie } from "../services/cookies";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,

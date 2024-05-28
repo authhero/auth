@@ -2,8 +2,6 @@ import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
 import { oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
-import { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { AuthorizationResponseType } from "../../../src/types";
 
 describe("authorize", () => {
   it("should return a 403 if the origin isn't valid", async () => {

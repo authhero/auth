@@ -844,6 +844,7 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
     });
+
     it("should reject weak passwords", async () => {
       const env = await getEnv({
         // vendor_id: "kvartal",
