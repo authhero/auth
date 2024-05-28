@@ -30,6 +30,12 @@ import userIdGenerate from "../../utils/userIdGenerate";
 import { vendorSettingsSchema } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import { getSendParamFromAuth0ClientHeader } from "../../utils/getSendParamFromAuth0ClientHeader";
+import {
+  getPasswordLoginSelectionCookieName,
+  SesamyPasswordLoginSelection,
+  parsePasswordLoginSelectionCookie,
+} from "../../utils/authCookies";
+import { setCookie, getCookie } from "hono/cookie";
 
 const DEFAULT_SESAMY_VENDOR = {
   name: "sesamy",
@@ -190,7 +196,20 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const { vendorSettings } = await initJSXRoute(state, env);
+      const { vendorSettings, client } = await initJSXRoute(state, env);
+
+      setCookie(
+        ctx,
+        getPasswordLoginSelectionCookieName(client.id),
+        SesamyPasswordLoginSelection.password,
+        {
+          path: "/",
+          secure: true,
+          httpOnly: true,
+          sameSite: "Strict",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
+      );
 
       return ctx.html(
         <LoginPage
@@ -660,6 +679,17 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { env } = ctx;
       const { client, session } = await initJSXRoute(state, env);
 
+      const passwordLoginSelection =
+        parsePasswordLoginSelectionCookie(
+          getCookie(ctx, getPasswordLoginSelectionCookieName(client.id)),
+        ) || SesamyPasswordLoginSelection.code;
+
+      if (passwordLoginSelection === SesamyPasswordLoginSelection.password) {
+        return ctx.redirect(
+          `/u/login?state=${state}&username=${params.username}`,
+        );
+      }
+
       const code = generateOTP();
 
       // fields in universalLoginSessions don't match fields in OTP
@@ -765,6 +795,19 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { vendorSettings, session, client } = await initJSXRoute(
         state,
         env,
+      );
+
+      setCookie(
+        ctx,
+        getPasswordLoginSelectionCookieName(client.id),
+        SesamyPasswordLoginSelection.code,
+        {
+          path: "/",
+          secure: true,
+          httpOnly: true,
+          sameSite: "Strict",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
       );
 
       if (!session.authParams.username) {
