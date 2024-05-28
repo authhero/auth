@@ -312,12 +312,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       if (!user.email_verified) {
-        // TODO - what to show here? Should we echo back out the login form?
-        // on login2 we show https://login2.sesamy.dev/unverified-email
-        // after sending another email validation email to the user in the ticket flow here on auth2
+        await sendEmailVerificationEmail({
+          env: ctx.env,
+          client,
+          user,
+        });
 
-        // TODO! should do same as on ticket flow - send another validation email...
-        // can then test for this
+        // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
         return ctx.html(
           <MessagePage
             message={i18next.t("sent_code_spam")}
@@ -1089,7 +1090,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
         return ctx.html(
           <MessagePage
-            // TODO - what text? & i18n
             message="Check your inbox for email validation instructions."
             pageTitle="Signed up"
             vendorSettings={vendorSettings}
