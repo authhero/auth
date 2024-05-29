@@ -54,13 +54,16 @@ export const KVARTAL_VENDOR_SETTINGS: VendorSettings = {
   termsAndConditionsUrl: "https://kvartal.se/kopvillkor/",
 };
 
+// there is no Sesamy vendor settings... we have this on login2 as a fallback and I think there's
+// some interaction with "dark mode"
+// But I don't want to have a Sesamy vendor on auth2
 export const SESAMY_VENDOR_SETTINGS: VendorSettings = {
   name: "sesamy",
   logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
   style: {
     primaryColor: "#7D68F4",
-    buttonTextColor: "#7D68F4",
-    primaryHoverColor: "#7D68F4",
+    buttonTextColor: "#FFFFFF",
+    primaryHoverColor: "#A091F2",
   },
   loginBackgroundImage: "",
   checkoutHideSocial: false,
