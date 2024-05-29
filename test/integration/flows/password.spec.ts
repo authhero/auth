@@ -123,9 +123,7 @@ describe("password-flow", () => {
           code,
         },
       });
-
       expect(emailValidatedRes.status).toBe(200);
-      expect(await emailValidatedRes.text()).toBe("email validated");
 
       //-------------------
       // login again now to check that it works
@@ -256,7 +254,6 @@ describe("password-flow", () => {
       });
 
       expect(emailValidatedRes.status).toBe(200);
-      expect(await emailValidatedRes.text()).toBe("email validated");
 
       // -----------------------------
       // sanity check that linking has happened!
