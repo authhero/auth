@@ -1,6 +1,4 @@
-// import { createOauthQuerystringParams } from "@lib/oauth-query-string-keys";
 import Button from "./Button";
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { VendorSettings } from "../../types";
 import Layout from "./Layout";
 import i18next from "i18next";
@@ -9,13 +7,14 @@ import type { FC } from "hono/jsx";
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
-  session: UniversalLoginSession;
+  state: string;
 };
 
-const UserNotFound: FC<Props> = ({ vendorSettings }) => {
-  //   const oauthQuerystringParams = createOauthQuerystringParams(router.query);
-
-  //   const enterCodeLink = `/enter-email?${oauthQuerystringParams}`;
+const UserNotFound: FC<Props> = ({ vendorSettings, state }) => {
+  const linkParams = new URLSearchParams({
+    state,
+  });
+  const enterCodeLink = `/u/code?${linkParams}`;
 
   return (
     <Layout vendorSettings={vendorSettings} title={i18next.t("user_not_found")}>
@@ -23,10 +22,7 @@ const UserNotFound: FC<Props> = ({ vendorSettings }) => {
         <p className="mb-8 text-gray-300 text-lg">
           {i18next.t("user_not_found_body")}
         </p>
-        <Button
-          Component="a"
-          //  href={enterCodeLink}
-        >
+        <Button Component="a" href={enterCodeLink}>
           {i18next.t("user_not_found_cta")}
         </Button>
       </div>
