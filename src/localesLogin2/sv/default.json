@@ -25,6 +25,7 @@
   "currently_logged_in_as": "Du är inloggad som <0>{{email}}</0>",
   "email": "E-postadress",
   "email_placeholder": "E-postadress",
+  "email_validated": "Din e-postadress har validerats",
   "enter_a_code_btn": "Ange en kod",
   "enter_new_password_placeholder": "Ange nytt lösenord",
   "enter_password": "Ange lösenord",

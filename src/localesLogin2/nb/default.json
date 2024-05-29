@@ -25,6 +25,7 @@
   "currently_logged_in_as": "Du er logget på som <0> {{email}}</0>",
   "email": "E-post",
   "email_placeholder": "E-postadresse",
+  "email_validated": "E-postadressen din har blitt validert",
   "enter_a_code_btn": "Angi en kode",
   "enter_new_password_placeholder": "Skriv inn nytt passord",
   "enter_password": "Oppgi passord",
