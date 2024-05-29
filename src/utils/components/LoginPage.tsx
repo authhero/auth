@@ -5,6 +5,7 @@ import { VendorSettings } from "../../types";
 import i18next from "i18next";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
+import Icon from "./Icon";
 
 type Props = {
   error?: string;
@@ -28,7 +29,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
         {i18next.t("enter_password_description")}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post">
+        <form method="post" className="mb-7">
           <input
             type="text"
             name="username"
@@ -44,7 +45,12 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          <DisabledSubmitButton>{i18next.t("login")}</DisabledSubmitButton>
+          <DisabledSubmitButton className="text-base sm:mt-4 md:text-base">
+            <div className="flex items-center space-x-2">
+              <span>{i18next.t("login")}</span>
+              <Icon className="text-xs" name="arrow-right" />
+            </div>
+          </DisabledSubmitButton>
         </form>
         <a
           href={`/u/forgot-password?${loginLinkParams.toString()}`}
