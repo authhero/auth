@@ -1137,7 +1137,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const { client, session } = await initJSXRoute(state, env);
+      const { client, session, vendorSettings } = await initJSXRoute(
+        state,
+        env,
+      );
 
       const email = session.authParams.username;
       if (!email) {
@@ -1199,8 +1202,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         }
       }
 
-      // what should we actually do here?
-      return ctx.text("email validated");
+      return ctx.html(
+        <MessagePage
+          message={i18next.t("email_validated")}
+          pageTitle={i18next.t("email_validated")}
+          vendorSettings={vendorSettings}
+        />,
+      );
     },
   )
 
