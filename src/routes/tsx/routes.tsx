@@ -18,6 +18,7 @@ import LoginPage from "../../utils/components/LoginPage";
 import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
 import LoginEnterCodePage from "../../utils/components/LoginEnterCodePage";
 import SignupPage from "../../utils/components/SignUpPage";
+import UnverifiedEmail from "../../utils/components/UnverifiedEmailPage";
 import MessagePage from "../../utils/components/Message";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -322,11 +323,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         // TODO! should do same as on ticket flow - send another validation email...
         // can then test for this
         return ctx.html(
-          <MessagePage
-            message={i18next.t("sent_code_spam")}
-            pageTitle={i18next.t("unverified_email")}
-            vendorSettings={vendorSettings}
-          />,
+          <UnverifiedEmail vendorSettings={vendorSettings} />,
           400,
         );
       }
