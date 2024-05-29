@@ -89,8 +89,7 @@ describe("Register password", () => {
     });
 
     expect(emailValidatedRes.status).toBe(200);
-    // TODO - should be a JSX page? (or should even continue on the login flow... somehow)
-    expect(await emailValidatedRes.text()).toBe("email validated");
+    await snapshotResponse(emailValidatedRes);
 
     //-------------------
     // login again now to check that it works
