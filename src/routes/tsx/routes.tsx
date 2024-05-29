@@ -725,7 +725,28 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const params = ctx.req.valid("form");
 
       const { env } = ctx;
-      const { client, session } = await initJSXRoute(state, env);
+      const { client, session, vendorSettings } = await initJSXRoute(
+        state,
+        env,
+      );
+
+      if (
+        session.authParams.vendor_id === "breakit" ||
+        client.id === "breakit"
+      ) {
+        const isExistingBreakitCustomer = true;
+
+        if (!isExistingBreakitCustomer) {
+          return ctx.html(
+            <LoginWithCodePage
+              vendorSettings={vendorSettings}
+              session={session}
+              error={i18next.t("user_account_does_not_exist")}
+            />,
+            400,
+          );
+        }
+      }
 
       // Add the username to the state
       session.authParams.username = params.username;
