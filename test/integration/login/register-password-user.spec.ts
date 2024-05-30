@@ -33,7 +33,7 @@ describe("Register password user", () => {
 
     expect(response.status).toBe(302);
     const location: string = response.headers.get("location")!;
-    expect(location.startsWith("/u/login")).toBeTruthy;
+    expect(location.startsWith("/u/login")).toBeTruthy();
 
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
@@ -103,7 +103,7 @@ describe("Register password user", () => {
     );
     expect(response.status).toBe(302);
     const location: string = response.headers.get("location")!;
-    expect(location.startsWith("/u/login")).toBeTruthy;
+    expect(location.startsWith("/u/login")).toBeTruthy();
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
     // Open login page
