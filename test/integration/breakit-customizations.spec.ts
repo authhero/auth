@@ -2,8 +2,8 @@ import { test, expect } from "vitest";
 import { getEnv } from "./helpers/test-client";
 import { oauthApp } from "../../src/app";
 import { testClient } from "hono/testing";
-import { snapshotResponse, snapshotEmail } from "./helpers/playwrightSnapshots";
-import { AuthorizationResponseType, UserResponse } from "../../src/types";
+import { snapshotResponse } from "./helpers/playwrightSnapshots";
+import { AuthorizationResponseType } from "../../src/types";
 
 test("only allows existing breakit users to progress to the enter code step", async () => {
   const testTenantLanguage = "en";
@@ -34,7 +34,7 @@ test("only allows existing breakit users to progress to the enter code step", as
     allowed_web_origins: "example.com",
     email_validation: "enforced",
   });
-  await env.data.users.create("tenantId", {
+  await env.data.users.create("breakit", {
     id: "email|existing-breakit-user",
     email: "existing-breakit-user@example.com",
     email_verified: true,
@@ -46,10 +46,6 @@ test("only allows existing breakit users to progress to the enter code step", as
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
-
-  // ----------------------------
-  // Try going past email address step in with non-existing breakit user
-  // ----------------------------
 
   const searchParams = {
     client_id: "breakit",
@@ -67,6 +63,10 @@ test("only allows existing breakit users to progress to the enter code step", as
   const stateParam = new URLSearchParams(location!.split("?")[1]);
   const query = Object.fromEntries(stateParam.entries());
 
+  // ----------------------------
+  // Try going past email address step in with non-existing breakit user
+  // ----------------------------
+
   const nonExistingUserEmailResponse = await oauthClient.u.code.$post({
     query: {
       state: query.state,
@@ -79,21 +79,22 @@ test("only allows existing breakit users to progress to the enter code step", as
   await snapshotResponse(nonExistingUserEmailResponse);
 
   // ----------------------------
-  //Try going past email address step with existing breakit user
+  //  Try going past email address step with existing breakit user
   // ----------------------------
 
-  // const existingUserEmailResponse = await oauthClient.u.code.$post({
-  //   query: {
-  //     state: query.state,
-  //   },
-  //   form: {
-  //     username: "existing-breakit-user@example.com",
-  //   },
-  // });
-  // expect(existingUserEmailResponse.status).toBe(302);
-  // const existingUserEmailResponseLocation =
-  //   existingUserEmailResponse.headers.get("location");
-  // expect(existingUserEmailResponseLocation!.startsWith("/u/login")).toBeTruthy;
+  const existingUserEmailResponse = await oauthClient.u.code.$post({
+    query: {
+      state: query.state,
+    },
+    form: {
+      username: "existing-breakit-user@example.com",
+    },
+  });
+  await snapshotResponse(existingUserEmailResponse);
+  expect(existingUserEmailResponse.status).toBe(302);
+  const existingUserEmailResponseLocation =
+    existingUserEmailResponse.headers.get("location");
+  expect(existingUserEmailResponseLocation!.startsWith("/u/login")).toBeTruthy;
 });
 
 // TO TEST
