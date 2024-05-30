@@ -734,9 +734,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         session.authParams.vendor_id === "breakit" ||
         client.id === "breakit"
       ) {
-        const isExistingBreakitCustomer = true;
+        const [user] = await getUsersByEmail(
+          env.data.users,
+          client.tenant_id,
+          params.username,
+        );
 
-        if (!isExistingBreakitCustomer) {
+        if (!user) {
           return ctx.html(
             <LoginWithCodePage
               vendorSettings={vendorSettings}
