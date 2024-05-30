@@ -78,6 +78,8 @@
   "user_not_found_body": "Vi kan inte hitta en användare med denna eposten. Vänligen försök igen.",
   "user_not_found_cta": "Försök igen.",
   "validate_code": "Validera kod",
+  "validate_email_body": "Kontrollera din inkorg för instruktioner om validering av e-post.",
+  "validate_email_title": "Registrerad",
   "verify_your_email": "Verifiera e-postadress",
   "we_sent_a_code_to": "Vänligen kontrollera din e-post på <0>{{email}}</0> och ange den sexsiffriga koden som vi har skickat till dig.",
   "welcome": "Välkommen",

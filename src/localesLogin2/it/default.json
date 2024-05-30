@@ -78,6 +78,8 @@
   "user_not_found_body": "Non è stato possibile trovare un utente con l'indirizzo e-mail fornito. Si prega di riprovare.",
   "user_not_found_cta": "Riprova.",
   "validate_code": "Convalida del codice",
+  "validate_email_body": "Controllate la vostra casella di posta per le istruzioni di convalida dell'e-mail.",
+  "validate_email_title": "Iscritta",
   "verify_your_email": "Verificare l'e-mail",
   "we_sent_a_code_to": "Controllate la vostra e-mail all'indirizzo <0>{{email}}</0> e inserisca il codice a sei cifre che le abbiamo inviato.",
   "welcome": "Benvenuti",

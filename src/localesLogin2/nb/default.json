@@ -78,6 +78,8 @@
   "user_not_found_body": "Vi kunne ikke finne en bruker med den oppgitte e-postadressen. Vær så snill, prøv på nytt.",
   "user_not_found_cta": "Prøv igjen.",
   "validate_code": "Bekreft koden",
+  "validate_email_body": "Sjekk innboksen din for instruksjoner om e-postvalidering.",
+  "validate_email_title": "Registrerte seg",
   "verify_your_email": "Bekreft e-posten din",
   "we_sent_a_code_to": "Vennligst sjekk e-posten din på <0>{{email}}</0> og skriv inn den sekssifrede koden som vi har sendt deg.",
   "welcome": "Velkommen",

@@ -1083,8 +1083,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
         return ctx.html(
           <MessagePage
-            message="Check your inbox for email validation instructions."
-            pageTitle="Signed up"
+            message={i18next.t("validate_email_body")}
+            pageTitle={i18next.t("validate_email_title")}
             vendorSettings={vendorSettings}
           />,
         );
