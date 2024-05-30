@@ -746,6 +746,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
               vendorSettings={vendorSettings}
               session={session}
               error={i18next.t("user_account_does_not_exist")}
+              email={params.username}
             />,
             400,
           );
