@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vitest } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
@@ -6,6 +6,11 @@ import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
 
 describe("Vendor settings", () => {
+  beforeEach(() => {
+    // MSW and Zod make a lot of noise on this test
+    vitest.spyOn(console, "error").mockImplementation(vitest.fn());
+  });
+
   it("should fallback to sesamy styling with invalid vendor_id", async () => {
     const env = await getEnv({
       testTenantLanguage: "nb",
