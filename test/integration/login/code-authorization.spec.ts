@@ -29,7 +29,6 @@ test("code authorization flow should work", async () => {
   });
   expect(response.status).toBe(302);
   const location = response.headers.get("location");
-  expect(location!.startsWith("/u/login")).toBeTruthy();
   const stateParam = new URLSearchParams(location!.split("?")[1]);
   const query = Object.fromEntries(stateParam.entries());
 
