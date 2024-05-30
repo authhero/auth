@@ -1,12 +1,15 @@
 import Button from "./Button";
 import cn from "classnames";
+import { PropsWithChildren } from "hono/jsx";
 
 type Props = {
-  children: (string | JSX.Element)[] | string | JSX.Element;
   className?: string;
 };
 
-const DisabledSubmitButton = ({ children, className }: Props) => {
+const DisabledSubmitButton = ({
+  children,
+  className,
+}: PropsWithChildren<Props>) => {
   return (
     <>
       <Button className={className} id="initial-btn">

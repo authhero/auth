@@ -100,7 +100,9 @@ describe("code-flow", () => {
       );
     }
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as {
+      login_ticket: string;
+    };
 
     const query = {
       ...AUTH_PARAMS,
@@ -194,7 +196,9 @@ describe("code-flow", () => {
       },
     });
 
-    const { login_ticket: loginTicket2 } = await authRes2.json();
+    const { login_ticket: loginTicket2 } = (await authRes2.json()) as {
+      login_ticket: string;
+    };
 
     const tokenRes2 = await oauthClient.authorize.$get(
       {
@@ -319,7 +323,9 @@ describe("code-flow", () => {
       },
     });
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as {
+      login_ticket: string;
+    };
 
     const query = {
       ...AUTH_PARAMS,
@@ -419,7 +425,9 @@ describe("code-flow", () => {
       },
     });
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as {
+      login_ticket: string;
+    };
 
     // Trade the ticket for token
     const tokenResponse = await oauthClient.authorize.$get(
@@ -509,7 +517,9 @@ describe("code-flow", () => {
       },
     });
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as {
+      login_ticket: string;
+    };
 
     const tokenResponse = await oauthClient.authorize.$get(
       {
@@ -642,7 +652,10 @@ describe("code-flow", () => {
       },
     });
 
-    const { login_ticket: loginTicket2 } = await authenticateResponse2.json();
+    const { login_ticket: loginTicket2 } =
+      (await authenticateResponse2.json()) as {
+        login_ticket: string;
+      };
     const tokenResponse2 = await oauthClient.authorize.$get(
       {
         query: {
@@ -798,7 +811,9 @@ describe("code-flow", () => {
       });
       expect(authenticateResponse.status).toBe(200);
 
-      const { login_ticket } = await authenticateResponse.json();
+      const { login_ticket } = (await authenticateResponse.json()) as {
+        login_ticket: string;
+      };
 
       // Trade the ticket for token
       const tokenResponse = await oauthClient.authorize.$get(
@@ -1068,7 +1083,9 @@ describe("code-flow", () => {
       throw new Error(await authenticateResponse.text());
     }
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as {
+      login_ticket: string;
+    };
 
     const query = {
       ...AUTH_PARAMS,
@@ -1142,7 +1159,9 @@ describe("code-flow", () => {
       },
     });
 
-    const { login_ticket } = await authenticateResponse.json();
+    const { login_ticket } = (await authenticateResponse.json()) as {
+      login_ticket: string;
+    };
 
     // Trade the ticket for token
     const tokenResponse = await oauthClient.authorize.$get(
@@ -1314,7 +1333,9 @@ describe("code-flow", () => {
 
       expect(authenticateResponse.status).toBe(200);
 
-      const { login_ticket } = await authenticateResponse.json();
+      const { login_ticket } = (await authenticateResponse.json()) as {
+        login_ticket: string;
+      };
 
       // Trade the ticket for token
       const tokenResponse = await oauthClient.authorize.$get(
@@ -1401,7 +1422,9 @@ describe("code-flow", () => {
         },
       });
 
-      const { login_ticket } = await authenticateResponse.json();
+      const { login_ticket } = (await authenticateResponse.json()) as {
+        login_ticket: string;
+      };
 
       // Trade the ticket for token
       const tokenResponse = await oauthClient.authorize.$get(
@@ -1473,7 +1496,9 @@ describe("code-flow", () => {
       });
       expect(authenticateResponse.status).toBe(200);
 
-      const { login_ticket } = await authenticateResponse.json();
+      const { login_ticket } = (await authenticateResponse.json()) as {
+        login_ticket: string;
+      };
 
       // -----------------
       // Trade the ticket for token once so it is used

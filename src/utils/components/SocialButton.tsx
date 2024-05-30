@@ -4,7 +4,8 @@ import Button from "./Button";
 
 type Props = {
   social: string;
-  icon: JSX.Element | null;
+  // TODO - what is the correct type here in hono/jsx? OR use a children prop
+  icon: any;
   text: string;
   canResize?: boolean;
   session: UniversalLoginSession;

@@ -462,10 +462,10 @@
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.0.0.tgz#f22824caff3ae506b18207bad4126dbc6ccdb6b8"
   integrity sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==
 
-"@hono/zod-openapi@0.11.0":
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-0.11.0.tgz#a0e5eebf9739affc4442ae32f49414c22c0c441a"
-  integrity sha512-thbxV4lWJoDo1NjF8ZGnd0muD3UHUpRqpKvS3RI+kWCXU05nyuViymUbPvVpp+O6i5SjovITTF91NRMTraZm3Q==
+"@hono/zod-openapi@0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-0.14.0.tgz#5d979fdd323d002169b216aa57ecae7530adb0e5"
+  integrity sha512-sbOdfPlm8uT/2RypeNw9BIcqZ9AkLJdWYhfx6r6/RamkE193FO9Z980W9+IaYCkqBTlDWAh5zHYWjLkN8lfmCg==
   dependencies:
     "@asteasolutions/zod-to-openapi" "^7.0.0"
     "@hono/zod-validator" "0.2.1"
@@ -3601,10 +3601,10 @@ highlight.js@^10.7.1:
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.7.3.tgz#697272e3991356e40c3cac566a74eef681756531"
   integrity sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A==
 
-hono@4.2.9:
-  version "4.2.9"
-  resolved "https://registry.yarnpkg.com/hono/-/hono-4.2.9.tgz#9e81de065d18f61721aa6bfd9121dcf2af3e78d2"
-  integrity sha512-59FAv52UxDWUt/NlC0NzrRCjeVCThUnVlqlrKYm+k80XujBu6uJwBIa5gACKKZWobjA0MJ6Vds0I3URKf383Cw==
+hono@4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-4.4.0.tgz#df456c61fab856db3d546869ec8d86839ff31b54"
+  integrity sha512-Bb2GHk8jmlLIuxc3U+7UBGOoA5lByJTAFnRdH2N2fqEVy9TEQzJ9saIJUQ/ZqBvEvgEFe7UjPFNSFi8cyeU+3Q==
 
 hook-std@^3.0.0:
   version "3.0.0"

@@ -1,12 +1,11 @@
-import type { FC } from "hono/jsx";
 import cn from "classnames";
 import Spinner from "./Spinner";
+import { PropsWithChildren } from "hono/jsx";
 
 // in React we would do
 // interface Props extends ButtonHTMLAttributes<HTMLButtonElement>
 // to get all the DOM attributes of a button
 type Props = {
-  children: (string | JSX.Element)[] | string | JSX.Element;
   className?: string;
   Component?: string;
   variant?: "primary" | "secondary" | "custom";
@@ -17,7 +16,7 @@ type Props = {
   id?: string;
 };
 
-const Button: FC<Props> = ({
+const Button = ({
   children,
   className,
   Component = "button",
@@ -26,7 +25,7 @@ const Button: FC<Props> = ({
   disabled,
   isLoading,
   id,
-}) => {
+}: PropsWithChildren<Props>) => {
   const hrefProps = Component === "a" ? { href } : {};
   return (
     <Component

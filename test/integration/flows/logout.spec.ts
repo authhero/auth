@@ -23,7 +23,9 @@ describe("logout", () => {
       },
     });
     expect(loginResponse.status).toBe(200);
-    const { login_ticket } = await loginResponse.json();
+    const { login_ticket } = (await loginResponse.json()) as {
+      login_ticket: string;
+    };
 
     // Trade the ticket for token
     const tokenResponse = await oauthClient.authorize.$get(

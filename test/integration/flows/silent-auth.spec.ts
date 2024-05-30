@@ -65,7 +65,9 @@ describe("silent-auth", () => {
       },
     });
     expect(loginResponse.status).toBe(200);
-    const { login_ticket } = await loginResponse.json();
+    const { login_ticket } = (await loginResponse.json()) as {
+      login_ticket: string;
+    };
     const query = {
       auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
       client_id: "clientId",
@@ -115,7 +117,9 @@ describe("silent-auth", () => {
       },
     });
     expect(loginResponse.status).toBe(200);
-    const { login_ticket } = await loginResponse.json();
+    const { login_ticket } = (await loginResponse.json()) as {
+      login_ticket: string;
+    };
     // Trade the ticket for token
     const tokenResponse = await oauthClient.authorize.$get(
       {
