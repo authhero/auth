@@ -90,11 +90,14 @@ test("only allows existing breakit users to progress to the enter code step", as
       username: "existing-breakit-user@example.com",
     },
   });
-  await snapshotResponse(existingUserEmailResponse);
   expect(existingUserEmailResponse.status).toBe(302);
   const existingUserEmailResponseLocation =
     existingUserEmailResponse.headers.get("location");
-  expect(existingUserEmailResponseLocation!.startsWith("/u/login")).toBeTruthy;
+
+  // this shows we're being redirected to the next step as the user exists
+  expect(
+    existingUserEmailResponseLocation!.startsWith("/u/enter-code"),
+  ).toBeTruthy();
 });
 
 // TO TEST
