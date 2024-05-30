@@ -32,7 +32,7 @@ const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
             required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          <DisabledSubmitButton>
+          <DisabledSubmitButton className="sm:mt-4">
             {i18next.t("forgot_password_cta")}
           </DisabledSubmitButton>
         </form>
