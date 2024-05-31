@@ -232,7 +232,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       );
 
       // is it session.authParams.username or session.username?
-      if (!session.username) {
+      if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
       }
 
@@ -286,7 +286,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         env,
       );
 
-      const { username } = session;
+      const { username } = session.authParams;
 
       if (!username) {
         throw new HTTPException(400, { message: "Username required" });
@@ -1019,7 +1019,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { env } = ctx;
       const { vendorSettings, session } = await initJSXRoute(state, env);
 
-      const { username } = session;
+      const { username } = session.authParams;
 
       if (!username) {
         throw new HTTPException(400, { message: "Username required" });
