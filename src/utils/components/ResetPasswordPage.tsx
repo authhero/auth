@@ -12,9 +12,6 @@ type ResetPasswordPageProps = {
   email: string;
 };
 
-// {i18next.t("agree_to")}{" "}
-//
-
 const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
   error,
   vendorSettings,

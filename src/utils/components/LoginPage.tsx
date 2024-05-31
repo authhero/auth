@@ -17,7 +17,6 @@ type Props = {
 const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
   const loginLinkParams = new URLSearchParams({
     state,
-    username: email,
   });
 
   return (
