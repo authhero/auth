@@ -138,7 +138,6 @@ describe("Register password", () => {
       scope: "openid",
       redirect_uri: "http://localhost:3000/callback",
       state: "state",
-      // hmmmmmm
       username: "existing-code-user@example.com",
     };
     const response = await oauthClient.authorize.$get({
@@ -301,8 +300,6 @@ describe("Register password", () => {
     const blockedLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
-        // TODO - this should be in the body. Need to change these pages to match Auth0
-        // username: "password-login-test@example.com",
       },
       form: {
         password,
@@ -332,7 +329,6 @@ describe("Register password", () => {
     const workingLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
-        // username: "password-login-test@example.com",
       },
       form: {
         password,
@@ -389,7 +385,6 @@ describe("Login with password user", () => {
         state: loginSearchParamsQuery.state,
       },
       form: {
-        // username: "foo@example.com",
         password: "Test1234!",
       },
     });
@@ -433,7 +428,6 @@ describe("Login with password user", () => {
     await oauthClient.u.login.$get({
       query: {
         state: query.state,
-        // assume this has been entered on the first step
       },
     });
 
