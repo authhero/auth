@@ -22,6 +22,7 @@ describe("Register password user", () => {
           scope: "openid",
           redirect_uri: "http://localhost:3000/callback",
           state: "state",
+          username: "test@example.com",
         },
       },
       {
@@ -41,7 +42,6 @@ describe("Register password user", () => {
     const loginFormResponse = await oauthClient.u.login.$get({
       query: {
         state: query.state,
-        username: "test@example.com",
       },
     });
 
@@ -92,6 +92,7 @@ describe("Register password user", () => {
           scope: "openid",
           redirect_uri: "http://localhost:3000/callback",
           state: "state",
+          username: "test@example.com",
         },
       },
       {
@@ -108,7 +109,6 @@ describe("Register password user", () => {
     await oauthClient.u.login.$get({
       query: {
         state: query.state,
-        username: "test@example.com",
       },
     });
     const loginSearchParams = new URLSearchParams(location.split("?")[1]);

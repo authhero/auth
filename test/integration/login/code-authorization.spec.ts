@@ -23,6 +23,7 @@ test("code authorization flow should work", async () => {
     scope: "openid",
     redirect_uri: "http://localhost:3000/callback",
     state: "state",
+    username: "foo@example.com",
   };
   const response = await oauthClient.authorize.$get({
     query: searchParams,
@@ -38,7 +39,6 @@ test("code authorization flow should work", async () => {
   const postLoginResponse = await oauthClient.u.login.$post({
     query: {
       state: query.state,
-      username: "foo@example.com",
     },
     form: {
       password: "Test1234!",
