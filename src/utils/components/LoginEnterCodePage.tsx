@@ -107,7 +107,8 @@ const LoginEnterCodePage: FC<Props> = ({
           )}
           <a
             className="block text-primary hover:text-primaryHover text-center"
-            href="javascript:history.go(-1)"
+            // TODO - when we release password login, "back" might mean going back to the password login page
+            href={`/u/code?${passwordLoginLinkParams.toString()}`}
           >
             {i18next.t("go_back")}
           </a>
