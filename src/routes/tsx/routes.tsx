@@ -726,6 +726,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { env } = ctx;
       const { client, session } = await initJSXRoute(state, env);
 
+      // Add the username to the state
+      session.authParams.username = params.username;
+      await env.data.universalLoginSessions.update(session.id, session);
+
       const passwordLoginSelection =
         parsePasswordLoginSelectionCookie(
           getCookie(ctx, getPasswordLoginSelectionCookieName(client.id)),
@@ -763,10 +767,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       });
 
       // request.ctx.set("log", `Code: ${code}`);
-
-      // Add the username to the state
-      session.authParams.username = params.username;
-      await env.data.universalLoginSessions.update(session.id, session);
 
       const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
