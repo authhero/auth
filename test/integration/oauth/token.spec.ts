@@ -25,7 +25,9 @@ describe("token", () => {
     });
 
     expect(loginResponse.status).toEqual(200);
-    const { login_ticket } = await loginResponse.json();
+    const { login_ticket } = (await loginResponse.json()) as {
+      login_ticket: string;
+    };
 
     const authorizeResponse = await oauthClient.authorize.$get(
       {
@@ -64,7 +66,12 @@ describe("token", () => {
     });
 
     expect(tokenResponse.status).toEqual(200);
-    const { access_token, id_token, token_type } = await tokenResponse.json();
+    const { access_token, id_token, token_type } =
+      (await tokenResponse.json()) as {
+        access_token: string;
+        id_token: string;
+        token_type: string;
+      };
 
     expect(access_token).toBeTypeOf("string");
     expect(id_token).toBeTypeOf("string");
