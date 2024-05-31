@@ -65,8 +65,6 @@ describe("Register password", () => {
         state: query.state,
       },
       form: {
-        // // TODO - this should be in the body. Need to change these pages to match Auth0
-        // username: "password-login-test@example.com",
         password,
       },
     });
