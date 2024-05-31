@@ -231,7 +231,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       );
 
-      // is it session.authParams.username or session.username?
       if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
       }
@@ -239,7 +238,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       return ctx.html(
         <LoginPage
           vendorSettings={vendorSettings}
-          email={session.username}
+          email={session.authParams.username}
           state={state}
         />,
       );
