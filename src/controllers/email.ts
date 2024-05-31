@@ -35,11 +35,6 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  // FINAL STEP! these need to be read straight from in here!
-  // A. generate these in E6 strings... just do manually for now right! like M did with tailwind
-  // B. IF WORKS - new PR to generate these. EASY!
-  // C. start asserting and testing... would be good to release but NOT ON FRIDAY lol
-
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
 
