@@ -120,8 +120,6 @@ test("should set cookie as password when visit password page", async () => {
   const enterPasswordForm = await oauthClient.u.login.$get({
     query: {
       state: "session-id",
-
-      username: "test@example.com",
     },
   });
   expect(enterPasswordForm.status).toBe(200);
