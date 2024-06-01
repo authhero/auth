@@ -214,7 +214,7 @@ export const passwordReset = `
                           <tbody>
                             <tr>
                               <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                <div style="font-family:KHTeka, Helvetica, sans-serif;font-size:18px;font-weight:500;line-height:21.6px;text-align:left;color:#14141A;">{{welcomeToYourAccount}}</div>
+                                <div style="font-family:KHTeka, Helvetica, sans-serif;font-size:18px;font-weight:500;line-height:21.6px;text-align:left;color:#14141A;">{{passwordResetTitle}}</div>
                               </td>
                             </tr>
                             <tr>
