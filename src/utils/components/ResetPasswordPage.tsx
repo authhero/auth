@@ -40,13 +40,13 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
           <input
-            type="text"
+            type="password"
             name="re-enter-password"
             placeholder={i18next.t("reenter_new_password_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          <DisabledSubmitButton>
+          <DisabledSubmitButton className="text-base sm:mt-2 md:text-base">
             {i18next.t("reset_password_cta")}
           </DisabledSubmitButton>
         </form>
