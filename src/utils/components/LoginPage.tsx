@@ -77,7 +77,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
             variant="secondary"
             className="block"
           >
-            {i18next.t("enter_your_password_btn")}
+            {i18next.t("enter_a_code_btn")}
           </Button>
         </div>
       </div>
