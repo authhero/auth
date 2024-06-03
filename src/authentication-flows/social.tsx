@@ -20,6 +20,7 @@ import {
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
+import UserNotFound from "../utils/components/UserNotFoundPage";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -186,6 +187,15 @@ export async function socialAuthCallback({
   });
 
   if (!user) {
+    if (client.disable_sign_ups) {
+      ctx.set("logType", LogTypes.FAILED_LOGIN);
+      // How to actually return JSX here? This function is used in on the AJAX routes...
+      // do we catch this in routes.tsx and then display an error?
+      // presumably we also want this to happen on login2...
+      // this will change the flow on login2... how to guard against this?
+      return ctx.html(<UserNotFound />, 400);
+    }
+
     ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
 
     const primaryUser = await getPrimaryUserByEmail({
