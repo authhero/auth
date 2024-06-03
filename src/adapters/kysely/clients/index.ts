@@ -60,6 +60,7 @@ export function createClientsAdapter(db: Kysely<Database>) {
         email_validation: application.email_validation,
         client_secret: application.client_secret,
         tenant: removeNullProperties(tenant),
+        disable_sign_ups: application.disable_sign_ups,
       };
 
       return client;

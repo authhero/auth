@@ -59,6 +59,7 @@ export async function getEnv(args?: getEnvParams) {
     allowed_logout_urls: "https://sesamy.com",
     email_validation: "enabled",
     client_secret: "secret",
+    disable_sign_ups: false,
   });
   await data.connections.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CONNECTION",
@@ -107,6 +108,7 @@ export async function getEnv(args?: getEnvParams) {
     email_validation: "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
+    disable_sign_ups: false,
   };
 
   const testApplication2: Application = {
@@ -119,6 +121,7 @@ export async function getEnv(args?: getEnvParams) {
     email_validation: "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
+    disable_sign_ups: false,
   };
 
   const testConnection1: Connection = {
@@ -154,6 +157,7 @@ export async function getEnv(args?: getEnvParams) {
     email_validation: "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
+    disable_sign_ups: false,
   };
 
   await data.tenants.create(testTenant);

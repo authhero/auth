@@ -25,6 +25,7 @@ const BaseClientSchema = z.object({
   ]),
   tenant_id: z.string(),
   client_secret: z.string(),
+  disable_sign_ups: z.boolean(),
   tenant: z.object({
     name: z.string(),
     audience: z.string().optional(),
