@@ -730,11 +730,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         env,
       );
 
-      if (
-        // session.authParams.vendor_id === "breakit" ||
-        // client.id === "breakit"
-        client.disable_sign_ups
-      ) {
+      if (client.disable_sign_ups) {
         const [user] = await getUsersByEmail(
           env.data.users,
           client.tenant_id,
