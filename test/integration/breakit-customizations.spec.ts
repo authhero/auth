@@ -161,7 +161,7 @@ test("only allows existing breakit users to progress to the enter code step with
     name: "other-social-provider",
   });
 
-  const LOGIN2_STATE = "client_id=clientId&connection=auth2";
+  const STATE = "some-state-key-from-calling-app";
 
   // ----------------------------
   // SSO callback from nonexisting user
@@ -172,11 +172,11 @@ test("only allows existing breakit users to progress to the enter code step with
       authParams: {
         redirect_uri: "https://login2.sesamy.dev/callback",
         scope: "openid profile email",
-        state: LOGIN2_STATE,
+        state: STATE,
         client_id: "breakit",
         nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-        // we do not have an account for the user this will create
+        // we do not have an account for this user so Auth2 will attempt to create one, which will fail here
         connection: "other-social-provider",
       },
       connection: "other-social-provider",
@@ -203,14 +203,13 @@ test("only allows existing breakit users to progress to the enter code step with
       authParams: {
         redirect_uri: "https://login2.sesamy.dev/callback",
         scope: "openid profile email",
-        state: LOGIN2_STATE,
+        state: STATE,
         client_id: "breakit",
         nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
         response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
         // we DO have an account for this user
         connection: "demo-social-provider",
       },
-      // duplicate with this in both places? another duplicate?
       connection: "demo-social-provider",
     }),
   ).replace("==", "");
