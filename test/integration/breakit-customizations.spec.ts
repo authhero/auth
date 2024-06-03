@@ -127,7 +127,7 @@ test("only allows existing breakit users to progress to the enter code step with
     allowed_logout_urls: "",
     allowed_web_origins: "example.com",
     email_validation: "enforced",
-    disable_sign_ups: 1,
+    disable_sign_ups: true,
   });
   // this user will be created by our mockOauth2 provider when the client_id is socialClientId
   await env.data.users.create("breakit", {
