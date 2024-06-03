@@ -4,6 +4,7 @@ import { VendorSettings } from "../../types";
 import i18next from "i18next";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
+import Form from "./Form";
 
 type Props = {
   error?: string;
@@ -23,7 +24,7 @@ const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
         {i18next.t("forgot_password_description")}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post">
+        <Form>
           <input
             type="email"
             name="username"
@@ -35,7 +36,7 @@ const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
           <DisabledSubmitButton className="sm:mt-4">
             {i18next.t("forgot_password_cta")}
           </DisabledSubmitButton>
-        </form>
+        </Form>
       </div>
     </Layout>
   );

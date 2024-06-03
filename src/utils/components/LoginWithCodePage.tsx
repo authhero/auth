@@ -11,6 +11,7 @@ import Google from "./GoogleLogo";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { getSendParamFromAuth0ClientHeader } from "../getSendParamFromAuth0ClientHeader";
 import DisabledSubmitButton from "./DisabledSubmitButton";
+import Form from "./Form";
 
 type Props = {
   error?: string;
@@ -40,7 +41,7 @@ const LoginWithCodePage: FC<Props> = ({
       </div>
       <div class="mb-8 text-gray-300">{loginDescriptionText}</div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post" className="mb-7">
+        <Form className="mb-7">
           <input
             type="email"
             name="username"
@@ -62,7 +63,7 @@ const LoginWithCodePage: FC<Props> = ({
               <Icon className="text-xs" name="arrow-right" />
             </div>
           </DisabledSubmitButton>
-        </form>
+        </Form>
         <div class="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
           <div class="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
           <div class="relative inline-block bg-white px-2 dark:bg-gray-800">

@@ -7,6 +7,7 @@ import cn from "classnames";
 import Icon from "./Icon";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
+import Form from "./Form";
 
 type Props = {
   error?: string;
@@ -55,7 +56,7 @@ const LoginEnterCodePage: FC<Props> = ({
         {endText}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post" class="pt-2">
+        <Form class="pt-2">
           <input
             autoFocus
             type="text"
@@ -112,7 +113,7 @@ const LoginEnterCodePage: FC<Props> = ({
           >
             {i18next.t("go_back")}
           </a>
-        </form>
+        </Form>
       </div>
     </Layout>
   );

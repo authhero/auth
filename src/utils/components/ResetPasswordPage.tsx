@@ -1,10 +1,10 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
-import Button from "./Button";
 import { VendorSettings } from "../../types";
 import i18next from "i18next";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
+import Form from "./Form";
 
 type ResetPasswordPageProps = {
   error?: string;
@@ -32,7 +32,7 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
         {`${i18next.t("reset_password_description")} ${email}`}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post">
+        <Form>
           <input
             type="password"
             name="password"
@@ -49,7 +49,7 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({
           <DisabledSubmitButton className="text-base sm:mt-2 md:text-base">
             {i18next.t("reset_password_cta")}
           </DisabledSubmitButton>
-        </form>
+        </Form>
       </div>
     </Layout>
   );
