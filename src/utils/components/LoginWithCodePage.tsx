@@ -16,10 +16,16 @@ type Props = {
   error?: string;
   vendorSettings: VendorSettings;
   session: UniversalLoginSession;
+  email?: string;
 };
 
 // this page is called enter-email on login2... maybe we should copy those page names
-const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
+const LoginWithCodePage: FC<Props> = ({
+  error,
+  vendorSettings,
+  session,
+  email,
+}) => {
   const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
   const loginDescriptionText =
@@ -47,6 +53,7 @@ const LoginWithCodePage: FC<Props> = ({ error, vendorSettings, session }) => {
               },
             )}
             required
+            value={email || ""}
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <DisabledSubmitButton className="text-base sm:mt-4 md:text-base">
