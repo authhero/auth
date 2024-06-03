@@ -43,6 +43,7 @@ import {
   parsePasswordLoginSelectionCookie,
 } from "../../utils/authCookies";
 import { setCookie, getCookie } from "hono/cookie";
+import { waitUntil } from "../../utils/wait-until";
 
 const DEFAULT_SESAMY_VENDOR = {
   name: "sesamy",
@@ -804,9 +805,12 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         magicLink.searchParams.set("verification_code", code);
         magicLink.searchParams.set("nonce", "nonce");
 
-        await sendLink(env, client, params.username, code, magicLink.href);
+        waitUntil(
+          ctx,
+          sendLink(env, client, params.username, code, magicLink.href),
+        );
       } else {
-        await sendCode(env, client, params.username, code);
+        waitUntil(ctx, sendCode(env, client, params.username, code));
       }
 
       return ctx.redirect(
