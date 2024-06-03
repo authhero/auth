@@ -19,7 +19,7 @@ export const applicationInsertSchema = z.object({
     .enum(["enabled", "disabled", "enforced"])
     .default("enforced"),
   client_secret: z.string().default(""),
-  disable_sign_ups: z.number().default(0),
+  disable_sign_ups: z.boolean().default(false),
 });
 
 export const applicationSchema = z

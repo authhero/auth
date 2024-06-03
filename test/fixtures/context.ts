@@ -92,7 +92,7 @@ export async function contextFixture(
     allowed_logout_urls: "https://sesamy.com",
     email_validation: "enabled",
     client_secret: "secret",
-    disable_sign_ups: 0,
+    disable_sign_ups: false,
   });
   //----------------------------------------
 

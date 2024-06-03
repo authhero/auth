@@ -10,7 +10,7 @@ export interface CreateApplicationParams {
   email_validation: "enabled" | "disabled" | "enforced";
   client_secret: string;
   id: string;
-  disable_sign_ups: number;
+  disable_sign_ups: boolean;
 }
 
 export interface ApplicationsAdapter {
