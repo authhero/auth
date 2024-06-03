@@ -56,7 +56,7 @@ const LoginEnterCodePage: FC<Props> = ({
         {endText}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <Form class="pt-2">
+        <Form className="pt-2">
           <input
             autoFocus
             type="text"
