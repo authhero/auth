@@ -146,8 +146,6 @@ const Layout = ({
 
           if (initialBtn) {
             document.getElementById("form").onsubmit = function () {
-              console.log("submitting form");
-
               swapButtons();
             };
           }
