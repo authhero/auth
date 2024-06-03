@@ -756,6 +756,7 @@ describe("Login with code on liquidjs template", () => {
       },
     });
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     // this should not have a magic link in it
     await snapshotEmail(env.data.emails[0], true);
   });
