@@ -3,7 +3,10 @@ import { getEnv } from "./helpers/test-client";
 import { oauthApp } from "../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "./helpers/playwrightSnapshots";
-import { AuthorizationResponseType } from "../../src/types";
+import {
+  AuthorizationResponseType,
+  AuthorizationResponseMode,
+} from "../../src/types";
 import { create } from "domain";
 
 test("only allows existing breakit users to progress to the enter code step", async () => {
@@ -153,6 +156,33 @@ test("only allows existing breakit users to progress to the enter code step with
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
+  // need to create connections for breakit to then inherit... from default
+  await env.data.connections.create("breakit", {
+    id: "breakit-social-connection",
+    name: "demo-social-provider",
+    client_id: "socialClientId",
+    // TODO - remove a lot of these keys and check that inherits...
+    client_secret: "socialClientSecret",
+    authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
+    token_endpoint: "https://example.com/token",
+    response_mode: AuthorizationResponseMode.QUERY,
+    response_type: AuthorizationResponseType.CODE,
+    scope: "openid profile email",
+  });
+  await env.data.connections.create("breakit", {
+    id: "breakit-social-connection2",
+    name: "other-social-provider",
+    client_id: "otherSocialClientId",
+    client_secret: "otherSocialClientSecret",
+    authorization_endpoint: "https://example.com/other/o/oauth2/v2/auth",
+    token_endpoint: "https://example.com/other/token",
+    response_mode: AuthorizationResponseMode.QUERY,
+    response_type: AuthorizationResponseType.CODE,
+    scope: "openid profile email",
+  });
+
+  // IDEA! just change application to have disable_sign_ups:true? can manually update... is that easier than recreating everything?
+  // maybe good to do all this flow again
 
   const LOGIN2_STATE = "client_id=clientId&connection=auth2";
 
@@ -160,7 +190,7 @@ test("only allows existing breakit users to progress to the enter code step with
     redirect_uri: "https://login2.sesamy.dev/callback",
     scope: "openid profile email",
     state: LOGIN2_STATE,
-    client_id: "clientId",
+    client_id: "breakit",
     nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
     response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
     connection: "demo-social-provider",
@@ -169,30 +199,35 @@ test("only allows existing breakit users to progress to the enter code step with
   const response = await oauthClient.authorize.$get({
     query: SOCIAL_STATE_PARAM_AUTH_PARAMS,
   });
-  const location = response.headers.get("location");
-  const stateParam = new URLSearchParams(location!.split("?")[1]);
-  const query = Object.fromEntries(stateParam.entries());
+  // why getting "connection not found" here? n00b hour?
+  // come back after lunch. I would expect breakit to inherit from the default...
+  // why would it not be?
+  console.log(await response.text());
+  // const location = response.headers.get("location");
+  // const stateParam = new URLSearchParams(location!.split("?")[1]);
+  // const query = Object.fromEntries(stateParam.entries());
 
   // ----------------------------
   // SSO callback from nonexisting user
   // ----------------------------
 
-  const socialStateParamNonExistingUser = btoa(
-    JSON.stringify({
-      authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
-      connection: "other-social-provider",
-    }),
-  ).replace("==", "");
+  // const socialStateParamNonExistingUser = btoa(
+  //   JSON.stringify({
+  //     authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+  // will need to create connections for this
+  //     connection: "other-social-provider",
+  //   }),
+  // ).replace("==", "");
 
-  const socialCallbackQuery = {
-    state: socialStateParamNonExistingUser,
-    code: "code",
-  };
-  const socialCallbackResponse = await oauthClient.callback.$get({
-    query: socialCallbackQuery,
-  });
+  // const socialCallbackQuery = {
+  //   state: socialStateParamNonExistingUser,
+  //   code: "code",
+  // };
+  // const socialCallbackResponse = await oauthClient.callback.$get({
+  //   query: socialCallbackQuery,
+  // });
 
-  console.log(await socialCallbackResponse.text());
+  // console.log(await socialCallbackResponse.text());
 
   // const nonExistingUserEmailResponse = await oauthClient.u.code.$post({
   //   query: {
