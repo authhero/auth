@@ -3,11 +3,7 @@ import { getEnv } from "./helpers/test-client";
 import { oauthApp } from "../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "./helpers/playwrightSnapshots";
-import {
-  AuthorizationResponseType,
-  AuthorizationResponseMode,
-} from "../../src/types";
-import { create } from "domain";
+import { AuthorizationResponseType } from "../../src/types";
 
 test("only allows existing breakit users to progress to the enter code step", async () => {
   const testTenantLanguage = "en";
@@ -156,54 +152,16 @@ test("only allows existing breakit users to progress to the enter code step with
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
-  // need to create connections for breakit to then inherit... from default
   await env.data.connections.create("breakit", {
     id: "breakit-social-connection",
     name: "demo-social-provider",
-    client_id: "socialClientId",
-    // TODO - remove a lot of these keys and check that inherits...
-    client_secret: "socialClientSecret",
-    authorization_endpoint: "https://example.com/o/oauth2/v2/auth",
-    token_endpoint: "https://example.com/token",
-    response_mode: AuthorizationResponseMode.QUERY,
-    response_type: AuthorizationResponseType.CODE,
-    scope: "openid profile email",
   });
   await env.data.connections.create("breakit", {
     id: "breakit-social-connection2",
     name: "other-social-provider",
-    client_id: "otherSocialClientId",
-    client_secret: "otherSocialClientSecret",
-    authorization_endpoint: "https://example.com/other/o/oauth2/v2/auth",
-    token_endpoint: "https://example.com/other/token",
-    response_mode: AuthorizationResponseMode.QUERY,
-    response_type: AuthorizationResponseType.CODE,
-    scope: "openid profile email",
   });
-
-  // IDEA! just change application to have disable_sign_ups:true? can manually update... is that easier than recreating everything?
-  // maybe good to do all this flow again
 
   const LOGIN2_STATE = "client_id=clientId&connection=auth2";
-
-  const response = await oauthClient.authorize.$get({
-    query: {
-      redirect_uri: "https://login2.sesamy.dev/callback",
-      scope: "openid profile email",
-      state: LOGIN2_STATE,
-      client_id: "breakit",
-      nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-      // we do not have an account for the user this will create
-      connection: "other-social-provider",
-    },
-  });
-  // why getting "connection not found" here? n00b hour?
-  // come back after lunch. I would expect breakit to inherit from the default...
-  // why would it not be?
-  const location = response.headers.get("location");
-  const stateParam = new URLSearchParams(location!.split("?")[1]);
-  const query = Object.fromEntries(stateParam.entries());
 
   // ----------------------------
   // SSO callback from nonexisting user
@@ -212,7 +170,6 @@ test("only allows existing breakit users to progress to the enter code step with
   const socialStateParamNonExistingUser = btoa(
     JSON.stringify({
       authParams: {
-        // SAME AS ABOVE! extract constant
         redirect_uri: "https://login2.sesamy.dev/callback",
         scope: "openid profile email",
         state: LOGIN2_STATE,
@@ -222,7 +179,6 @@ test("only allows existing breakit users to progress to the enter code step with
         // we do not have an account for the user this will create
         connection: "other-social-provider",
       },
-      // will need to create connections for this
       connection: "other-social-provider",
     }),
   ).replace("==", "");
@@ -239,27 +195,32 @@ test("only allows existing breakit users to progress to the enter code step with
   // This is the error page we expect to see when the user does not exist
   await snapshotResponse(socialCallbackResponse);
 
-  // // ----------------------------
-  // //  Try going past email address step with existing breakit user
-  // // ----------------------------
+  // ----------------------------
+  //  Try going past email address step with existing breakit user
+  // ----------------------------
+  const socialStateParamExistingUser = btoa(
+    JSON.stringify({
+      authParams: {
+        redirect_uri: "https://login2.sesamy.dev/callback",
+        scope: "openid profile email",
+        state: LOGIN2_STATE,
+        client_id: "breakit",
+        nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        // we DO have an account for this user
+        connection: "demo-social-provider",
+      },
+      // duplicate with this in both places? another duplicate?
+      connection: "demo-social-provider",
+    }),
+  ).replace("==", "");
 
-  // const existingUserEmailResponse = await oauthClient.u.code.$post({
-  //   query: {
-  //     state: query.state,
-  //   },
-  //   form: {
-  //     username: "existing-breakit-user@example.com",
-  //   },
-  // });
-  // expect(existingUserEmailResponse.status).toBe(302);
-  // const existingUserEmailResponseLocation =
-  //   existingUserEmailResponse.headers.get("location");
-
-  // // this shows we're being redirected to the next step as the user exists
-  // expect(
-  //   existingUserEmailResponseLocation!.startsWith("/u/enter-code"),
-  // ).toBeTruthy();
+  const existingUserSocialCallbackResponse = await oauthClient.callback.$get({
+    query: {
+      state: socialStateParamExistingUser,
+      code: "code",
+    },
+  });
+  // now we're being redirected to the next step as the user exists
+  expect(existingUserSocialCallbackResponse.status).toBe(302);
 });
-
-// TO TEST
-//  synthetic SSO test - after logging (here using email + password), if the user has no breakit purchases, log them out and redirect them to the start page with the same OAuth params
