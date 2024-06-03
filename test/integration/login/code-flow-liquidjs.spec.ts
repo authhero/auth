@@ -114,6 +114,9 @@ describe("Login with code on liquidjs template", () => {
     expect(postSendCodeResponse.status).toBe(302);
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
+    // flush pipe
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(env.data.emails.length).toBe(1);
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("test@example.com");
 
@@ -221,6 +224,7 @@ describe("Login with code on liquidjs template", () => {
     });
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("bar@example.com");
 
@@ -307,6 +311,7 @@ describe("Login with code on liquidjs template", () => {
     });
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
 
@@ -372,6 +377,7 @@ describe("Login with code on liquidjs template", () => {
     });
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
 
@@ -543,6 +549,7 @@ describe("Login with code on liquidjs template", () => {
 
       const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
+      await new Promise((resolve) => setTimeout(resolve, 0));
       const { to, code } = getCodeAndTo(env.data.emails[0]);
 
       expect(to).toBe("same-email@example.com");
@@ -749,6 +756,7 @@ describe("Login with code on liquidjs template", () => {
       },
     });
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     // this should not have a magic link in it
     await snapshotEmail(env.data.emails[0], true);
   });
@@ -786,6 +794,7 @@ describe("Login with code on liquidjs template", () => {
       new URLSearchParams(enterCodeParams).entries(),
     );
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
 
@@ -890,6 +899,7 @@ describe("Login with code on liquidjs template", () => {
 
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("john-doe@example.com");
 
