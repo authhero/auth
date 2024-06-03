@@ -21,6 +21,7 @@ import {
   getPrimaryUserByEmail,
 } from "../utils/users";
 import UserNotFound from "../utils/components/UserNotFoundPage";
+import { SESAMY_VENDOR_SETTINGS } from "../../test/fixtures/vendorSettings";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -193,7 +194,15 @@ export async function socialAuthCallback({
       // do we catch this in routes.tsx and then display an error?
       // presumably we also want this to happen on login2...
       // this will change the flow on login2... how to guard against this?
-      return ctx.html(<UserNotFound />, 400);
+      return ctx.html(
+        <UserNotFound
+          // TODO - do not want to do this! how to rearchitect?
+          vendorSettings={SESAMY_VENDOR_SETTINGS}
+          // oops. just catch exception for now? ugly either way
+          state="1234567"
+        />,
+        400,
+      );
     }
 
     ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
