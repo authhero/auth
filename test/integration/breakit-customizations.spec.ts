@@ -186,59 +186,58 @@ test("only allows existing breakit users to progress to the enter code step with
 
   const LOGIN2_STATE = "client_id=clientId&connection=auth2";
 
-  const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
-    redirect_uri: "https://login2.sesamy.dev/callback",
-    scope: "openid profile email",
-    state: LOGIN2_STATE,
-    client_id: "breakit",
-    nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-    response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-    connection: "demo-social-provider",
-  };
-
   const response = await oauthClient.authorize.$get({
-    query: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+    query: {
+      redirect_uri: "https://login2.sesamy.dev/callback",
+      scope: "openid profile email",
+      state: LOGIN2_STATE,
+      client_id: "breakit",
+      nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      // we do not have an account for the user this will create
+      connection: "other-social-provider",
+    },
   });
   // why getting "connection not found" here? n00b hour?
   // come back after lunch. I would expect breakit to inherit from the default...
   // why would it not be?
-  console.log(await response.text());
-  // const location = response.headers.get("location");
-  // const stateParam = new URLSearchParams(location!.split("?")[1]);
-  // const query = Object.fromEntries(stateParam.entries());
+  const location = response.headers.get("location");
+  const stateParam = new URLSearchParams(location!.split("?")[1]);
+  const query = Object.fromEntries(stateParam.entries());
 
   // ----------------------------
   // SSO callback from nonexisting user
   // ----------------------------
 
-  // const socialStateParamNonExistingUser = btoa(
-  //   JSON.stringify({
-  //     authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
-  // will need to create connections for this
-  //     connection: "other-social-provider",
-  //   }),
-  // ).replace("==", "");
+  const socialStateParamNonExistingUser = btoa(
+    JSON.stringify({
+      authParams: {
+        // SAME AS ABOVE! extract constant
+        redirect_uri: "https://login2.sesamy.dev/callback",
+        scope: "openid profile email",
+        state: LOGIN2_STATE,
+        client_id: "breakit",
+        nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        // we do not have an account for the user this will create
+        connection: "other-social-provider",
+      },
+      // will need to create connections for this
+      connection: "other-social-provider",
+    }),
+  ).replace("==", "");
 
-  // const socialCallbackQuery = {
-  //   state: socialStateParamNonExistingUser,
-  //   code: "code",
-  // };
-  // const socialCallbackResponse = await oauthClient.callback.$get({
-  //   query: socialCallbackQuery,
-  // });
+  const socialCallbackQuery = {
+    state: socialStateParamNonExistingUser,
+    code: "code",
+  };
+  const socialCallbackResponse = await oauthClient.callback.$get({
+    query: socialCallbackQuery,
+  });
+  expect(socialCallbackResponse.status).toBe(400);
 
-  // console.log(await socialCallbackResponse.text());
-
-  // const nonExistingUserEmailResponse = await oauthClient.u.code.$post({
-  //   query: {
-  //     state: query.state,
-  //   },
-  //   form: {
-  //     username: "not-a-real-breakit-user@example.com",
-  //   },
-  // });
-  // expect(nonExistingUserEmailResponse.status).toBe(400);
-  // await snapshotResponse(nonExistingUserEmailResponse);
+  // This is the error page we expect to see when the user does not exist
+  await snapshotResponse(socialCallbackResponse);
 
   // // ----------------------------
   // //  Try going past email address step with existing breakit user
