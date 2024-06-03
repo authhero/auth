@@ -33,7 +33,7 @@ test("only allows existing breakit users to progress to the enter code step", as
     allowed_logout_urls: "",
     allowed_web_origins: "example.com",
     email_validation: "enforced",
-    disable_sign_ups: true,
+    disable_sign_ups: 1,
   });
   await env.data.users.create("breakit", {
     id: "email|existing-breakit-user",

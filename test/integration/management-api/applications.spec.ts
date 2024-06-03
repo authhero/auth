@@ -40,6 +40,7 @@ describe("applications", () => {
       allowed_logout_urls: "",
       allowed_web_origins: "",
       email_validation: "enforced",
+      disable_sign_ups: 0,
     });
     expect(created_at).toBeTypeOf("string");
     expect(updated_at).toBeTypeOf("string");

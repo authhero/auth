@@ -34,7 +34,7 @@ const data = createAdapters(db);
     allowed_logout_urls: "http://localhost:3000",
     allowed_web_origins: "http://localhost:3000",
     email_validation: "disabled",
-    disable_sign_ups: false,
+    disable_sign_ups: 0,
   });
 
   const user = await data.users.create(tenant.id, {

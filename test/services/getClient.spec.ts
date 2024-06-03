@@ -31,7 +31,7 @@ const APPLICATION_FIXTURE: Application = {
   client_secret: "clientSecret",
   created_at: "created_at",
   updated_at: "updated_at",
-  disable_sign_ups: false,
+  disable_sign_ups: 0,
 };
 
 const CONNECTION_FIXTURE: Connection = {
