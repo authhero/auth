@@ -7,6 +7,16 @@ import { testClient } from "hono/testing";
 import { managementApp, oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { AuthorizationResponseType } from "../../../src/types";
+import { base64url } from "oslo/encoding";
+
+function osloBtoa(payload: object) {
+  const str = JSON.stringify(payload);
+  const encoder = new TextEncoder();
+  const uint8Array = encoder.encode(str);
+  const encodedStr = base64url.encode(uint8Array);
+
+  return encodedStr;
+}
 
 const LOGIN2_STATE = "client_id=clientId&connection=auth2";
 
@@ -20,12 +30,10 @@ const SOCIAL_STATE_PARAM_AUTH_PARAMS = {
 };
 
 // same on each test
-const SOCIAL_STATE_PARAM = btoa(
-  JSON.stringify({
-    authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
-    connection: "demo-social-provider",
-  }),
-).replace("==", "");
+const SOCIAL_STATE_PARAM = osloBtoa({
+  authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+  connection: "demo-social-provider",
+});
 
 const EXPECTED_PROFILE_DATA = {
   locale: "es-ES",
@@ -465,12 +473,10 @@ describe("social sign on", () => {
       // now log-in with another SSO account with the same email address
       // ---------------------------------------------
       const socialCallbackQueryAnotherSSO = {
-        state: btoa(
-          JSON.stringify({
-            authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
-            connection: "other-social-provider",
-          }),
-        ).replace("==", ""),
+        state: osloBtoa({
+          authParams: SOCIAL_STATE_PARAM_AUTH_PARAMS,
+          connection: "other-social-provider",
+        }),
         code: "code",
       };
       const socialCallbackResponseAnotherSSO = await oauthClient.callback.$get({
@@ -714,19 +720,17 @@ describe("social sign on", () => {
 
         const socialCallbackQuery = {
           // this is the only difference from the other tests
-          state: btoa(
-            JSON.stringify({
-              authParams: {
-                redirect_uri: "https://login2.sesamy.dev/callback",
-                scope: "openid profile email",
-                state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-                client_id: "clientId",
-                nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-                response_type: "token id_token",
-              },
-              connection: "non-existing-social-provider",
-            }),
-          ).replace("==", ""),
+          state: osloBtoa({
+            authParams: {
+              redirect_uri: "https://login2.sesamy.dev/callback",
+              scope: "openid profile email",
+              state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+              client_id: "clientId",
+              nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+              response_type: "token id_token",
+            },
+            connection: "non-existing-social-provider",
+          }),
           code: "code",
         };
         const socialCallbackResponse = await client.callback.$get({
@@ -743,19 +747,17 @@ describe("social sign on", () => {
 
         const socialCallbackResponse = await client.callback.$post({
           form: {
-            state: btoa(
-              JSON.stringify({
-                authParams: {
-                  redirect_uri: "https://login2.sesamy.dev/callback",
-                  scope: "openid profile email",
-                  state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
-                  client_id: "clientId",
-                  nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-                  response_type: "token id_token",
-                },
-                connection: "evil-social-provider",
-              }),
-            ).replace("==", ""),
+            state: osloBtoa({
+              authParams: {
+                redirect_uri: "https://login2.sesamy.dev/callback",
+                scope: "openid profile email",
+                state: "_7lvvz2iVJ7bQBqayN9ZsER5mt1VdGcx",
+                client_id: "clientId",
+                nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+                response_type: "token id_token",
+              },
+              connection: "evil-social-provider",
+            }),
             code: "code",
           },
         });
