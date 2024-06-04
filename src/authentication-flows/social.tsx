@@ -20,6 +20,8 @@ import {
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
+import UserNotFound from "../utils/components/UserNotFoundPage";
+import { fetchVendorSettings } from "../utils/fetchVendorSettings";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -186,6 +188,24 @@ export async function socialAuthCallback({
   });
 
   if (!user) {
+    if (client.disable_sign_ups) {
+      ctx.set("logType", LogTypes.FAILED_LOGIN);
+
+      const vendorSettings = await fetchVendorSettings(
+        env,
+        client.id,
+        state.authParams.vendor_id,
+      );
+
+      return ctx.html(
+        <UserNotFound
+          vendorSettings={vendorSettings}
+          authParams={state.authParams}
+        />,
+        400,
+      );
+    }
+
     ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
 
     const primaryUser = await getPrimaryUserByEmail({

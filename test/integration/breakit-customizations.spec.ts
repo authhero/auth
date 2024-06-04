@@ -101,5 +101,125 @@ test("only allows existing breakit users to progress to the enter code step", as
   ).toBeTruthy();
 });
 
-// TO TEST
-//  synthetic SSO test - after logging (here using email + password), if the user has no breakit purchases, log them out and redirect them to the start page with the same OAuth params
+test("only allows existing breakit users to progress to the enter code step with social signon", async () => {
+  const testTenantLanguage = "en";
+  const env = await getEnv({
+    testTenantLanguage,
+  });
+  const oauthClient = testClient(oauthApp, env);
+
+  // ----------------------------
+  // Create Breakit test fixtures
+  // ----------------------------
+
+  await env.data.tenants.create({
+    id: "breakit",
+    name: "Test Tenant",
+    audience: "https://example.com",
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+  });
+  await env.data.applications.create("breakit", {
+    id: "breakit",
+    name: "Test Client",
+    client_secret: "clientSecret",
+    allowed_callback_urls: "https://example.com/callback",
+    allowed_logout_urls: "",
+    allowed_web_origins: "example.com",
+    email_validation: "enforced",
+    disable_sign_ups: true,
+  });
+  // this user will be created by our mockOauth2 provider when the client_id is socialClientId
+  await env.data.users.create("breakit", {
+    name: "örjan.lindström@example.com",
+    provider: "demo-social-provider",
+    connection: "demo-social-provider",
+    email: "örjan.lindström@example.com",
+    email_verified: true,
+    last_ip: "",
+    login_count: 0,
+    is_social: true,
+    profileData: JSON.stringify({
+      locale: "es-ES",
+      name: "Örjan Lindström",
+      given_name: "Örjan",
+      family_name: "Lindström",
+      picture:
+        "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
+      email_verified: true,
+    }),
+    id: "demo-social-provider|123456789012345678901",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
+  await env.data.connections.create("breakit", {
+    id: "breakit-social-connection",
+    name: "demo-social-provider",
+  });
+  await env.data.connections.create("breakit", {
+    id: "breakit-social-connection2",
+    name: "other-social-provider",
+  });
+
+  const STATE = "some-state-key-from-calling-app";
+
+  // ----------------------------
+  // SSO callback from nonexisting user
+  // ----------------------------
+
+  const socialStateParamNonExistingUser = btoa(
+    JSON.stringify({
+      authParams: {
+        redirect_uri: "https://login2.sesamy.dev/callback",
+        scope: "openid profile email",
+        state: STATE,
+        client_id: "breakit",
+        nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        // we do not have an account for this user so Auth2 will attempt to create one, which will fail here
+        connection: "other-social-provider",
+      },
+      connection: "other-social-provider",
+    }),
+  ).replace("==", "");
+
+  const socialCallbackQuery = {
+    state: socialStateParamNonExistingUser,
+    code: "code",
+  };
+  const socialCallbackResponse = await oauthClient.callback.$get({
+    query: socialCallbackQuery,
+  });
+  expect(socialCallbackResponse.status).toBe(400);
+
+  // This is the error page we expect to see when the user does not exist
+  await snapshotResponse(socialCallbackResponse);
+
+  // ----------------------------
+  //  Try going past email address step with existing breakit user
+  // ----------------------------
+  const socialStateParamExistingUser = btoa(
+    JSON.stringify({
+      authParams: {
+        redirect_uri: "https://login2.sesamy.dev/callback",
+        scope: "openid profile email",
+        state: STATE,
+        client_id: "breakit",
+        nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+        // we DO have an account for this user
+        connection: "demo-social-provider",
+      },
+      connection: "demo-social-provider",
+    }),
+  ).replace("==", "");
+
+  const existingUserSocialCallbackResponse = await oauthClient.callback.$get({
+    query: {
+      state: socialStateParamExistingUser,
+      code: "code",
+    },
+  });
+  // now we're being redirected to the next step as the user exists
+  expect(existingUserSocialCallbackResponse.status).toBe(302);
+});

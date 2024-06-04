@@ -3,18 +3,19 @@ import { VendorSettings } from "../../types";
 import Layout from "./Layout";
 import i18next from "i18next";
 import type { FC } from "hono/jsx";
+import type { AuthParams } from "../../types";
 
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
-  state: string;
+  authParams: AuthParams;
 };
 
-const UserNotFound: FC<Props> = ({ vendorSettings, state }) => {
+const UserNotFound: FC<Props> = ({ vendorSettings, authParams }) => {
   const linkParams = new URLSearchParams({
-    state,
+    ...authParams,
   });
-  const enterCodeLink = `/u/code?${linkParams}`;
+  const restartFlowLink = `/authorize?${linkParams}`;
 
   return (
     <Layout vendorSettings={vendorSettings} title={i18next.t("user_not_found")}>
@@ -22,7 +23,7 @@ const UserNotFound: FC<Props> = ({ vendorSettings, state }) => {
         <p className="mb-8 text-gray-300 text-lg">
           {i18next.t("user_not_found_body")}
         </p>
-        <Button Component="a" href={enterCodeLink}>
+        <Button Component="a" href={restartFlowLink}>
           {i18next.t("user_not_found_cta")}
         </Button>
       </div>
