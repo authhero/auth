@@ -1,7 +1,6 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
-import Button from "./Button";
-import { VendorSettings } from "../../types";
+import { VendorSettings, Client } from "../../types";
 import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";
@@ -18,6 +17,7 @@ type Props = {
   vendorSettings: VendorSettings;
   session: UniversalLoginSession;
   email?: string;
+  client: Client;
 };
 
 // this page is called enter-email on login2... maybe we should copy those page names
@@ -26,8 +26,14 @@ const LoginWithCodePage: FC<Props> = ({
   vendorSettings,
   session,
   email,
+  client,
 }) => {
   const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
+
+  const connections = client.connections.map(({ name }) => name);
+  const showFacebook = connections.includes("facebook");
+  const showGoogle = connections.includes("google-oauth2");
+  const showApple = connections.includes("apple");
 
   const loginDescriptionText =
     sendType === "code"
@@ -72,39 +78,45 @@ const LoginWithCodePage: FC<Props> = ({
         </div>
 
         <div class="flex space-x-4 sm:flex-col sm:space-x-0 sm:space-y-4 short:flex-row short:space-x-4 short:space-y-0">
-          <SocialButton
-            connection="facebook"
-            text={i18next.t("continue_with", { provider: "Facebook" })}
-            canResize={true}
-            icon={
-              <Icon
-                className="text-xl text-[#1196F5] sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 sm:text-2xl short:static short:left-auto short:top-auto short:translate-y-0 short:text-xl"
-                name="facebook"
-              />
-            }
-            session={session}
-          />
-          <SocialButton
-            connection="google-oauth2"
-            text={i18next.t("continue_with", { provider: "Google" })}
-            canResize={true}
-            icon={
-              <Google className="h-5 w-5 sm:absolute sm:left-4 sm:top-1/2 sm:h-6 sm:w-6 sm:-translate-y-1/2 short:static short:left-auto short:top-auto short:h-5 short:w-5 short:translate-y-0" />
-            }
-            session={session}
-          />
-          <SocialButton
-            connection="apple"
-            text={i18next.t("continue_with", { provider: "Apple" })}
-            canResize={true}
-            icon={
-              <Icon
-                className="text-xl text-black dark:text-white sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 sm:text-2xl short:static short:left-auto short:top-auto short:translate-y-0 short:text-xl"
-                name="apple"
-              />
-            }
-            session={session}
-          />
+          {showFacebook && (
+            <SocialButton
+              connection="facebook"
+              text={i18next.t("continue_with", { provider: "Facebook" })}
+              canResize={true}
+              icon={
+                <Icon
+                  className="text-xl text-[#1196F5] sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 sm:text-2xl short:static short:left-auto short:top-auto short:translate-y-0 short:text-xl"
+                  name="facebook"
+                />
+              }
+              session={session}
+            />
+          )}
+          {showGoogle && (
+            <SocialButton
+              connection="google-oauth2"
+              text={i18next.t("continue_with", { provider: "Google" })}
+              canResize={true}
+              icon={
+                <Google className="h-5 w-5 sm:absolute sm:left-4 sm:top-1/2 sm:h-6 sm:w-6 sm:-translate-y-1/2 short:static short:left-auto short:top-auto short:h-5 short:w-5 short:translate-y-0" />
+              }
+              session={session}
+            />
+          )}
+          {showApple && (
+            <SocialButton
+              connection="apple"
+              text={i18next.t("continue_with", { provider: "Apple" })}
+              canResize={true}
+              icon={
+                <Icon
+                  className="text-xl text-black dark:text-white sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 sm:text-2xl short:static short:left-auto short:top-auto short:translate-y-0 short:text-xl"
+                  name="apple"
+                />
+              }
+              session={session}
+            />
+          )}
         </div>
       </div>
     </Layout>
