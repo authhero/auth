@@ -145,19 +145,8 @@ const Layout = ({
           const initialBtn = document.getElementById("initial-btn");
 
           if (initialBtn) {
-            document.getElementById("initial-btn").onclick = function () {
-              const codeInput = document.getElementById("code-input");
-
-              if (!codeInput) {
-                swapButtons();
-                return;
-              }
-
-              const code = codeInput.value;
-
-              if (code.length >= 6) {
-                swapButtons();
-              }
+            document.getElementById("form").onsubmit = function () {
+              swapButtons();
             };
           }
         </script>

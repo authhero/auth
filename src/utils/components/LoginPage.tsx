@@ -6,6 +6,7 @@ import i18next from "i18next";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
 import Icon from "./Icon";
+import Form from "./Form";
 
 type Props = {
   error?: string;
@@ -28,7 +29,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
         {i18next.t("enter_password_description")}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post" className="mb-7">
+        <Form className="mb-7">
           <input
             type="text"
             name="username"
@@ -50,7 +51,7 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
               <Icon className="text-xs" name="arrow-right" />
             </div>
           </DisabledSubmitButton>
-        </form>
+        </Form>
         <a
           href={`/u/forgot-password?${loginLinkParams.toString()}`}
           className="text-primary hover:underline mb-4"

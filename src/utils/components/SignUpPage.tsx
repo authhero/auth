@@ -4,6 +4,7 @@ import { VendorSettings } from "../../types";
 import ErrorMessage from "./ErrorMessage";
 import i18next from "i18next";
 import DisabledSubmitButton from "./DisabledSubmitButton";
+import Form from "./Form";
 
 type Props = {
   error?: string;
@@ -24,7 +25,7 @@ const SignupPage: FC<Props> = ({ error, vendorSettings, email }) => {
         {i18next.t("create_account_description")}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <form method="post">
+        <Form>
           <input
             type="email"
             name="username"
@@ -43,7 +44,7 @@ const SignupPage: FC<Props> = ({ error, vendorSettings, email }) => {
           <DisabledSubmitButton className="text-base sm:mt-2 md:text-base">
             {i18next.t("Signup")}
           </DisabledSubmitButton>
-        </form>
+        </Form>
       </div>
     </Layout>
   );
