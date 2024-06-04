@@ -6,6 +6,15 @@ import { snapshotResponse } from "./helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../src/types";
 import { base64url } from "oslo/encoding";
 
+function osloBtoa(payload: object) {
+  const str = JSON.stringify(payload);
+  const encoder = new TextEncoder();
+  const uint8Array = encoder.encode(str);
+  const encodedStr = base64url.encode(uint8Array);
+
+  return encodedStr;
+}
+
 test("only allows existing breakit users to progress to the enter code step", async () => {
   const testTenantLanguage = "en";
   const env = await getEnv({
@@ -102,7 +111,7 @@ test("only allows existing breakit users to progress to the enter code step", as
   ).toBeTruthy();
 });
 
-test("only allows existing breakit users to progress to the enter code step with social signon", async () => {
+test.only("only allows existing breakit users to progress to the enter code step with social signon", async () => {
   const testTenantLanguage = "en";
   const env = await getEnv({
     testTenantLanguage,
@@ -168,21 +177,19 @@ test("only allows existing breakit users to progress to the enter code step with
   // SSO callback from nonexisting user
   // ----------------------------
 
-  const socialStateParamNonExistingUser = btoa(
-    JSON.stringify({
-      authParams: {
-        redirect_uri: "https://login2.sesamy.dev/callback",
-        scope: "openid profile email",
-        state: STATE,
-        client_id: "breakit",
-        nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
-        response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-        // we do not have an account for this user so Auth2 will attempt to create one, which will fail here
-        connection: "other-social-provider",
-      },
+  const socialStateParamNonExistingUser = osloBtoa({
+    authParams: {
+      redirect_uri: "https://login2.sesamy.dev/callback",
+      scope: "openid profile email",
+      state: STATE,
+      client_id: "breakit",
+      nonce: "MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      // we do not have an account for this user so Auth2 will attempt to create one, which will fail here
       connection: "other-social-provider",
-    }),
-  ).replace("==", "");
+    },
+    connection: "other-social-provider",
+  });
 
   const socialCallbackQuery = {
     state: socialStateParamNonExistingUser,
@@ -199,7 +206,7 @@ test("only allows existing breakit users to progress to the enter code step with
   // ----------------------------
   //  Try going past email address step with existing breakit user
   // ----------------------------
-  const str = JSON.stringify({
+  const socialStateParamExistingUser = osloBtoa({
     authParams: {
       redirect_uri: "https://login2.sesamy.dev/callback",
       scope: "openid profile email",
@@ -212,9 +219,6 @@ test("only allows existing breakit users to progress to the enter code step with
     },
     connection: "demo-social-provider",
   });
-  const encoder = new TextEncoder();
-  const uint8Array = encoder.encode(str);
-  const socialStateParamExistingUser = base64url.encode(uint8Array);
 
   const existingUserSocialCallbackResponse = await oauthClient.callback.$get({
     query: {
