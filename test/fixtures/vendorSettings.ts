@@ -73,3 +73,21 @@ export const SESAMY_VENDOR_SETTINGS: VendorSettings = {
   termsAndConditionsUrl: "https://store.sesamy.com/pages/terms-of-service",
   manageSubscriptionsUrl: "https://account.sesamy.com/manage-subscriptions",
 };
+
+export const PARCFERME_VENDOR_SETTINGS: VendorSettings = {
+  name: "Parc Fermé AS",
+  companyName: "Parc Fermé AS",
+  logoUrl: "https://assets.sesamy.com/static/vendors/parcferme/darklogo.png",
+  style: {
+    primaryColor: "#002652",
+    buttonTextColor: "#ffffff",
+    primaryHoverColor: "#002E62",
+  },
+  loginBackgroundImage:
+    "https://assets.sesamy.com/vendors/parcferme/SNH_5894.jpeg",
+  checkoutHideSocial: false,
+  supportEmail: null,
+  supportUrl: "https://www.parcferme.no",
+  siteUrl: "https://www.parcferme.no",
+  termsAndConditionsUrl: null,
+};

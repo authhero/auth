@@ -79,23 +79,22 @@ test("should show Vipps for parcferme as entered as connection", async () => {
     disable_sign_ups: false,
   });
   await env.data.connections.create("parcferme", {
-    id: "parcferme-connection",
+    id: "parcferme-connection1",
     name: "vipps",
   });
   await env.data.connections.create("parcferme", {
-    id: "parcferme-connection",
+    id: "parcferme-connection2",
     name: "facebook",
   });
   await env.data.connections.create("parcferme", {
-    id: "parcferme-connection",
+    id: "parcferme-connection3",
     name: "google-oauth2",
   });
   await env.data.connections.create("parcferme", {
-    id: "parcferme-connection",
+    id: "parcferme-connection4",
     name: "apple",
   });
 
-  // we do not specify any connections so no social buttons will be shown
   const searchParams = {
     client_id: "parcferme",
     vendor_id: "parcferme",
