@@ -111,7 +111,7 @@ test("only allows existing breakit users to progress to the enter code step", as
   ).toBeTruthy();
 });
 
-test.only("only allows existing breakit users to progress to the enter code step with social signon", async () => {
+test("only allows existing breakit users to progress to the enter code step with social signon", async () => {
   const testTenantLanguage = "en";
   const env = await getEnv({
     testTenantLanguage,
