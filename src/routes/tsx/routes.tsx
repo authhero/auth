@@ -200,7 +200,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          username: z.string(),
         }),
       },
       responses: {
@@ -210,11 +209,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { state, username } = ctx.req.valid("query");
+      const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
 
-      const { vendorSettings, client } = await initJSXRoute(state, env);
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
+      );
 
       setCookie(
         ctx,
@@ -229,10 +231,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       );
 
+      if (!session.authParams.username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
+
       return ctx.html(
         <LoginPage
           vendorSettings={vendorSettings}
-          email={username}
+          email={session.authParams.username}
           state={state}
         />,
       );
@@ -251,7 +257,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          username: z.string(),
         }),
         body: {
           content: {
@@ -272,13 +277,19 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
     // very similar to authenticate + ticket flow
     async (ctx) => {
       const { env } = ctx;
-      const { state, username } = ctx.req.valid("query");
+      const { state } = ctx.req.valid("query");
       const { password } = ctx.req.valid("form");
 
       const { vendorSettings, client, session } = await initJSXRoute(
         state,
         env,
       );
+
+      const { username } = session.authParams;
+
+      if (!username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
 
       const user = await getUserByEmailAndProvider({
         userAdapter: ctx.env.data.users,
@@ -994,7 +1005,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          username: z.string().optional(),
         }),
       },
       responses: {
@@ -1004,9 +1014,15 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { state, username } = ctx.req.valid("query");
+      const { state } = ctx.req.valid("query");
       const { env } = ctx;
-      const { vendorSettings } = await initJSXRoute(state, env);
+      const { vendorSettings, session } = await initJSXRoute(state, env);
+
+      const { username } = session.authParams;
+
+      if (!username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
 
       return ctx.html(
         <SignupPage vendorSettings={vendorSettings} email={username} />,

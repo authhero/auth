@@ -173,7 +173,6 @@ export const dbConnectionRoutes = new OpenAPIHono<{
 
       const session: UniversalLoginSession = {
         id: nanoid(),
-        client_id: client.id,
         tenant_id: client.tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

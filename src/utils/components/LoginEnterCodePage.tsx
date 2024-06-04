@@ -38,7 +38,6 @@ const LoginEnterCodePage: FC<Props> = ({
 
   const passwordLoginLinkParams = new URLSearchParams({
     state,
-    username: email,
   });
 
   return (

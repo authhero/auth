@@ -39,6 +39,7 @@ describe("Register password", () => {
       scope: "openid",
       redirect_uri: "http://localhost:3000/callback",
       state: "state",
+      username: "password-login-test@example.com",
     };
     const response = await oauthClient.authorize.$get({
       query: searchParams,
@@ -62,8 +63,6 @@ describe("Register password", () => {
     const blockedLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
-        // TODO - this should be in the body. Need to change these pages to match Auth0
-        username: "password-login-test@example.com",
       },
       form: {
         password,
@@ -98,7 +97,6 @@ describe("Register password", () => {
     const workingLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
-        username: "password-login-test@example.com",
       },
       form: {
         password,
@@ -138,6 +136,7 @@ describe("Register password", () => {
       scope: "openid",
       redirect_uri: "http://localhost:3000/callback",
       state: "state",
+      username: "existing-code-user@example.com",
     };
     const response = await oauthClient.authorize.$get({
       query: searchParams,
@@ -195,7 +194,6 @@ describe("Register password", () => {
     const loginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
-        username: "existing-code-user@example.com",
       },
       form: {
         password,
@@ -279,6 +277,7 @@ describe("Register password", () => {
       scope: "openid",
       redirect_uri: "http://localhost:3000/callback",
       state: "state",
+      username: "password-login-test@example.com",
     };
     const response = await oauthClient.authorize.$get({
       query: searchParams,
@@ -299,8 +298,6 @@ describe("Register password", () => {
     const blockedLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
-        // TODO - this should be in the body. Need to change these pages to match Auth0
-        username: "password-login-test@example.com",
       },
       form: {
         password,
@@ -330,7 +327,6 @@ describe("Register password", () => {
     const workingLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
-        username: "password-login-test@example.com",
       },
       form: {
         password,
@@ -354,6 +350,7 @@ describe("Login with password user", () => {
       scope: "openid",
       redirect_uri: "http://localhost:3000/callback",
       state: "state",
+      username: "foo@example.com",
     };
 
     const response = await oauthClient.authorize.$get({
@@ -370,7 +367,6 @@ describe("Login with password user", () => {
     const loginFormResponse = await oauthClient.u.login.$get({
       query: {
         state: query.state,
-        username: "foo@example.com",
       },
     });
 
@@ -385,7 +381,6 @@ describe("Login with password user", () => {
     const postLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: loginSearchParamsQuery.state,
-        username: "foo@example.com",
       },
       form: {
         password: "Test1234!",
@@ -418,6 +413,7 @@ describe("Login with password user", () => {
         scope: "openid",
         redirect_uri: "http://localhost:3000/callback",
         state: "state",
+        username: "not-an-existing-user@example.com",
       },
     });
 
@@ -430,8 +426,6 @@ describe("Login with password user", () => {
     await oauthClient.u.login.$get({
       query: {
         state: query.state,
-        // assume this has been entered on the first step
-        username: "not-an-existing-user@example.com",
       },
     });
 
@@ -443,7 +437,6 @@ describe("Login with password user", () => {
     const nonexistingUserResponse = await oauthClient.u.login.$post({
       query: {
         state: loginSearchParamsQuery.state,
-        username: "not-an-existing-user@example.com",
       },
       form: {
         password: "password",
@@ -464,6 +457,7 @@ describe("Login with password user", () => {
         scope: "openid",
         redirect_uri: "http://localhost:3000/callback",
         state: "state",
+        username: "foo@example.com",
       },
     });
 
@@ -476,7 +470,6 @@ describe("Login with password user", () => {
     await oauthClient.u.login.$get({
       query: {
         state: query.state,
-        username: "foo@example.com",
       },
     });
 
@@ -488,7 +481,6 @@ describe("Login with password user", () => {
     const incorrectPasswordResponse = await oauthClient.u.login.$post({
       query: {
         state: loginSearchParamsQuery.state,
-        username: "foo@example.com",
       },
       form: {
         password: "THIS-IS-THE-WRONG-PASSWORD",
