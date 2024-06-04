@@ -101,6 +101,9 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
         throw new HTTPException(404);
       }
 
+      // @ts-ignore
+      application.disable_sign_ups = application.disable_sign_ups === 1;
+
       return ctx.json(applicationSchema.parse(application), {
         headers,
       });
