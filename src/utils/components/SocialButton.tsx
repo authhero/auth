@@ -3,7 +3,7 @@ import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginS
 import Button from "./Button";
 
 type Props = {
-  social: string;
+  connection: "google-oauth2" | "apple" | "facebook" | "vipps";
   // TODO - what is the correct type here in hono/jsx? OR use a children prop
   icon: any;
   text: string;
@@ -12,14 +12,12 @@ type Props = {
 };
 
 const SocialButton = ({
-  social,
+  connection,
   text,
   icon = null,
   canResize = false,
   session,
 }: Props) => {
-  const connection = social === "google" ? "google-oauth2" : social;
-
   const queryString = new URLSearchParams({
     client_id: session.authParams.client_id,
     connection,

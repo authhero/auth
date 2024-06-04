@@ -73,7 +73,7 @@ const LoginWithCodePage: FC<Props> = ({
 
         <div class="flex space-x-4 sm:flex-col sm:space-x-0 sm:space-y-4 short:flex-row short:space-x-4 short:space-y-0">
           <SocialButton
-            social="facebook"
+            connection="facebook"
             text={i18next.t("continue_with", { provider: "Facebook" })}
             canResize={true}
             icon={
@@ -85,7 +85,7 @@ const LoginWithCodePage: FC<Props> = ({
             session={session}
           />
           <SocialButton
-            social="google"
+            connection="google-oauth2"
             text={i18next.t("continue_with", { provider: "Google" })}
             canResize={true}
             icon={
@@ -94,7 +94,7 @@ const LoginWithCodePage: FC<Props> = ({
             session={session}
           />
           <SocialButton
-            social="apple"
+            connection="apple"
             text={i18next.t("continue_with", { provider: "Apple" })}
             canResize={true}
             icon={
