@@ -1,10 +1,19 @@
 type stateObject = { [key: string]: any };
-import { base64UrlEncode, base64UrlDecode } from "./base64";
+import { base64url } from "oslo/encoding";
 
 export function stateEncode(state: stateObject) {
-  return base64UrlEncode(JSON.stringify(state));
+  const str = JSON.stringify(state);
+  const encoder = new TextEncoder();
+  const uint8Array = encoder.encode(str);
+  const encodedStr = base64url.encode(uint8Array);
+
+  return encodedStr;
 }
 
 export function stateDecode(state: string) {
-  return JSON.parse(base64UrlDecode(state));
+  const uint8Array = base64url.decode(state);
+  const decoder = new TextDecoder();
+  const decodedStr = decoder.decode(uint8Array);
+  const decodedState = JSON.parse(decodedStr);
+  return decodedState;
 }
