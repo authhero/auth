@@ -167,6 +167,18 @@ export async function getEnv(args?: getEnvParams) {
   await data.applications.create("otherTenant", anotherAppOnAnotherTenant);
   await data.connections.create("tenantId", testConnection1);
   await data.connections.create("tenantId", testConnection2);
+  await data.connections.create("tenantId", {
+    id: "facebook",
+    name: "facebook",
+  });
+  await data.connections.create("tenantId", {
+    id: "google-oauth2",
+    name: "google-oauth2",
+  });
+  await data.connections.create("tenantId", {
+    id: "apple",
+    name: "apple",
+  });
 
   await data.users.create("tenantId", {
     id: "auth2|userId",
