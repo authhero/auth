@@ -15,7 +15,6 @@ export function getLogResponse(log: SqlLog): LogsResponse {
   const logResponse: LogsResponse = {
     ...log,
     ...getCommonFields(log),
-    //d do also need optional chaining to empty strings?
     log_id: log.id,
     _id: log.id,
   };
