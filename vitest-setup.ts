@@ -6,6 +6,7 @@ import {
   KVARTAL_VENDOR_SETTINGS,
   BREAKIT_VENDOR_SETTINGS,
   FOKUS_VENDOR_SETTINGS,
+  PARCFERME_VENDOR_SETTINGS,
 } from "./test/fixtures/vendorSettings";
 
 export const restHandlers = [
@@ -28,6 +29,10 @@ export const restHandlers = [
 
   http.get("https://api.sesamy.dev/profile/vendors/clientId/style", () => {
     return HttpResponse.json(SESAMY_VENDOR_SETTINGS);
+  }),
+
+  http.get("https://api.sesamy.dev/profile/vendors/parcferme/style", () => {
+    return HttpResponse.json(PARCFERME_VENDOR_SETTINGS);
   }),
 
   http.get("https://api.sesamy.dev/profile/vendors/bad-vendor/style", () => {

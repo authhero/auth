@@ -54,7 +54,67 @@ test("should hide social buttons for fokus by not specifying any connection", as
   await snapshotResponse(enterEmailStep);
 });
 
-test.skip("should show Vipps for parcferme", () => {
-  // see open PR
-  // seed tenants & clients with parceferme id
+test("should show Vipps for parcferme as entered as connection", async () => {
+  const testTenantLanguage = "en";
+  const env = await getEnv({
+    testTenantLanguage,
+  });
+  const oauthClient = testClient(oauthApp, env);
+
+  await env.data.tenants.create({
+    id: "parcferme",
+    name: "Test Tenant",
+    audience: "https://example.com",
+    sender_email: "login@example.com",
+    sender_name: "SenderName",
+  });
+  await env.data.applications.create("parcferme", {
+    id: "parcferme",
+    name: "Test Client",
+    client_secret: "clientSecret",
+    allowed_callback_urls: "https://example.com/callback",
+    allowed_logout_urls: "",
+    allowed_web_origins: "example.com",
+    email_validation: "enforced",
+    disable_sign_ups: false,
+  });
+  await env.data.connections.create("parcferme", {
+    id: "parcferme-connection1",
+    name: "vipps",
+  });
+  await env.data.connections.create("parcferme", {
+    id: "parcferme-connection2",
+    name: "facebook",
+  });
+  await env.data.connections.create("parcferme", {
+    id: "parcferme-connection3",
+    name: "google-oauth2",
+  });
+  await env.data.connections.create("parcferme", {
+    id: "parcferme-connection4",
+    name: "apple",
+  });
+
+  const searchParams = {
+    client_id: "parcferme",
+    vendor_id: "parcferme",
+    response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+    scope: "openid",
+    redirect_uri: "http://localhost:3000/callback",
+    state: "state",
+  };
+  const response = await oauthClient.authorize.$get({
+    query: searchParams,
+  });
+  const location = response.headers.get("location");
+  const stateParam = new URLSearchParams(location!.split("?")[1]);
+  const query = Object.fromEntries(stateParam.entries());
+
+  const enterEmailStep = await oauthClient.u.code.$get({
+    query: {
+      state: query.state,
+    },
+  });
+
+  await snapshotResponse(enterEmailStep);
 });

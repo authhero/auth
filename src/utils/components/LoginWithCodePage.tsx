@@ -11,6 +11,7 @@ import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginS
 import { getSendParamFromAuth0ClientHeader } from "../getSendParamFromAuth0ClientHeader";
 import DisabledSubmitButton from "./DisabledSubmitButton";
 import Form from "./Form";
+import VippsLogo from "./VippsLogo";
 
 type Props = {
   error?: string;
@@ -34,7 +35,8 @@ const LoginWithCodePage: FC<Props> = ({
   const showFacebook = connections.includes("facebook");
   const showGoogle = connections.includes("google-oauth2");
   const showApple = connections.includes("apple");
-  const anySocialLogin = showFacebook || showGoogle || showApple;
+  const showVipps = connections.includes("vipps");
+  const anySocialLogin = showFacebook || showGoogle || showApple || showVipps;
 
   const loginDescriptionText =
     sendType === "code"
@@ -115,6 +117,17 @@ const LoginWithCodePage: FC<Props> = ({
                   className="text-xl text-black dark:text-white sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 sm:text-2xl short:static short:left-auto short:top-auto short:translate-y-0 short:text-xl"
                   name="apple"
                 />
+              }
+              session={session}
+            />
+          )}
+          {showVipps && (
+            <SocialButton
+              connection="vipps"
+              text={i18next.t("continue_with", { provider: "Vipps" })}
+              canResize={true}
+              icon={
+                <VippsLogo className="h-5 w-5 sm:absolute sm:left-4 sm:top-1/2 sm:h-6 sm:w-6 sm:-translate-y-1/2 short:static short:left-auto short:top-auto short:h-5 short:w-5 short:translate-y-0" />
               }
               session={session}
             />
