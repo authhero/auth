@@ -46,16 +46,6 @@ const LogType = z.enum([
 
 export type LogType = z.infer<typeof LogType>;
 
-const auth0ClientSchema = z.object({
-  name: z.string(),
-  version: z.string(),
-  env: z
-    .object({
-      node: z.string().optional(),
-    })
-    .optional(),
-});
-
 export const logSchema = z.object({
   type: LogType,
   date: z.string(),
@@ -78,7 +68,17 @@ export const logSchema = z.object({
   strategy: z.string().optional(),
   strategy_type: z.string().optional(),
   hostname: z.string().optional(),
-  auth0_client: auth0ClientSchema,
+  auth0_client: z
+    .object({
+      name: z.string(),
+      version: z.string(),
+      env: z
+        .object({
+          node: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 export type Log = z.infer<typeof logSchema>;
