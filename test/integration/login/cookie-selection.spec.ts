@@ -1,4 +1,5 @@
 import { test, expect } from "vitest";
+import { SesamyPasswordLoginSelection } from "../../../src/utils/authCookies";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
@@ -91,6 +92,33 @@ test("after entering email should go to enter password step if password cookie i
   const enterEmailResponseLocation = enterEmailResponse.headers.get("location");
 
   expect(enterEmailResponseLocation!.startsWith("/u/login")).toBeTruthy();
+});
+
+test("after entering email should go to enter code step if password cookie is set BUT have posted up login_selection code override", async () => {
+  const env = await getEnv();
+  const oauthClient = testClient(oauthApp, env);
+
+  await env.data.universalLoginSessions.create(SESSION_FIXTURE);
+
+  const enterEmailResponse = await oauthClient.u.code.$post(
+    {
+      query: { state: "session-id" },
+      form: {
+        username: "test@example.com",
+        // this is the override
+        login_selection: SesamyPasswordLoginSelection.code,
+      },
+    },
+    {
+      headers: {
+        cookie: "sesamy-password-login-selection-clientId=password",
+      },
+    },
+  );
+
+  const enterEmailResponseLocation = enterEmailResponse.headers.get("location");
+
+  expect(enterEmailResponseLocation!.startsWith("/u/enter-code")).toBeTruthy();
 });
 
 test("should set cookie as code when visit enter code page", async () => {
