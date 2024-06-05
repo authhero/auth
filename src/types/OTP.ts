@@ -9,6 +9,7 @@ export interface OTP {
   client_id: string;
   email: string;
   code: string;
+  ip?: string;
   send: "link" | "code";
   authParams: {
     nonce?: string;
