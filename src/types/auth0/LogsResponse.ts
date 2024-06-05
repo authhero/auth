@@ -75,7 +75,7 @@ export const logSchema = z.object({
   client_id: z.string().optional(),
   client_name: z.string().optional(),
   audience: z.string().optional(),
-  scope: z.union([z.array(z.string()), z.string()]).optional(),
+  scope: z.array(z.string()).optional(),
   strategy: z.string().optional(),
   strategy_type: z.string().optional(),
   hostname: z.string().optional(),
