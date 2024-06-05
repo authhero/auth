@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception";
-import { Env, Var } from "../types";
+import { Env, Var, Log } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
 import {
@@ -14,7 +14,7 @@ import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../constants";
 import { sendValidateEmailAddress } from "../controllers/email";
 import { waitUntil } from "../utils/wait-until";
 import { Context } from "hono";
-import { createCommonLogFields } from "../tsoa-middlewares/logger";
+import instanceToJson from "../utils/instanceToJson";
 
 // de-dupe
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
@@ -82,22 +82,38 @@ export async function validateCode(
 
   const user = primaryUser || newUser;
 
-  waitUntil(
-    ctx,
-    env.data.logs.create(client.tenant_id, {
-      ...createCommonLogFields(ctx, {}, "User logged in with link"),
-      type: "s",
-      client_id: client.id,
-      client_name: client.name,
-      user_id: user.id,
-      user_name: user.name || "",
-      connection_id:
-        client.connections.find((c) => c.name === "email")?.id || "",
-      hostname: ctx.req.header("host") || "",
-      strategy: "email",
-      strategy_type: "passwordless",
-    }),
-  );
+  // TODO - along with our middleware solution (creating logs based on context vars)
+  // do we want a helper to create Log objects? _or_ be more permissive in the create log adapter?
+  const log: Log = {
+    type: "s",
+    client_id: client.id,
+    client_name: client.name,
+    user_id: user.id,
+    user_name: user.name || "",
+    connection_id: client.connections.find((c) => c.name === "email")?.id || "",
+    hostname: ctx.req.header("host") || "",
+    strategy: "email",
+    strategy_type: "passwordless",
+    user_agent: ctx.req.header("user-agent") || "",
+    description: "",
+    ip: ctx.req.header("x-real-ip") || "",
+    date: new Date().toISOString(),
+    details: {
+      request: {
+        method: ctx.req.method,
+        path: ctx.req.path,
+        headers: instanceToJson(ctx.req.raw.headers),
+        qs: ctx.req.queries(),
+      },
+    },
+    isMobile: false,
+    connection: ctx.var.connection || "",
+    auth0_client: ctx.var.auth0_client,
+    audience: "",
+    scope: [],
+  };
+
+  waitUntil(ctx, env.data.logs.create(client.tenant_id, log));
 
   return user;
 }
