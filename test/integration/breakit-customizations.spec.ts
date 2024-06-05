@@ -57,6 +57,11 @@ test("only allows existing breakit users to progress to the enter code step", as
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
+  // this will only render the FB button
+  await env.data.connections.create("breakit", {
+    id: "breakit-connection",
+    name: "facebook",
+  });
 
   const searchParams = {
     client_id: "breakit",

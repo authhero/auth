@@ -649,10 +649,17 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const { vendorSettings, session } = await initJSXRoute(state, env);
+      const { vendorSettings, session, client } = await initJSXRoute(
+        state,
+        env,
+      );
 
       return ctx.html(
-        <LoginWithCodePage vendorSettings={vendorSettings} session={session} />,
+        <LoginWithCodePage
+          vendorSettings={vendorSettings}
+          session={session}
+          client={client}
+        />,
       );
     },
   )
@@ -711,6 +718,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
               session={session}
               error={i18next.t("user_account_does_not_exist")}
               email={params.username}
+              client={client}
             />,
             400,
           );
