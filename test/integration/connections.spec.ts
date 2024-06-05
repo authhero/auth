@@ -152,6 +152,7 @@ test("should hide password entry button if auth2 not specified as a connection",
     scope: "openid",
     redirect_uri: "http://localhost:3000/callback",
     state: "state",
+    username: "foo@example.com",
   };
   const response = await oauthClient.authorize.$get({
     query: searchParams,
