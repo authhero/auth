@@ -1,45 +1,38 @@
-import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
+import { AuthParams } from "../types";
 
 type Args = {
   issuer: string;
-  session: UniversalLoginSession;
+  authParams: AuthParams;
   code: string;
+  email: string;
 };
 
-export function createMagicLink({ issuer, session, code }: Args) {
+export function createMagicLink({ issuer, authParams, code, email }: Args) {
   const magicLink = new URL(issuer);
   magicLink.pathname = "passwordless/verify_redirect";
 
-  if (!session.authParams.username) {
-    // this should have been populated on the email entry step
-    throw new Error("username is required in session");
+  if (authParams.scope) {
+    magicLink.searchParams.set("scope", authParams.scope);
   }
-
-  if (session.authParams.scope) {
-    magicLink.searchParams.set("scope", session.authParams.scope);
+  if (authParams.response_type) {
+    magicLink.searchParams.set("response_type", authParams.response_type);
   }
-  if (session.authParams.response_type) {
-    magicLink.searchParams.set(
-      "response_type",
-      session.authParams.response_type,
-    );
+  if (authParams.redirect_uri) {
+    magicLink.searchParams.set("redirect_uri", authParams.redirect_uri);
   }
-  if (session.authParams.redirect_uri) {
-    magicLink.searchParams.set("redirect_uri", session.authParams.redirect_uri);
+  if (authParams.audience) {
+    magicLink.searchParams.set("audience", authParams.audience);
   }
-  if (session.authParams.audience) {
-    magicLink.searchParams.set("audience", session.authParams.audience);
+  if (authParams.state) {
+    magicLink.searchParams.set("state", authParams.state);
   }
-  if (session.authParams.state) {
-    magicLink.searchParams.set("state", session.authParams.state);
-  }
-  if (session.authParams.nonce) {
-    magicLink.searchParams.set("nonce", session.authParams.nonce);
+  if (authParams.nonce) {
+    magicLink.searchParams.set("nonce", authParams.nonce);
   }
 
   magicLink.searchParams.set("connection", "email");
-  magicLink.searchParams.set("client_id", session.authParams.client_id);
-  magicLink.searchParams.set("email", session.authParams.username);
+  magicLink.searchParams.set("client_id", authParams.client_id);
+  magicLink.searchParams.set("email", email);
   magicLink.searchParams.set("verification_code", code);
   magicLink.searchParams.set("nonce", "nonce");
 

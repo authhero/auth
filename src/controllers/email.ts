@@ -1,6 +1,6 @@
 import { Liquid } from "liquidjs";
 import { translate } from "../utils/i18n";
-import { Client, Env } from "../types";
+import { AuthParams, Client, Env } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
@@ -90,15 +90,17 @@ export async function sendLink(
   client: Client,
   to: string,
   code: string,
-  session: UniversalLoginSession,
+  authParams: AuthParams,
+  email: string,
 ) {
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
 
   const magicLink = createMagicLink({
     issuer: env.ISSUER,
-    session,
     code,
+    authParams,
+    email,
   });
 
   const logo = getClientLogoPngGreyBg(
