@@ -1,5 +1,5 @@
 import cn from "classnames";
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import Button from "./Button";
 
 type Props = {

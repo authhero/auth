@@ -1,6 +1,6 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
-import { VendorSettings } from "../../types";
+import { VendorSettings } from "../types";
 import i18next from "i18next";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";

@@ -1,9 +1,8 @@
 import Button from "./Button";
-import { VendorSettings } from "../../types";
+import { VendorSettings, AuthParams } from "../types";
 import Layout from "./Layout";
 import i18next from "i18next";
 import type { FC } from "hono/jsx";
-import type { AuthParams } from "../../types";
 
 type Props = {
   error?: string;
