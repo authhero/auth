@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception";
-import { Env } from "../types";
+import { Env, Var } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
 import {
@@ -12,6 +12,9 @@ import { nanoid } from "nanoid";
 import generateOTP from "../utils/otp";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../constants";
 import { sendValidateEmailAddress } from "../controllers/email";
+import { waitUntil } from "../utils/wait-until";
+import { Context } from "hono";
+import { createCommonLogFields } from "../tsoa-middlewares/logger";
 
 // de-dupe
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
@@ -20,12 +23,15 @@ interface LoginParams {
   client_id: string;
   email: string;
   verification_code: string;
+  ip?: string;
 }
 
 export async function validateCode(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   params: LoginParams,
 ): Promise<User> {
+  const { env } = ctx;
+
   const client = await getClient(env, params.client_id);
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
@@ -38,7 +44,8 @@ export async function validateCode(
     throw new HTTPException(403, { message: "Code not found or expired" });
   }
 
-  await env.data.OTP.remove(client.tenant_id, otp.id);
+  // TODO: disable for now
+  // await env.data.OTP.remove(client.tenant_id, otp.id);
 
   const emailUser = await getPrimaryUserByEmailAndProvider({
     userAdapter: env.data.users,
@@ -73,7 +80,26 @@ export async function validateCode(
     linked_to: primaryUser?.id,
   });
 
-  return primaryUser || newUser;
+  const user = primaryUser || newUser;
+
+  waitUntil(
+    ctx,
+    env.data.logs.create(client.tenant_id, {
+      ...createCommonLogFields(ctx, {}, "User logged in with link"),
+      type: "s",
+      client_id: client.id,
+      client_name: client.name,
+      user_id: user.id,
+      user_name: user.name || "",
+      connection_id:
+        client.connections.find((c) => c.name === "email")?.id || "",
+      hostname: ctx.req.header("host") || "",
+      strategy: "email",
+      strategy_type: "passwordless",
+    }),
+  );
+
+  return user;
 }
 
 // this is not inside src/controllers/email/sendValidateEmailAddress

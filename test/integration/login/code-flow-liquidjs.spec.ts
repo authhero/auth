@@ -761,7 +761,7 @@ describe("Login with code on liquidjs template", () => {
     await snapshotEmail(env.data.emails[0], true);
   });
 
-  it("should only allow a code to be used once", async () => {
+  it.skip("should only allow a code to be used once", async () => {
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
 

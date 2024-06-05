@@ -1,6 +1,6 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, User, AuthorizationResponseType, Client } from "../../types";
+import { Env, User, AuthorizationResponseType, Client, Var } from "../../types";
 import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import {
@@ -91,7 +91,7 @@ async function handleLogin(
   env: Env,
   user: User,
   session: UniversalLoginSession,
-  ctx: Context<{ Bindings: Env }>,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   client: Client,
 ) {
   if (session.authParams.redirect_uri) {
@@ -142,7 +142,7 @@ async function handleLogin(
   );
 }
 
-export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
+export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
   // GET /u/login
   // --------------------------------
@@ -916,7 +916,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       try {
-        const user = await validateCode(env, {
+        const user = await validateCode(ctx, {
           client_id: session.authParams.client_id,
           email: session.authParams.username,
           verification_code: code,

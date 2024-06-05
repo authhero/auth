@@ -65,11 +65,12 @@ export const passwordlessRoutes = new OpenAPIHono<{
       await ctx.env.data.OTP.create({
         id: nanoid(),
         code,
-        email: email.toLowerCase(),
+        email: email,
         client_id: client_id,
         send: send,
         authParams: authParams,
         tenant_id: client.tenant_id,
+        ip: ctx.req.header("x-real-ip"),
         created_at: new Date(),
         expires_at: new Date(Date.now() + OTP_EXPIRATION_TIME),
       });
@@ -156,10 +157,11 @@ export const passwordlessRoutes = new OpenAPIHono<{
       }
 
       try {
-        const user = await validateCode(env, {
+        const user = await validateCode(ctx, {
           client_id,
           email,
           verification_code,
+          ip: ctx.req.header("x-real-ip"),
         });
 
         if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {

@@ -9,7 +9,6 @@ export function list(db: Kysely<Database>) {
       .selectFrom("otps")
       .where("otps.tenant_id", "=", tenant_id)
       .where("otps.email", "=", email)
-      .where("otps.used_at", "is", null)
       .where("otps.expires_at", ">", now)
       .where("otps.used_at", "is", null)
       .selectAll()

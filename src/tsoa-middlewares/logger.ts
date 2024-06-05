@@ -19,7 +19,7 @@ import {
   LogCommonFields,
 } from "../types";
 
-function createCommonLogFields(
+export function createCommonLogFields(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   body: unknown,
   description?: string,
