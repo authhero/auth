@@ -34,6 +34,7 @@ const LoginWithCodePage: FC<Props> = ({
   const showFacebook = connections.includes("facebook");
   const showGoogle = connections.includes("google-oauth2");
   const showApple = connections.includes("apple");
+  const anySocialLogin = showFacebook || showGoogle || showApple;
 
   const loginDescriptionText =
     sendType === "code"
@@ -70,13 +71,14 @@ const LoginWithCodePage: FC<Props> = ({
             </div>
           </DisabledSubmitButton>
         </Form>
-        <div class="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
-          <div class="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
-          <div class="relative inline-block bg-white px-2 dark:bg-gray-800">
-            {i18next.t("continue_social_login")}
+        {anySocialLogin && (
+          <div class="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
+            <div class="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
+            <div class="relative inline-block bg-white px-2 dark:bg-gray-800">
+              {i18next.t("continue_social_login")}
+            </div>
           </div>
-        </div>
-
+        )}
         <div class="flex space-x-4 sm:flex-col sm:space-x-0 sm:space-y-4 short:flex-row short:space-x-4 short:space-y-0">
           {showFacebook && (
             <SocialButton
