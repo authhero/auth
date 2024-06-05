@@ -91,7 +91,6 @@ export async function sendLink(
   to: string,
   code: string,
   authParams: AuthParams,
-  email: string,
 ) {
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
@@ -100,7 +99,7 @@ export async function sendLink(
     issuer: env.ISSUER,
     code,
     authParams,
-    email,
+    email: to,
   });
 
   const logo = getClientLogoPngGreyBg(
