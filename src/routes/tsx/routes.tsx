@@ -682,6 +682,12 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             "application/x-www-form-urlencoded": {
               schema: z.object({
                 username: z.string().transform((u) => u.toLowerCase()),
+                login_selection: z
+                  .union([
+                    z.literal(SesamyPasswordLoginSelection.code),
+                    z.literal(SesamyPasswordLoginSelection.password),
+                  ])
+                  .optional(),
               }),
             },
           },
@@ -729,15 +735,18 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       session.authParams.username = params.username;
       await env.data.universalLoginSessions.update(session.id, session);
 
-      const passwordLoginSelection =
-        parsePasswordLoginSelectionCookie(
-          getCookie(ctx, getPasswordLoginSelectionCookieName(client.id)),
-        ) || SesamyPasswordLoginSelection.code;
+      // we want to be able to override this with a value in the POST
+      if (params.login_selection !== SesamyPasswordLoginSelection.code) {
+        const passwordLoginSelection =
+          parsePasswordLoginSelectionCookie(
+            getCookie(ctx, getPasswordLoginSelectionCookieName(client.id)),
+          ) || SesamyPasswordLoginSelection.code;
 
-      if (passwordLoginSelection === SesamyPasswordLoginSelection.password) {
-        return ctx.redirect(
-          `/u/login?state=${state}&username=${params.username}`,
-        );
+        if (passwordLoginSelection === SesamyPasswordLoginSelection.password) {
+          return ctx.redirect(
+            `/u/login?state=${state}&username=${params.username}`,
+          );
+        }
       }
 
       const code = generateOTP();
