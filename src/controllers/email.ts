@@ -12,6 +12,8 @@ import {
   passwordReset,
   verifyEmail,
 } from "../templates/email/ts";
+import { createMagicLink } from "../utils/magicLink";
+import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 
 const SUPPORTED_LOCALES: { [key: string]: object } = {
   en,
@@ -88,10 +90,16 @@ export async function sendLink(
   client: Client,
   to: string,
   code: string,
-  magicLink: string,
+  session: UniversalLoginSession,
 ) {
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
+
+  const magicLink = createMagicLink({
+    issuer: env.ISSUER,
+    session,
+    code,
+  });
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
