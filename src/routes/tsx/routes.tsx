@@ -805,7 +805,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         waitUntil(
           ctx,
-          sendLink(env, client, params.username, code, magicLink.href),
+          sendLink(env, client, params.username, code, session.authParams),
         );
       } else {
         waitUntil(ctx, sendCode(env, client, params.username, code));

@@ -1,6 +1,6 @@
 import { Liquid } from "liquidjs";
 import { translate } from "../utils/i18n";
-import { Client, Env } from "../types";
+import { AuthParams, Client, Env } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
@@ -12,6 +12,8 @@ import {
   passwordReset,
   verifyEmail,
 } from "../templates/email/ts";
+import { createMagicLink } from "../utils/magicLink";
+import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 
 const SUPPORTED_LOCALES: { [key: string]: object } = {
   en,
@@ -88,10 +90,17 @@ export async function sendLink(
   client: Client,
   to: string,
   code: string,
-  magicLink: string,
+  authParams: AuthParams,
 ) {
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
+
+  const magicLink = createMagicLink({
+    issuer: env.ISSUER,
+    code,
+    authParams,
+    email: to,
+  });
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
