@@ -683,9 +683,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
               schema: z.object({
                 username: z.string().transform((u) => u.toLowerCase()),
                 login_selection: z
-                  .union([
-                    z.literal(SesamyPasswordLoginSelection.code),
-                    z.literal(SesamyPasswordLoginSelection.password),
+                  .enum([
+                    SesamyPasswordLoginSelection.code,
+                    SesamyPasswordLoginSelection.password,
                   ])
                   .optional(),
               }),
