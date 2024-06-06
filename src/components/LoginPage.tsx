@@ -71,14 +71,13 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
               {i18next.t("or")}
             </div>
           </div>
-          <Button
-            Component="a"
-            href={`/u/enter-code?${loginLinkParams.toString()}`}
-            variant="secondary"
-            className="block"
-          >
-            {i18next.t("enter_a_code_btn")}
-          </Button>
+          <form method="post" action={`/u/code?${loginLinkParams.toString()}`}>
+            <input type="hidden" name="login_selection" value="code" />
+            <input type="hidden" name="username" value={email} />
+            <Button variant="secondary" className="block">
+              {i18next.t("enter_a_code_btn")}
+            </Button>
+          </form>
         </div>
       </div>
     </Layout>
