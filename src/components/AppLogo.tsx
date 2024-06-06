@@ -1,4 +1,4 @@
-import { VendorSettings } from "../../types";
+import { VendorSettings } from "../types";
 import type { FC } from "hono/jsx";
 
 type AppLogoProps = {

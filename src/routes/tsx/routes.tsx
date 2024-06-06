@@ -1,7 +1,7 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, User, AuthorizationResponseType, Client, Var } from "../../types";
-import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
+import ResetPasswordPage from "../../components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import {
   getUserByEmailAndProvider,
@@ -14,12 +14,12 @@ import en from "../../localesLogin2/en/default.json";
 import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
-import LoginPage from "../../utils/components/LoginPage";
-import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
-import LoginEnterCodePage from "../../utils/components/LoginEnterCodePage";
-import SignupPage from "../../utils/components/SignUpPage";
-import UnverifiedEmail from "../../utils/components/UnverifiedEmailPage";
-import MessagePage from "../../utils/components/Message";
+import LoginPage from "../../components/LoginPage";
+import LoginWithCodePage from "../../components/LoginWithCodePage";
+import LoginEnterCodePage from "../../components/LoginEnterCodePage";
+import SignupPage from "../../components/SignUpPage";
+import UnverifiedEmail from "../../components/UnverifiedEmailPage";
+import MessagePage from "../../components/Message";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import {
@@ -28,7 +28,7 @@ import {
 } from "../../helpers/generate-auth-response";
 import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
 import { Context } from "hono";
-import ForgotPasswordPage from "../../utils/components/ForgotPasswordPage";
+import ForgotPasswordPage from "../../components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
 import { sendResetPassword, sendLink, sendCode } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";

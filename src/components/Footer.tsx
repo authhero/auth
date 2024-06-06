@@ -1,5 +1,5 @@
 import i18next from "i18next";
-import { VendorSettings } from "../../types";
+import { VendorSettings } from "../types";
 
 type Props = {
   vendorSettings?: VendorSettings;

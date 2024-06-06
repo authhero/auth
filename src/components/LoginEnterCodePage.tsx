@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
-import { VendorSettings, Env, Client } from "../../types";
+import { VendorSettings, Env, Client } from "../types";
 import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";

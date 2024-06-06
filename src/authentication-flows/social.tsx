@@ -20,7 +20,7 @@ import {
   getPrimaryUserByEmailAndProvider,
   getPrimaryUserByEmail,
 } from "../utils/users";
-import UserNotFound from "../utils/components/UserNotFoundPage";
+import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
 
 export async function socialAuth(
