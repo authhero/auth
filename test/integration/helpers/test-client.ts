@@ -179,6 +179,10 @@ export async function getEnv(args?: getEnvParams) {
     id: "apple",
     name: "apple",
   });
+  await data.connections.create("tenantId", {
+    id: "auth2",
+    name: "auth2",
+  });
 
   await data.users.create("tenantId", {
     id: "auth2|userId",

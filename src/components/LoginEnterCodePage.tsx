@@ -14,32 +14,28 @@ type Props = {
   vendorSettings: VendorSettings;
   email: string;
   state: string;
-  env: Env;
   client: Client;
 };
 
 const CODE_LENGTH = 6;
-
-const SESAMY_DEMO_VENDOR = "demo";
 
 const LoginEnterCodePage: FC<Props> = ({
   error,
   vendorSettings,
   email,
   state,
-  env,
   client,
 }) => {
   const i18nText = i18next.t("we_sent_a_code_to", { email });
   const startText = i18nText.slice(0, i18nText.indexOf("<0>"));
   const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
 
-  const passwordLoginFeatureyFlag =
-    env.ENVIRONMENT === "dev" || client.id === SESAMY_DEMO_VENDOR;
-
   const passwordLoginLinkParams = new URLSearchParams({
     state,
   });
+
+  const connections = client.connections.map(({ name }) => name);
+  const showPasswordLogin = connections.includes("auth2");
 
   return (
     <Layout
@@ -87,7 +83,7 @@ const LoginEnterCodePage: FC<Props> = ({
               {i18next.t("sent_code_spam")}
             </div>
           </div>
-          {passwordLoginFeatureyFlag && (
+          {showPasswordLogin && (
             <div className="text-center mb-12">
               <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
                 <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
