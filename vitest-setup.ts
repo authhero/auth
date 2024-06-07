@@ -2,12 +2,12 @@ import { afterAll, afterEach, beforeAll } from "vitest";
 import { setupServer } from "msw/node";
 import { HttpResponse, http } from "msw";
 import {
-  SESAMY_VENDOR_SETTINGS,
   KVARTAL_VENDOR_SETTINGS,
   BREAKIT_VENDOR_SETTINGS,
   FOKUS_VENDOR_SETTINGS,
   PARCFERME_VENDOR_SETTINGS,
 } from "./test/fixtures/vendorSettings";
+import { SESAMY_VENDOR_SETTINGS } from "./src/utils/fetchVendorSettings";
 
 export const restHandlers = [
   // can use parameter in URL?

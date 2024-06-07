@@ -1,12 +1,15 @@
-import { vendorSettingsSchema, Env } from "../types";
+import { VendorSettings, vendorSettingsSchema, Env } from "../types";
 
-const DEFAULT_SESAMY_VENDOR = {
+// there is no Sesamy vendor settings... we have this on login2 as a fallback and I think there's
+// some interaction with "dark mode"
+// But I don't want to have a Sesamy vendor on auth2
+export const SESAMY_VENDOR_SETTINGS: VendorSettings = {
   name: "sesamy",
   logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
   style: {
     primaryColor: "#7D68F4",
-    buttonTextColor: "#7D68F4",
-    primaryHoverColor: "#7D68F4",
+    buttonTextColor: "#FFFFFF",
+    primaryHoverColor: "#A091F2",
   },
   loginBackgroundImage: "",
   checkoutHideSocial: false,
@@ -23,7 +26,7 @@ export async function fetchVendorSettings(
   vendor_id?: string,
 ) {
   if (!vendor_id && !client_id) {
-    return DEFAULT_SESAMY_VENDOR;
+    return SESAMY_VENDOR_SETTINGS;
   }
 
   const vendorId = vendor_id || client_id;
@@ -40,6 +43,6 @@ export async function fetchVendorSettings(
     return vendorSettings;
   } catch (e) {
     console.error(e);
-    return DEFAULT_SESAMY_VENDOR;
+    return SESAMY_VENDOR_SETTINGS;
   }
 }
