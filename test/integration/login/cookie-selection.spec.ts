@@ -30,7 +30,7 @@ test("after entering email should go to enter code step if no cookie set", async
   // shortcut instead of visiting the /authorize endpoint
   await env.data.universalLoginSessions.create(SESSION_FIXTURE);
 
-  const enterEmailResponse = await oauthClient.u.code.$post({
+  const enterEmailResponse = await oauthClient.u["enter-email"].$post({
     query: { state: "session-id" },
     form: {
       username: "test@example.com",
@@ -49,7 +49,7 @@ test("after entering email should go to enter code step if code cookie is set", 
 
   await env.data.universalLoginSessions.create(SESSION_FIXTURE);
 
-  const enterEmailResponse = await oauthClient.u.code.$post(
+  const enterEmailResponse = await oauthClient.u["enter-email"].$post(
     {
       query: { state: "session-id" },
       form: {
@@ -75,7 +75,7 @@ test("after entering email should go to enter password step if password cookie i
 
   await env.data.universalLoginSessions.create(SESSION_FIXTURE);
 
-  const enterEmailResponse = await oauthClient.u.code.$post(
+  const enterEmailResponse = await oauthClient.u["enter-email"].$post(
     {
       query: { state: "session-id" },
       form: {
@@ -100,7 +100,7 @@ test("after entering email should go to enter code step if password cookie is se
 
   await env.data.universalLoginSessions.create(SESSION_FIXTURE);
 
-  const enterEmailResponse = await oauthClient.u.code.$post(
+  const enterEmailResponse = await oauthClient.u["enter-email"].$post(
     {
       query: { state: "session-id" },
       form: {
@@ -145,7 +145,7 @@ test("should set cookie as password when visit password page", async () => {
   // shortcut instead of visiting the /authorize endpoint
   await env.data.universalLoginSessions.create(SESSION_FIXTURE);
 
-  const enterPasswordForm = await oauthClient.u.login.$get({
+  const enterPasswordForm = await oauthClient.u["enter-password"].$get({
     query: {
       state: "session-id",
     },

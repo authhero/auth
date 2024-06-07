@@ -83,14 +83,16 @@ test("only allows existing breakit users to progress to the enter code step", as
   // Try going past email address step in with non-existing breakit user
   // ----------------------------
 
-  const nonExistingUserEmailResponse = await oauthClient.u.code.$post({
-    query: {
-      state: query.state,
+  const nonExistingUserEmailResponse = await oauthClient.u["enter-email"].$post(
+    {
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "not-a-real-breakit-user@example.com",
+      },
     },
-    form: {
-      username: "not-a-real-breakit-user@example.com",
-    },
-  });
+  );
   expect(nonExistingUserEmailResponse.status).toBe(400);
   await snapshotResponse(nonExistingUserEmailResponse);
 
@@ -98,7 +100,7 @@ test("only allows existing breakit users to progress to the enter code step", as
   //  Try going past email address step with existing breakit user
   // ----------------------------
 
-  const existingUserEmailResponse = await oauthClient.u.code.$post({
+  const existingUserEmailResponse = await oauthClient.u["enter-email"].$post({
     query: {
       state: query.state,
     },

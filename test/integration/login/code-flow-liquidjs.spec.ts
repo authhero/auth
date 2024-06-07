@@ -94,7 +94,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await oauthClient.u.code.$get({
+    const codeInputFormResponse = await oauthClient.u["enter-email"].$get({
       query: {
         state: query.state,
       },
@@ -104,7 +104,7 @@ describe("Login with code on liquidjs template", () => {
 
     await snapshotResponse(codeInputFormResponse);
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         username: "test@example.com",
@@ -216,7 +216,7 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         username: "bar@example.com",
@@ -303,7 +303,7 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         username: "foo@example.com",
@@ -368,7 +368,7 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         // this email already exists as a Username-Password-Authentication user
@@ -540,7 +540,7 @@ describe("Login with code on liquidjs template", () => {
 
       const query = Object.fromEntries(stateParam.entries());
 
-      const postSendCodeResponse = await oauthClient.u.code.$post({
+      const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
         query: { state: query.state },
         form: {
           username: "same-email@example.com",
@@ -668,7 +668,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await oauthClient.u.code.$get({
+    const codeInputFormResponse = await oauthClient.u["enter-email"].$get({
       query: {
         state: query.state,
       },
@@ -700,7 +700,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await oauthClient.u.code.$get({
+    const codeInputFormResponse = await oauthClient.u["enter-email"].$get({
       query: {
         state: query.state,
       },
@@ -738,7 +738,7 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await oauthClient.u.code.$get({
+    const codeInputFormResponse = await oauthClient.u["enter-email"].$get({
       query: {
         state: query.state,
       },
@@ -749,7 +749,7 @@ describe("Login with code on liquidjs template", () => {
     // this should have the text saying code
     await snapshotResponse(codeInputFormResponse);
 
-    await oauthClient.u.code.$post({
+    await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         username: "test@example.com",
@@ -780,7 +780,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         username: "foo@example.com",
@@ -844,7 +844,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         username: "foo@example.com",
@@ -890,7 +890,7 @@ describe("Login with code on liquidjs template", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const postSendCodeResponse = await oauthClient.u.code.$post({
+    const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
         username: "JOHN-DOE@example.com",

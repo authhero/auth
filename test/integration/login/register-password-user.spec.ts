@@ -39,7 +39,7 @@ describe("Register password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    const loginFormResponse = await oauthClient.u.login.$get({
+    const loginFormResponse = await oauthClient.u["enter-password"].$get({
       query: {
         state: query.state,
       },
@@ -106,7 +106,7 @@ describe("Register password user", () => {
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
     // Open login page
-    await oauthClient.u.login.$get({
+    await oauthClient.u["enter-password"].$get({
       query: {
         state: query.state,
       },

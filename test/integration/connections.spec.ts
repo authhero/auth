@@ -45,7 +45,7 @@ test("should hide social buttons for fokus by not specifying any connection", as
   const stateParam = new URLSearchParams(location!.split("?")[1]);
   const query = Object.fromEntries(stateParam.entries());
 
-  const enterEmailStep = await oauthClient.u.code.$get({
+  const enterEmailStep = await oauthClient.u["enter-email"].$get({
     query: {
       state: query.state,
     },
@@ -110,7 +110,7 @@ test("should show Vipps for parcferme as entered as connection", async () => {
   const stateParam = new URLSearchParams(location!.split("?")[1]);
   const query = Object.fromEntries(stateParam.entries());
 
-  const enterEmailStep = await oauthClient.u.code.$get({
+  const enterEmailStep = await oauthClient.u["enter-email"].$get({
     query: {
       state: query.state,
     },
