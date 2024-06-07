@@ -659,6 +659,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           vendorSettings={vendorSettings}
           session={session}
           client={client}
+          email={session.authParams.username}
         />,
       );
     },
