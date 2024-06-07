@@ -14,9 +14,9 @@ import en from "../../localesLogin2/en/default.json";
 import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
-import LoginPage from "../../components/LoginPage";
-import LoginWithCodePage from "../../components/LoginWithCodePage";
-import LoginEnterCodePage from "../../components/LoginEnterCodePage";
+import EnterPasswordPage from "../../components/EnterPasswordPage";
+import EnterEmailPage from "../../components/EnterEmailPage";
+import EnterCodePage from "../../components/EnterCodePage";
 import SignupPage from "../../components/SignUpPage";
 import UnverifiedEmail from "../../components/UnverifiedEmailPage";
 import MessagePage from "../../components/Message";
@@ -192,7 +192,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       return ctx.html(
-        <LoginPage
+        <EnterPasswordPage
           vendorSettings={vendorSettings}
           email={session.authParams.username}
           state={state}
@@ -256,7 +256,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       if (!user) {
         return ctx.html(
-          <LoginPage
+          <EnterPasswordPage
             vendorSettings={vendorSettings}
             email={username}
             error={i18next.t("invalid_password")}
@@ -273,7 +273,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       if (!valid) {
         return ctx.html(
-          <LoginPage
+          <EnterPasswordPage
             vendorSettings={vendorSettings}
             email={username}
             error={i18next.t("invalid_password")}
@@ -322,7 +322,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         return handleLogin(env, primaryUser, session, ctx, client);
       } catch (err: any) {
         return ctx.html(
-          <LoginPage
+          <EnterPasswordPage
             vendorSettings={vendorSettings}
             email={username}
             error={err.message}
@@ -655,7 +655,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       );
 
       return ctx.html(
-        <LoginWithCodePage
+        <EnterEmailPage
           vendorSettings={vendorSettings}
           session={session}
           client={client}
@@ -719,7 +719,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         if (!user) {
           return ctx.html(
-            <LoginWithCodePage
+            <EnterEmailPage
               vendorSettings={vendorSettings}
               session={session}
               error={i18next.t("user_account_does_not_exist")}
@@ -875,7 +875,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       return ctx.html(
-        <LoginEnterCodePage
+        <EnterCodePage
           vendorSettings={vendorSettings}
           email={session.authParams.username}
           state={state}
@@ -951,7 +951,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
       } catch (err) {
         return ctx.html(
-          <LoginEnterCodePage
+          <EnterCodePage
             vendorSettings={vendorSettings}
             error={i18next.t("Wrong email or verification code.")}
             email={session.authParams.username}
