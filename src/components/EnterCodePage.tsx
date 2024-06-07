@@ -19,7 +19,7 @@ type Props = {
 
 const CODE_LENGTH = 6;
 
-const LoginEnterCodePage: FC<Props> = ({
+const EnterCodePage: FC<Props> = ({
   error,
   vendorSettings,
   email,
@@ -114,4 +114,4 @@ const LoginEnterCodePage: FC<Props> = ({
   );
 };
 
-export default LoginEnterCodePage;
+export default EnterCodePage;

@@ -15,7 +15,7 @@ type Props = {
   state: string;
 };
 
-const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
+const EnterPassword: FC<Props> = ({ error, vendorSettings, email, state }) => {
   const loginLinkParams = new URLSearchParams({
     state,
   });
@@ -84,4 +84,4 @@ const LoginPage: FC<Props> = ({ error, vendorSettings, email, state }) => {
   );
 };
 
-export default LoginPage;
+export default EnterPassword;

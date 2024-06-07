@@ -21,8 +21,7 @@ type Props = {
   client: Client;
 };
 
-// this page is called enter-email on login2... maybe we should copy those page names
-const LoginWithCodePage: FC<Props> = ({
+const EnterEmailPage: FC<Props> = ({
   error,
   vendorSettings,
   session,
@@ -138,4 +137,4 @@ const LoginWithCodePage: FC<Props> = ({
   );
 };
 
-export default LoginWithCodePage;
+export default EnterEmailPage;
