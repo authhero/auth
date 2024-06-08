@@ -2,7 +2,6 @@ import { z } from "zod";
 import { baseEntitySchema } from "./BaseEntity";
 
 const baseUserSchema = z.object({
-  // One of the following is required
   email: z.string().optional(),
   username: z.string().optional(),
   given_name: z.string().optional(),
@@ -15,6 +14,8 @@ const baseUserSchema = z.object({
   profileData: z.string().optional(),
 });
 
+export type BaseUser = z.infer<typeof baseUserSchema>;
+
 export const userInsertSchema = baseUserSchema.extend({
   email_verified: z.boolean().default(false),
   last_ip: z.string().optional(),
@@ -26,9 +27,13 @@ export const userInsertSchema = baseUserSchema.extend({
 export const userSchema = userInsertSchema
   .extend(baseEntitySchema.shape)
   .extend({
+    // TODO: this not might be correct if you use the username
+    email: z.string(),
     is_social: z.boolean(),
     login_count: z.number(),
   });
+
+export type User = z.infer<typeof userSchema>;
 
 export const auth0UserResponseSchema = userSchema
   .extend({
@@ -37,5 +42,3 @@ export const auth0UserResponseSchema = userSchema
     identities: z.array(z.any()),
   })
   .omit({ id: true });
-
-export type User = z.infer<typeof userSchema>;

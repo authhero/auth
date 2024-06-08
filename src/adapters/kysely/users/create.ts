@@ -24,6 +24,8 @@ export function create(db: Kysely<Database>) {
 
     return {
       ...sqlUser,
+      // TODO: check if this really eed to be set if the username is used.
+      email: sqlUser.email || "",
       email_verified: sqlUser.email_verified === 1,
       is_social: sqlUser.is_social === 1,
     };

@@ -16,6 +16,7 @@ export function get(db: Kysely<Database>) {
 
     const user: User = {
       ...sqlUser,
+      email: sqlUser.email || "",
       email_verified: sqlUser.email_verified === 1,
       is_social: sqlUser.is_social === 1,
     };
