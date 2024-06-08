@@ -53,6 +53,10 @@ export const authorizeRoutes = new OpenAPIHono<{
           code_challenge: z.string().optional(),
           realm: z.string().optional(),
           auth0Client: z.string().optional(),
+          // Auth0 way
+          login_hint: z.string().optional(),
+          // deprecated: previous token service param
+          email_hint: z.string().optional(),
         }),
       },
       responses: {
@@ -83,6 +87,8 @@ export const authorizeRoutes = new OpenAPIHono<{
         realm,
         auth0Client,
         username,
+        login_hint,
+        email_hint,
       } = ctx.req.valid("query");
 
       const client = await getClient(env, client_id);
@@ -101,7 +107,7 @@ export const authorizeRoutes = new OpenAPIHono<{
         response_type,
         code_challenge,
         code_challenge_method,
-        username,
+        username: username || login_hint || email_hint,
       };
 
       const origin = ctx.req.header("origin");
