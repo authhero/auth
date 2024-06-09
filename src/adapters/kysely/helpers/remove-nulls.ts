@@ -5,7 +5,11 @@ export function removeNullProperties<T = any>(obj: Record<string, any>) {
     if (clone[key] === null) {
       delete clone[key];
     } else if (typeof clone[key] === "object") {
-      clone[key] = removeNullProperties(clone[key]);
+      if (Array.isArray(clone[key])) {
+        clone[key] = clone[key].map(removeNullProperties);
+      } else {
+        clone[key] = removeNullProperties(clone[key]);
+      }
     }
   }
 

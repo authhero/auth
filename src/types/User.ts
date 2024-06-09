@@ -1,8 +1,7 @@
 import { z } from "zod";
 import { baseEntitySchema } from "./BaseEntity";
-import { profile } from "console";
 
-const baseUserSchema = z.object({
+export const baseUserSchema = z.object({
   email: z.string().optional(),
   username: z.string().optional(),
   given_name: z.string().optional(),

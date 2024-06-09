@@ -5,6 +5,8 @@ import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { luceneFilter } from "../helpers/filter";
 import { removeNullProperties } from "../helpers/remove-nulls";
+import { userToIdentity } from "./user-to-identity";
+import userIdParse from "../../../utils/userIdParse";
 
 export function listUsers(db: Kysely<Database>) {
   return async (
@@ -28,6 +30,37 @@ export function listUsers(db: Kysely<Database>) {
 
     const users = await filteredQuery.selectAll().execute();
 
+    const userIds = users.map((u) => u.id);
+
+    // TODO: execute these in parallel
+    const linkedUsers = await db
+      .selectFrom("users")
+      .selectAll()
+      .where("users.tenant_id", "=", tenantId)
+      .where("users.linked_to", "in", userIds)
+      .execute();
+
+    const usersWithProfiles = users.map((user) => {
+      const linkedUsersForUser = linkedUsers.filter(
+        (u) => u.linked_to === user.id,
+      );
+
+      return removeNullProperties({
+        ...user,
+        email_verified: user.email_verified === 1,
+        is_social: user.is_social === 1,
+        identities: [
+          {
+            connection: user.connection,
+            provider: user.provider,
+            user_id: userIdParse(user.id),
+            isSocial: Boolean(user.is_social),
+          },
+          ...linkedUsersForUser.map(userToIdentity),
+        ],
+      });
+    });
+
     const [{ count }] = await query
       .select((eb) => eb.fn.countAll().as("count"))
       .execute();
@@ -35,13 +68,7 @@ export function listUsers(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      users: users.map((u) =>
-        removeNullProperties({
-          ...u,
-          email_verified: u.email_verified === 1,
-          is_social: u.is_social === 1,
-        }),
-      ),
+      users: usersWithProfiles,
       start: params.page * params.per_page,
       limit: params.per_page,
       length: countInt,

@@ -1,5 +1,5 @@
-import { BaseUser } from "../User";
-import { Identity } from "./Identity";
+import { z } from "zod";
+import { BaseUser, baseUserSchema } from "../User";
 
 export interface PostUsersBody extends BaseUser {
   password?: string;
@@ -10,15 +10,15 @@ export interface PostUsersBody extends BaseUser {
   email_verified?: boolean;
 }
 
-export interface UserResponse extends BaseUser {
-  email: string; // Overriding: email is mandatory in GetUserResponse
-  created_at: string;
-  updated_at: string;
-  identities: Identity[];
-  login_count: number;
-  multifactor?: string[];
-  last_ip?: string;
-  last_login?: string;
-  user_id: string;
-  [key: string]: any;
-}
+export const userResponseSchema = baseUserSchema
+  .extend({
+    email: z.string(),
+    login_count: z.number(),
+    multifactor: z.array(z.string()).optional(),
+    last_ip: z.string().optional(),
+    last_login: z.string().optional(),
+    user_id: z.string(),
+  })
+  .catchall(z.any());
+
+export type UserResponse = z.infer<typeof userResponseSchema>;
