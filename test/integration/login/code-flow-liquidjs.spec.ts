@@ -120,6 +120,13 @@ describe("Login with code on liquidjs template", () => {
     const { to, code } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("test@example.com");
 
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0].type).toBe("cls");
+
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
     const enterCodeQuery = Object.fromEntries(
