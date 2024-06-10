@@ -125,7 +125,13 @@ describe("Login with code on liquidjs template", () => {
       per_page: 100,
       include_totals: true,
     });
-    expect(logs[0].type).toBe("cls");
+    console.log(logs[0]);
+    expect(logs[0]).toMatchObject({
+      type: "cls",
+      tenant_id: "tenantId",
+      user_id: "", // this is correct. Auth0 does not tie this log to a user account
+      description: "test@example.com", // we only know which user it is by looking at the description field
+    });
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
