@@ -1,14 +1,19 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { nanoid } from "nanoid";
 import randomString from "../../utils/random-string";
-import { Env, Ticket } from "../../types";
+import { Env, Ticket, Var } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { getUserByEmailAndProvider } from "../../utils/users";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { waitUntil } from "../../utils/wait-until";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
-export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
+export const authenticateRoutes = new OpenAPIHono<{
+  Bindings: Env;
+  Variables: Var;
+}>()
   // --------------------------------
   // GET /co/authenticate
   // --------------------------------
@@ -44,7 +49,8 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
       },
     }),
     async (ctx) => {
-      const { client_id, username, otp, password } = ctx.req.valid("json");
+      const body = ctx.req.valid("json");
+      const { client_id, username, otp, password } = body;
       const client = await getClient(ctx.env, client_id);
 
       if (!client) {
@@ -117,6 +123,14 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       await ctx.env.data.tickets.create(ticket);
+
+      const log = createTypeLog(
+        "scoa",
+        ctx,
+        body,
+        "Successful cross-origin authentication",
+      );
+      waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
 
       return ctx.json({
         login_ticket: ticket.id,
