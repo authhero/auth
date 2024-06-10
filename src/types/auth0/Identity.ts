@@ -1,6 +1,6 @@
-const z = require("zod");
+import { z } from "zod";
 
-const profileDataSchema = z
+export const profileDataSchema = z
   .object({
     email: z.string().optional(),
     email_verified: z.boolean().optional(),
@@ -13,7 +13,7 @@ const profileDataSchema = z
   })
   .catchall(z.any());
 
-const identitySchema = z.object({
+export const identitySchema = z.object({
   connection: z.string(),
   user_id: z.string(),
   provider: z.string(),
