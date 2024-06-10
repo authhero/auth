@@ -217,6 +217,16 @@ describe("password-flow", () => {
         tenant_id: "tenantId",
         user_id: accessTokenPayload.sub,
         user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        // TODO - we also want these fields populated... maybe we want another test for this?
+        // auth0_client: {
+        //   name: "auth0.js",
+        //   version: "9.26.1",
+        // },
+        // client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        // date: "2024-06-10T10:30:50.545Z",
+        // ip: "78.46.40.111",
+        // user_agent: "Mobile Safari 17.4.0 / iOS 14.4.0",
       });
     });
 
