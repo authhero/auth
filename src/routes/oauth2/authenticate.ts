@@ -8,9 +8,7 @@ import { getUserByEmailAndProvider } from "../../utils/users";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
-export const authenticateRoutes = new OpenAPIHono<{
-  Bindings: Env;
-}>()
+export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /co/authenticate
   // --------------------------------
