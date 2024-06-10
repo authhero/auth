@@ -32,13 +32,15 @@ export function listUsers(db: Kysely<Database>) {
 
     const userIds = users.map((u) => u.id);
 
-    // TODO: execute these in parallel
-    const linkedUsers = await db
-      .selectFrom("users")
-      .selectAll()
-      .where("users.tenant_id", "=", tenantId)
-      .where("users.linked_to", "in", userIds)
-      .execute();
+    // TODO: execute these in parallel with a join
+    const linkedUsers = !userIds.length
+      ? []
+      : await db
+          .selectFrom("users")
+          .selectAll()
+          .where("users.tenant_id", "=", tenantId)
+          .where("users.linked_to", "in", userIds)
+          .execute();
 
     const usersWithProfiles = users.map((user) => {
       const linkedUsersForUser = linkedUsers.filter(
