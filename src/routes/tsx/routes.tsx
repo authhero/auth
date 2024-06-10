@@ -44,6 +44,7 @@ import {
 import { setCookie, getCookie } from "hono/cookie";
 import { waitUntil } from "../../utils/wait-until";
 import { fetchVendorSettings } from "../../utils/fetchVendorSettings";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -780,39 +781,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
       if (sendType === "link") {
-        const magicLink = new URL(env.ISSUER);
-        magicLink.pathname = "passwordless/verify_redirect";
-        if (session.authParams.scope) {
-          magicLink.searchParams.set("scope", session.authParams.scope);
-        }
-        if (session.authParams.response_type) {
-          magicLink.searchParams.set(
-            "response_type",
-            session.authParams.response_type,
-          );
-        }
-        if (session.authParams.redirect_uri) {
-          magicLink.searchParams.set(
-            "redirect_uri",
-            session.authParams.redirect_uri,
-          );
-        }
-        if (session.authParams.audience) {
-          magicLink.searchParams.set("audience", session.authParams.audience);
-        }
-        if (session.authParams.state) {
-          magicLink.searchParams.set("state", session.authParams.state);
-        }
-        if (session.authParams.nonce) {
-          magicLink.searchParams.set("nonce", session.authParams.nonce);
-        }
-
-        magicLink.searchParams.set("connection", "email");
-        magicLink.searchParams.set("client_id", session.authParams.client_id);
-        magicLink.searchParams.set("email", session.authParams.username);
-        magicLink.searchParams.set("verification_code", code);
-        magicLink.searchParams.set("nonce", "nonce");
-
         waitUntil(
           ctx,
           sendLink(env, client, params.username, code, session.authParams),
@@ -820,6 +788,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       } else {
         waitUntil(ctx, sendCode(env, client, params.username, code));
       }
+
+      const log = createTypeLog("cls", ctx, params, params.username);
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.redirect(
         `/u/enter-code?state=${state}&username=${params.username}`,
