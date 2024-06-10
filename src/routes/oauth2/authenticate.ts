@@ -1,18 +1,15 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { nanoid } from "nanoid";
 import randomString from "../../utils/random-string";
-import { Env, Ticket, Var } from "../../types";
+import { Env, Ticket } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { getUserByEmailAndProvider } from "../../utils/users";
-import { createTypeLog } from "../../tsoa-middlewares/logger";
-import { waitUntil } from "../../utils/wait-until";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
 export const authenticateRoutes = new OpenAPIHono<{
   Bindings: Env;
-  Variables: Var;
 }>()
   // --------------------------------
   // GET /co/authenticate
@@ -49,8 +46,7 @@ export const authenticateRoutes = new OpenAPIHono<{
       },
     }),
     async (ctx) => {
-      const body = ctx.req.valid("json");
-      const { client_id, username, otp, password } = body;
+      const { client_id, username, otp, password } = ctx.req.valid("json");
       const client = await getClient(ctx.env, client_id);
 
       if (!client) {
