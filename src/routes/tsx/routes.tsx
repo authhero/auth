@@ -44,6 +44,7 @@ import {
 import { setCookie, getCookie } from "hono/cookie";
 import { waitUntil } from "../../utils/wait-until";
 import { fetchVendorSettings } from "../../utils/fetchVendorSettings";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -820,6 +821,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       } else {
         waitUntil(ctx, sendCode(env, client, params.username, code));
       }
+
+      const log = createTypeLog("cls", ctx, params, params.username);
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.redirect(
         `/u/enter-code?state=${state}&username=${params.username}`,
