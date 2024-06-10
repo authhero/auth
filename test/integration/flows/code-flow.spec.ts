@@ -81,12 +81,14 @@ describe("code-flow", () => {
 
     await snapshotEmail(env.data.emails[0], true);
 
-    const { logs } = await env.data.logs.list("tenantId", {
+    const {
+      logs: [clsLog],
+    } = await env.data.logs.list("tenantId", {
       page: 0,
       per_page: 100,
       include_totals: true,
     });
-    expect(logs[0]).toMatchObject({
+    expect(clsLog).toMatchObject({
       type: "cls",
       tenant_id: "tenantId",
       user_id: "", // this is correct. Auth0 does not tie this log to a user account
@@ -153,12 +155,14 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
-    const { logs } = await env.data.logs.list("tenantId", {
+    const {
+      logs: [scoaLog],
+    } = await env.data.logs.list("tenantId", {
       page: 0,
       per_page: 100,
       include_totals: true,
     });
-    expect(logs[0]).toMatchObject({
+    expect(scoaLog).toMatchObject({
       type: "scoa",
       tenant_id: "tenantId",
       user_id: accessTokenPayload.sub,
