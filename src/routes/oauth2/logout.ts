@@ -1,4 +1,4 @@
-import { Env } from "../../types";
+import { Env, Var } from "../../types";
 import { getClient } from "../../services/clients";
 import {
   getStateFromCookie,
@@ -7,8 +7,9 @@ import {
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
 
-export const logoutRoutes = new OpenAPIHono<{ Bindings: Env }>()
+export const logoutRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
   // GET /logout
   // --------------------------------
@@ -68,6 +69,9 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env }>()
           await ctx.env.data.sessions.remove(client.tenant_id, tokenState);
         }
       }
+      const log = createTypeLog("slo", ctx, "User successfully logged out");
+
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return new Response("Redirecting", {
         status: 302,
