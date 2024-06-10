@@ -85,7 +85,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
         await sendCode(ctx.env, client, email, code);
       }
 
-      const log = createTypeLog("cls", ctx, body, `dan+456@sesamy.com`);
+      const log = createTypeLog("cls", ctx, body, email);
       await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.html("OK");
