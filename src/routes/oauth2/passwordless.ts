@@ -85,6 +85,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
         await sendCode(ctx.env, client, email, code);
       }
 
+      // the description is the user email. this matches auth0
       const log = createTypeLog("cls", ctx, body, email);
       await ctx.env.data.logs.create(client.tenant_id, log);
 
