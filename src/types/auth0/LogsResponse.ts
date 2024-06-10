@@ -20,6 +20,8 @@ export enum LogTypes {
   //
   SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
   FAILED_CROSS_ORIGIN_AUTHENTICATION = "fcoa",
+
+  SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN = "seacft",
   // TODO - not implemented - just for completion as we do get this in our latest auth0 logs
   NOT_IMPLEMENTED_1 = "seccft",
   NOT_IMPLEMENTED_2 = "cls",
@@ -42,6 +44,7 @@ const LogType = z.enum([
   "fcoa", // FAILED_CROSS_ORIGIN_AUTHENTICATION
   "seccft", // NOT_IMPLEMENTED_1 - not implemented - just for completion as we do get this in our latest auth0 logs
   "cls", // NOT_IMPLEMENTED_2
+  "seacft", // SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN
 ]);
 
 export type LogType = z.infer<typeof LogType>;
