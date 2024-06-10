@@ -1329,7 +1329,7 @@ describe("users management API endpoint", () => {
         },
       ]);
       // this shows we have unlinked
-      expect(user2.identities.length).toBe(1);
+      expect(user2.identities?.length).toBe(1);
     });
 
     it("should link two users using user_id and provider parameter", async () => {
