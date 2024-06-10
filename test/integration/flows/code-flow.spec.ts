@@ -81,6 +81,13 @@ describe("code-flow", () => {
 
     await snapshotEmail(env.data.emails[0], true);
 
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0].type).toBe("cls");
+
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
