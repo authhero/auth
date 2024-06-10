@@ -81,6 +81,18 @@ describe("code-flow", () => {
 
     await snapshotEmail(env.data.emails[0], true);
 
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "cls",
+      tenant_id: "tenantId",
+      user_id: "", // this is correct. Auth0 does not tie this log to a user account
+      description: "test@example.com", // we only know which user it is by looking at the description field
+    });
+
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
