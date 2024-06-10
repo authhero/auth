@@ -206,6 +206,18 @@ describe("password-flow", () => {
         nonce: "unique-nonce",
         iss: "https://example.com/",
       });
+
+      const { logs } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(logs[0]).toMatchObject({
+        type: "scoa",
+        tenant_id: "tenantId",
+        user_id: accessTokenPayload.sub,
+        user_name: "password-login-test@example.com",
+      });
     });
 
     // maybe this test should be broken up into login tests below... maybe we want more flows like this!
