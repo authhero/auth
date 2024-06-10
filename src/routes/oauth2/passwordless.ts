@@ -14,6 +14,7 @@ import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -52,8 +53,8 @@ export const passwordlessRoutes = new OpenAPIHono<{
       },
     }),
     async (ctx) => {
-      const { client_id, email, send, authParams, connection } =
-        ctx.req.valid("json");
+      const body = ctx.req.valid("json");
+      const { client_id, email, send, authParams, connection } = body;
       const client = await getClient(ctx.env, client_id);
 
       if (!client) {
@@ -83,6 +84,9 @@ export const passwordlessRoutes = new OpenAPIHono<{
       } else {
         await sendCode(ctx.env, client, email, code);
       }
+
+      const log = createTypeLog("cls", ctx, body, `dan+456@sesamy.com`);
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.html("OK");
     },
