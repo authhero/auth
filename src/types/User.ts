@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { baseEntitySchema } from "./BaseEntity";
+import { identitySchema } from "./auth0/Identity";
 
-const baseUserSchema = z.object({
+export const baseUserSchema = z.object({
   email: z.string().optional(),
   username: z.string().optional(),
   given_name: z.string().optional(),
@@ -15,14 +16,6 @@ const baseUserSchema = z.object({
 });
 
 export type BaseUser = z.infer<typeof baseUserSchema>;
-
-export const identitiesSchema = z.object({
-  connection: z.string(),
-  provider: z.string(),
-  user_id: z.string(),
-  isSocial: z.boolean(),
-  profileData: z.any(),
-});
 
 export const userInsertSchema = baseUserSchema.extend({
   email_verified: z.boolean().default(false),
@@ -39,7 +32,7 @@ export const userSchema = userInsertSchema
     email: z.string(),
     is_social: z.boolean(),
     login_count: z.number(),
-    identities: z.array(identitiesSchema).optional(),
+    identities: z.array(identitySchema).optional(),
   });
 
 export type User = z.infer<typeof userSchema>;
