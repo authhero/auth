@@ -141,6 +141,18 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "scoa",
+      tenant_id: "tenantId",
+      user_id: accessTokenPayload.sub,
+      user_name: "test@example.com",
+    });
+
     // now check silent auth works when logged in with code----------------------------------------
     const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;
 

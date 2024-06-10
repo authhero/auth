@@ -12,6 +12,8 @@ import {
 } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
+import { createTypeLog } from "../tsoa-middlewares/logger";
+import { waitUntil } from "../utils/wait-until";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -195,6 +197,16 @@ export async function ticketAuth(
     // This is specific to cloudflare
     last_ip: ctx.req.header("cf-connecting-ip") || "",
   });
+
+  const log = createTypeLog(
+    "scoa",
+    ctx,
+    // do we want to tunnel the body through?
+    undefined,
+    "Successful cross-origin authentication",
+    { userId: user.id },
+  );
+  waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
   return generateAuthResponse({
     env,

@@ -124,14 +124,6 @@ export const authenticateRoutes = new OpenAPIHono<{
 
       await ctx.env.data.tickets.create(ticket);
 
-      const log = createTypeLog(
-        "scoa",
-        ctx,
-        body,
-        "Successful cross-origin authentication",
-      );
-      waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
-
       return ctx.json({
         login_ticket: ticket.id,
         // TODO: I guess these should be validated when accepting the ticket
