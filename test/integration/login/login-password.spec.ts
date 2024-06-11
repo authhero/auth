@@ -400,6 +400,19 @@ describe("Login with password user", () => {
     const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
     // TODO - decode this and assert params
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "s",
+      tenant_id: "tenantId",
+      user_name: "foo@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
   });
 
   it("should reject non-existent email", async () => {
