@@ -929,12 +929,12 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user,
         });
 
-        // ctx.set("userName", user.email);
-        // ctx.set("connection", user.connection);
-        // ctx.set("client_id", client.id);
-        // const log = createTypeLog("s", ctx, "Successful login");
+        ctx.set("userName", user.email);
+        ctx.set("connection", user.connection);
+        ctx.set("client_id", client.id);
+        const log = createTypeLog("s", ctx, "Successful login");
 
-        // await ctx.env.data.logs.create(client.tenant_id, log);
+        await ctx.env.data.logs.create(client.tenant_id, log);
 
         return authResponse;
       } catch (err) {

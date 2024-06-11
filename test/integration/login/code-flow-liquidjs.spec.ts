@@ -269,6 +269,19 @@ describe("Login with code on liquidjs template", () => {
     expect(accessTokenPayload.sub).toBe("email|userId2");
     expect(idTokenPayload.email).toBe("bar@example.com");
 
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "s",
+      tenant_id: "tenantId",
+      user_name: "bar@example.com",
+      connection: "email",
+      client_id: "clientId",
+    });
+
     // TO TEST
     // - same things as on previous test
   });
