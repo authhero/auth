@@ -16,10 +16,7 @@ import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
 import { LogTypes } from "../types";
-import {
-  getPrimaryUserByEmailAndProvider,
-  getPrimaryUserByEmail,
-} from "../utils/users";
+import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
 
