@@ -16,7 +16,10 @@ export function create(db: Kysely<Database>) {
     try {
       await db.insertInto("users").values(sqlUser).execute();
     } catch (err: any) {
-      if (err.code === "SQLITE_CONSTRAINT_UNIQUE") {
+      if (
+        err.code === "SQLITE_CONSTRAINT_UNIQUE" ||
+        err.message.includes("AlreadyExists")
+      ) {
         throw new HTTPException(409, { message: "User already exists" });
       }
       throw new HTTPException(500, { message: err.code });

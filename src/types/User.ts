@@ -19,6 +19,7 @@ export type BaseUser = z.infer<typeof baseUserSchema>;
 
 export const userInsertSchema = baseUserSchema.extend({
   email_verified: z.boolean().default(false),
+  verify_email: z.boolean().optional(),
   last_ip: z.string().optional(),
   last_login: z.string().optional(),
   provider: z.string().default("email"),
