@@ -7,7 +7,6 @@ import {
   User,
 } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
-import { mockedR2Bucket } from "./mocked-r2-bucket";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
 import { Var } from "../../src/types/Var";
 import createAdapters from "../../src/adapters/kysely";
@@ -164,7 +163,6 @@ export async function contextFixture(
       header: (key: string) => headers[key],
     },
     env: {
-      AUTH_TEMPLATES: mockedR2Bucket(),
       ISSUER: "https://auth.example.com/",
       LOGIN2_URL: "https://login2.sesamy.dev",
       API_URL: "https://api.sesamy.dev",

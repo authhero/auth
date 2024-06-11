@@ -28,18 +28,6 @@ WRITE_PERMISSION = "auth:write"
 ENVIRONMENT = 'dev'
 
 
-[[r2_buckets]]
-binding = 'AUTH_TEMPLATES'
-preview_bucket_name = 'auth-templates'
-bucket_name = 'auth-templates'
-
-
-# [[d1_databases]]
-# binding = "AUTH_DB"
-# database_name = "auth2"
-# database_id = "872f055e-d401-46a3-a0d0-fa00e66868b5"
-
-
 [triggers]
 crons = ["0 3 * * *"]
 
@@ -63,16 +51,6 @@ READ_PERMISSION = 'auth:read'
 WRITE_PERMISSION = 'auth:write'
 ENVIRONMENT = 'prod'
 IMAGE_PROXY_URL = "https://imgproxy.prod.sesamy.cloud"
-
-[[env.production.r2_buckets]]
-binding = 'AUTH_TEMPLATES'
-preview_bucket_name = 'auth-templates'
-bucket_name = 'auth-templates'
-
-# [[env.production.d1_databases]]
-# binding = "AUTH_DB"
-# database_name = "auth2"
-# database_id = "921e31d7-63d0-441d-b60c-df2d6756db44"
 
 
 [env.production.triggers]

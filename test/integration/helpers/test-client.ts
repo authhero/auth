@@ -14,6 +14,8 @@ import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { addDataHooks } from "../../../src/hooks";
+import { DataAdapters } from "../../../src/adapters/interfaces";
 
 type getEnvParams = {
   testTenantLanguage?: string;
@@ -205,14 +207,7 @@ export async function getEnv(args?: getEnvParams) {
   });
 
   return {
-    data: {
-      ...data,
-      emails,
-      templates: {
-        get: async (...inputs: any[]) =>
-          `<div>${JSON.stringify(inputs, null, 2)}</div>`,
-      },
-    },
+    data: { ...addDataHooks(data), emails },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     TOKEN_SERVICE: {
       fetch: async () => ({
