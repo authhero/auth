@@ -125,6 +125,13 @@ async function handleLogin(
       session.authParams,
     );
 
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+    ctx.set("client_id", client.id);
+    const log = createTypeLog("s", ctx, "Successful login");
+
+    await ctx.env.data.logs.create(client.tenant_id, log);
+
     return ctx.redirect(redirectUrl.href);
   }
 
@@ -910,7 +917,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           verification_code: code,
         });
 
-        return generateAuthResponse({
+        const authResponse = await generateAuthResponse({
           env,
           tenantId: session.tenant_id,
           userId: user.id,
@@ -921,6 +928,15 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           authParams: session.authParams,
           user,
         });
+
+        // ctx.set("userName", user.email);
+        // ctx.set("connection", user.connection);
+        // ctx.set("client_id", client.id);
+        // const log = createTypeLog("s", ctx, "Successful login");
+
+        // await ctx.env.data.logs.create(client.tenant_id, log);
+
+        return authResponse;
       } catch (err) {
         return ctx.html(
           <EnterCodePage
