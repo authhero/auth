@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
-import { VendorSettings } from "../types";
+import { Client, VendorSettings } from "../types";
 import i18next from "i18next";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
@@ -13,6 +13,7 @@ type Props = {
   vendorSettings: VendorSettings;
   email: string;
   state: string;
+  client: Client;
 };
 
 const EnterPasswordPage: FC<Props> = ({
@@ -20,6 +21,7 @@ const EnterPasswordPage: FC<Props> = ({
   vendorSettings,
   email,
   state,
+  client,
 }) => {
   const loginLinkParams = new URLSearchParams({
     state,
@@ -63,12 +65,14 @@ const EnterPasswordPage: FC<Props> = ({
         >
           {i18next.t("forgot_password_link")}
         </a>
-        <a
-          href={`/u/signup?${loginLinkParams.toString()}`}
-          className="text-primary hover:underline font-bold"
-        >
-          {i18next.t("create_new_account_link")}
-        </a>
+        {!client.disable_sign_ups && (
+          <a
+            href={`/u/signup?${loginLinkParams.toString()}`}
+            className="text-primary hover:underline font-bold"
+          >
+            {i18next.t("create_new_account_link")}
+          </a>
+        )}
         <div className="text-center mb-12">
           <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
             <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
