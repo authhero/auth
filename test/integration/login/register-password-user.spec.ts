@@ -78,6 +78,19 @@ describe("Register password user", () => {
 
     expect(postSignupResponse.status).toBe(200);
     await snapshotResponse(postSignupResponse);
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "ss",
+      tenant_id: "tenantId",
+      user_name: "test@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
   });
 
   it("should reject a weak password", async () => {
