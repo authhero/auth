@@ -114,6 +114,18 @@ test("only allows existing breakit users to progress to the enter code step", as
   expect(
     existingUserEmailResponseLocation!.startsWith("/u/enter-code"),
   ).toBeTruthy();
+
+  // ----------------------------
+  // if sign ups are disabled, the create account link should not be shown
+  // ----------------------------
+
+  const loginFormNoSignupResponse = await oauthClient.u.login.$get({
+    query: {
+      state: query.state,
+    },
+  });
+
+  await snapshotResponse(loginFormNoSignupResponse);
 });
 
 test("only allows existing breakit users to progress to the enter code step with social signon", async () => {
