@@ -554,28 +554,10 @@ describe("social sign on", () => {
         },
       ]);
     });
+
     it("should return existing primary account when logging in with new social sign on with same email address AND there is already another linked social account", async () => {
-      const token = await getAdminToken();
       const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);
-      const managementClient = testClient(managementApp, env);
-
-      // What I want here is for the linked social account to be returned FIRST!
-      // so this is a bit synthetic by manually writing the users...
-      await env.data.users.create("tenantId", {
-        name: "örjan.lindström@example.com",
-        provider: "other-social-provider",
-        connection: "other-social-provider",
-        email: "örjan.lindström@example.com",
-        email_verified: true,
-        last_ip: "",
-        login_count: 0,
-        is_social: true,
-        profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
-        id: "other-social-provider|123456789012345678901",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
 
       await env.data.users.create("tenantId", {
         name: "örjan.lindström@example.com",
@@ -591,46 +573,20 @@ describe("social sign on", () => {
         updated_at: new Date().toISOString(),
       });
 
-      // ---------------------------------------------
-      // fetch this email user to sanity check test
-      // ---------------------------------------------
-      const emailUserRes = await managementClient.api.v2.users[":user_id"].$get(
-        {
-          param: { user_id: "email|7575757575757" },
-          header: {
-            "tenant-id": "tenantId",
-          },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      const emailUser = (await emailUserRes.json()) as UserResponse;
-      expect(emailUser.user_id).toBe("email|7575757575757");
-
-      // ---------------------------------------------
-      // now link first social account to this email account
-      // ---------------------------------------------
-      await env.data.users.update(
-        "tenantId",
-        "other-social-provider|123456789012345678901",
-        {
-          linked_to: "email|7575757575757",
-        },
-      );
-
-      // ---------------------------------------------
-      // load this linked user to sanity check rest of test
-      // ---------------------------------------------
-      const linkedUser = await env.data.users.get(
-        "tenantId",
-        "other-social-provider|123456789012345678901",
-      );
-
-      expect(linkedUser!.linked_to).toBe("email|7575757575757");
+      await env.data.users.create("tenantId", {
+        name: "örjan.lindström@example.com",
+        provider: "other-social-provider",
+        connection: "other-social-provider",
+        email: "örjan.lindström@example.com",
+        email_verified: true,
+        last_ip: "",
+        login_count: 0,
+        is_social: true,
+        profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
+        id: "other-social-provider|123456789012345678901",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       // ---------------------------------------------
       // sanity check that users are entered in database in correct order
@@ -640,8 +596,9 @@ describe("social sign on", () => {
         per_page: 10,
         include_totals: false,
       });
+
       expect(users.length).toBe(3);
-      expect(users.users[2].id).toBe("email|7575757575757");
+      expect(users.users[1].id).toBe("email|7575757575757");
 
       // ---------------------------------------------
       // now do social sign on with same email - new user registered

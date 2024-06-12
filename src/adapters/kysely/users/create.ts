@@ -4,8 +4,10 @@ import { HTTPException } from "hono/http-exception";
 
 export function create(db: Kysely<Database>) {
   return async (tenantId: string, user: User): Promise<User> => {
+    const { identities, ...rest } = user;
+
     const sqlUser: SqlUser = {
-      ...user,
+      ...rest,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       tenant_id: tenantId,
@@ -22,7 +24,8 @@ export function create(db: Kysely<Database>) {
       ) {
         throw new HTTPException(409, { message: "User already exists" });
       }
-      throw new HTTPException(500, { message: err.code });
+      console.log(err.message);
+      throw new HTTPException(500, { message: `${err.code}, ${err.message}` });
     }
 
     return {
