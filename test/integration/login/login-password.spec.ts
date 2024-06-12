@@ -501,5 +501,19 @@ describe("Login with password user", () => {
     });
 
     await snapshotResponse(incorrectPasswordResponse);
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "fp",
+      tenant_id: "tenantId",
+      user_name: "foo@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+      description: "Wrong email or password.",
+    });
   });
 });
