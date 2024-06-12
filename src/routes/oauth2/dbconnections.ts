@@ -12,6 +12,7 @@ import validatePassword from "../../utils/validatePassword";
 import { sendResetPassword } from "../../controllers/email";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Var } from "../../types/Var";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
 
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
@@ -109,6 +110,13 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         client,
         user: newUser,
       });
+
+      ctx.set("userName", newUser.email);
+      ctx.set("connection", newUser.connection);
+      ctx.set("client_id", client.id);
+      const log = createTypeLog("ss", ctx, "Successful signup");
+
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.json({
         _id: newUser.id,
