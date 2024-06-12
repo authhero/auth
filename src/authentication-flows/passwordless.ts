@@ -2,10 +2,7 @@ import { HTTPException } from "hono/http-exception";
 import { Env, Var, Log } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
-import {
-  getPrimaryUserByEmailAndProvider,
-  getPrimaryUserByEmail,
-} from "../utils/users";
+import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import { User, Client, AuthParams } from "../types";
 import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
@@ -58,13 +55,7 @@ export async function validateCode(
     return emailUser;
   }
 
-  const primaryUser = await getPrimaryUserByEmail({
-    userAdapter: env.data.users,
-    tenant_id: client.tenant_id,
-    email: params.email,
-  });
-
-  const newUser = await env.data.users.create(client.tenant_id, {
+  const user = await env.data.users.create(client.tenant_id, {
     id: `email|${userIdGenerate()}`,
     email: params.email,
     name: params.email,
@@ -77,10 +68,7 @@ export async function validateCode(
     is_social: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    linked_to: primaryUser?.id,
   });
-
-  const user = primaryUser || newUser;
 
   // TODO - along with our middleware solution (creating logs based on context vars)
   // do we want a helper to create Log objects? _or_ be more permissive in the create log adapter?

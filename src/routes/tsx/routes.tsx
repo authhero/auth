@@ -1174,6 +1174,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         client.tenant_id,
         email,
       );
+
       const usersWithSameEmailButNotUsernamePassword =
         usersWithSameEmail.filter((user) => user.provider !== "auth2");
 
