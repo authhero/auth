@@ -511,6 +511,7 @@ describe("Login with password user", () => {
       type: "fp",
       tenant_id: "tenantId",
       user_name: "foo@example.com",
+      user_id: "auth2|userId",
       connection: "Username-Password-Authentication",
       client_id: "clientId",
       description: "Wrong email or password.",

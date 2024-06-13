@@ -283,6 +283,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       });
 
       if (!valid) {
+        ctx.set("userId", user.id);
         ctx.set("userName", user.email);
         ctx.set("connection", user.connection);
         ctx.set("client_id", client.id);
