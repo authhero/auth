@@ -110,6 +110,21 @@ describe("password-flow", () => {
       expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
       expect(await loginBlockedRes.text()).toBe("Redirecting");
 
+      const {
+        logs: [successSignUpLog],
+      } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(successSignUpLog).toMatchObject({
+        type: "ss",
+        tenant_id: "tenantId",
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        client_id: "clientId",
+      });
+
       // this is the original email sent after signing up
       const { to, code, state } = getCodeStateTo(env.data.emails[0]);
 
