@@ -142,6 +142,8 @@ test("only allows existing breakit users to progress to the enter code step", as
   await snapshotResponse(loginFormNoSignupResponse);
 });
 
+// this test name isn't correct as there is no "enter code" step with a social login. This test is testing that a new SSO user
+// cannot be redirect back to the callback
 test("only allows existing breakit users to progress to the enter code step with social signon", async () => {
   const testTenantLanguage = "en";
   const env = await getEnv({
@@ -233,6 +235,20 @@ test("only allows existing breakit users to progress to the enter code step with
 
   // This is the error page we expect to see when the user does not exist
   await snapshotResponse(socialCallbackResponse);
+
+  const { logs } = await env.data.logs.list("breakit", {
+    page: 0,
+    per_page: 100,
+    include_totals: true,
+  });
+  expect(logs[0]).toMatchObject({
+    type: "f",
+    tenant_id: "breakit",
+    user_name: "örjan.lindström@example.com",
+    connection: "other-social-provider",
+    client_id: "breakit",
+    description: "Public signup is disabled",
+  });
 
   // ----------------------------
   //  Try going past email address step with existing breakit user
