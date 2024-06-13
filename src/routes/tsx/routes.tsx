@@ -1083,6 +1083,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user: newUser,
         });
 
+        ctx.set("userName", newUser.email);
+        ctx.set("connection", newUser.connection);
+        ctx.set("client_id", client.id);
+        const log = createTypeLog("ss", ctx, "Successful signup");
+
+        await ctx.env.data.logs.create(client.tenant_id, log);
+
         return ctx.html(
           <MessagePage
             message={i18next.t("validate_email_body")}
