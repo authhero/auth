@@ -283,6 +283,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       });
 
       if (!valid) {
+        ctx.set("userId", user.id);
         ctx.set("userName", user.email);
         ctx.set("connection", user.connection);
         ctx.set("client_id", client.id);
@@ -1107,6 +1108,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user: newUser,
         });
 
+        ctx.set("userId", newUser.id);
         ctx.set("userName", newUser.email);
         ctx.set("connection", newUser.connection);
         ctx.set("client_id", client.id);

@@ -91,6 +91,13 @@ describe("Register password user", () => {
       connection: "Username-Password-Authentication",
       client_id: "clientId",
     });
+
+    // get user with this id and check is the correct id
+    const user = await env.data.users.get("tenantId", logs[0].user_id!);
+
+    expect(user).toMatchObject({
+      email: "test@example.com",
+    });
   });
 
   it("should reject a weak password", async () => {

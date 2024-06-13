@@ -124,6 +124,15 @@ describe("password-flow", () => {
         connection: "Username-Password-Authentication",
         client_id: "clientId",
       });
+      // get user with this id and check is the correct id
+      const user = await env.data.users.get(
+        "tenantId",
+        successSignUpLog.user_id!,
+      );
+
+      expect(user).toMatchObject({
+        email: "password-login-test@example.com",
+      });
 
       // this is the original email sent after signing up
       const { to, code, state } = getCodeStateTo(env.data.emails[0]);
