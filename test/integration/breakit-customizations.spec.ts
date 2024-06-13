@@ -94,6 +94,20 @@ test("only allows existing breakit users to progress to the enter code step", as
   expect(nonExistingUserEmailResponse.status).toBe(400);
   await snapshotResponse(nonExistingUserEmailResponse);
 
+  const { logs } = await env.data.logs.list("breakit", {
+    page: 0,
+    per_page: 100,
+    include_totals: true,
+  });
+  expect(logs[0]).toMatchObject({
+    type: "f",
+    tenant_id: "breakit",
+    user_name: "not-a-real-breakit-user@example.com",
+    // different to auth0, at this point we don't have a connection
+    connection: "",
+    client_id: "breakit",
+  });
+
   // ----------------------------
   //  Try going past email address step with existing breakit user
   // ----------------------------

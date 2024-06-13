@@ -731,6 +731,18 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         );
 
         if (!user) {
+          // Auth0 doesn't set this, it's nested inside details
+          ctx.set("userName", params.username);
+          ctx.set("client_id", client.id);
+          const log = createTypeLog(
+            "f",
+            ctx,
+            params,
+            "Public signup is disabled",
+          );
+
+          await ctx.env.data.logs.create(client.tenant_id, log);
+
           return ctx.html(
             <EnterEmailPage
               vendorSettings={vendorSettings}
