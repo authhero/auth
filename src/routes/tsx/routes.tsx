@@ -204,6 +204,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           vendorSettings={vendorSettings}
           email={session.authParams.username}
           state={state}
+          client={client}
         />,
       );
     },
@@ -269,6 +270,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             email={username}
             error={i18next.t("invalid_password")}
             state={state}
+            client={client}
           />,
           400,
         );
@@ -286,6 +288,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             email={username}
             error={i18next.t("invalid_password")}
             state={state}
+            client={client}
           />,
           400,
         );
@@ -335,6 +338,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             email={username}
             error={err.message}
             state={state}
+            client={client}
           />,
           400,
         );
