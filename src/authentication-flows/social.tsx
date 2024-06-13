@@ -19,6 +19,7 @@ import { LogTypes } from "../types";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
+import { createTypeLog } from "../tsoa-middlewares/logger";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -203,8 +204,6 @@ export async function socialAuthCallback({
       );
     }
 
-    ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
-
     user = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
       email,
@@ -229,7 +228,7 @@ export async function socialAuthCallback({
     user,
   );
 
-  return generateAuthResponse({
+  const authResponse = generateAuthResponse({
     env,
     tenantId: client.tenant_id,
     userId: user.id,
@@ -241,4 +240,13 @@ export async function socialAuthCallback({
     responseType:
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });
+
+  ctx.set("userName", user.email);
+  ctx.set("connection", user.connection);
+  ctx.set("client_id", client.id);
+  const log = createTypeLog("ss", ctx, "Successful signup");
+
+  await ctx.env.data.logs.create(client.tenant_id, log);
+
+  return authResponse;
 }
