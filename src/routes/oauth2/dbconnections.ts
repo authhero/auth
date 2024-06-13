@@ -111,6 +111,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         user: newUser,
       });
 
+      ctx.set("userId", newUser.id);
       ctx.set("userName", newUser.email);
       ctx.set("connection", newUser.connection);
       ctx.set("client_id", client.id);
