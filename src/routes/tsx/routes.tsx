@@ -243,7 +243,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { env } = ctx;
       const { state } = ctx.req.valid("query");
-      const { password } = ctx.req.valid("form");
+      const body = ctx.req.valid("form");
+      const { password } = body;
 
       const { vendorSettings, client, session } = await initJSXRoute(
         state,
@@ -282,6 +283,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       });
 
       if (!valid) {
+        ctx.set("userName", user.email);
+        ctx.set("connection", user.connection);
+        ctx.set("client_id", client.id);
+        const log = createTypeLog("fp", ctx, body, "Wrong email or password.");
+
+        await ctx.env.data.logs.create(client.tenant_id, log);
+
         return ctx.html(
           <EnterPasswordPage
             vendorSettings={vendorSettings}
