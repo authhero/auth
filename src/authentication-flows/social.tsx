@@ -216,12 +216,14 @@ export async function socialAuthCallback({
     if (client.disable_sign_ups) {
       ctx.set("userName", email);
       ctx.set("client_id", client.id);
+      ctx.set("connection", connection.name);
       const log = createTypeLog(
         LogTypes.FAILED_LOGIN,
         ctx,
         {},
         "Public signup is disabled",
       );
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       const vendorSettings = await fetchVendorSettings(
         env,
