@@ -192,13 +192,23 @@ describe("social sign on", () => {
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
 
-        const { logs } = await env.data.logs.list("tenantId", {
+        const {
+          logs: [successLoginLog, successSignupLog],
+        } = await env.data.logs.list("tenantId", {
           page: 0,
           per_page: 100,
           include_totals: true,
         });
-        expect(logs[0]).toMatchObject({
+        expect(successSignupLog).toMatchObject({
           type: "ss",
+          tenant_id: "tenantId",
+          user_name: "örjan.lindström@example.com",
+          connection: "demo-social-provider",
+          client_id: "clientId",
+        });
+
+        expect(successLoginLog).toMatchObject({
+          type: "s",
           tenant_id: "tenantId",
           user_name: "örjan.lindström@example.com",
           connection: "demo-social-provider",

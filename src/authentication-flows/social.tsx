@@ -219,6 +219,12 @@ export async function socialAuthCallback({
       updated_at: new Date().toISOString(),
       profileData: JSON.stringify(profileData),
     });
+
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+    ctx.set("client_id", client.id);
+    const log = createTypeLog("ss", ctx, "Successful signup");
+    await ctx.env.data.logs.create(client.tenant_id, log);
   }
 
   const sessionId = await setSilentAuthCookies(
@@ -244,8 +250,7 @@ export async function socialAuthCallback({
   ctx.set("userName", user.email);
   ctx.set("connection", user.connection);
   ctx.set("client_id", client.id);
-  const log = createTypeLog("ss", ctx, "Successful signup");
-
+  const log = createTypeLog("s", ctx, "Successful login");
   await ctx.env.data.logs.create(client.tenant_id, log);
 
   return authResponse;
