@@ -106,7 +106,7 @@ describe("social sign on", () => {
 
     describe("Create a new user from a social callback", () => {
       // like most of the providers
-      it.only("should receive params in the querystring when a GET", async () => {
+      it("should receive params in the querystring when a GET", async () => {
         const socialCallbackQuery = {
           state: SOCIAL_STATE_PARAM,
           code: "code",
@@ -197,6 +197,7 @@ describe("social sign on", () => {
           per_page: 100,
           include_totals: true,
         });
+        expect(logs.length).toBe(2);
         const successLoginLog = logs.find((log) => log.type === "s");
         const successSignupLog = logs.find((log) => log.type === "ss");
         expect(successSignupLog).toMatchObject({
