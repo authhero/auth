@@ -5,6 +5,19 @@ import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Var } from "../../types/Var";
+import i18next from "i18next";
+
+function initI18n(lng: string) {
+  i18next.init({
+    lng,
+    resources: {
+      en: { translation: en },
+      it: { translation: it },
+      nb: { translation: nb },
+      sv: { translation: sv },
+    },
+  });
+}
 
 export const callbackRoutes = new OpenAPIHono<{
   Bindings: Env;
@@ -55,6 +68,12 @@ export const callbackRoutes = new OpenAPIHono<{
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
       }
+      const tenant = await ctx.env.data.tenants.get(client.tenant_id);
+      if (!tenant) {
+        throw new HTTPException(400, { message: "Tenant not found" });
+      }
+
+      initI18n(tenant.language || "sv");
 
       if (error) {
         const { redirect_uri } = loginState.authParams;
