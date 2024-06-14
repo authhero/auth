@@ -42,7 +42,7 @@ const SignupPage: FC<Props> = ({ error, vendorSettings, email }) => {
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <DisabledSubmitButton className="text-base sm:mt-2 md:text-base">
-            {i18next.t("Signup")}
+            {i18next.t("continue")}
           </DisabledSubmitButton>
         </Form>
       </div>
