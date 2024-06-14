@@ -6,6 +6,10 @@ import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Var } from "../../types/Var";
 import i18next from "i18next";
+import en from "../../localesLogin2/en/default.json";
+import it from "../../localesLogin2/it/default.json";
+import nb from "../../localesLogin2/nb/default.json";
+import sv from "../../localesLogin2/sv/default.json";
 
 function initI18n(lng: string) {
   i18next.init({
