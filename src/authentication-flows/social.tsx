@@ -213,7 +213,9 @@ export async function socialAuthCallback({
   });
 
   if (!user) {
-    if (client.disable_sign_ups) {
+    const callerIsLogin2 = state.authParams.redirect_uri.includes("login2");
+
+    if (client.disable_sign_ups && !callerIsLogin2) {
       ctx.set("userName", email);
       ctx.set("client_id", client.id);
       ctx.set("connection", connection.name);
