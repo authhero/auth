@@ -212,7 +212,9 @@ test("only allows existing breakit users to progress to the enter code step with
 
   const socialStateParamNonExistingUser = osloBtoa({
     authParams: {
-      redirect_uri: "https://login2.sesamy.dev/callback",
+      // With the "fix" on this PR, this need testing... if we do want this approach, I can duplicate this test with this here and check that auth2 doesn't do the existing user check
+      // redirect_uri: "https://login2.sesamy.dev/callback",
+      redirect_uri: "https://example.com/callback",
       scope: "openid profile email",
       state: STATE,
       client_id: "breakit",
