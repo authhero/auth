@@ -240,8 +240,6 @@ export async function socialAuthCallback({
       );
     }
 
-    ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
-
     user = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
       email,
@@ -257,6 +255,12 @@ export async function socialAuthCallback({
       updated_at: new Date().toISOString(),
       profileData: JSON.stringify(profileData),
     });
+
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+    ctx.set("client_id", client.id);
+    const log = createTypeLog("ss", ctx, "Successful signup");
+    await ctx.env.data.logs.create(client.tenant_id, log);
   }
 
   const sessionId = await setSilentAuthCookies(
@@ -266,7 +270,7 @@ export async function socialAuthCallback({
     user,
   );
 
-  return generateAuthResponse({
+  const authResponse = generateAuthResponse({
     env,
     tenantId: client.tenant_id,
     userId: user.id,
@@ -278,4 +282,12 @@ export async function socialAuthCallback({
     responseType:
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });
+
+  ctx.set("userName", user.email);
+  ctx.set("connection", user.connection);
+  ctx.set("client_id", client.id);
+  const log = createTypeLog("s", ctx, "Successful login");
+  await ctx.env.data.logs.create(client.tenant_id, log);
+
+  return authResponse;
 }

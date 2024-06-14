@@ -191,6 +191,29 @@ describe("social sign on", () => {
           ...newSocialUserWithoutDates
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
+
+        const {
+          logs: [successLoginLog, successSignupLog],
+        } = await env.data.logs.list("tenantId", {
+          page: 0,
+          per_page: 100,
+          include_totals: true,
+        });
+        expect(successSignupLog).toMatchObject({
+          type: "ss",
+          tenant_id: "tenantId",
+          user_name: "örjan.lindström@example.com",
+          connection: "demo-social-provider",
+          client_id: "clientId",
+        });
+
+        expect(successLoginLog).toMatchObject({
+          type: "s",
+          tenant_id: "tenantId",
+          user_name: "örjan.lindström@example.com",
+          connection: "demo-social-provider",
+          client_id: "clientId",
+        });
       });
       // like apple
       it("should receive params in the body when a POST", async () => {
