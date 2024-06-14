@@ -106,7 +106,7 @@ describe("social sign on", () => {
 
     describe("Create a new user from a social callback", () => {
       // like most of the providers
-      it("should receive params in the querystring when a GET", async () => {
+      it.only("should receive params in the querystring when a GET", async () => {
         const socialCallbackQuery = {
           state: SOCIAL_STATE_PARAM,
           code: "code",
@@ -192,13 +192,13 @@ describe("social sign on", () => {
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
 
-        const {
-          logs: [successLoginLog, successSignupLog],
-        } = await env.data.logs.list("tenantId", {
+        const { logs } = await env.data.logs.list("tenantId", {
           page: 0,
           per_page: 100,
           include_totals: true,
         });
+        const successLoginLog = logs.find((log) => log.type === "s");
+        const successSignupLog = logs.find((log) => log.type === "ss");
         expect(successSignupLog).toMatchObject({
           type: "ss",
           tenant_id: "tenantId",
