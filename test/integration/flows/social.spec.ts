@@ -192,13 +192,14 @@ describe("social sign on", () => {
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
 
-        const {
-          logs: [successLoginLog, successSignupLog],
-        } = await env.data.logs.list("tenantId", {
+        const { logs } = await env.data.logs.list("tenantId", {
           page: 0,
           per_page: 100,
           include_totals: true,
         });
+        expect(logs.length).toBe(2);
+        const successLoginLog = logs.find((log) => log.type === "s");
+        const successSignupLog = logs.find((log) => log.type === "ss");
         expect(successSignupLog).toMatchObject({
           type: "ss",
           tenant_id: "tenantId",
