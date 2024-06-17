@@ -61,6 +61,21 @@ describe("password-flow", () => {
       });
       expect(createUserResponse.status).toBe(200);
 
+      const {
+        logs: [successSignUpLog],
+      } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(successSignUpLog).toMatchObject({
+        type: "ss",
+        tenant_id: "tenantId",
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        client_id: "clientId",
+      });
+
       const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
@@ -111,18 +126,19 @@ describe("password-flow", () => {
       expect(await loginBlockedRes.text()).toBe("Redirecting");
 
       const {
-        logs: [successSignUpLog],
+        logs: [failedLogin],
       } = await env.data.logs.list("tenantId", {
         page: 0,
         per_page: 100,
         include_totals: true,
       });
-      expect(successSignUpLog).toMatchObject({
-        type: "ss",
+      expect(failedLogin).toMatchObject({
+        type: "f",
         tenant_id: "tenantId",
         user_name: "password-login-test@example.com",
         connection: "Username-Password-Authentication",
         client_id: "clientId",
+        description: "Email not verified",
       });
       // get user with this id and check is the correct id
       const user = await env.data.users.get(

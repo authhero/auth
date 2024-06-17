@@ -317,6 +317,17 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user,
         });
 
+        ctx.set("userName", user.email);
+        ctx.set("connection", user.connection);
+        ctx.set("client_id", client.id);
+        const log = createTypeLog(
+          LogTypes.FAILED_LOGIN,
+          ctx,
+          {},
+          "Email not verified",
+        );
+        await ctx.env.data.logs.create(client.tenant_id, log);
+
         // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
         return ctx.html(
           <UnverifiedEmail vendorSettings={vendorSettings} />,

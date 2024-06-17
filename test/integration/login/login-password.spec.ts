@@ -60,6 +60,21 @@ describe("Register password", () => {
     expect(createUserResponse.status).toBe(200);
     await snapshotResponse(createUserResponse);
 
+    const {
+      logs: [successSignUpLog],
+    } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(successSignUpLog).toMatchObject({
+      type: "ss",
+      tenant_id: "tenantId",
+      user_name: "password-login-test@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
+
     const blockedLoginResponse = await oauthClient.u.login.$post({
       query: {
         state: query.state,
@@ -70,6 +85,22 @@ describe("Register password", () => {
     });
     expect(blockedLoginResponse.status).toBe(400);
     await snapshotResponse(blockedLoginResponse);
+
+    const {
+      logs: [failedLogin],
+    } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(failedLogin).toMatchObject({
+      type: "f",
+      tenant_id: "tenantId",
+      user_name: "password-login-test@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+      description: "Email not verified",
+    });
 
     // this is the original email sent after signing up
     const { to, code, state } = getCodeStateTo(env.data.emails[0]);
