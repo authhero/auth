@@ -205,6 +205,29 @@ describe("password-flow", () => {
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
+
+      const { logs } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(logs[0]).toMatchObject({
+        type: "scoa",
+        tenant_id: "tenantId",
+        user_id: accessTokenPayload.sub,
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        // TODO - we also want these fields populated... maybe we want another test for this?
+        // auth0_client: {
+        //   name: "auth0.js",
+        //   version: "9.26.1",
+        // },
+        // client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        // date: "2024-06-10T10:30:50.545Z",
+        // ip: "78.46.40.111",
+        // user_agent: "Mobile Safari 17.4.0 / iOS 14.4.0",
+      });
+
       const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
       // now check silent auth works after password login
       const { idToken: silentAuthIdTokenPayload } =
@@ -231,26 +254,20 @@ describe("password-flow", () => {
         iss: "https://example.com/",
       });
 
-      const { logs } = await env.data.logs.list("tenantId", {
+      const {
+        logs: [silentAuthSuccess],
+      } = await env.data.logs.list("tenantId", {
         page: 0,
         per_page: 100,
         include_totals: true,
       });
-      expect(logs[0]).toMatchObject({
-        type: "scoa",
+      expect(silentAuthSuccess).toMatchObject({
+        type: "ssa",
         tenant_id: "tenantId",
         user_id: accessTokenPayload.sub,
         user_name: "password-login-test@example.com",
         connection: "Username-Password-Authentication",
-        // TODO - we also want these fields populated... maybe we want another test for this?
-        // auth0_client: {
-        //   name: "auth0.js",
-        //   version: "9.26.1",
-        // },
-        // client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-        // date: "2024-06-10T10:30:50.545Z",
-        // ip: "78.46.40.111",
-        // user_agent: "Mobile Safari 17.4.0 / iOS 14.4.0",
+        description: "Successful silent authentication",
       });
     });
 

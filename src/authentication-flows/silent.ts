@@ -94,6 +94,7 @@ export async function silentAuth({
         const log = createTypeLog(
           LogTypes.SUCCESS_SILENT_AUTH,
           ctx,
+          {},
           "Successful silent authentication",
         );
         await ctx.env.data.logs.create(session.tenant_id, log);
