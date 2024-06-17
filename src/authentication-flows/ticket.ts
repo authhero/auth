@@ -134,6 +134,7 @@ export async function ticketAuth(
       const log = createTypeLog(
         LogTypes.FAILED_LOGIN,
         ctx,
+        {},
         "Email not verified",
       );
       await ctx.env.data.logs.create(client.tenant_id, log);
