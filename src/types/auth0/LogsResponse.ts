@@ -7,8 +7,7 @@ export enum LogTypes {
   FAILED_SILENT_AUTH = "fsa",
   //
   SUCCESS_SIGNUP = "ss",
-  // we don't have this in the logs yet
-  // FAILED_SIGNUP = "fs",
+  FAILED_SIGNUP = "fs",
   //
   SUCCESS_LOGIN = "s",
   FAILED_LOGIN = "f",
@@ -34,7 +33,7 @@ const LogType = z.enum([
   "fsa", // FAILED_SILENT_AUTH
   "ss", // SUCCESS_SIGNUP
   "ssa", /// SUCCESS_SILENT_AUTH
-  // FAILED_SIGNUP = "fs", - we don't have this in the logs yet
+  "fs",
   "s", // SUCCESS_LOGIN
   "f", // FAILED_LOGIN
   "fp", // FAILED_LOGIN_INCORRECT_PASSWORD
