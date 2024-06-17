@@ -97,7 +97,7 @@ export async function silentAuth({
           {},
           "Successful silent authentication",
         );
-        await ctx.env.data.logs.create(session.tenant_id, log);
+        await ctx.env.data.logs.create(tenant_id, log);
 
         return ctx.html(
           renderAuthIframe(
