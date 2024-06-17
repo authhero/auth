@@ -20,9 +20,7 @@ const DisabledSubmitButton = ({
         isLoading
         id="loading-btn"
         disabled
-      >
-        {children}
-      </Button>
+      />
     </>
   );
 };
