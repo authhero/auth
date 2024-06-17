@@ -100,7 +100,7 @@ test("only allows existing breakit users to progress to the enter code step", as
     include_totals: true,
   });
   expect(logs[0]).toMatchObject({
-    type: "f",
+    type: "fs",
     tenant_id: "breakit",
     user_name: "not-a-real-breakit-user@example.com",
     // different to auth0, at this point we don't have a connection
@@ -244,7 +244,7 @@ test("only allows existing breakit users to progress to the enter code step with
     include_totals: true,
   });
   expect(logs[0]).toMatchObject({
-    type: "f",
+    type: "fs",
     tenant_id: "breakit",
     user_name: "örjan.lindström@example.com",
     connection: "other-social-provider",

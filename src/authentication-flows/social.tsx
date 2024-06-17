@@ -104,7 +104,7 @@ export async function socialAuthCallback({
   if (!client) {
     ctx.set("client_id", state.authParams.client_id);
     const log = createTypeLog(
-      LogTypes.FAILED_LOGIN,
+      LogTypes.FAILED_SIGNUP,
       ctx,
       {},
       "Client not found",
@@ -220,7 +220,7 @@ export async function socialAuthCallback({
       ctx.set("client_id", client.id);
       ctx.set("connection", connection.name);
       const log = createTypeLog(
-        LogTypes.FAILED_LOGIN,
+        LogTypes.FAILED_SIGNUP,
         ctx,
         {},
         "Public signup is disabled",

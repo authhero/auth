@@ -1,6 +1,13 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, User, AuthorizationResponseType, Client, Var } from "../../types";
+import {
+  Env,
+  User,
+  AuthorizationResponseType,
+  Client,
+  Var,
+  LogTypes,
+} from "../../types";
 import ResetPasswordPage from "../../components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import {
@@ -744,7 +751,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           ctx.set("userName", params.username);
           ctx.set("client_id", client.id);
           const log = createTypeLog(
-            "f",
+            LogTypes.FAILED_SIGNUP,
             ctx,
             params,
             "Public signup is disabled",
