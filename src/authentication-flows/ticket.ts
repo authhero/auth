@@ -128,7 +128,15 @@ export async function ticketAuth(
         login2UniverifiedEmailUrl.searchParams.set("connection", connection2);
       }
 
-      ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
+      ctx.set("userName", user.email);
+      ctx.set("connection", user.connection);
+      ctx.set("client_id", client.id);
+      const log = createTypeLog(
+        LogTypes.FAILED_LOGIN,
+        ctx,
+        "Email not verified",
+      );
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return new Response("Redirecting", {
         status: 302,
