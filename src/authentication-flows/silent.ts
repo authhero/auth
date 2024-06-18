@@ -110,7 +110,6 @@ export async function silentAuth({
   }
 
   ctx.set("description", "Login required");
-  ctx.set("logType", "fsa");
 
   const log = createTypeLog(
     LogTypes.FAILED_SILENT_AUTH,
