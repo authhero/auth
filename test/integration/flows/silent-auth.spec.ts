@@ -165,6 +165,23 @@ describe("silent-auth", () => {
         "otherClientId",
       );
     expect(silentAuthAccessTokenPayloadOtherClient).toBeDefined();
+
+    const {
+      logs: [silentAuthSuccess],
+    } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(silentAuthSuccess).toMatchObject({
+      type: "ssa",
+      tenant_id: "tenantId",
+      user_id: "auth2|userId",
+      user_name: "foo@example.com",
+      connection: "Username-Password-Authentication",
+      description: "Successful silent authentication",
+    });
+
     // -------------------------------------------------------------
     // now check silent auth does not on a different tenant
     // -------------------------------------------------------------
@@ -187,5 +204,18 @@ describe("silent-auth", () => {
     // This is the difference here
     expect(bodyDifferentTenant).toContain("Login required");
     expect(bodyDifferentTenant).not.toContain("access_token");
+
+    const {
+      logs: [silentAuthFailure],
+    } = await env.data.logs.list("otherTenant", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(silentAuthFailure).toMatchObject({
+      type: "fsa",
+      tenant_id: "otherTenant",
+      description: "Login required",
+    });
   });
 });

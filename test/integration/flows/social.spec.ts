@@ -148,6 +148,31 @@ describe("social sign on", () => {
         expect(idTokenPayload.nonce).toBe("MnjcTg0ay3xqf3JVqIL05ib.n~~eZcL_");
         expect(idTokenPayload.iss).toBe("https://example.com/");
         const token = await getAdminToken();
+
+        const { logs } = await env.data.logs.list("tenantId", {
+          page: 0,
+          per_page: 100,
+          include_totals: true,
+        });
+        expect(logs.length).toBe(2);
+        const successLoginLog = logs.find((log) => log.type === "s");
+        const successSignupLog = logs.find((log) => log.type === "ss");
+        expect(successSignupLog).toMatchObject({
+          type: "ss",
+          tenant_id: "tenantId",
+          user_name: "örjan.lindström@example.com",
+          connection: "demo-social-provider",
+          client_id: "clientId",
+        });
+
+        expect(successLoginLog).toMatchObject({
+          type: "s",
+          tenant_id: "tenantId",
+          user_name: "örjan.lindström@example.com",
+          connection: "demo-social-provider",
+          client_id: "clientId",
+        });
+
         // ---------------------------------------------
         // now do a silent auth check to make sure we are logged in properly
         // ---------------------------------------------
@@ -191,30 +216,6 @@ describe("social sign on", () => {
           ...newSocialUserWithoutDates
         } = newSocialUser;
         expect(newSocialUserWithoutDates).toEqual(EXPECTED_NEW_USER);
-
-        const { logs } = await env.data.logs.list("tenantId", {
-          page: 0,
-          per_page: 100,
-          include_totals: true,
-        });
-        expect(logs.length).toBe(2);
-        const successLoginLog = logs.find((log) => log.type === "s");
-        const successSignupLog = logs.find((log) => log.type === "ss");
-        expect(successSignupLog).toMatchObject({
-          type: "ss",
-          tenant_id: "tenantId",
-          user_name: "örjan.lindström@example.com",
-          connection: "demo-social-provider",
-          client_id: "clientId",
-        });
-
-        expect(successLoginLog).toMatchObject({
-          type: "s",
-          tenant_id: "tenantId",
-          user_name: "örjan.lindström@example.com",
-          connection: "demo-social-provider",
-          client_id: "clientId",
-        });
       });
       // like apple
       it("should receive params in the body when a POST", async () => {
