@@ -1,20 +1,16 @@
 import { HTTPException } from "hono/http-exception";
+import { nanoid } from "nanoid";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { getClient } from "../../services/clients";
 import { getPrimaryUserByEmailAndProvider } from "../../utils/users";
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
-import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
-import { nanoid } from "nanoid";
-import { AuthParams, Env } from "../../types";
-import generateOTP from "../../utils/otp";
+import { AuthParams, Env, Var } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import validatePassword from "../../utils/validatePassword";
-import { sendResetPassword } from "../../controllers/email";
-import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Var } from "../../types/Var";
 import { createTypeLog } from "../../tsoa-middlewares/logger";
-
-const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+import { requestPasswordReset } from "../../authentication-flows/password-reset";
+import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
 
 export const dbConnectionRoutes = new OpenAPIHono<{
   Bindings: Env;
@@ -163,18 +159,6 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         throw new HTTPException(400, { message: "Client not found" });
       }
 
-      const user = await getPrimaryUserByEmailAndProvider({
-        userAdapter: ctx.env.data.users,
-        tenant_id: client.tenant_id,
-        email,
-        provider: "auth2",
-      });
-
-      // route always returns success
-      if (!user) {
-        return ctx.html("We've just sent you an email to reset your password.");
-      }
-
       const authParams: AuthParams = {
         client_id: client_id,
         username: email,
@@ -191,22 +175,9 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         authParams,
       };
 
-      const state = session.id;
-
       await ctx.env.data.universalLoginSessions.create(session);
 
-      const code = generateOTP();
-
-      await ctx.env.data.codes.create(client.tenant_id, {
-        id: nanoid(),
-        code,
-        type: "password_reset",
-        user_id: user.id,
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-      });
-
-      await sendResetPassword(ctx.env, client, email, code, state);
+      await requestPasswordReset(ctx, client, email, session.id);
 
       return ctx.html("We've just sent you an email to reset your password.");
     },
