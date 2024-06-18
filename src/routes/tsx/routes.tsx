@@ -29,11 +29,7 @@ import UnverifiedEmail from "../../components/UnverifiedEmailPage";
 import MessagePage from "../../components/Message";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
-import {
-  generateAuthData,
-  generateAuthResponse,
-} from "../../helpers/generate-auth-response";
-import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { Context } from "hono";
 import ForgotPasswordPage from "../../components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
@@ -96,10 +92,9 @@ function initI18n(lng: string) {
 }
 
 async function handleLogin(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   user: User,
   session: UniversalLoginSession,
-  ctx: Context<{ Bindings: Env; Variables: Var }>,
   client: Client,
 ) {
   if (session.authParams.redirect_uri) {
@@ -117,8 +112,15 @@ async function handleLogin(
       ...authParams
     } = session.authParams;
 
-    const authResponse = await generateAuthData({
-      env,
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+    ctx.set("client_id", client.id);
+    const log = createTypeLog("s", ctx, "Successful login");
+
+    waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
+
+    return generateAuthResponse({
+      env: ctx.env,
       tenantId: session.tenant_id,
       userId: user.id,
       sid: nanoid(),
@@ -126,24 +128,10 @@ async function handleLogin(
       authParams,
       user,
     });
-
-    const redirectUrl = getTokenResponseRedirectUri(
-      authResponse,
-      session.authParams,
-    );
-
-    ctx.set("userName", user.email);
-    ctx.set("connection", user.connection);
-    ctx.set("client_id", client.id);
-    const log = createTypeLog("s", ctx, "Successful login");
-
-    await ctx.env.data.logs.create(client.tenant_id, log);
-
-    return ctx.redirect(redirectUrl.href);
   }
 
   const vendorSettings = await fetchVendorSettings(
-    env,
+    ctx.env,
     client.id,
     session.authParams.vendor_id,
   );
@@ -357,7 +345,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           last_ip: ctx.req.header("cf-connecting-ip") || "",
         });
 
-        return handleLogin(env, primaryUser, session, ctx, client);
+        return handleLogin(ctx, primaryUser, session, client);
       } catch (err: any) {
         return ctx.html(
           <EnterPasswordPage
