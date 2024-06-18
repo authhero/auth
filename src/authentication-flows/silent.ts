@@ -45,8 +45,6 @@ export async function silentAuth({
 }: SilentAuthParams) {
   const { env } = ctx;
 
-  ctx.set("logType", LogTypes.SUCCESS_SILENT_AUTH);
-
   const tokenState = getStateFromCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);
 
@@ -84,7 +82,6 @@ export async function silentAuth({
           responseType: response_type,
         });
 
-        ctx.set("log", JSON.stringify(tokenResponse));
         await env.data.sessions.update(tenant_id, tokenState, {
           used_at: new Date().toISOString(),
         });
@@ -113,7 +110,6 @@ export async function silentAuth({
   }
 
   ctx.set("description", "Login required");
-  ctx.set("logType", "fsa");
 
   const log = createTypeLog(
     LogTypes.FAILED_SILENT_AUTH,
