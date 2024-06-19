@@ -1,12 +1,6 @@
 import { nanoid } from "nanoid";
 import { Context } from "hono";
-import {
-  Var,
-  Env,
-  Client,
-  AuthorizationResponseType,
-  AuthParams,
-} from "../types";
+import { Var, Env, Client, AuthParams } from "../types";
 import {
   getPrimaryUserByEmailAndProvider,
   getUserByEmailAndProvider,
@@ -15,8 +9,6 @@ import { CODE_EXPIRATION_TIME } from "../constants";
 import generateOTP from "../utils/otp";
 import { sendResetPassword } from "../controllers/email";
 import { createTypeLog } from "../tsoa-middlewares/logger";
-import { waitUntil } from "../utils/wait-until";
-import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { HTTPException } from "hono/http-exception";
 import { CustomException } from "../models/CustomError";
