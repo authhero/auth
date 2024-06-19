@@ -492,7 +492,7 @@ describe("Login with password user", () => {
   });
 
   it("should reject bad password", async () => {
-    const env = await getEnv();
+    const env = await getEnv({ testTenantLanguage: "sv" });
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({
