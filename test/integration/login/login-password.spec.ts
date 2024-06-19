@@ -93,6 +93,7 @@ describe("Register password", () => {
       per_page: 100,
       include_totals: true,
     });
+
     expect(failedLogin).toMatchObject({
       type: "f",
       tenant_id: "tenantId",

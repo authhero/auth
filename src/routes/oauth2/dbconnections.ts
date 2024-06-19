@@ -8,7 +8,7 @@ import { AuthParams, Env, Var } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import validatePassword from "../../utils/validatePassword";
 import { createTypeLog } from "../../tsoa-middlewares/logger";
-import { requestPasswordReset } from "../../authentication-flows/password-reset";
+import { requestPasswordReset } from "../../authentication-flows/password";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
 

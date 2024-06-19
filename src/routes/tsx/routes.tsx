@@ -48,7 +48,11 @@ import { setCookie, getCookie } from "hono/cookie";
 import { waitUntil } from "../../utils/wait-until";
 import { fetchVendorSettings } from "../../utils/fetchVendorSettings";
 import { createTypeLog } from "../../tsoa-middlewares/logger";
-import { requestPasswordReset } from "../../authentication-flows/password-reset";
+import {
+  loginWithPassword,
+  requestPasswordReset,
+} from "../../authentication-flows/password";
+import { CustomException } from "../../models/CustomError";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -119,6 +123,17 @@ async function handleLogin(
     const log = createTypeLog("s", ctx, "Successful login");
 
     waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
+
+    // Update the user's last login
+    waitUntil(
+      ctx,
+      ctx.env.data.users.update(client.tenant_id, user.id, {
+        last_login: new Date().toISOString(),
+        login_count: user.login_count + 1,
+        // This is specific to cloudflare
+        last_ip: ctx.req.header("cf-connecting-ip") || "",
+      }),
+    );
 
     return generateAuthResponse({
       env: ctx.env,
@@ -253,106 +268,52 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(400, { message: "Username required" });
       }
 
-      const user = await getUserByEmailAndProvider({
-        userAdapter: ctx.env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      if (!user) {
-        return ctx.html(
-          <EnterPasswordPage
-            vendorSettings={vendorSettings}
-            email={username}
-            error={i18next.t("invalid_password")}
-            state={state}
-            client={client}
-          />,
-          400,
-        );
-      }
-
-      const { valid } = await env.data.passwords.validate(client.tenant_id, {
-        user_id: user.id,
-        password: password,
-      });
-
-      if (!valid) {
-        ctx.set("userId", user.id);
-        ctx.set("userName", user.email);
-        ctx.set("connection", user.connection);
-        ctx.set("client_id", client.id);
-        const log = createTypeLog("fp", ctx, body, "Wrong email or password.");
-
-        await ctx.env.data.logs.create(client.tenant_id, log);
-
-        return ctx.html(
-          <EnterPasswordPage
-            vendorSettings={vendorSettings}
-            email={username}
-            error={i18next.t("invalid_password")}
-            state={state}
-            client={client}
-          />,
-          400,
-        );
-      }
-
-      if (!user.email_verified) {
-        await sendEmailVerificationEmail({
-          env: ctx.env,
-          client,
-          user,
-        });
-
-        ctx.set("userName", user.email);
-        ctx.set("connection", user.connection);
-        ctx.set("client_id", client.id);
-        const log = createTypeLog(
-          LogTypes.FAILED_LOGIN,
-          ctx,
-          {},
-          "Email not verified",
-        );
-        await ctx.env.data.logs.create(client.tenant_id, log);
-
-        // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
-        return ctx.html(
-          <UnverifiedEmail vendorSettings={vendorSettings} />,
-          400,
-        );
-      }
-
-      // want to return primary user if different BUT password is linked to auth2 user
-      const primaryUser = await getPrimaryUserByEmailAndProvider({
-        userAdapter: env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      if (!primaryUser) {
-        // this should never really happen...
-        throw new HTTPException(400, { message: "primaryUser User not found" });
-      }
-
       try {
-        // Update the user's last login
-        await env.data.users.update(client.tenant_id, primaryUser.id, {
-          last_login: new Date().toISOString(),
-          login_count: user.login_count + 1,
-          // This is specific to cloudflare
-          last_ip: ctx.req.header("cf-connecting-ip") || "",
+        const user = await loginWithPassword(ctx, client, {
+          username,
+          password,
+          client_id: client.id,
         });
 
-        return handleLogin(ctx, primaryUser, session, client);
-      } catch (err: any) {
+        return handleLogin(ctx, user, session, client);
+      } catch (err) {
+        const customException = err as CustomException;
+
+        if (
+          customException.code === "INVALID_PASSWORD" ||
+          customException.code === "USER_NOT_FOUND"
+        ) {
+          return ctx.html(
+            <EnterPasswordPage
+              vendorSettings={vendorSettings}
+              email={username}
+              error={i18next.t("invalid_password")}
+              state={state}
+              client={client}
+            />,
+            400,
+          );
+        } else if (customException.code === "EMAIL_NOT_VERIFIED") {
+          const log = createTypeLog(
+            LogTypes.FAILED_LOGIN,
+            ctx,
+            {},
+            "Email not verified",
+          );
+          await ctx.env.data.logs.create(client.tenant_id, log);
+
+          // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
+          return ctx.html(
+            <UnverifiedEmail vendorSettings={vendorSettings} />,
+            400,
+          );
+        }
+
         return ctx.html(
           <EnterPasswordPage
             vendorSettings={vendorSettings}
             email={username}
-            error={err.message}
+            error={customException.message}
             state={state}
             client={client}
           />,

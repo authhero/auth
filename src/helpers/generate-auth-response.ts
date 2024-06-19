@@ -42,9 +42,8 @@ async function generateCode({
   state,
   nonce,
   authParams,
-  sid,
 }: GenerateAuthResponseParamsForCode) {
-  let code = nanoid();
+  const code = nanoid();
 
   await env.data.authenticationCodes.create(tenantId, {
     user_id: userId,
