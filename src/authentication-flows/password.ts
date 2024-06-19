@@ -29,9 +29,8 @@ export async function requestPasswordReset(
     provider: "auth2",
   });
 
-  // route always returns success
   if (!user) {
-    return ctx.html("We've just sent you an email to reset your password.");
+    return;
   }
 
   const code = generateOTP();
