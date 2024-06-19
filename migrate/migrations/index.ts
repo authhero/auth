@@ -78,4 +78,5 @@ export default {
   n36_authenticationCodes,
   n37_disableSignUps,
   n38_otpIpAddress,
+  n39_increaseUserAgentLength,
 };
