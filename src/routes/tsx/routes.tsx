@@ -276,8 +276,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         return handleLogin(ctx, user, session, client);
       } catch (err: any) {
-        console.log("ERROR", err.code, err.message);
-
         if (err.code === "INVALID PASSWORD" || err.code === "USER_NOT_FOUND") {
           return ctx.html(
             <EnterPasswordPage
@@ -297,8 +295,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             "Email not verified",
           );
           await ctx.env.data.logs.create(client.tenant_id, log);
-
-          console.log(body);
 
           // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
           return ctx.html(
