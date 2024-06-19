@@ -36,6 +36,7 @@ import * as n35_increaseUniversalSessionStateLength from "./2024-05-24T16:25:00_
 import * as n36_authenticationCodes from "./2024-05-27T23:50:00_authentication_codes";
 import * as n37_disableSignUps from "./2024-06-03T10:00:00_disable-sign-ups";
 import * as n38_otpIpAddress from "./2024-06-05T10:00:00_otp-ip-address";
+import * as n39_increaseUserAgentLength from "./2024-06-19T10:00:00_increase-user-agent-length";
 
 // These need to be in alphabetic order
 export default {
