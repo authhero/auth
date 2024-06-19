@@ -33,7 +33,7 @@ import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { Context } from "hono";
 import ForgotPasswordPage from "../../components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
-import { sendResetPassword, sendLink, sendCode } from "../../controllers/email";
+import { sendLink, sendCode } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
@@ -48,6 +48,7 @@ import { setCookie, getCookie } from "hono/cookie";
 import { waitUntil } from "../../utils/wait-until";
 import { fetchVendorSettings } from "../../utils/fetchVendorSettings";
 import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { requestPasswordReset } from "../../authentication-flows/password-reset";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -615,32 +616,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         await env.data.universalLoginSessions.update(session.id, session);
       }
 
-      const user = await getUserByEmailAndProvider({
-        userAdapter: env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      if (user) {
-        const code = generateOTP();
-
-        await env.data.codes.create(client.tenant_id, {
-          id: nanoid(),
-          code,
-          type: "password_reset",
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-        });
-
-        // Get typescript errors here but works on the mgmt api users route...
-        // ctx.set("log", `Code: ${code}`);
-
-        await sendResetPassword(env, client, username, code, state);
-      } else {
-        console.log("User not found");
-      }
+      await requestPasswordReset(ctx, client, username, session.id);
 
       return ctx.html(
         <MessagePage
