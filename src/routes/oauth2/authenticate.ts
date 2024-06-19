@@ -1,14 +1,17 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { nanoid } from "nanoid";
 import randomString from "../../utils/random-string";
-import { Env, Ticket } from "../../types";
+import { Env, Ticket, Var } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
-import { getUserByEmailAndProvider } from "../../utils/users";
+import { loginWithPassword } from "../../authentication-flows/password";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 
-export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
+export const authenticateRoutes = new OpenAPIHono<{
+  Bindings: Env;
+  Variables: Var;
+}>()
   // --------------------------------
   // GET /co/authenticate
   // --------------------------------
@@ -89,29 +92,12 @@ export const authenticateRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
         ticket.authParams = matchingOtp.authParams;
       } else if (password) {
-        // we do not want to fetch a primary user here we want the auth2 user
-        const user = await getUserByEmailAndProvider({
-          userAdapter: ctx.env.data.users,
-          tenant_id: client.tenant_id,
-          email,
-          provider: "auth2",
+        // This will throw if the login fails
+        await loginWithPassword(ctx, client, {
+          username,
+          password,
+          client_id,
         });
-
-        if (!user) {
-          throw new HTTPException(403);
-        }
-
-        const { valid } = await ctx.env.data.passwords.validate(
-          client.tenant_id,
-          {
-            user_id: user.id,
-            password: password,
-          },
-        );
-
-        if (!valid) {
-          throw new HTTPException(403);
-        }
       } else {
         throw new HTTPException(400, { message: "Code or password required" });
       }

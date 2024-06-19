@@ -15,15 +15,13 @@ import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { addDataHooks } from "../../../src/hooks";
-import { DataAdapters } from "../../../src/adapters/interfaces";
 
 type getEnvParams = {
   testTenantLanguage?: string;
+  emailValidation?: "enabled" | "enforced" | "disabled";
 };
 
-export async function getEnv(args?: getEnvParams) {
-  const testTenantLanguage = args?.testTenantLanguage;
-
+export async function getEnv(args: getEnvParams = {}) {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
@@ -97,7 +95,7 @@ export async function getEnv(args?: getEnvParams) {
     support_url: "https://example.com/support",
     created_at: "created_at",
     updated_at: "updated_at",
-    language: testTenantLanguage,
+    language: args.testTenantLanguage,
   };
 
   const testApplication: Application = {
@@ -107,7 +105,7 @@ export async function getEnv(args?: getEnvParams) {
     allowed_callback_urls: "https://example.com/callback",
     allowed_logout_urls: "",
     allowed_web_origins: "example.com",
-    email_validation: "enforced",
+    email_validation: args.emailValidation || "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
     disable_sign_ups: false,
@@ -120,7 +118,7 @@ export async function getEnv(args?: getEnvParams) {
     allowed_callback_urls: "https://example.com/callback2",
     allowed_logout_urls: "",
     allowed_web_origins: "",
-    email_validation: "enforced",
+    email_validation: args.emailValidation || "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
     disable_sign_ups: false,

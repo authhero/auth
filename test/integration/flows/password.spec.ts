@@ -48,7 +48,7 @@ describe("password-flow", () => {
 
     it("should create a new user with a password and only allow login after email validation", async () => {
       const password = "Password1234!";
-      const env = await getEnv();
+      const env = await getEnv({ emailValidation: "disabled" });
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -473,7 +473,7 @@ describe("password-flow", () => {
     // this test looks like a duplicate of "should create a new user with a password and only allow login after email validation"
     it("should resend email validation email after login attempts, and this should work", async () => {
       const password = "Password1234!";
-      const env = await getEnv();
+      const env = await getEnv({ emailValidation: "disabled" });
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -741,7 +741,7 @@ describe("password-flow", () => {
       expect(loginResponse.status).toBe(403);
     });
     it("should not allow password of a different user to be used", async () => {
-      const env = await getEnv();
+      const env = await getEnv({ emailValidation: "disabled" });
       const oauthClient = testClient(oauthApp, env);
 
       const signupResponse = await oauthClient.dbconnections.signup.$post({
@@ -786,6 +786,7 @@ describe("password-flow", () => {
 
       expect(rejectedLoginResponse.status).toBe(403);
     });
+
     it("should not allow non-existent user & password to login", async () => {
       const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);

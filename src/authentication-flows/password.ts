@@ -98,7 +98,7 @@ export async function loginWithPassword(
     });
   }
 
-  if (!user.email_verified) {
+  if (!user.email_verified && client.email_validation === "enforced") {
     await sendEmailVerificationEmail({
       env: ctx.env,
       client,
