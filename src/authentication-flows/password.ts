@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import { Context } from "hono";
-import { Var, Env, Client, AuthParams } from "../types";
+import { Var, Env, Client, AuthParams, LogTypes } from "../types";
 import {
   getPrimaryUserByEmailAndProvider,
   getUserByEmailAndProvider,
@@ -104,6 +104,14 @@ export async function loginWithPassword(
       client,
       user,
     });
+
+    const log = createTypeLog(
+      LogTypes.FAILED_LOGIN,
+      ctx,
+      {},
+      "Email not verified",
+    );
+    await ctx.env.data.logs.create(client.tenant_id, log);
 
     throw new CustomException(403, {
       message: "Email not verified",

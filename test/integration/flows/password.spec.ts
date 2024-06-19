@@ -48,7 +48,7 @@ describe("password-flow", () => {
 
     it("should create a new user with a password and only allow login after email validation", async () => {
       const password = "Password1234!";
-      const env = await getEnv({ emailValidation: "disabled" });
+      const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -87,43 +87,7 @@ describe("password-flow", () => {
       });
 
       // this will not work! need to validate the email before allowing a login
-      const { login_ticket } = (await loginResponse.json()) as {
-        login_ticket: string;
-      };
-
-      // cannot login now because email not validated!
-      const loginBlockedRes = await oauthClient.authorize.$get(
-        {
-          query: {
-            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-            client_id: "clientId",
-            login_ticket,
-            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-            redirect_uri: "http://login.example.com",
-            state: "state",
-            realm: "Username-Password-Authentication",
-          },
-        },
-        {
-          headers: {
-            referrer: "https://login.example.com",
-          },
-        },
-      );
-
-      expect(loginBlockedRes.status).toBe(302);
-
-      // this will redirect us to login2
-      const login2RedirectUri2 = new URL(
-        loginBlockedRes.headers.get("location")!,
-      );
-      expect(login2RedirectUri2.hostname).toBe("login2.sesamy.dev");
-      expect(login2RedirectUri2.pathname).toBe("/unverified-email");
-      expect(login2RedirectUri2.searchParams.get("email")).toBe(
-        encodeURIComponent("password-login-test@example.com"),
-      );
-      expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
-      expect(await loginBlockedRes.text()).toBe("Redirecting");
+      expect(loginResponse.status).toBe(403);
 
       const {
         logs: [failedLogin],
