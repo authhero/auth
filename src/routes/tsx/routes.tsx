@@ -52,6 +52,7 @@ import {
   loginWithPassword,
   requestPasswordReset,
 } from "../../authentication-flows/password";
+import { CustomException } from "../../models/CustomError";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -275,8 +276,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
 
         return handleLogin(ctx, user, session, client);
-      } catch (err: any) {
-        if (err.code === "INVALID PASSWORD" || err.code === "USER_NOT_FOUND") {
+      } catch (err) {
+        const customException = err as CustomException;
+
+        if (
+          customException.code === "INVALID_PASSWORD" ||
+          customException.code === "USER_NOT_FOUND"
+        ) {
           return ctx.html(
             <EnterPasswordPage
               vendorSettings={vendorSettings}
@@ -287,7 +293,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             />,
             400,
           );
-        } else if (err.code === "EMAIL_NOT_VERIFIED") {
+        } else if (customException.code === "EMAIL_NOT_VERIFIED") {
           const log = createTypeLog(
             LogTypes.FAILED_LOGIN,
             ctx,
@@ -307,7 +313,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           <EnterPasswordPage
             vendorSettings={vendorSettings}
             email={username}
-            error={err.message}
+            error={customException.message}
             state={state}
             client={client}
           />,
