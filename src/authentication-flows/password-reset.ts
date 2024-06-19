@@ -24,7 +24,7 @@ export async function requestPasswordReset(
 
   // route always returns success
   if (!user) {
-    return ctx.html("We've just sent you an email to reset your password.");
+    return;
   }
 
   const code = generateOTP();
