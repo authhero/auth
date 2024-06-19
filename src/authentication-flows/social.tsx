@@ -261,6 +261,7 @@ export async function socialAuthCallback({
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
     ctx.set("client_id", client.id);
+    ctx.set("userId", user.id);
     const log = createTypeLog("ss", ctx, "Successful signup");
     await ctx.env.data.logs.create(client.tenant_id, log);
   }
@@ -288,6 +289,7 @@ export async function socialAuthCallback({
   ctx.set("userName", user.email);
   ctx.set("connection", user.connection);
   ctx.set("client_id", client.id);
+  ctx.set("userId", user.id);
   const log = createTypeLog("s", ctx, "Successful login");
   await ctx.env.data.logs.create(client.tenant_id, log);
 

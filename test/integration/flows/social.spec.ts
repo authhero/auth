@@ -163,6 +163,7 @@ describe("social sign on", () => {
           user_name: "örjan.lindström@example.com",
           connection: "demo-social-provider",
           client_id: "clientId",
+          user_id: "demo-social-provider|123456789012345678901",
         });
 
         expect(successLoginLog).toMatchObject({
@@ -171,6 +172,7 @@ describe("social sign on", () => {
           user_name: "örjan.lindström@example.com",
           connection: "demo-social-provider",
           client_id: "clientId",
+          user_id: "demo-social-provider|123456789012345678901",
         });
 
         // ---------------------------------------------
