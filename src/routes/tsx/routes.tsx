@@ -27,6 +27,7 @@ import EnterCodePage from "../../components/EnterCodePage";
 import SignupPage from "../../components/SignUpPage";
 import UnverifiedEmail from "../../components/UnverifiedEmailPage";
 import MessagePage from "../../components/Message";
+import EmailValidatedPage from "../../components/EmailValidatedPage";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
@@ -1171,11 +1172,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       return ctx.html(
-        <MessagePage
-          message={i18next.t("email_validated")}
-          pageTitle={i18next.t("email_validated")}
-          vendorSettings={vendorSettings}
-        />,
+        <EmailValidatedPage vendorSettings={vendorSettings} state={state} />,
       );
     },
   )
