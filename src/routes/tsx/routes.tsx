@@ -1042,6 +1042,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           env: ctx.env,
           client,
           user: newUser,
+          authParams: session.authParams,
         });
 
         ctx.set("userId", newUser.id);

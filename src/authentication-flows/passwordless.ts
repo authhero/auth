@@ -116,16 +116,19 @@ interface sendEmailVerificationEmailParams {
   env: Env;
   client: Client;
   user: User;
+  authParams?: AuthParams;
 }
 
 export async function sendEmailVerificationEmail({
   env,
   client,
   user,
+  authParams: authParamsInitial,
 }: sendEmailVerificationEmailParams) {
   const authParams: AuthParams = {
     client_id: client.id,
     username: user.email,
+    ...authParamsInitial,
   };
 
   const session: UniversalLoginSession = {
