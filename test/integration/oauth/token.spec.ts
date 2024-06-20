@@ -3,11 +3,6 @@ import { testClient } from "hono/testing";
 import { oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { AuthorizationResponseType } from "../../../src/types";
-import exp from "constants";
-import { parse } from "path";
-import { parseJWT } from "oslo/jwt";
-import { t } from "i18next";
-import { AnyCnameRecord } from "dns";
 
 describe("token", () => {
   it("should handle a code grant flow", async () => {
