@@ -23,7 +23,10 @@ describe("Forgot password", () => {
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({
-      query: DEFAULT_AUTHORIZE_PARAMS,
+      query: {
+        ...DEFAULT_AUTHORIZE_PARAMS,
+        vendor_id: "fokus",
+      },
     });
 
     const location = response.headers.get("location");
