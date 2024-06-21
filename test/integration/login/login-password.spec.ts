@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, test, expect } from "vitest";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp, managementApp } from "../../../src/app";
@@ -441,6 +441,104 @@ describe("Register password", () => {
 
     // -----------------------------
     // now inspect params and check we're back on the redirect_uri
+    // -----------------------------
+
+    const loginLocation = workingLoginResponse.headers.get("location");
+    expect(loginLocation?.split("#")[0]).toBe("http://localhost:3000/callback");
+  });
+
+  // is this over testing? how could the login be different to the initial signup request?
+  // has to be the same vendor... could be different redirect_uri...
+  test("should be able to continue flow when new email validation email is sent out from a new flow", async () => {
+    const password = "Password1234!";
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const initialAuthorizeUniversalLoginParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+      username: "password-login-test@example.com",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: initialAuthorizeUniversalLoginParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "password-login-test@example.com",
+        password,
+      },
+    });
+
+    // -------------------------------
+    // now log-in with correct password but will be blocked because have not verified email address
+    // -------------------------------
+
+    const blockedLogin = await oauthClient.u.login.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        password,
+      },
+    });
+    expect(blockedLogin.status).toBe(400);
+
+    // -------------------------------
+    // now follow validate-email link from latest sent email
+    // -------------------------------
+
+    // this is the second email sent.. the first one was after sign up, this is for a failed login
+    // should the emails actually be the same? would help with testing to make them different (less chance of a false positive...)
+    const { code, state } = getCodeStateTo(env.data.emails[1]);
+    const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+
+    expect(emailValidatedRes.status).toBe(200);
+
+    const emailValidatedBody = await emailValidatedRes.text();
+
+    const nextStepState = emailValidatedBody.match(
+      /\/u\/login\?state=([^&"]+)">/,
+    )![1];
+
+    //-------------------
+    // follow CTA on email validated page
+    //-------------------
+    const workingLoginForm = await oauthClient.u.login.$get({
+      query: {
+        state: nextStepState,
+      },
+    });
+    expect(workingLoginForm.status).toBe(200);
+
+    const workingLoginResponse = await oauthClient.u.login.$post({
+      query: {
+        state: nextStepState,
+      },
+      form: {
+        password,
+      },
+    });
+    expect(workingLoginResponse.status).toBe(302);
+
+    // -----------------------------
+    // now inspect params and check we're on the redirect_uri from the failed login request
+    // along with the new state key...
     // -----------------------------
 
     const loginLocation = workingLoginResponse.headers.get("location");
