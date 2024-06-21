@@ -366,6 +366,79 @@ describe("Register password", () => {
     });
     expect(workingLoginResponse.status).toBe(302);
   });
+
+  // the previous tests sign up, follow the verify email link, and then manually go to the email+password login page to login...
+  // this test follows the new CTA button on the email verified page... we could just modify the existing tests... probably a good idea to have ONE test that does the above
+  it("should create a new user with a password and follow the email validation CTA to login again and continue flow", async () => {
+    const password = "Password1234!";
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const searchParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+      username: "password-login-test@example.com",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: searchParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "password-login-test@example.com",
+        password,
+      },
+    });
+
+    const { code, state } = getCodeStateTo(env.data.emails[0]);
+
+    const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+
+    expect(emailValidatedRes.status).toBe(200);
+
+    const emailValidatedBody = await emailValidatedRes.text();
+
+    // next step anchor is like <a href="/u/login?state={}""
+    const nextStepState = emailValidatedBody.match(/state=([^&"]+)">/)![1];
+
+    //-------------------
+    // follow CTA on email validated page
+    //-------------------
+    const workingLoginForm = await oauthClient.u.login.$get({
+      query: {
+        state: nextStepState,
+      },
+    });
+    expect(workingLoginForm.status).toBe(200);
+    await snapshotResponse(workingLoginForm);
+
+    const workingLoginResponse = await oauthClient.u.login.$post({
+      query: {
+        state: nextStepState,
+      },
+      form: {
+        password,
+      },
+    });
+    expect(workingLoginResponse.status).toBe(302);
+
+    // now inspect params and check we're back on the redirect_uri
+  });
 });
 
 describe("Login with password user", () => {
