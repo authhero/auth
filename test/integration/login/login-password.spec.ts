@@ -439,7 +439,12 @@ describe("Register password", () => {
     });
     expect(workingLoginResponse.status).toBe(302);
 
+    // -----------------------------
     // now inspect params and check we're back on the redirect_uri
+    // -----------------------------
+
+    const loginLocation = workingLoginResponse.headers.get("location");
+    expect(loginLocation?.split("#")[0]).toBe("http://localhost:3000/callback");
   });
 });
 
