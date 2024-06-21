@@ -126,9 +126,9 @@ export async function sendEmailVerificationEmail({
   authParams: authParamsInitial,
 }: sendEmailVerificationEmailParams) {
   const authParams: AuthParams = {
+    ...authParamsInitial,
     client_id: client.id,
     username: user.email,
-    ...authParamsInitial,
   };
 
   const session: UniversalLoginSession = {
