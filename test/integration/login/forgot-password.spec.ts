@@ -7,6 +7,7 @@ import {
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
+import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 
 const DEFAULT_AUTHORIZE_PARAMS = {
   client_id: "clientId",
@@ -15,6 +16,24 @@ const DEFAULT_AUTHORIZE_PARAMS = {
   redirect_uri: "http://localhost:3000/callback",
   state: "state",
 };
+
+// TODO - extract out this helper. Very similar implementations in lots of test suites
+function getCodeStateTo(email: EmailOptions) {
+  const verifyEmailBody = email.content[0].value;
+  // this gets the space before so we don't match CSS colours
+  const codes = verifyEmailBody.match(/(?!#).[0-9]{6}/g)!;
+
+  const code = codes[0].slice(1);
+
+  const to = email.to[0].email;
+
+  // this is a param on the verify email magic link
+  const state = verifyEmailBody.match(/state=([^&]+)/)![1];
+
+  const subject = email.subject;
+
+  return { code, state, to, subject };
+}
 
 describe("Forgot password", () => {
   it("should send forgot password email", async () => {
@@ -73,6 +92,21 @@ describe("Forgot password", () => {
     // ---------------------
 
     await snapshotEmail(env.data.emails[0]);
+
+    const { code, state, to, subject } = getCodeStateTo(env.data.emails[0]);
+
+    expect(subject).toBe("Byt lösenord för ditt Test Tenant konto");
+    expect(to).toBe("foo@example.com");
+
+    const resetPasswordForm = await oauthClient.u["reset-password"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+
+    // this should be styled as kvartal
+    await snapshotResponse(resetPasswordForm);
 
     // TODO
     // follow the links in this email and actually reset the password?
