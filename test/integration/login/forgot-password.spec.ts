@@ -134,6 +134,24 @@ describe("Forgot password", () => {
     // ---------------------
     // login with the new password using universal login
     // ---------------------
+
+    // TODO - should the user be redirected straight to this page to login and continue the flow?
+    const loginResponse = await oauthClient.u.login.$post({
+      form: {
+        password: "New-password-1234!",
+      },
+      query: {
+        state,
+      },
+    });
+
+    expect(loginResponse.status).toBe(302);
+
+    const locationAfterLogin = loginResponse.headers.get("location");
+    console.log(locationAfterLogin);
+    expect(locationAfterLogin!.split("#")[0]).toEqual(
+      "http://localhost:3000/callback",
+    );
   });
 
   it("should not send a forgot password email for a non-existing email address", async () => {
