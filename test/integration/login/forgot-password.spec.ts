@@ -27,7 +27,6 @@ function getCodeStateTo(email: EmailOptions) {
 
   const to = email.to[0].email;
 
-  // this is a param on the verify email magic link
   const state = verifyEmailBody.match(/state=([^&]+)/)![1];
 
   const subject = email.subject;
@@ -105,7 +104,6 @@ describe("Forgot password", () => {
       },
     });
 
-    // this should be styled as kvartal
     await snapshotResponse(resetPasswordForm);
 
     // TODO
