@@ -20,7 +20,9 @@ function getCodeAndTo(email: EmailOptions) {
 
   const to = email.to[0].email;
 
-  return { code, to };
+  const subject = email.subject;
+
+  return { code, to, subject };
 }
 
 describe("Login with code on liquidjs template", () => {
@@ -117,8 +119,11 @@ describe("Login with code on liquidjs template", () => {
     // flush pipe
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(env.data.emails.length).toBe(1);
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("test@example.com");
+    expect(subject).toBe(
+      `Velkommen til Test Tenant ! ${code} er påloggingskoden`,
+    );
 
     const { logs } = await env.data.logs.list("tenantId", {
       page: 0,
@@ -237,8 +242,11 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("bar@example.com");
+    expect(subject).toBe(
+      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+    );
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -337,8 +345,11 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
+    expect(subject).toBe(
+      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+    );
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -403,8 +414,11 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
+    expect(subject).toBe(
+      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+    );
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -575,9 +589,12 @@ describe("Login with code on liquidjs template", () => {
       const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
       await new Promise((resolve) => setTimeout(resolve, 0));
-      const { to, code } = getCodeAndTo(env.data.emails[0]);
+      const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
 
       expect(to).toBe("same-email@example.com");
+      expect(subject).toBe(
+        `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+      );
 
       // Authenticate using the code
 
@@ -820,8 +837,11 @@ describe("Login with code on liquidjs template", () => {
     );
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
+    expect(subject).toBe(
+      `Velkommen til Test Tenant ! ${code} er påloggingskoden`,
+    );
 
     const authenticateResponse = await oauthClient.u["enter-code"].$post({
       query: {
@@ -925,8 +945,11 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("john-doe@example.com");
+    expect(subject).toBe(
+      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+    );
 
     const enterCodeParams = enterCodeLocation!.split("?")[1];
     const enterCodeQuery = Object.fromEntries(
