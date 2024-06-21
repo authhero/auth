@@ -26,6 +26,7 @@
   "email": "E-post",
   "email_placeholder": "E-postadresse",
   "email_validated": "E-postadressen din har blitt validert",
+  "email_validated_cta": "Skriv nå inn passordet ditt for å logge inn igjen",
   "enter_a_code_btn": "Angi en kode",
   "enter_new_password_placeholder": "Skriv inn nytt passord",
   "enter_password": "Oppgi passord",

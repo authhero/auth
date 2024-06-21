@@ -23,10 +23,6 @@ const EmailValidatedPage: FC<Props> = ({ vendorSettings, state }) => {
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("email_validated")}
       </div>
-      {/* TODO - more text? */}
-      {/* <div class="mb-6 text-gray-300">
-        {i18next.t("email_validated_description")}
-      </div> */}
       <div class="flex flex-1 flex-col justify-center mb-7">
         <Button
           Component="a"
@@ -34,11 +30,7 @@ const EmailValidatedPage: FC<Props> = ({ vendorSettings, state }) => {
           className="text-base sm:mt-4 md:text-base"
         >
           <div className="flex items-center space-x-2">
-            <span>
-              {/* TODO? */}
-              {/* {i18next.t("login")} */}
-              Now enter password to login again
-            </span>
+            <span>{i18next.t("email_validated_cta")}</span>
             <Icon className="text-xs" name="arrow-right" />
           </div>
         </Button>

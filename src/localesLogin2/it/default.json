@@ -26,6 +26,7 @@
   "email": "Email",
   "email_placeholder": "Indirizzo e-mail",
   "email_validated": "Il tuo indirizzo e-mail è stato convalidato",
+  "email_validated_cta": "Ora inserire la password per accedere nuovamente",
   "enter_a_code_btn": "Inserire un codice",
   "enter_new_password_placeholder": "Inserire la nuova password",
   "enter_password": "Inserire la password",
