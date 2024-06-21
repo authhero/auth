@@ -414,7 +414,9 @@ describe("Register password", () => {
     const emailValidatedBody = await emailValidatedRes.text();
 
     // next step anchor is like <a href="/u/login?state={}""
-    const nextStepState = emailValidatedBody.match(/state=([^&"]+)">/)![1];
+    const nextStepState = emailValidatedBody.match(
+      /\/u\/login\?state=([^&"]+)">/,
+    )![1];
 
     //-------------------
     // follow CTA on email validated page
