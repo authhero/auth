@@ -271,9 +271,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       try {
         const user = await loginWithPassword(ctx, client, {
-          username,
+          ...session.authParams,
           password,
-          client_id: client.id,
         });
 
         return handleLogin(ctx, user, session, client);

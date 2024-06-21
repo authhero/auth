@@ -102,6 +102,7 @@ export async function loginWithPassword(
       env: ctx.env,
       client,
       user,
+      authParams,
     });
 
     const log = createTypeLog(
