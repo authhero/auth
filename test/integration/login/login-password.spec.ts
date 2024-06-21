@@ -447,7 +447,7 @@ describe("Register password", () => {
     expect(loginLocation?.split("#")[0]).toBe("http://localhost:3000/callback");
   });
 
-  test.only("should be able to continue flow when new email validation email is sent out from a new flow", async () => {
+  test("should be able to continue flow when new email validation email is sent out from a new flow", async () => {
     const password = "Password1234!";
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
