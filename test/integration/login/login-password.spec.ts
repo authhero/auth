@@ -23,7 +23,9 @@ function getCodeStateTo(email: EmailOptions) {
   // this is a param on the verify email magic link
   const state = verifyEmailBody.match(/state=([^&]+)/)![1];
 
-  return { code, state, to };
+  const subject = email.subject;
+
+  return { code, state, to, subject };
 }
 
 describe("Register password", () => {
@@ -104,13 +106,14 @@ describe("Register password", () => {
     });
 
     // this is the original email sent after signing up
-    const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+    const { to, code, state, subject } = getCodeStateTo(env.data.emails[0]);
 
     await snapshotEmail(env.data.emails[0]);
 
     expect(to).toBe("password-login-test@example.com");
     expect(code).toBeDefined();
     expect(state).toBeTypeOf("string");
+    expect(subject).toBe("Bekräfta din e-postadress");
 
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
@@ -195,9 +198,11 @@ describe("Register password", () => {
     // -----------------------------
     // validate email
     // -----------------------------
-    const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+    const { to, code, state, subject } = getCodeStateTo(env.data.emails[0]);
     expect(to).toBe("existing-code-user@example.com");
     expect(code).toBeDefined();
+    expect(subject).toBe("Bekräfta din e-postadress");
+
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
         state,
@@ -341,11 +346,13 @@ describe("Register password", () => {
     // THIS IS THE ONLY CHANGE HERE - we're not using the initially sent email, we're using the email sent
     // after a failed login
     // -------------------------------
-    const { to, code, state } = getCodeStateTo(env.data.emails[1]);
+    const { to, code, state, subject } = getCodeStateTo(env.data.emails[1]);
     await snapshotEmail(env.data.emails[1]);
     expect(to).toBe("password-login-test@example.com");
     expect(code).toBeDefined();
     expect(state).toBeTypeOf("string");
+    expect(subject).toBe("Bekräfta din e-postadress");
+
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
         state,
