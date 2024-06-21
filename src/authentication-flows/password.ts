@@ -98,11 +98,12 @@ export async function loginWithPassword(
   }
 
   if (!user.email_verified && client.email_validation === "enforced") {
+    const { password, ...cleanAuthParams } = authParams;
     await sendEmailVerificationEmail({
       env: ctx.env,
       client,
       user,
-      authParams,
+      authParams: cleanAuthParams,
     });
 
     const log = createTypeLog(
