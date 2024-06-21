@@ -92,6 +92,7 @@ describe("Forgot password", () => {
 
     await snapshotEmail(env.data.emails[0]);
 
+<<<<<<< HEAD
     const { code, state, to, subject } = getCodeStateTo(env.data.emails[0]);
 
     expect(subject).toBe("Byt lösenord för ditt Test Tenant konto");
@@ -105,6 +106,10 @@ describe("Forgot password", () => {
     });
 
     await snapshotResponse(resetPasswordForm);
+=======
+    const subject = env.data.emails[0].subject;
+    expect(subject).toBe("Byt lösenord för ditt Test Tenant konto");
+>>>>>>> 3b08556d (test: forgot password title)
 
     // TODO
     // follow the links in this email and actually reset the password?
