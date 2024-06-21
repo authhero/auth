@@ -447,9 +447,7 @@ describe("Register password", () => {
     expect(loginLocation?.split("#")[0]).toBe("http://localhost:3000/callback");
   });
 
-  // is this over testing? how could the login be different to the initial signup request?
-  // has to be the same vendor... could be different redirect_uri...
-  test("should be able to continue flow when new email validation email is sent out from a new flow", async () => {
+  test.only("should be able to continue flow when new email validation email is sent out from a new flow", async () => {
     const password = "Password1234!";
     const env = await getEnv();
     const oauthClient = testClient(oauthApp, env);
@@ -481,12 +479,36 @@ describe("Register password", () => {
     });
 
     // -------------------------------
+    // start another session with slightly different params
     // now log-in with correct password but will be blocked because have not verified email address
     // -------------------------------
 
+    const secondAuthorizeUniversalLoginParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      username: "password-login-test@example.com",
+      // these two are different to initial
+      redirect_uri: "http://example.com",
+      state: "another-state-key",
+    };
+
+    const authorizeRes2 = await oauthClient.authorize.$get({
+      query: secondAuthorizeUniversalLoginParams,
+    });
+    console.log("authorizeRes2", await authorizeRes2.text());
+    expect(authorizeRes2.status).toBe(302);
+    const authorizeRes2URlSearchParams = new URLSearchParams(
+      authorizeRes2.headers.get("location")!.split("?")[1],
+    );
+    const authorizeRes2Query = Object.fromEntries(
+      authorizeRes2URlSearchParams.entries(),
+    );
+
     const blockedLogin = await oauthClient.u.login.$post({
       query: {
-        state: query.state,
+        state: authorizeRes2Query.state,
       },
       form: {
         password,
@@ -542,7 +564,12 @@ describe("Register password", () => {
     // -----------------------------
 
     const loginLocation = workingLoginResponse.headers.get("location");
-    expect(loginLocation?.split("#")[0]).toBe("http://localhost:3000/callback");
+
+    // these show we are continuing the flow from the second failed login request
+    expect(loginLocation?.split("#")[0]).toBe("http://example.com/");
+
+    const hash = new URLSearchParams(loginLocation!.split("#")[1]);
+    expect(hash.get("state")).toBe("another-state-key");
   });
 });
 
