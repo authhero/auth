@@ -87,7 +87,7 @@ describe("Forgot password", () => {
     await snapshotResponse(forgotPasswordEmailResponse);
 
     // ---------------------
-    // check the email
+    // get the code & state from the forgot password email link
     // ---------------------
 
     await snapshotEmail(env.data.emails[0]);
@@ -96,6 +96,10 @@ describe("Forgot password", () => {
 
     expect(subject).toBe("Byt lösenord för ditt Test Tenant konto");
     expect(to).toBe("foo@example.com");
+
+    // ---------------------
+    // Load the reset password form using the params from the email
+    // ---------------------
 
     const resetPasswordForm = await oauthClient.u["reset-password"].$get({
       query: {
@@ -106,10 +110,48 @@ describe("Forgot password", () => {
 
     await snapshotResponse(resetPasswordForm);
 
-    // TODO
-    // follow the links in this email and actually reset the password?
-    // we are testing that flow in test/integration/flows/password.spec.ts
-    // BUT this email is sent from dbconnections.change_password e.g. the auth0.js method
+    // ---------------------
+    // now actually reset the password
+    // ---------------------
+
+    const resetPasswordSubmission = await oauthClient.u["reset-password"].$post(
+      {
+        form: {
+          password: "New-password-1234!",
+          "re-enter-password": "New-password-1234!",
+        },
+        query: {
+          code,
+          state,
+        },
+      },
+    );
+
+    expect(resetPasswordSubmission.status).toBe(200);
+
+    await snapshotResponse(resetPasswordSubmission);
+
+    // ---------------------
+    // login with the new password using universal login
+    // ---------------------
+
+    // TODO - should the user be redirected straight to this page to login and continue the flow?
+    const loginResponse = await oauthClient.u.login.$post({
+      form: {
+        password: "New-password-1234!",
+      },
+      query: {
+        state,
+      },
+    });
+
+    expect(loginResponse.status).toBe(302);
+
+    const locationAfterLogin = loginResponse.headers.get("location");
+    console.log(locationAfterLogin);
+    expect(locationAfterLogin!.split("#")[0]).toEqual(
+      "http://localhost:3000/callback",
+    );
   });
 
   it("should not send a forgot password email for a non-existing email address", async () => {
