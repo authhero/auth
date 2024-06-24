@@ -7,6 +7,7 @@ import {
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "../../../src/types";
+import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 
 const DEFAULT_AUTHORIZE_PARAMS = {
   client_id: "clientId",
@@ -16,6 +17,23 @@ const DEFAULT_AUTHORIZE_PARAMS = {
   state: "state",
 };
 
+// TODO - extract out this helper. Very similar implementations in lots of test suites
+function getCodeStateTo(email: EmailOptions) {
+  const verifyEmailBody = email.content[0].value;
+  // this gets the space before so we don't match CSS colours
+  const codes = verifyEmailBody.match(/(?!#).[0-9]{6}/g)!;
+
+  const code = codes[0].slice(1);
+
+  const to = email.to[0].email;
+
+  const state = verifyEmailBody.match(/state=([^&]+)/)![1];
+
+  const subject = email.subject;
+
+  return { code, state, to, subject };
+}
+
 describe("Forgot password", () => {
   it("should send forgot password email", async () => {
     const env = await getEnv();
@@ -23,7 +41,10 @@ describe("Forgot password", () => {
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({
-      query: DEFAULT_AUTHORIZE_PARAMS,
+      query: {
+        ...DEFAULT_AUTHORIZE_PARAMS,
+        vendor_id: "fokus",
+      },
     });
 
     const location = response.headers.get("location");
@@ -70,6 +91,20 @@ describe("Forgot password", () => {
     // ---------------------
 
     await snapshotEmail(env.data.emails[0]);
+
+    const { code, state, to, subject } = getCodeStateTo(env.data.emails[0]);
+
+    expect(subject).toBe("Byt lösenord för ditt Test Tenant konto");
+    expect(to).toBe("foo@example.com");
+
+    const resetPasswordForm = await oauthClient.u["reset-password"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+
+    await snapshotResponse(resetPasswordForm);
 
     // TODO
     // follow the links in this email and actually reset the password?
