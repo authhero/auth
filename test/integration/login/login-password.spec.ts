@@ -504,7 +504,6 @@ describe("Register password", () => {
     const authorizeRes2 = await oauthClient.authorize.$get({
       query: secondAuthorizeUniversalLoginParams,
     });
-    console.log("authorizeRes2", await authorizeRes2.text());
     expect(authorizeRes2.status).toBe(302);
     const authorizeRes2URlSearchParams = new URLSearchParams(
       authorizeRes2.headers.get("location")!.split("?")[1],
