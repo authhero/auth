@@ -26,6 +26,7 @@
   "email": "E-postadress",
   "email_placeholder": "E-postadress",
   "email_validated": "Din e-postadress har validerats",
+  "email_validated_cta": "Ange nu ditt lösenord för att logga in igen",
   "enter_a_code_btn": "Ange en kod",
   "enter_new_password_placeholder": "Ange nytt lösenord",
   "enter_password": "Ange lösenord",

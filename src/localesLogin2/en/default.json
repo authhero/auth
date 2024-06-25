@@ -26,6 +26,7 @@
   "email": "Email",
   "email_placeholder": "Email address",
   "email_validated": "Your email address has been validated",
+  "email_validated_cta": "Now enter your password to login again",
   "enter_a_code_btn": "Enter a code",
   "enter_new_password_placeholder": "Enter new password",
   "enter_password": "Enter password",
