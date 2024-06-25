@@ -2,6 +2,7 @@ import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
 import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
+import pl from "../locales/it/default.json";
 
 type Labels = { [lang: string]: { [key: string]: string } };
 
@@ -10,6 +11,7 @@ const labels: Labels = {
   sv,
   nb,
   it,
+  pl,
 };
 
 // This type is used for type checking and IDE auto-completion
