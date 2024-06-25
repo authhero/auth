@@ -6,6 +6,7 @@ import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
 import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
+import pl from "../locales/pl/default.json";
 import {
   codeV2,
   linkV2,
@@ -13,13 +14,13 @@ import {
   verifyEmail,
 } from "../templates/email/ts";
 import { createMagicLink } from "../utils/magicLink";
-import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 
 const SUPPORTED_LOCALES: { [key: string]: object } = {
   en,
   sv,
   nb,
   it,
+  pl,
 };
 
 function getLocale(language: string) {
