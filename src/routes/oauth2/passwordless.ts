@@ -14,8 +14,7 @@ import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { applyTokenResponse } from "../../helpers/apply-token-response-new";
-import { serializeStateInCookie } from "../../services/cookies";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -39,7 +38,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
                 client_id: z.string(),
                 client_secret: z.string().optional(),
                 connection: z.string(),
-                email: z.string(),
+                email: z.string().transform((u) => u.toLowerCase()),
                 send: z.enum(["link", "code"]),
                 authParams: authParamsSchema.omit({ client_id: true }),
               }),
@@ -54,8 +53,8 @@ export const passwordlessRoutes = new OpenAPIHono<{
       },
     }),
     async (ctx) => {
-      const { client_id, email, send, authParams, connection } =
-        ctx.req.valid("json");
+      const body = ctx.req.valid("json");
+      const { client_id, email, send, authParams, connection } = body;
       const client = await getClient(ctx.env, client_id);
 
       if (!client) {
@@ -67,52 +66,34 @@ export const passwordlessRoutes = new OpenAPIHono<{
       await ctx.env.data.OTP.create({
         id: nanoid(),
         code,
-        email: email.toLowerCase(),
+        email: email,
         client_id: client_id,
         send: send,
         authParams: authParams,
         tenant_id: client.tenant_id,
+        ip: ctx.req.header("x-real-ip"),
         created_at: new Date(),
         expires_at: new Date(Date.now() + OTP_EXPIRATION_TIME),
       });
 
       if (send === "link") {
-        const magicLink = new URL(ctx.env.ISSUER);
-        magicLink.pathname = "passwordless/verify_redirect";
-        if (authParams.scope) {
-          magicLink.searchParams.set("scope", authParams.scope);
-        }
-        if (authParams.response_type) {
-          magicLink.searchParams.set("response_type", authParams.response_type);
-        }
-        if (authParams.redirect_uri) {
-          magicLink.searchParams.set("redirect_uri", authParams.redirect_uri);
-        }
-        if (authParams.audience) {
-          magicLink.searchParams.set("audience", authParams.audience);
-        }
-        if (authParams.state) {
-          magicLink.searchParams.set("state", authParams.state);
-        }
-        if (authParams.nonce) {
-          magicLink.searchParams.set("nonce", authParams.nonce);
-        }
-
-        magicLink.searchParams.set("connection", connection);
-        magicLink.searchParams.set("client_id", client_id);
-        magicLink.searchParams.set("email", email);
-        magicLink.searchParams.set("verification_code", code);
-
-        await sendLink(ctx.env, client, email, code, magicLink.href);
+        await sendLink(ctx.env, client, email, code, {
+          ...authParams,
+          client_id,
+        });
       } else {
         await sendCode(ctx.env, client, email, code);
       }
+
+      // the description is the user email. this matches auth0
+      const log = createTypeLog("cls", ctx, body, email);
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.html("OK");
     },
   )
   // --------------------------------
-  // POST /passwordless/verify_redirect
+  // GET /passwordless/verify_redirect
   // --------------------------------
   .openapi(
     createRoute({
@@ -129,7 +110,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
           verification_code: z.string(),
           connection: z.string(),
           client_id: z.string(),
-          email: z.string(),
+          email: z.string().transform((u) => u.toLowerCase()),
           audience: z.string().optional(),
         }),
       },
@@ -158,10 +139,11 @@ export const passwordlessRoutes = new OpenAPIHono<{
       }
 
       try {
-        const user = await validateCode(env, {
+        const user = await validateCode(ctx, {
           client_id,
           email,
           verification_code,
+          ip: ctx.req.header("x-real-ip"),
         });
 
         if (!validateRedirectUrl(client.allowed_callback_urls, redirect_uri)) {
@@ -176,6 +158,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
           state,
           scope,
           audience,
+          response_type,
         };
 
         const sessionId = await setSilentAuthCookies(
@@ -184,9 +167,8 @@ export const passwordlessRoutes = new OpenAPIHono<{
           client.id,
           user,
         );
-        const [sessionCookie] = serializeStateInCookie(sessionId);
 
-        const tokenResponse = await generateAuthResponse({
+        return generateAuthResponse({
           responseType: response_type,
           env,
           tenantId: client.tenant_id,
@@ -196,14 +178,6 @@ export const passwordlessRoutes = new OpenAPIHono<{
           nonce,
           user,
           authParams,
-        });
-
-        return new Response("Redirecting", {
-          status: 302,
-          headers: {
-            location: applyTokenResponse(tokenResponse, authParams),
-            "set-cookie": sessionCookie,
-          },
         });
       } catch (e) {
         // Ideally here only catch AuthenticationCodeExpiredError

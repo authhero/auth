@@ -7,7 +7,25 @@ import { EmailOptions } from "../../../src/services/email/EmailOptions";
 // TODO - try this globally in vite config - the issue is the types!
 expect.extend({ toMatchImageSnapshot });
 
-export async function snapshotResponse(response: ClientResponse<{}>) {
+const RESOLUTIONS = {
+  lg: {
+    width: 1920,
+    height: 1080,
+  },
+  md: {
+    width: 1280,
+    height: 720,
+  },
+  sm: {
+    width: 375,
+    height: 667,
+  },
+};
+
+export async function snapshotResponse(
+  response: ClientResponse<{}>,
+  size: "lg" | "md" | "sm" = "md",
+) {
   // @ts-ignore
   if (import.meta.env.TEST_SNAPSHOTS === "true") {
     const responseText = await response.text();
@@ -17,7 +35,9 @@ export async function snapshotResponse(response: ClientResponse<{}>) {
       "http://auth2.sesamy.dev/css/tailwind.css",
     );
     const browser = await chromium.launch();
-    const page = await browser.newPage();
+    const page = await browser.newPage({
+      viewport: RESOLUTIONS[size],
+    });
     await page.setContent(responseBody);
 
     const snapshot = await page.screenshot();

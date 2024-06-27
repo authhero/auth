@@ -6,7 +6,7 @@ import {
   Var,
 } from "../types";
 import { getClient } from "../services/clients";
-import { generateAuthResponse } from "../helpers/generate-auth-response-new";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { nanoid } from "nanoid";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
@@ -30,8 +30,10 @@ export async function clientCredentialsGrant(
     redirect_uri: "",
   };
 
-  return generateAuthResponse(ctx, {
+  return generateAuthResponse({
     responseType: AuthorizationResponseType.TOKEN,
+    env: ctx.env,
+    tenantId: client.tenant_id,
     userId: client.id,
     sid: nanoid(),
     authParams,

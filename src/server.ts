@@ -2,11 +2,10 @@ import { Env } from "./types/Env";
 import app from "./app";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
 import createAdapters from "./adapters/kysely";
-import createR2Adapter from "./adapters/r2";
 import { PlanetScaleDialect } from "kysely-planetscale";
 import { getDb } from "./services/db";
-import { VendorSettings } from "./types";
 import sendEmail from "./services/email";
+import { addDataHooks } from "./hooks";
 
 const server = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
@@ -25,22 +24,8 @@ const server = {
       {
         ...env,
         oauth2ClientFactory: { create: oAuth2ClientFactory },
-        data: {
-          ...createAdapters(db),
-          ...createR2Adapter(env),
-        },
+        data: addDataHooks(createAdapters(db)),
         sendEmail,
-        fetchVendorSettings: async (tenantName: string) => {
-          const vendorSettingsRes = await fetch(
-            `https://api.sesamy.dev/profile/vendors/${tenantName}/style`,
-          );
-
-          // TODO - Zod this not type cast!
-          const vendorSettings =
-            (await vendorSettingsRes.json()) as VendorSettings;
-
-          return vendorSettings;
-        },
       },
       ctx,
     );

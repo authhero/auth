@@ -1,23 +1,26 @@
 import { Liquid } from "liquidjs";
 import { translate } from "../utils/i18n";
-import { Client, Env } from "../types";
+import { AuthParams, Client, Env } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
 import sv from "../locales/sv/default.json";
 import nb from "../locales/nb/default.json";
 import it from "../locales/it/default.json";
+import pl from "../locales/pl/default.json";
 import {
   codeV2,
   linkV2,
   passwordReset,
   verifyEmail,
 } from "../templates/email/ts";
+import { createMagicLink } from "../utils/magicLink";
 
 const SUPPORTED_LOCALES: { [key: string]: object } = {
   en,
   sv,
   nb,
   it,
+  pl,
 };
 
 function getLocale(language: string) {
@@ -35,11 +38,6 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  // FINAL STEP! these need to be read straight from in here!
-  // A. generate these in E6 strings... just do manually for now right! like M did with tailwind
-  // B. IF WORKS - new PR to generate these. EASY!
-  // C. start asserting and testing... would be good to release but NOT ON FRIDAY lol
-
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
 
@@ -93,10 +91,17 @@ export async function sendLink(
   client: Client,
   to: string,
   code: string,
-  magicLink: string,
+  authParams: AuthParams,
 ) {
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
+
+  const magicLink = createMagicLink({
+    issuer: env.ISSUER,
+    code,
+    authParams,
+    email: to,
+  });
 
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||

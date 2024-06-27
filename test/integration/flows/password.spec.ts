@@ -11,11 +11,6 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
-import {
-  FOKUS_VENDOR_SETTINGS,
-  KVARTAL_VENDOR_SETTINGS,
-  BREAKIT_VENDOR_SETTINGS,
-} from "../../fixtures/vendorSettings";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -66,6 +61,21 @@ describe("password-flow", () => {
       });
       expect(createUserResponse.status).toBe(200);
 
+      const {
+        logs: [successSignUpLog],
+      } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(successSignUpLog).toMatchObject({
+        type: "ss",
+        tenant_id: "tenantId",
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        client_id: "clientId",
+      });
+
       const loginResponse = await oauthClient.co.authenticate.$post({
         json: {
           client_id: "clientId",
@@ -77,41 +87,32 @@ describe("password-flow", () => {
       });
 
       // this will not work! need to validate the email before allowing a login
-      const { login_ticket } = await loginResponse.json();
+      expect(loginResponse.status).toBe(403);
 
-      // cannot login now because email not validated!
-      const loginBlockedRes = await oauthClient.authorize.$get(
-        {
-          query: {
-            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-            client_id: "clientId",
-            login_ticket,
-            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-            redirect_uri: "http://login.example.com",
-            state: "state",
-            realm: "Username-Password-Authentication",
-          },
-        },
-        {
-          headers: {
-            referrer: "https://login.example.com",
-          },
-        },
+      const {
+        logs: [failedLogin],
+      } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(failedLogin).toMatchObject({
+        type: "f",
+        tenant_id: "tenantId",
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        client_id: "clientId",
+        description: "Email not verified",
+      });
+      // get user with this id and check is the correct id
+      const user = await env.data.users.get(
+        "tenantId",
+        successSignUpLog.user_id!,
       );
 
-      expect(loginBlockedRes.status).toBe(302);
-
-      // this will redirect us to login2
-      const login2RedirectUri2 = new URL(
-        loginBlockedRes.headers.get("location")!,
-      );
-      expect(login2RedirectUri2.hostname).toBe("login2.sesamy.dev");
-      expect(login2RedirectUri2.pathname).toBe("/unverified-email");
-      expect(login2RedirectUri2.searchParams.get("email")).toBe(
-        encodeURIComponent("password-login-test@example.com"),
-      );
-      expect(login2RedirectUri2.searchParams.get("lang")).toBe("sv");
-      expect(await loginBlockedRes.text()).toBe("Redirecting");
+      expect(user).toMatchObject({
+        email: "password-login-test@example.com",
+      });
 
       // this is the original email sent after signing up
       const { to, code, state } = getCodeStateTo(env.data.emails[0]);
@@ -128,9 +129,7 @@ describe("password-flow", () => {
           code,
         },
       });
-
       expect(emailValidatedRes.status).toBe(200);
-      expect(await emailValidatedRes.text()).toBe("email validated");
 
       //-------------------
       // login again now to check that it works
@@ -146,7 +145,9 @@ describe("password-flow", () => {
         },
       });
 
-      const { login_ticket: loginTicket2 } = await loginResponse2.json();
+      const { login_ticket: loginTicket2 } = (await loginResponse2.json()) as {
+        login_ticket: string;
+      };
 
       const tokenResponse = await oauthClient.authorize.$get(
         {
@@ -184,6 +185,29 @@ describe("password-flow", () => {
       const idTokenPayload = parseJwt(idToken!);
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
+
+      const { logs } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(logs[0]).toMatchObject({
+        type: "scoa",
+        tenant_id: "tenantId",
+        user_id: accessTokenPayload.sub,
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        // TODO - we also want these fields populated... maybe we want another test for this?
+        // auth0_client: {
+        //   name: "auth0.js",
+        //   version: "9.26.1",
+        // },
+        // client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        // date: "2024-06-10T10:30:50.545Z",
+        // ip: "78.46.40.111",
+        // user_agent: "Mobile Safari 17.4.0 / iOS 14.4.0",
+      });
+
       const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
       // now check silent auth works after password login
       const { idToken: silentAuthIdTokenPayload } =
@@ -208,6 +232,22 @@ describe("password-flow", () => {
         email_verified: true,
         nonce: "unique-nonce",
         iss: "https://example.com/",
+      });
+
+      const {
+        logs: [silentAuthSuccess],
+      } = await env.data.logs.list("tenantId", {
+        page: 0,
+        per_page: 100,
+        include_totals: true,
+      });
+      expect(silentAuthSuccess).toMatchObject({
+        type: "ssa",
+        tenant_id: "tenantId",
+        user_id: accessTokenPayload.sub,
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        description: "Successful silent authentication",
       });
     });
 
@@ -261,7 +301,6 @@ describe("password-flow", () => {
       });
 
       expect(emailValidatedRes.status).toBe(200);
-      expect(await emailValidatedRes.text()).toBe("email validated");
 
       // -----------------------------
       // sanity check that linking has happened!
@@ -296,7 +335,9 @@ describe("password-flow", () => {
 
       expect(loginResponse.status).toBe(200);
 
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       const tokenResponse = await oauthClient.authorize.$get(
         {
@@ -313,6 +354,7 @@ describe("password-flow", () => {
         {
           headers: {
             referrer: "https://login.example.com",
+            "cf-connecting-ip": "1.2.3.4",
           },
         },
       );
@@ -383,12 +425,19 @@ describe("password-flow", () => {
           },
         },
       ]);
+
+      // Check that the login count and last IP has been updated
+      expect(primaryUser.login_count).toBe(1);
+      expect(primaryUser.last_ip).toBe("1.2.3.4");
+
+      const lastLogin = new Date(primaryUser.last_login!);
+      expect(Date.now() - lastLogin.getTime()).lessThan(1000);
     });
 
     // this test looks like a duplicate of "should create a new user with a password and only allow login after email validation"
     it("should resend email validation email after login attempts, and this should work", async () => {
       const password = "Password1234!";
-      const env = await getEnv();
+      const env = await getEnv({ emailValidation: "disabled" });
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -411,7 +460,9 @@ describe("password-flow", () => {
         },
       });
 
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       // ---------------------------
       // this will not work because email not validated
@@ -468,7 +519,9 @@ describe("password-flow", () => {
         },
       });
 
-      const { login_ticket: loginTicket2 } = await loginResponse2.json();
+      const { login_ticket: loginTicket2 } = (await loginResponse2.json()) as {
+        login_ticket: string;
+      };
 
       const tokenResponse = await oauthClient.authorize.$get(
         {
@@ -565,7 +618,9 @@ describe("password-flow", () => {
       });
 
       expect(loginResponse.status).toBe(200);
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       // Trade the ticket for token
       const tokenResponse = await oauthClient.authorize.$get(
@@ -650,7 +705,7 @@ describe("password-flow", () => {
       expect(loginResponse.status).toBe(403);
     });
     it("should not allow password of a different user to be used", async () => {
-      const env = await getEnv();
+      const env = await getEnv({ emailValidation: "disabled" });
       const oauthClient = testClient(oauthApp, env);
 
       const signupResponse = await oauthClient.dbconnections.signup.$post({
@@ -695,6 +750,7 @@ describe("password-flow", () => {
 
       expect(rejectedLoginResponse.status).toBe(403);
     });
+
     it("should not allow non-existent user & password to login", async () => {
       const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);
@@ -733,7 +789,8 @@ describe("password-flow", () => {
   describe("Password reset", () => {
     it("should send password reset email for existing user, and allow password to be changed", async () => {
       const env = await getEnv({
-        vendorSettings: FOKUS_VENDOR_SETTINGS,
+        // emails are based on tenant styling... I'm surprised we don't already have bugs
+        // vendor_id: "fokus",
         testTenantLanguage: "sv",
       });
       const oauthClient = testClient(oauthApp, env);
@@ -810,7 +867,9 @@ describe("password-flow", () => {
       });
 
       expect(loginResponse.status).toBe(200);
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
 
       // Trade the ticket for token
       const tokenResponse = await oauthClient.authorize.$get(
@@ -840,9 +899,10 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("foo@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
     });
+
     it("should reject weak passwords", async () => {
       const env = await getEnv({
-        vendorSettings: KVARTAL_VENDOR_SETTINGS,
+        // vendor_id: "kvartal",
         testTenantLanguage: "nb",
       });
       const oauthClient = testClient(oauthApp, env);
@@ -883,7 +943,7 @@ describe("password-flow", () => {
     });
     it("should reject non-matching confirmation password", async () => {
       const env = await getEnv({
-        vendorSettings: BREAKIT_VENDOR_SETTINGS,
+        // vendor_id: "breakit",
         testTenantLanguage: "it",
       });
 
@@ -987,7 +1047,9 @@ describe("password-flow", () => {
         },
       });
       expect(loginResponse.status).toBe(200);
-      const { login_ticket } = await loginResponse.json();
+      const { login_ticket } = (await loginResponse.json()) as {
+        login_ticket: string;
+      };
       const tokenResponse = await oauthClient.authorize.$get(
         {
           query: {

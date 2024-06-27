@@ -54,7 +54,7 @@ async function log(
       body,
       status_code: response.status,
       response_headers: instanceToJson(response.headers),
-      error: response.status >= 500 ? await ctx.res.text() : undefined,
+      error: response.status >= 500 ? await ctx.res.clone().text() : undefined,
     },
     useragent_details: {
       ua: req.header("user-agent") || "",
@@ -113,7 +113,7 @@ async function err(
   }
 
   const body = ctx.req.header("content-type")?.startsWith("application/json")
-    ? await ctx.req.json()
+    ? await ctx.req.raw.clone().json()
     : {};
 
   // Get our key from secrets
@@ -161,7 +161,7 @@ async function err(
     error: {
       message: err.message,
       stack: err.stack,
-      // body: await ctx.res.text(),
+      body: await ctx.res.clone().text(),
     },
   };
 

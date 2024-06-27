@@ -24,7 +24,6 @@ const TENANT_FIXTURE: Tenant = {
 const APPLICATION_FIXTURE: Application = {
   id: "testClient",
   name: "clientName",
-  tenant_id: "tenantId",
   allowed_callback_urls: '"http://localhost:3000", "https://example.com"',
   allowed_logout_urls: '"http://localhost:3000", "https://example.com"',
   allowed_web_origins: '"http://localhost:3000", "https://example.com"',
@@ -32,6 +31,7 @@ const APPLICATION_FIXTURE: Application = {
   client_secret: "clientSecret",
   created_at: "created_at",
   updated_at: "updated_at",
+  disable_sign_ups: false,
 };
 
 const CONNECTION_FIXTURE: Connection = {

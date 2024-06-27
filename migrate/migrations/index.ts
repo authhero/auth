@@ -28,6 +28,15 @@ import * as n27_usersTableNameIndex from "./2024-02-13T11:25:00_users-table-name
 import * as n28_usersEmailConstrain from "./2024-02-19T20:14:00_users-email-constrain";
 import * as n29_increaseOtpStateLength from "./2024-03-11T12:45:00_increase-otp-state-length";
 import * as n30_increaseTicketStateLength from "./2024-04-22T14:48:00_increase-ticket-state-length";
+import * as n31_branding from "./2024-05-09T08:50:00_branding";
+import * as n32_indexesAndNotNull from "./2024-05-14T07:53:00_indexes_and_not_null";
+import * as n33_vendorIdInUniversalLoginSession from "./2024-05-16T10:45:00_vendor_id_in_universal_login_session";
+import * as n34_auth0ClientInUniversalLoginSession from "./2024-05-23T15:53:00_auth0client_in_universal_login_session";
+import * as n35_increaseUniversalSessionStateLength from "./2024-05-24T16:25:00_increase-universal-auth-state-length";
+import * as n36_authenticationCodes from "./2024-05-27T23:50:00_authentication_codes";
+import * as n37_disableSignUps from "./2024-06-03T10:00:00_disable-sign-ups";
+import * as n38_otpIpAddress from "./2024-06-05T10:00:00_otp-ip-address";
+import * as n39_increaseUserAgentLength from "./2024-06-19T10:00:00_increase-user-agent-length";
 
 // These need to be in alphabetic order
 export default {
@@ -61,4 +70,13 @@ export default {
   n28_usersEmailConstrain,
   n29_increaseOtpStateLength,
   n30_increaseTicketStateLength,
+  n31_branding,
+  n32_indexesAndNotNull,
+  n33_vendorIdInUniversalLoginSession,
+  n34_auth0ClientInUniversalLoginSession,
+  n35_increaseUniversalSessionStateLength,
+  n36_authenticationCodes,
+  n37_disableSignUps,
+  n38_otpIpAddress,
+  n39_increaseUserAgentLength,
 };

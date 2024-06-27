@@ -15,10 +15,14 @@ import { Kysely } from "kysely";
 import { createClientsAdapter } from "./clients";
 import { createKeysAdapter } from "./keys";
 import { createDomainsAdapter } from "./domains";
+import { createBrandingAdapter } from "./branding";
+import { createAuthenticationCodesAdapter } from "./authenticationCodes";
 
 export default function createAdapters(db: Kysely<Database>) {
   return {
     applications: createApplicationsAdapter(db),
+    authenticationCodes: createAuthenticationCodesAdapter(db),
+    branding: createBrandingAdapter(db),
     clients: createClientsAdapter(db),
     members: createMembersAdapter(db),
     keys: createKeysAdapter(db),

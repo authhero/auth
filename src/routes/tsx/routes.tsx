@@ -1,9 +1,19 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, User, AuthorizationResponseType } from "../../types";
-import ResetPasswordPage from "../../utils/components/ResetPasswordPage";
+import {
+  Env,
+  User,
+  AuthorizationResponseType,
+  Client,
+  Var,
+  LogTypes,
+} from "../../types";
+import ResetPasswordPage from "../../components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
-import { getUserByEmailAndProvider } from "../../utils/users";
+import {
+  getUserByEmailAndProvider,
+  getPrimaryUserByEmailAndProvider,
+} from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import i18next from "i18next";
@@ -11,24 +21,66 @@ import en from "../../localesLogin2/en/default.json";
 import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
-import LoginPage from "../../utils/components/LoginPage";
-import LoginWithCodePage from "../../utils/components/LoginWithCodePage";
-import {
-  renderMessage,
-  renderEnterCode,
-  renderSignup,
-} from "../../templates/render";
+import EnterPasswordPage from "../../components/EnterPasswordPage";
+import EnterEmailPage from "../../components/EnterEmailPage";
+import EnterCodePage from "../../components/EnterCodePage";
+import SignupPage from "../../components/SignUpPage";
+import UnverifiedEmail from "../../components/UnverifiedEmailPage";
+import MessagePage from "../../components/Message";
+import EmailValidatedPage from "../../components/EmailValidatedPage";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
 import { Context } from "hono";
-import { renderForgotPassword } from "../../templates/render";
+import ForgotPasswordPage from "../../components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
-import { sendResetPassword, sendLink } from "../../controllers/email";
+import { sendLink, sendCode } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
+import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
+import { getSendParamFromAuth0ClientHeader } from "../../utils/getSendParamFromAuth0ClientHeader";
+import {
+  getPasswordLoginSelectionCookieName,
+  SesamyPasswordLoginSelection,
+  parsePasswordLoginSelectionCookie,
+} from "../../utils/authCookies";
+import { setCookie, getCookie } from "hono/cookie";
+import { waitUntil } from "../../utils/wait-until";
+import { fetchVendorSettings } from "../../utils/fetchVendorSettings";
+import { createTypeLog } from "../../tsoa-middlewares/logger";
+import {
+  loginWithPassword,
+  requestPasswordReset,
+} from "../../authentication-flows/password";
+import { CustomException } from "../../models/CustomError";
+
+async function initJSXRoute(state: string, env: Env) {
+  const session = await env.data.universalLoginSessions.get(state);
+  if (!session) {
+    throw new HTTPException(400, { message: "Session not found" });
+  }
+
+  const client = await getClient(env, session.authParams.client_id);
+  if (!client) {
+    throw new HTTPException(400, { message: "Client not found" });
+  }
+
+  const tenant = await env.data.tenants.get(client.tenant_id);
+  if (!tenant) {
+    throw new HTTPException(400, { message: "Tenant not found" });
+  }
+
+  const vendorSettings = await fetchVendorSettings(
+    env,
+    client.id,
+    session.authParams.vendor_id,
+  );
+
+  initI18n(tenant.language || "sv");
+
+  return { vendorSettings, client, tenant, session };
+}
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
@@ -46,43 +98,71 @@ function initI18n(lng: string) {
 }
 
 async function handleLogin(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   user: User,
   session: UniversalLoginSession,
-  ctx: Context<{ Bindings: Env }>,
+  client: Client,
 ) {
   if (session.authParams.redirect_uri) {
     const responseType =
       session.authParams.response_type ||
       AuthorizationResponseType.TOKEN_ID_TOKEN;
 
-    const authResponse = await generateAuthResponse({
-      env,
+    // these don't exist in authentication_codes
+    const {
+      vendor_id,
+      audience,
+      code_challenge_method,
+      code_challenge,
+      username,
+      ...authParams
+    } = session.authParams;
+
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+    ctx.set("client_id", client.id);
+    const log = createTypeLog("s", ctx, "Successful login");
+
+    waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
+
+    // Update the user's last login
+    waitUntil(
+      ctx,
+      ctx.env.data.users.update(client.tenant_id, user.id, {
+        last_login: new Date().toISOString(),
+        login_count: user.login_count + 1,
+        // This is specific to cloudflare
+        last_ip: ctx.req.header("cf-connecting-ip") || "",
+      }),
+    );
+
+    return generateAuthResponse({
+      env: ctx.env,
       tenantId: session.tenant_id,
       userId: user.id,
       sid: nanoid(),
       responseType,
-      authParams: session.authParams,
+      authParams,
       user,
     });
-
-    const redirectUrl = getTokenResponseRedirectUri(
-      authResponse,
-      session.authParams,
-    );
-
-    return ctx.redirect(redirectUrl.href);
   }
 
-  // This is just a fallback in case no redirect was present
-  return renderMessage({
-    ...session,
-    page_title: "Logged in",
-    message: "You are logged in",
-  });
+  const vendorSettings = await fetchVendorSettings(
+    ctx.env,
+    client.id,
+    session.authParams.vendor_id,
+  );
+
+  return ctx.html(
+    <MessagePage
+      message="You are logged in"
+      pageTitle="Logged in"
+      vendorSettings={vendorSettings}
+    />,
+  );
 }
 
-export const login = new OpenAPIHono<{ Bindings: Env }>()
+export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
   // GET /u/login
   // --------------------------------
@@ -109,28 +189,36 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
       );
 
-      initI18n(tenant.language || "sv");
+      setCookie(
+        ctx,
+        getPasswordLoginSelectionCookieName(client.id),
+        SesamyPasswordLoginSelection.password,
+        {
+          path: "/",
+          secure: true,
+          httpOnly: true,
+          sameSite: "Strict",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
+      );
 
-      return ctx.html(<LoginPage vendorSettings={vendorSettings} />);
+      if (!session.authParams.username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
+
+      return ctx.html(
+        <EnterPasswordPage
+          vendorSettings={vendorSettings}
+          email={session.authParams.username}
+          state={state}
+          client={client}
+        />,
+      );
     },
   )
   // --------------------------------
@@ -151,7 +239,6 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string(),
                 password: z.string(),
               }),
             },
@@ -164,56 +251,65 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         },
       },
     }),
+    // very similar to authenticate + ticket flow
     async (ctx) => {
       const { env } = ctx;
       const { state } = ctx.req.valid("query");
-      const { username, password } = ctx.req.valid("form");
+      const body = ctx.req.valid("form");
+      const { password } = body;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
       );
 
-      const user = await getUserByEmailAndProvider({
-        userAdapter: env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
+      const { username } = session.authParams;
 
-      if (!user) {
-        throw new HTTPException(400, { message: "User not found" });
+      if (!username) {
+        throw new HTTPException(400, { message: "Username required" });
       }
 
       try {
-        const { valid } = await env.data.passwords.validate(client.tenant_id, {
-          user_id: user.id,
-          password: password,
+        const user = await loginWithPassword(ctx, client, {
+          ...session.authParams,
+          password,
         });
 
-        if (!valid) {
+        return handleLogin(ctx, user, session, client);
+      } catch (err) {
+        const customException = err as CustomException;
+
+        if (
+          customException.code === "INVALID_PASSWORD" ||
+          customException.code === "USER_NOT_FOUND"
+        ) {
           return ctx.html(
-            <LoginPage
+            <EnterPasswordPage
               vendorSettings={vendorSettings}
-              error="Invalid password"
+              email={username}
+              error={i18next.t("invalid_password")}
+              state={state}
+              client={client}
             />,
+            400,
+          );
+        } else if (customException.code === "EMAIL_NOT_VERIFIED") {
+          // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
+          return ctx.html(
+            <UnverifiedEmail vendorSettings={vendorSettings} />,
+            400,
           );
         }
 
-        return handleLogin(env, user, session, ctx);
-      } catch (err: any) {
         return ctx.html(
-          <LoginPage vendorSettings={vendorSettings} error={err.message} />,
+          <EnterPasswordPage
+            vendorSettings={vendorSettings}
+            email={username}
+            error={customException.message}
+            state={state}
+            client={client}
+          />,
+          400,
         );
       }
     },
@@ -247,32 +343,11 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        // Note this will not be correct because in login2 we are styling based on vendor_id
-        // the tenant IDs here are nanoids, where as the vendor ids in HQ are human readable albeit lower case
-        // I figure we can worry about this as we do it and don't get styled flows
-        session.authParams.client_id,
-      );
+      const { vendorSettings, session } = await initJSXRoute(state, env);
 
       if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
       }
-      initI18n(tenant.language || "sv");
 
       return ctx.html(
         <ResetPasswordPage
@@ -323,27 +398,9 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
-      const tenant = await env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      initI18n(tenant.language || "sv");
-
-      const tenantNameInVendorStyles = tenant.name.toLowerCase();
-
-      const vendorSettings = await env.fetchVendorSettings(
-        tenantNameInVendorStyles,
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
       );
 
       if (!session.authParams.username) {
@@ -353,7 +410,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       if (password !== reEnterPassword) {
         return ctx.html(
           <ResetPasswordPage
-            error="Passwords do not match"
+            error={i18next.t("create_account_passwords_didnt_match")}
             vendorSettings={vendorSettings}
             email={session.authParams.username}
           />,
@@ -364,7 +421,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       if (!validatePassword(password)) {
         return ctx.html(
           <ResetPasswordPage
-            error="Password does not meet the requirements"
+            error={i18next.t("create_account_weak_password")}
             vendorSettings={vendorSettings}
             email={session.authParams.username}
           />,
@@ -426,8 +483,13 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         );
       }
 
-      // need JSX success here
-      return ctx.text("The password has been reset", 200);
+      return ctx.html(
+        <MessagePage
+          message={i18next.t("password_has_been_reset")}
+          pageTitle={i18next.t("password_has_been_reset_title")}
+          vendorSettings={vendorSettings}
+        />,
+      );
     },
   )
   // --------------------------------
@@ -455,18 +517,15 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
 
-      return ctx.html(renderForgotPassword(session, state));
+      const { vendorSettings } = await initJSXRoute(state, env);
+
+      return ctx.html(<ForgotPasswordPage vendorSettings={vendorSettings} />);
     },
   )
   // -------------------------------
   // POST /u/forgot-password
   // -------------------------------
-
   .openapi(
     createRoute({
       tags: ["login"],
@@ -500,54 +559,24 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
+      );
 
       if (session.authParams.username !== username) {
         session.authParams.username = username;
         await env.data.universalLoginSessions.update(session.id, session);
       }
 
-      const user = await getUserByEmailAndProvider({
-        userAdapter: env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      if (user) {
-        const code = generateOTP();
-
-        await env.data.codes.create(client.tenant_id, {
-          id: nanoid(),
-          code,
-          type: "password_reset",
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-        });
-
-        // Get typescript errors here but works on the mgmt api users route...
-        // ctx.set("log", `Code: ${code}`);
-
-        await sendResetPassword(env, client, username, code, state);
-      } else {
-        console.log("User not found");
-      }
+      await requestPasswordReset(ctx, client, username, session.id);
 
       return ctx.html(
-        renderMessage({
-          ...session,
-          page_title: "Password reset",
-          message: "A code has been sent to your email address",
-        }),
+        <MessagePage
+          message={i18next.t("forgot_password_email_sent")}
+          pageTitle={i18next.t("forgot_password_title")}
+          vendorSettings={vendorSettings}
+        />,
       );
     },
   )
@@ -576,16 +605,19 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
-
-      const vendorSettings = await env.fetchVendorSettings(
-        session.authParams.client_id,
+      const { vendorSettings, session, client } = await initJSXRoute(
+        state,
+        env,
       );
 
-      return ctx.html(<LoginWithCodePage vendorSettings={vendorSettings} />);
+      return ctx.html(
+        <EnterEmailPage
+          vendorSettings={vendorSettings}
+          session={session}
+          client={client}
+          email={session.authParams.username}
+        />,
+      );
     },
   )
   // --------------------------------
@@ -606,7 +638,13 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string(),
+                username: z.string().transform((u) => u.toLowerCase()),
+                login_selection: z
+                  .enum([
+                    SesamyPasswordLoginSelection.code,
+                    SesamyPasswordLoginSelection.password,
+                  ])
+                  .optional(),
               }),
             },
           },
@@ -624,15 +662,60 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const params = ctx.req.valid("form");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
+      const { client, session, vendorSettings } = await initJSXRoute(
+        state,
+        env,
+      );
+
+      if (client.disable_sign_ups) {
+        const [user] = await getUsersByEmail(
+          env.data.users,
+          client.tenant_id,
+          params.username,
+        );
+
+        if (!user) {
+          // Auth0 doesn't set this, it's nested inside details
+          ctx.set("userName", params.username);
+          ctx.set("client_id", client.id);
+          const log = createTypeLog(
+            LogTypes.FAILED_SIGNUP,
+            ctx,
+            params,
+            "Public signup is disabled",
+          );
+
+          await ctx.env.data.logs.create(client.tenant_id, log);
+
+          return ctx.html(
+            <EnterEmailPage
+              vendorSettings={vendorSettings}
+              session={session}
+              error={i18next.t("user_account_does_not_exist")}
+              email={params.username}
+              client={client}
+            />,
+            400,
+          );
+        }
       }
 
-      const client = await getClient(env, session.authParams.client_id);
+      // Add the username to the state
+      session.authParams.username = params.username;
+      await env.data.universalLoginSessions.update(session.id, session);
 
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
+      // we want to be able to override this with a value in the POST
+      if (params.login_selection !== SesamyPasswordLoginSelection.code) {
+        const passwordLoginSelection =
+          parsePasswordLoginSelectionCookie(
+            getCookie(ctx, getPasswordLoginSelectionCookieName(client.id)),
+          ) || SesamyPasswordLoginSelection.code;
+
+        if (passwordLoginSelection === SesamyPasswordLoginSelection.password) {
+          return ctx.redirect(
+            `/u/login?state=${state}&username=${params.username}`,
+          );
+        }
       }
 
       const code = generateOTP();
@@ -643,6 +726,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         code_challenge_method,
         code_challenge,
         username,
+        vendor_id,
         ...otpAuthParams
       } = session.authParams;
 
@@ -661,43 +745,19 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       // request.ctx.set("log", `Code: ${code}`);
 
-      // Add the username to the state
-      session.authParams.username = params.username;
-      await env.data.universalLoginSessions.update(session.id, session);
+      const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
-      const magicLink = new URL(env.ISSUER);
-      magicLink.pathname = "passwordless/verify_redirect";
-      if (session.authParams.scope) {
-        magicLink.searchParams.set("scope", session.authParams.scope);
-      }
-      if (session.authParams.response_type) {
-        magicLink.searchParams.set(
-          "response_type",
-          session.authParams.response_type,
+      if (sendType === "link") {
+        waitUntil(
+          ctx,
+          sendLink(env, client, params.username, code, session.authParams),
         );
-      }
-      if (session.authParams.redirect_uri) {
-        magicLink.searchParams.set(
-          "redirect_uri",
-          session.authParams.redirect_uri,
-        );
-      }
-      if (session.authParams.audience) {
-        magicLink.searchParams.set("audience", session.authParams.audience);
-      }
-      if (session.authParams.state) {
-        magicLink.searchParams.set("state", session.authParams.state);
-      }
-      if (session.authParams.nonce) {
-        magicLink.searchParams.set("nonce", session.authParams.nonce);
+      } else {
+        waitUntil(ctx, sendCode(env, client, params.username, code));
       }
 
-      magicLink.searchParams.set("connection", "email");
-      magicLink.searchParams.set("client_id", session.authParams.client_id);
-      magicLink.searchParams.set("email", session.authParams.username);
-      magicLink.searchParams.set("verification_code", code);
-
-      await sendLink(env, client, params.username, code, magicLink.href);
+      const log = createTypeLog("cls", ctx, params, params.username);
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.redirect(
         `/u/enter-code?state=${state}&username=${params.username}`,
@@ -729,12 +789,38 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { state } = ctx.req.valid("query");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
+      const { vendorSettings, session, client } = await initJSXRoute(
+        state,
+        env,
+      );
+
+      setCookie(
+        ctx,
+        getPasswordLoginSelectionCookieName(client.id),
+        SesamyPasswordLoginSelection.code,
+        {
+          path: "/",
+          secure: true,
+          httpOnly: true,
+          sameSite: "Strict",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        },
+      );
+
+      if (!session.authParams.username) {
+        throw new HTTPException(400, {
+          message: "Username not found in state",
+        });
       }
 
-      return ctx.html(renderEnterCode(session));
+      return ctx.html(
+        <EnterCodePage
+          vendorSettings={vendorSettings}
+          email={session.authParams.username}
+          state={state}
+          client={client}
+        />,
+      );
     },
   )
   // --------------------------------
@@ -772,10 +858,11 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       const { code } = ctx.req.valid("form");
 
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
+
+      const { vendorSettings, session, client } = await initJSXRoute(
+        state,
+        env,
+      );
 
       if (!session.authParams.username) {
         throw new HTTPException(400, {
@@ -784,7 +871,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       try {
-        const user = await validateCode(env, {
+        const user = await validateCode(ctx, {
           client_id: session.authParams.client_id,
           email: session.authParams.username,
           verification_code: code,
@@ -802,14 +889,25 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           user,
         });
 
-        const redirectUrl = getTokenResponseRedirectUri(
-          authResponse,
-          session.authParams,
-        );
+        ctx.set("userName", user.email);
+        ctx.set("connection", user.connection);
+        ctx.set("client_id", client.id);
+        const log = createTypeLog("s", ctx, "Successful login");
 
-        return ctx.redirect(redirectUrl.href);
+        await ctx.env.data.logs.create(client.tenant_id, log);
+
+        return authResponse;
       } catch (err) {
-        return ctx.html(renderEnterCode(session, "Invalid code"));
+        return ctx.html(
+          <EnterCodePage
+            vendorSettings={vendorSettings}
+            error={i18next.t("Wrong email or verification code.")}
+            email={session.authParams.username}
+            state={state}
+            client={client}
+          />,
+          400,
+        );
       }
     },
   )
@@ -837,12 +935,17 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
+      const { vendorSettings, session } = await initJSXRoute(state, env);
+
+      const { username } = session.authParams;
+
+      if (!username) {
+        throw new HTTPException(400, { message: "Username required" });
       }
 
-      return ctx.html(renderSignup(session));
+      return ctx.html(
+        <SignupPage vendorSettings={vendorSettings} email={username} />,
+      );
     },
   )
   // --------------------------------
@@ -863,7 +966,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string(),
+                username: z.string().transform((u) => u.toLowerCase()),
                 password: z.string(),
                 // TODO - something like this
                 // "re-enter-password": z.string(),
@@ -878,18 +981,26 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         },
       },
     }),
+    // very similar to dbconnections/signup
     async (ctx) => {
       const { state } = ctx.req.valid("query");
       const loginParams = ctx.req.valid("form");
       const { env } = ctx;
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
 
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
+      const { vendorSettings, client, session } = await initJSXRoute(
+        state,
+        env,
+      );
+
+      if (!validatePassword(loginParams.password)) {
+        return ctx.html(
+          <SignupPage
+            vendorSettings={vendorSettings}
+            error={i18next.t("create_account_weak_password")}
+            email={loginParams.username}
+          />,
+          400,
+        );
       }
 
       if (session.authParams.username !== loginParams.username) {
@@ -898,52 +1009,70 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
       }
 
       try {
-        // TODO - filter by primary user
-        let [user] = await getUsersByEmail(
-          env.data.users,
-          client.tenant_id,
-          loginParams.username,
-        );
+        const existingUser = await getPrimaryUserByEmailAndProvider({
+          userAdapter: ctx.env.data.users,
+          tenant_id: client.tenant_id,
+          email: loginParams.username,
+          provider: "auth2",
+        });
 
-        if (!user) {
-          // Create the user if it doesn't exist
-          user = await env.data.users.create(client.tenant_id, {
-            id: `auth2|${userIdGenerate()}`,
-            email: loginParams.username,
-            name: loginParams.username,
-            provider: "auth2",
-            connection: "Username-Password-Authentication",
-            email_verified: false,
-            last_ip: "",
-            login_count: 0,
-            is_social: false,
-            last_login: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+        if (existingUser) {
+          throw new HTTPException(400, { message: "Invalid sign up" });
         }
 
+        const newUser = await ctx.env.data.users.create(client.tenant_id, {
+          id: `auth2|${userIdGenerate()}`,
+          email: loginParams.username,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          email_verified: false,
+          provider: "auth2",
+          connection: "Username-Password-Authentication",
+          is_social: false,
+          login_count: 0,
+        });
+
         await env.data.passwords.create(client.tenant_id, {
-          user_id: user.id,
+          user_id: newUser.id,
           password: loginParams.password,
         });
 
-        // if (client.email_validation === "enforced") {
-        //   // Update the username in the state
-        //   await setLoginState(env, state, {
-        //     ...loginState,
-        //     authParams: {
-        //       ...loginState.authParams,
-        //       username: loginParams.username,
-        //     },
-        //   });
+        await sendEmailVerificationEmail({
+          env: ctx.env,
+          client,
+          user: newUser,
+          authParams: session.authParams,
+        });
 
-        //   return renderEmailValidation(env.AUTH_TEMPLATES, this, loginState);
-        // }
+        ctx.set("userId", newUser.id);
+        ctx.set("userName", newUser.email);
+        ctx.set("connection", newUser.connection);
+        ctx.set("client_id", client.id);
+        const log = createTypeLog("ss", ctx, "Successful signup");
 
-        return handleLogin(env, user, session, ctx);
+        await ctx.env.data.logs.create(client.tenant_id, log);
+
+        return ctx.html(
+          <MessagePage
+            message={i18next.t("validate_email_body")}
+            pageTitle={i18next.t("validate_email_title")}
+            vendorSettings={vendorSettings}
+          />,
+        );
       } catch (err: any) {
-        return ctx.html(renderSignup(session, err.message));
+        const vendorSettings = await fetchVendorSettings(
+          env,
+          client.id,
+          session.authParams.vendor_id,
+        );
+        return ctx.html(
+          <SignupPage
+            vendorSettings={vendorSettings}
+            error={err.message}
+            email={loginParams.username}
+          />,
+          400,
+        );
       }
     },
   )
@@ -976,21 +1105,16 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
 
       const { env } = ctx;
 
-      const session = await env.data.universalLoginSessions.get(state);
-      if (!session) {
-        throw new HTTPException(400, { message: "Session not found" });
-      }
+      const { client, session, vendorSettings } = await initJSXRoute(
+        state,
+        env,
+      );
 
       const email = session.authParams.username;
       if (!email) {
         throw new HTTPException(400, {
           message: "Username not found in state",
         });
-      }
-
-      const client = await getClient(env, session.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
       }
 
       const user = await getUserByEmailAndProvider({
@@ -1019,6 +1143,7 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         client.tenant_id,
         email,
       );
+
       const usersWithSameEmailButNotUsernamePassword =
         usersWithSameEmail.filter((user) => user.provider !== "auth2");
 
@@ -1046,8 +1171,9 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
         }
       }
 
-      // what should we actually do here?
-      return ctx.text("email validated");
+      return ctx.html(
+        <EmailValidatedPage vendorSettings={vendorSettings} state={state} />,
+      );
     },
   )
 
@@ -1077,11 +1203,14 @@ export const login = new OpenAPIHono<{ Bindings: Env }>()
     }),
 
     async (ctx) => {
-      return ctx.text(
-        await renderMessage({
-          page_title: "User info",
-          message: `Not implemented`,
-        }),
+      const vendorSettings = await fetchVendorSettings(ctx.env);
+
+      return ctx.html(
+        <MessagePage
+          message="Not implemented"
+          pageTitle="User info"
+          vendorSettings={vendorSettings}
+        />,
       );
     },
   );

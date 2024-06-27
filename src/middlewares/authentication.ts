@@ -164,7 +164,6 @@ export default function authenticationMiddleware(
           azp: token.payload.azp || "sesamy",
           permissions,
         });
-      ctx.set("vendorId", token.payload.azp || "sesamy");
     } else {
       throw new HTTPException(403, { message: "Unauthorized" });
     }

@@ -1,8 +1,12 @@
 import { Env, AuthParams, AuthorizationResponseType, User } from "../types";
 import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
-import { TokenFactory } from "../services/token-factory";
-import { stateEncode } from "../utils/stateEncode";
+import { pemToBuffer } from "../utils/jwt";
+import { createJWT } from "oslo/jwt";
+import { TimeSpan } from "oslo";
+import { serializeStateInCookie } from "../services/cookies";
+import { applyTokenResponse } from "./apply-token-response-new";
+import { nanoid } from "nanoid";
 
 interface GenerateAuthResponseParamsBase {
   env: Env;
@@ -32,14 +36,30 @@ interface GenerateAuthResponseParamsForIdToken
 }
 
 async function generateCode({
+  env,
+  tenantId,
   userId,
   state,
   nonce,
   authParams,
-  sid,
-  user,
 }: GenerateAuthResponseParamsForCode) {
-  const code = stateEncode({ userId, authParams, nonce, state, sid, user });
+  const code = nanoid();
+
+  await env.data.authenticationCodes.create(tenantId, {
+    user_id: userId,
+    authParams: {
+      client_id: authParams.client_id,
+      redirect_uri: authParams.redirect_uri,
+      response_type: authParams.response_type,
+      response_mode: authParams.response_mode,
+      scope: authParams.scope,
+      nonce,
+    },
+    nonce,
+    created_at: new Date().toISOString(),
+    expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
+    code,
+  });
 
   const codeResponse: CodeResponse = {
     code,
@@ -58,18 +78,27 @@ export async function generateTokens(
 
   const certificates = await env.data.keys.list();
   const certificate = certificates[certificates.length - 1];
-  const tokenFactory = new TokenFactory(
-    certificate.private_key,
-    certificate.kid,
-  );
 
-  const accessToken = await tokenFactory.createAccessToken({
-    aud: authParams.audience,
-    scope: authParams.scope || "",
-    sub: userId,
-    iss: env.ISSUER,
-    azp: params.tenantId,
-  });
+  const keyBuffer = pemToBuffer(certificate.private_key);
+
+  const accessToken = await createJWT(
+    "RS256",
+    keyBuffer,
+    {
+      aud: authParams.audience || "default",
+      scope: authParams.scope || "",
+      sub: userId,
+      iss: env.ISSUER,
+      azp: params.tenantId,
+    },
+    {
+      includeIssuedTimestamp: true,
+      expiresIn: new TimeSpan(1, "d"),
+      headers: {
+        kid: certificate.kid,
+      },
+    },
+  );
 
   const tokenResponse: TokenResponse = {
     access_token: accessToken,
@@ -83,14 +112,33 @@ export async function generateTokens(
   if (responseType === AuthorizationResponseType.TOKEN_ID_TOKEN) {
     const { user } = params;
 
-    tokenResponse.id_token = await tokenFactory.createIDToken({
-      ...user,
-      clientId: authParams.client_id,
-      userId: userId,
-      iss: env.ISSUER,
-      sid,
-      nonce: nonce || authParams.nonce,
-    });
+    tokenResponse.id_token = await createJWT(
+      "RS256",
+      keyBuffer,
+      {
+        // The audience for an id token is the client id
+        aud: authParams.client_id,
+        sub: userId,
+        iss: env.ISSUER,
+        sid,
+        nonce: nonce || authParams.nonce,
+        given_name: user.given_name,
+        family_name: user.family_name,
+        nickname: user.nickname,
+        picture: user.picture,
+        locale: user.locale,
+        name: user.name,
+        email: user.email,
+        email_verified: user.email_verified,
+      },
+      {
+        includeIssuedTimestamp: true,
+        expiresIn: new TimeSpan(1, "d"),
+        headers: {
+          kid: certificate.kid,
+        },
+      },
+    );
   }
 
   // REFRESH TOKEN
@@ -107,7 +155,7 @@ type GenerateAuthResponseParams =
   | GenerateAuthResponseParamsForIdToken
   | GenerateAuthResponseParamsForCode;
 
-export async function generateAuthResponse(params: GenerateAuthResponseParams) {
+export async function generateAuthData(params: GenerateAuthResponseParams) {
   switch (params.responseType) {
     case AuthorizationResponseType.TOKEN:
     case AuthorizationResponseType.TOKEN_ID_TOKEN:
@@ -115,4 +163,23 @@ export async function generateAuthResponse(params: GenerateAuthResponseParams) {
     case AuthorizationResponseType.CODE:
       return generateCode(params);
   }
+}
+
+export async function generateAuthResponse(params: GenerateAuthResponseParams) {
+  const { authParams, sid } = params;
+
+  const tokens = await generateAuthData(params);
+
+  const redirectUrl = applyTokenResponse(tokens, authParams);
+
+  const sessionCookie = serializeStateInCookie(sid);
+
+  // TODO: should we have different response for different response modes?
+  return new Response("Redirecting", {
+    status: 302,
+    headers: {
+      Location: redirectUrl,
+      "Set-Cookie": sessionCookie[0],
+    },
+  });
 }

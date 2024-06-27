@@ -1,4 +1,4 @@
-export * from "./Application";
+export * from "./Branding";
 export * from "./Code";
 export * from "./Tenant";
 export * from "./User";

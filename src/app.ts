@@ -8,18 +8,18 @@ import swaggerUi from "./routes/swagger-ui";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
-import { login } from "./routes/tsx/routes";
-import { wellKnown } from "./routes/oauth2/well-known";
-import { users } from "./routes/management-api/users";
+import { loginRoutes } from "./routes/tsx/routes";
+import { wellKnownRoutes } from "./routes/oauth2/well-known";
+import { userRoutes } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
-import { usersByEmail } from "./routes/management-api/users-by-email";
-import { tenants } from "./routes/management-api/tenants";
-import { logs } from "./routes/management-api/logs";
-import { applications } from "./routes/management-api/applications";
-import { callback } from "./routes/oauth2/callback";
-import { connections } from "./routes/management-api/connections";
-import { domains } from "./routes/management-api/domains";
-import { keys } from "./routes/management-api/keys";
+import { usersByEmailRoutes } from "./routes/management-api/users-by-email";
+import { tenantRoutes } from "./routes/management-api/tenants";
+import { logRoutes } from "./routes/management-api/logs";
+import { applicationRoutes } from "./routes/management-api/applications";
+import { callbackRoutes } from "./routes/oauth2/callback";
+import { connectionRoutes } from "./routes/management-api/connections";
+import { domainRoutes } from "./routes/management-api/domains";
+import { keyRoutes } from "./routes/management-api/keys";
 import { tailwindCss } from "./styles/tailwind";
 import { logoutRoutes } from "./routes/oauth2/logout";
 import { dbConnectionRoutes } from "./routes/oauth2/dbconnections";
@@ -28,6 +28,7 @@ import { tokenRoutes } from "./routes/oauth2/token";
 import { authenticateRoutes } from "./routes/oauth2/authenticate";
 import { authorizeRoutes } from "./routes/oauth2/authorize";
 import { userinfoRoutes } from "./routes/oauth2/userinfo";
+import { brandingRoutes } from "./routes/management-api/branding";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -88,10 +89,10 @@ const app = rootApp
   });
 
 export const oauthApp = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
-  .route("/u", login)
-  .route("/.well-known", wellKnown)
+  .route("/u", loginRoutes)
+  .route("/.well-known", wellKnownRoutes)
   .route("/authorize", authorizeRoutes)
-  .route("/callback", callback)
+  .route("/callback", callbackRoutes)
   .route("/userinfo", userinfoRoutes)
   .route("/oauth/token", tokenRoutes)
   .route("/dbconnections", dbConnectionRoutes)
@@ -113,14 +114,15 @@ export const managementApp = new OpenAPIHono<{
   Bindings: Env;
   Variables: Var;
 }>()
-  .route("/api/v2/domains", domains)
-  .route("/api/v2/users", users)
-  .route("/api/v2/keys/signing", keys)
-  .route("/api/v2/users-by-email", usersByEmail)
-  .route("/api/v2/applications", applications)
-  .route("/api/v2/tenants", tenants)
-  .route("/api/v2/logs", logs)
-  .route("/api/v2/connections", connections);
+  .route("/api/v2/branding", brandingRoutes)
+  .route("/api/v2/domains", domainRoutes)
+  .route("/api/v2/users", userRoutes)
+  .route("/api/v2/keys/signing", keyRoutes)
+  .route("/api/v2/users-by-email", usersByEmailRoutes)
+  .route("/api/v2/applications", applicationRoutes)
+  .route("/api/v2/tenants", tenantRoutes)
+  .route("/api/v2/logs", logRoutes)
+  .route("/api/v2/connections", connectionRoutes);
 
 registerComponent(managementApp);
 
@@ -140,7 +142,7 @@ app.get(
     const css = tailwindCss;
 
     return ctx.text(css, 200, {
-      "content-type": "text/css",
+      "content-type": "text/css; charset=utf-8",
     });
   },
 );

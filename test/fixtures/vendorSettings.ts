@@ -34,16 +34,6 @@ export const BREAKIT_VENDOR_SETTINGS: VendorSettings = {
   supportUrl: "https://www.breakit.se/kontakta-oss",
   siteUrl: "https://www.breakit.se/",
   termsAndConditionsUrl: "https://www.breakit.se/anvandarvillkor",
-  invoiceInfo: {
-    selfHandlesVat: true,
-    invoiceAddress: {
-      country: "SE",
-      zipCode: "113 59",
-      city: "Stockholm",
-      street: "TEGNÉRGATAN 28",
-    },
-    taxId: "SE556994782201",
-  },
 };
 
 export const KVARTAL_VENDOR_SETTINGS: VendorSettings = {
@@ -64,19 +54,20 @@ export const KVARTAL_VENDOR_SETTINGS: VendorSettings = {
   termsAndConditionsUrl: "https://kvartal.se/kopvillkor/",
 };
 
-export const SESAMY_VENDOR_SETTINGS: VendorSettings = {
-  name: "sesamy",
-  logoUrl: `https://assets.sesamy.com/static/images/email/sesamy-logo.png`,
+export const PARCFERME_VENDOR_SETTINGS: VendorSettings = {
+  name: "Parc Fermé AS",
+  companyName: "Parc Fermé AS",
+  logoUrl: "https://assets.sesamy.com/static/vendors/parcferme/darklogo.png",
   style: {
-    primaryColor: "#7D68F4",
-    buttonTextColor: "#7D68F4",
-    primaryHoverColor: "#7D68F4",
+    primaryColor: "#002652",
+    buttonTextColor: "#ffffff",
+    primaryHoverColor: "#002E62",
   },
-  loginBackgroundImage: "",
+  loginBackgroundImage:
+    "https://assets.sesamy.com/vendors/parcferme/SNH_5894.jpeg",
   checkoutHideSocial: false,
-  supportEmail: "support@sesamy.com",
-  supportUrl: "https://support.sesamy.com",
-  siteUrl: "https://sesamy.com",
-  termsAndConditionsUrl: "https://store.sesamy.com/pages/terms-of-service",
-  manageSubscriptionsUrl: "https://account.sesamy.com/manage-subscriptions",
+  supportEmail: null,
+  supportUrl: "https://www.parcferme.no",
+  siteUrl: "https://www.parcferme.no",
+  termsAndConditionsUrl: null,
 };

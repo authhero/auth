@@ -6,45 +6,7 @@ function stringifyIfTruthy<T>(value: T | undefined): string | undefined {
   return value ? JSON.stringify(value) : undefined;
 }
 
-function flattenScopesIfArray(
-  value: string | string[] | undefined,
-): string | undefined {
-  if (Array.isArray(value)) {
-    return value.join(",");
-  }
-
-  return value;
-}
-
-function getAuth0ClientValue(log: Log): string | undefined {
-  // seems very arbitrary... but it's what auth0 does
-  // const AUTH0_CLIENT_LOG_TYPES = ["seccft", "scoa", "fcoa", "fsa", "ssa"];
-  if (
-    // typescript cannot handle this syntax
-    // AUTH0_CLIENT_LOG_TYPES.includes(log.type) &&
-    log.type === "seccft" ||
-    log.type === "scoa" ||
-    log.type === "fcoa" ||
-    log.type === "fsa" ||
-    log.type === "ssa"
-  ) {
-    return stringifyIfTruthy(log.auth0_client);
-  }
-
-  return undefined;
-}
-
-function getScopeValue(log: Log): string | undefined {
-  if (log.type === "fsa") {
-    return log.scope.join(",");
-  }
-
-  if (log.type === "seccft") {
-    return flattenScopesIfArray(log.scope);
-  }
-
-  return undefined;
-}
+const USER_AGENT_MAX_LENGTH = 1024;
 
 export function createLog(db: Kysely<Database>) {
   return async (tenant_id: string, params: Log): Promise<SqlLog> => {
@@ -54,10 +16,11 @@ export function createLog(db: Kysely<Database>) {
       id: nanoid(),
       tenant_id,
       ...params,
-      auth0_client: stringifyIfTruthy(getAuth0ClientValue(params)),
+      auth0_client: stringifyIfTruthy(params.auth0_client),
       details: stringifyIfTruthy(details),
-      scope: getScopeValue(params),
+      scope: params.scope?.join(","),
       isMobile: params.isMobile ? 1 : 0,
+      user_agent: params.user_agent.slice(0, USER_AGENT_MAX_LENGTH),
     };
     await db.insertInto("logs").values(log).execute();
     return log;

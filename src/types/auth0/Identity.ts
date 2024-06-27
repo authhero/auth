@@ -1,20 +1,27 @@
-export interface Identity {
-  connection: string;
-  user_id: string;
-  provider: string;
-  isSocial: boolean;
-  access_token?: string;
-  access_token_secret?: string;
-  refresh_token?: string;
-  profileData?: {
-    email?: string;
-    email_verified?: boolean;
-    name?: string;
-    username?: string;
-    given_name?: string;
-    phone_number?: string;
-    phone_verified?: boolean;
-    family_name?: string;
-    [key: string]: any; // Since additionalProperties is true
-  };
-}
+import { z } from "zod";
+
+export const profileDataSchema = z
+  .object({
+    email: z.string().optional(),
+    email_verified: z.boolean().optional(),
+    name: z.string().optional(),
+    username: z.string().optional(),
+    given_name: z.string().optional(),
+    phone_number: z.string().optional(),
+    phone_verified: z.boolean().optional(),
+    family_name: z.string().optional(),
+  })
+  .catchall(z.any());
+
+export const identitySchema = z.object({
+  connection: z.string(),
+  user_id: z.string(),
+  provider: z.string(),
+  isSocial: z.boolean(),
+  access_token: z.string().optional(),
+  access_token_secret: z.string().optional(),
+  refresh_token: z.string().optional(),
+  profileData: profileDataSchema.optional(),
+});
+
+export type Identity = z.infer<typeof identitySchema>;

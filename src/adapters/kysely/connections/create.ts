@@ -13,10 +13,12 @@ export function create(db: Kysely<Database>) {
       ...params,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      tenant_id,
     };
 
-    await db.insertInto("connections").values(connection).execute();
+    await db
+      .insertInto("connections")
+      .values({ ...connection, tenant_id })
+      .execute();
 
     return connection;
   };

@@ -3,7 +3,7 @@ import SQLite from "better-sqlite3";
 import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
 import { getCertificate } from "./token";
-import { Database, VendorSettings } from "../../../src/types";
+import { Database } from "../../../src/types";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -14,17 +14,14 @@ import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { SESAMY_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
+import { addDataHooks } from "../../../src/hooks";
 
 type getEnvParams = {
-  vendorSettings?: VendorSettings;
   testTenantLanguage?: string;
+  emailValidation?: "enabled" | "enforced" | "disabled";
 };
 
-export async function getEnv(args?: getEnvParams) {
-  const vendorSettings = args?.vendorSettings ?? SESAMY_VENDOR_SETTINGS;
-  const testTenantLanguage = args?.testTenantLanguage;
-
+export async function getEnv(args: getEnvParams = {}) {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
@@ -62,6 +59,7 @@ export async function getEnv(args?: getEnvParams) {
     allowed_logout_urls: "https://sesamy.com",
     email_validation: "enabled",
     client_secret: "secret",
+    disable_sign_ups: false,
   });
   await data.connections.create("DEFAULT_SETTINGS", {
     id: "DEFAULT_CONNECTION",
@@ -97,33 +95,33 @@ export async function getEnv(args?: getEnvParams) {
     support_url: "https://example.com/support",
     created_at: "created_at",
     updated_at: "updated_at",
-    language: testTenantLanguage,
+    language: args.testTenantLanguage,
   };
 
   const testApplication: Application = {
     id: "clientId",
     name: "Test Client",
-    tenant_id: "tenantId",
-    client_secret: "XjI8-WPndjtNHDu4ybXrD",
-    allowed_callback_urls: "",
+    client_secret: "clientSecret",
+    allowed_callback_urls: "https://example.com/callback",
     allowed_logout_urls: "",
-    allowed_web_origins: "",
-    email_validation: "enforced",
+    allowed_web_origins: "example.com",
+    email_validation: args.emailValidation || "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
+    disable_sign_ups: false,
   };
 
   const testApplication2: Application = {
     id: "otherClientId",
     name: "Test Other Client",
-    tenant_id: "tenantId",
     client_secret: "3nwvu0mzibzb0spr7z5d2g",
-    allowed_callback_urls: "",
+    allowed_callback_urls: "https://example.com/callback2",
     allowed_logout_urls: "",
     allowed_web_origins: "",
-    email_validation: "enforced",
+    email_validation: args.emailValidation || "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
+    disable_sign_ups: false,
   };
 
   const testConnection1: Connection = {
@@ -152,7 +150,6 @@ export async function getEnv(args?: getEnvParams) {
   const anotherAppOnAnotherTenant: Application = {
     id: "otherClientIdOnOtherTenant",
     name: "Test Client",
-    tenant_id: "otherTenant",
     client_secret: "XjI8-WPndjtNHDu4ybXrD",
     allowed_callback_urls: "",
     allowed_logout_urls: "",
@@ -160,6 +157,7 @@ export async function getEnv(args?: getEnvParams) {
     email_validation: "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
+    disable_sign_ups: false,
   };
 
   await data.tenants.create(testTenant);
@@ -169,6 +167,22 @@ export async function getEnv(args?: getEnvParams) {
   await data.applications.create("otherTenant", anotherAppOnAnotherTenant);
   await data.connections.create("tenantId", testConnection1);
   await data.connections.create("tenantId", testConnection2);
+  await data.connections.create("tenantId", {
+    id: "facebook",
+    name: "facebook",
+  });
+  await data.connections.create("tenantId", {
+    id: "google-oauth2",
+    name: "google-oauth2",
+  });
+  await data.connections.create("tenantId", {
+    id: "apple",
+    name: "apple",
+  });
+  await data.connections.create("tenantId", {
+    id: "auth2",
+    name: "auth2",
+  });
 
   await data.users.create("tenantId", {
     id: "auth2|userId",
@@ -191,14 +205,7 @@ export async function getEnv(args?: getEnvParams) {
   });
 
   return {
-    data: {
-      ...data,
-      emails,
-      templates: {
-        get: async (...inputs: any[]) =>
-          `<div>${JSON.stringify(inputs, null, 2)}</div>`,
-      },
-    },
+    data: { ...addDataHooks(data), emails },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     TOKEN_SERVICE: {
       fetch: async () => ({
@@ -215,11 +222,10 @@ export async function getEnv(args?: getEnvParams) {
     READ_PERMISSION: "auth:read",
     WRITE_PERMISSION: "auth:write",
     LOGIN2_URL: "https://login2.sesamy.dev",
+    API_URL: "https://api.sesamy.dev",
+    ENVIRONMENT: "dev",
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
-    fetchVendorSettings: async (tenantName: string) => {
-      return vendorSettings;
-    },
   };
 }
 

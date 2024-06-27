@@ -9,7 +9,6 @@ import { AuthorizationResponseType } from "../../../src/types";
 describe("Register password user", () => {
   it("should register a new user with password", async () => {
     const env = await getEnv({
-      vendorSettings: BREAKIT_VENDOR_SETTINGS,
       testTenantLanguage: "it",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -18,10 +17,12 @@ describe("Register password user", () => {
       {
         query: {
           client_id: "clientId",
+          vendor_id: "breakit",
           response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
           scope: "openid",
           redirect_uri: "http://localhost:3000/callback",
           state: "state",
+          username: "test@example.com",
         },
       },
       {
@@ -33,7 +34,6 @@ describe("Register password user", () => {
 
     expect(response.status).toBe(302);
     const location: string = response.headers.get("location")!;
-    expect(location.startsWith("/u/login")).toBeTruthy;
 
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
@@ -76,16 +76,28 @@ describe("Register password user", () => {
       },
     });
 
-    expect(postSignupResponse.status).toBe(302);
-    const signupLocation: string = postSignupResponse.headers.get("location")!;
-    const redirectUrl = new URL(signupLocation);
-    expect(redirectUrl.pathname).toBe("/callback");
-    const hash = new URLSearchParams(redirectUrl.hash.slice(1));
+    expect(postSignupResponse.status).toBe(200);
+    await snapshotResponse(postSignupResponse);
 
-    const accessToken = hash.get("access_token");
-    expect(accessToken).toBeTruthy();
-    const idToken = hash.get("id_token");
-    expect(idToken).toBeTruthy();
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "ss",
+      tenant_id: "tenantId",
+      user_name: "test@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
+
+    // get user with this id and check is the correct id
+    const user = await env.data.users.get("tenantId", logs[0].user_id!);
+
+    expect(user).toMatchObject({
+      email: "test@example.com",
+    });
   });
 
   it("should reject a weak password", async () => {
@@ -100,6 +112,7 @@ describe("Register password user", () => {
           scope: "openid",
           redirect_uri: "http://localhost:3000/callback",
           state: "state",
+          username: "test@example.com",
         },
       },
       {
@@ -110,7 +123,6 @@ describe("Register password user", () => {
     );
     expect(response.status).toBe(302);
     const location: string = response.headers.get("location")!;
-    expect(location.startsWith("/u/login")).toBeTruthy;
     const stateParam = new URLSearchParams(location.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
     // Open login page
@@ -132,7 +144,7 @@ describe("Register password user", () => {
     const signupSearchParamsQuery = Object.fromEntries(
       signupSearchParams.entries(),
     );
-    // Enter weak passworrd
+    // Enter weak password
     const postSignupResponse = await oauthClient.u.signup.$post({
       query: { state: signupSearchParamsQuery.state },
       form: {
@@ -141,7 +153,7 @@ describe("Register password user", () => {
       },
     });
 
-    expect(postSignupResponse.status).toBe(200);
+    expect(postSignupResponse.status).toBe(400);
 
     await snapshotResponse(postSignupResponse);
   });

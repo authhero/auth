@@ -10,7 +10,6 @@ import {
 export const APPLICATION_FIXTURE: Application = {
   id: "clientId",
   name: "clientName",
-  tenant_id: "tenantId",
   allowed_callback_urls: "http://localhost:3000, https://example.com",
   allowed_logout_urls: "http://localhost:3000, https://example.com",
   allowed_web_origins: "http://localhost:3000, https://example.com",
@@ -18,6 +17,7 @@ export const APPLICATION_FIXTURE: Application = {
   client_secret: "clientSecret",
   created_at: "created_at",
   updated_at: "updated_at",
+  disable_sign_ups: false,
 };
 
 export const TENANT_FIXTURE: Tenant = {

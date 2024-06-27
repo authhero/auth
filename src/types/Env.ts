@@ -1,6 +1,5 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
 import { DataAdapters } from "../adapters/interfaces";
-import { VendorSettings } from "./sql";
 import type { Client } from "./Client";
 import type { EmailOptions } from "../services/email/EmailOptions";
 
@@ -9,6 +8,7 @@ export type Env = {
   DD_API_KEY: string;
   JWKS_URL: string;
   LOGIN2_URL: string;
+  API_URL: string;
   IMAGE_PROXY_URL: string;
   DATABASE_HOST: string;
   DATABASE_PASSWORD: string;
@@ -21,8 +21,8 @@ export type Env = {
   EMAIL_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
   WRITE_PERMISSION?: string;
+  ENVIRONMENT: string;
   oauth2ClientFactory: IOAuth2ClientFactory;
   data: DataAdapters;
   sendEmail: (client: Client, email: EmailOptions) => Promise<void>;
-  fetchVendorSettings: (tenantName: string) => Promise<VendorSettings>;
 };

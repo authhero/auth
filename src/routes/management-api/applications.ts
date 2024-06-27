@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getDbFromEnv } from "../../services/db";
-import { applicationSchema, applicationInsertSchema } from "../../types/sql";
+import { applicationSchema, applicationInsertSchema } from "../../types";
 import { headers } from "../../constants";
 import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
@@ -9,7 +9,7 @@ import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import authenticationMiddleware from "../../middlewares/authentication";
 
-export const applications = new OpenAPIHono<{ Bindings: Env }>()
+export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
   // GET /applications
   // --------------------------------
@@ -100,6 +100,9 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
       if (!application) {
         throw new HTTPException(404);
       }
+
+      // @ts-ignore
+      application.disable_sign_ups = application.disable_sign_ups === 1;
 
       return ctx.json(applicationSchema.parse(application), {
         headers,
@@ -231,7 +234,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
         },
       ],
       responses: {
-        200: {
+        201: {
           content: {
             "application/json": {
               schema: applicationSchema,
@@ -251,7 +254,7 @@ export const applications = new OpenAPIHono<{ Bindings: Env }>()
         client_secret: body.client_secret || nanoid(),
       });
 
-      return ctx.json(application);
+      return ctx.json(application, { status: 201 });
     },
   )
   // --------------------------------

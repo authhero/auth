@@ -1,3 +1,4 @@
+import { verifyRequestOrigin } from "oslo/request";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -32,6 +33,7 @@ export const authorizeRoutes = new OpenAPIHono<{
       request: {
         query: z.object({
           client_id: z.string(),
+          vendor_id: z.string().optional(),
           redirect_uri: z.string(),
           scope: z.string().optional(),
           state: z.string(),
@@ -40,7 +42,10 @@ export const authorizeRoutes = new OpenAPIHono<{
           response_type: z.nativeEnum(AuthorizationResponseType).optional(),
           audience: z.string().optional(),
           connection: z.string().optional(),
-          username: z.string().optional(),
+          username: z
+            .string()
+            .transform((u) => u.toLowerCase())
+            .optional(),
           nonce: z.string().optional(),
           max_age: z.string().optional(),
           login_ticket: z.string().optional(),
@@ -48,6 +53,10 @@ export const authorizeRoutes = new OpenAPIHono<{
           code_challenge: z.string().optional(),
           realm: z.string().optional(),
           auth0Client: z.string().optional(),
+          // Auth0 way
+          login_hint: z.string().optional(),
+          // deprecated: previous token service param
+          email_hint: z.string().optional(),
         }),
       },
       responses: {
@@ -63,6 +72,7 @@ export const authorizeRoutes = new OpenAPIHono<{
       const { env } = ctx;
       const {
         client_id,
+        vendor_id,
         redirect_uri,
         scope,
         state,
@@ -75,6 +85,10 @@ export const authorizeRoutes = new OpenAPIHono<{
         prompt,
         login_ticket,
         realm,
+        auth0Client,
+        username,
+        login_hint,
+        email_hint,
       } = ctx.req.valid("query");
 
       const client = await getClient(env, client_id);
@@ -87,16 +101,21 @@ export const authorizeRoutes = new OpenAPIHono<{
         scope,
         state,
         client_id,
+        vendor_id,
         audience,
         nonce,
         response_type,
         code_challenge,
         code_challenge_method,
+        username: username || login_hint || email_hint,
       };
 
-      // if (referer) {
-      // validateRedirectUrl(client.allowed_web_origins, referer);
-      // }
+      const origin = ctx.req.header("origin");
+      if (origin && !verifyRequestOrigin(origin, client.allowed_web_origins)) {
+        throw new HTTPException(403, {
+          message: `Origin ${origin} not allowed`,
+        });
+      }
 
       if (authParams.redirect_uri) {
         if (
@@ -148,6 +167,6 @@ export const authorizeRoutes = new OpenAPIHono<{
         );
       }
 
-      return universalAuth({ ctx, authParams });
+      return universalAuth({ ctx, authParams, auth0Client });
     },
   );

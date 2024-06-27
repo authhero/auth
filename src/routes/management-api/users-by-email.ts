@@ -1,12 +1,14 @@
-import { UserResponse } from "../../types/auth0/UserResponse";
-import { enrichUser } from "../../utils/enrichUser";
+import renameId from "../../utils/rename-id";
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, userSchema } from "../../types";
 import { Var } from "../../types/Var";
 import authenticationMiddleware from "../../middlewares/authentication";
 
-export const usersByEmail = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
+export const usersByEmailRoutes = new OpenAPIHono<{
+  Bindings: Env;
+  Variables: Var;
+}>()
   // --------------------------------
   // GET /api/v2/users-by-email
   // --------------------------------
@@ -47,11 +49,6 @@ export const usersByEmail = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const primarySqlUsers = users.filter((user) => !user.linked_to);
 
-      const response: UserResponse[] = await Promise.all(
-        primarySqlUsers.map(async (primarySqlUser) => {
-          return await enrichUser(ctx.env, tenant_id, primarySqlUser);
-        }),
-      );
-      return ctx.json(response);
+      return ctx.json(primarySqlUsers.map((u) => renameId(u, "user_id")));
     },
   );

@@ -19,7 +19,9 @@ describe("userinfo", () => {
       },
     });
 
-    const { login_ticket } = await loginResponse.json();
+    const { login_ticket } = (await loginResponse.json()) as {
+      login_ticket: string;
+    };
 
     const tokenResponse = await oauthClient.authorize.$get({
       query: {

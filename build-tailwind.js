@@ -5,8 +5,10 @@ const cssContent = fs.readFileSync("src/styles/tailwind.css", "utf8");
 
 const cssContentCleaned = cssContent.replaceAll("`", "'");
 
+const doubleEscaped = cssContentCleaned.replaceAll("\\", "\\\\");
+
 const tsContent = `export const tailwindCss = \`
-    ${cssContentCleaned}\`
+    ${doubleEscaped}\`
 `;
 
 // Write the TypeScript file

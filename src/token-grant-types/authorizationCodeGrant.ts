@@ -1,46 +1,69 @@
 import {
   AuthorizationCodeGrantTypeParams,
   AuthorizationResponseType,
-  AuthParams,
   Env,
-  User,
   Var,
 } from "../types";
 import { getClient } from "../services/clients";
-import hash from "../utils/hash";
-import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
-import { generateAuthResponse } from "../helpers/generate-auth-response-new";
+import { generateAuthData } from "../helpers/generate-auth-response";
 import { Context } from "hono";
+import { nanoid } from "nanoid";
+import { createTypeLog } from "../tsoa-middlewares/logger";
 
 export async function authorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   params: AuthorizationCodeGrantTypeParams,
 ) {
-  const state: {
-    userId: string;
-    authParams: AuthParams;
-    user: User;
-    sid: string;
-  } = stateDecode(params.code); // this "code" is actually a stringified base64 encoded state object...
-
-  if (params.client_id && state.authParams.client_id !== params.client_id) {
-    throw new HTTPException(403, { message: "Invalid Client" });
-  }
-
-  const client = await getClient(ctx.env, state.authParams.client_id);
+  const client = await getClient(ctx.env, params.client_id);
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
   }
 
-  // Check the secret if this is a code grant flow
-  const secretHash = await hash(params.client_secret);
-  if (client.client_secret !== secretHash) {
+  // TODO: this does not set the used_at attribute
+  const { user_id, nonce, authParams, used_at, expires_at } =
+    await ctx.env.data.authenticationCodes.get(client.tenant_id, params.code);
+
+  if (used_at || new Date(expires_at) < new Date()) {
+    throw new HTTPException(400, { message: "Code not found or expired" });
+  }
+
+  const user = await ctx.env.data.users.get(client.tenant_id, user_id);
+  if (!user) {
+    throw new HTTPException(400, { message: "User not found" });
+  }
+
+  // TODO: Temporary fix for the default client
+  const defaultClient = await getClient(ctx.env, "DEFAULT_CLIENT");
+
+  if (
+    client.client_secret !== params.client_secret &&
+    defaultClient?.client_secret !== params.client_secret
+  ) {
     throw new HTTPException(403, { message: "Invalid Secret" });
   }
 
-  return generateAuthResponse(ctx, {
-    ...state,
+  const tokens = await generateAuthData({
+    userId: user_id,
+    authParams,
+    nonce,
+    user,
+    sid: nanoid(),
     responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
+    env: ctx.env,
+    tenantId: client.tenant_id,
   });
+
+  ctx.set("userName", user.email);
+  ctx.set("connection", user.connection);
+  ctx.set("client_id", client.id);
+  const log = createTypeLog(
+    "seacft",
+    ctx,
+    "Authorization Code for Access Token",
+  );
+
+  await ctx.env.data.logs.create(client.tenant_id, log);
+
+  return ctx.json(tokens);
 }

@@ -2,18 +2,15 @@ import { Env, AuthParams, AuthorizationResponseType } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
-import { applyTokenResponse } from "../helpers/apply-token-response-new";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
 import { LogTypes } from "../types";
-import {
-  getPrimaryUserByEmail,
-  getPrimaryUserByEmailAndProvider,
-} from "../utils/users";
+import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
-import { serializeStateInCookie } from "../services/cookies";
+import { createTypeLog } from "../tsoa-middlewares/logger";
+import { waitUntil } from "../utils/wait-until";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -36,7 +33,6 @@ export async function ticketAuth(
 ) {
   const { env } = ctx;
 
-  ctx.set("logType", LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION);
   ctx.set("connection", realm);
 
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
@@ -131,7 +127,16 @@ export async function ticketAuth(
         login2UniverifiedEmailUrl.searchParams.set("connection", connection2);
       }
 
-      ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
+      ctx.set("userName", user.email);
+      ctx.set("connection", user.connection);
+      ctx.set("client_id", client.id);
+      const log = createTypeLog(
+        LogTypes.FAILED_LOGIN,
+        ctx,
+        {},
+        "Email not verified",
+      );
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return new Response("Redirecting", {
         status: 302,
@@ -149,14 +154,6 @@ export async function ticketAuth(
       );
     }
 
-    const primaryUser = await getPrimaryUserByEmail({
-      userAdapter: env.data.users,
-      tenant_id,
-      email: ticket.email,
-    });
-
-    const linkedTo = primaryUser?.id;
-
     user = await env.data.users.create(tenant_id, {
       id: `email|${userIdGenerate()}`,
       email: ticket.email,
@@ -170,14 +167,9 @@ export async function ticketAuth(
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      linked_to: linkedTo,
     });
 
     // TODO - set logging identity provider here
-
-    if (primaryUser) {
-      user = primaryUser;
-    }
   }
 
   ctx.set("userId", user.id);
@@ -190,12 +182,29 @@ export async function ticketAuth(
     user,
   );
 
-  const tokenResponse = await generateAuthResponse({
+  // Update the user's last login
+  await env.data.users.update(tenant_id, user.id, {
+    last_login: new Date().toISOString(),
+    login_count: user.login_count + 1,
+    // This is specific to cloudflare
+    last_ip: ctx.req.header("cf-connecting-ip") || "",
+  });
+
+  const log = createTypeLog(
+    "scoa",
+    ctx,
+    // do we want to tunnel the body through?
+    undefined,
+    "Successful cross-origin authentication",
+    { userId: user.id },
+  );
+  waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
+
+  return generateAuthResponse({
     env,
     userId: user.id,
     state: authParams.state,
     authParams: {
-      // TODO: Should it be possibe to change the scope when using a ticket?
       scope: ticket.authParams?.scope,
       ...authParams,
     },
@@ -203,15 +212,5 @@ export async function ticketAuth(
     user,
     responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
     tenantId: ticket.tenant_id,
-  });
-
-  const [sessionCookie] = serializeStateInCookie(sessionId);
-
-  return new Response("Redirecting", {
-    status: 302,
-    headers: {
-      location: applyTokenResponse(tokenResponse, authParams),
-      "set-cookie": sessionCookie,
-    },
   });
 }

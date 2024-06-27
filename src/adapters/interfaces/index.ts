@@ -10,13 +10,15 @@ import { UserDataAdapter } from "./Users";
 import { LogsDataAdapter } from "./Logs";
 import { ApplicationsAdapter } from "./Applications";
 import { UniversalLoginSessionsAdapter } from "./UniversalLoginSession";
-import { TemplatesAdapter } from "./Templates";
 import { ConnectionsAdapter } from "./Connections";
 import { DomainsAdapter } from "./Domains";
 import { KeysAdapter } from "./Keys";
+import { BrandingAdapter } from "./Branding";
+import { AuthenticationCodesAdapter } from "./AuthenticationCodes";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;
+  branding: BrandingAdapter;
   codes: CodesAdapter;
   clients: ClientsAdapter;
   members: MembersDataAdapter;
@@ -28,8 +30,8 @@ export interface DataAdapters {
   universalLoginSessions: UniversalLoginSessionsAdapter;
   users: UserDataAdapter;
   logs: LogsDataAdapter;
-  templates: TemplatesAdapter;
   connections: ConnectionsAdapter;
   domains: DomainsAdapter;
   keys: KeysAdapter;
+  authenticationCodes: AuthenticationCodesAdapter;
 }

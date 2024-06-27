@@ -3,12 +3,11 @@ import { AuthParams } from "../../types";
 export interface UniversalLoginSession {
   id: string;
   tenant_id: string;
-  client_id: string;
   created_at: string;
   updated_at: string;
   expires_at: string;
   authParams: AuthParams;
-  username?: string;
+  auth0Client?: string;
 }
 
 export interface UniversalLoginSessionsAdapter {

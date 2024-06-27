@@ -3,14 +3,14 @@
 
 name: Unit tests
 
-on: pull_request
+on: push
 
 jobs:
   node-test:
-    # buildjet has gone down
-    # runs-on: buildjet-4vcpu-ubuntu-2204
-    runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.43.1-focal@sha256:7439407db913e32c2f948e392f05317c1a7aedecbd8b2052c9cdc51b4f89513c
+    # buildjet is working again now
+    runs-on: buildjet-4vcpu-ubuntu-2204
+    # runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.44.1
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - uses: buildjet/cache@c3f061234bf0cd3e2ea5f1479d3cd8f526f0ba71 # v3
@@ -27,3 +27,7 @@ jobs:
       - run: yarn format:ci-cd
       - run: yarn type-check
       - run: yarn test:snapshots
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          path: test/**/__diff_output__/*.png
