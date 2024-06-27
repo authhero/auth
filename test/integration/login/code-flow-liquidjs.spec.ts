@@ -263,7 +263,7 @@ describe("Login with code on liquidjs template", () => {
       // `Välkommen till Test Tenant! ${code} är koden för att logga in`,
       `Benvenuti su Test Tenant! ${code} è il codice di accesso`,
     );
-    await snapshotEmail(env.data.emails[0]);
+    await snapshotEmail(env.data.emails[0], true);
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
