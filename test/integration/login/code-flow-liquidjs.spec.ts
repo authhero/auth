@@ -259,10 +259,7 @@ describe("Login with code on liquidjs template", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("bar@example.com");
-    expect(subject).toBe(
-      // `Välkommen till Test Tenant! ${code} är koden för att logga in`,
-      `Benvenuti su Test Tenant! ${code} è il codice di accesso`,
-    );
+    expect(subject).toBe(`Witamy na Test Tenant! ${code} to kod logowania.`);
     await snapshotEmail(env.data.emails[0], true);
 
     // Authenticate using the code
