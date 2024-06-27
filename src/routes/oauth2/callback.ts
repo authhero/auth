@@ -10,6 +10,7 @@ import en from "../../localesLogin2/en/default.json";
 import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
+import pl from "../../localesLogin2/pl/default.json";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -19,6 +20,7 @@ function initI18n(lng: string) {
       it: { translation: it },
       nb: { translation: nb },
       sv: { translation: sv },
+      pl: { translation: pl },
     },
   });
 }

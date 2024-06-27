@@ -175,7 +175,9 @@ describe("Login with code on liquidjs template", () => {
 
   it("is an existing primary user", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const env = await getEnv({
+      testTenantLanguage: "pl",
+    });
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -233,6 +235,19 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
+    // -----------------
+    // snapshot enter code form in polish
+    // -----------------
+
+    const codeInputFormResponse = await oauthClient.u.code.$get({
+      query: {
+        state: query.state,
+      },
+    });
+
+    expect(codeInputFormResponse.status).toBe(200);
+    await snapshotResponse(codeInputFormResponse);
+
     const postSendCodeResponse = await oauthClient.u.code.$post({
       query: { state: query.state },
       form: {
@@ -244,9 +259,8 @@ describe("Login with code on liquidjs template", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("bar@example.com");
-    expect(subject).toBe(
-      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
-    );
+    expect(subject).toBe(`Witamy na Test Tenant! ${code} to kod logowania.`);
+    await snapshotEmail(env.data.emails[0], true);
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
