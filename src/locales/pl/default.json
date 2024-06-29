@@ -1,6 +1,6 @@
 {
   "codeEmailEnterCode": "Wpisz kod na stronie {{vendorName}}, aby się zalogować.",
-  "codeEmailTitle": "Witamy na {{vendorName}}! {{code}} to kod logowania.",
+  "codeEmailTitle": "Witamy na {{vendorName}}! {{code}} to kod logowania do Twojego konta.",
   "codeValid30Mins": "Kod jest ważny przez 30 minut",
   "contactUs": "Skontaktuj się z nami",
   "contact_support": "Potrzebujesz pomocy?",
