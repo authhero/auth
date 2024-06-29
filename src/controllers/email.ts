@@ -56,8 +56,10 @@ export async function sendCode(
       buttonColor: client.tenant.primary_color || "#7d68f4",
       welcomeToYourAccount: t("welcome_to_your_account"),
       codeEmailTitle: t("code_email_title"),
-      codeValid30Mins: t("code_valid_30_mins"),
+      codeValid30Mins: t("code_valid_30_minutes"),
       contactUs: t("contact_us"),
+      copyright: t("copyright_sesamy"),
+      supportInfo: t("support_info"),
     },
   );
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
