@@ -55,6 +55,7 @@ export async function sendCode(
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
       buttonColor: client.tenant.primary_color || "#7d68f4",
       welcomeToYourAccount: t("welcome_to_your_account"),
+      codeEmailEnterCode: t("code_email_enter_code"),
       codeEmailTitle: t("code_email_title"),
       codeValid30Mins: t("code_valid_30_minutes"),
       contactUs: t("contact_us"),
