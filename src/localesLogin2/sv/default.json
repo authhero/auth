@@ -19,6 +19,7 @@
   "continue_social_login": "eller via sociala medier",
   "continue_with": "Fortsätt med {{provider}}",
   "continue_with_sso_provider_headline": "Vill du fortsätta med det här kontot?",
+  "copyright": "Upphovsrätt © 2023 SESAMY. Alla rättigheter förbehållna.",
   "copyright_sesamy": "©2023 Sesamy",
   "create_account_description": "Skapa ditt konto genom att ange din e-postadress och välj ett lösenord med en blandning av bokstäver, siffror och symboler.",
   "create_account_email_invalid": "Ange en giltig e-postadress.",

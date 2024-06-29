@@ -19,6 +19,7 @@
   "continue_social_login": "o continuare con il conto sociale",
   "continue_with": "Continua con {{provider}}",
   "continue_with_sso_provider_headline": "Desidera continuare a utilizzare l'account esistente?",
+  "copyright": "Copyright © 2023 SESAMY. Tutti i diritti riservati.",
   "copyright_sesamy": "©2023 Sesamy",
   "create_account_description": "Create il vostro account inserendo il vostro indirizzo e-mail e scegliete una password con un mix di lettere, numeri e simboli.",
   "create_account_email_invalid": "Inserire un indirizzo e-mail valido.",
