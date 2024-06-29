@@ -39,9 +39,6 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  const language = client.tenant.language || "sv";
-  const locale = getLocale(language);
-
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
@@ -52,12 +49,14 @@ export async function sendCode(
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
-      ...locale,
       code,
       vendorName: client.tenant.name,
       logo,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
       buttonColor: client.tenant.primary_color || "#7d68f4",
+      welcomeToYourAccount: t("welcome_to_your_account"),
+      codeEmailTitle: t("code_email_title"),
+      codeValid30Mins: t("code_valid_30_mins"),
     },
   );
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
