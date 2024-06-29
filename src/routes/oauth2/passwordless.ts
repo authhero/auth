@@ -15,6 +15,7 @@ import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { createTypeLog } from "../../tsoa-middlewares/logger";
+import i18next from "i18next";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -75,6 +76,8 @@ export const passwordlessRoutes = new OpenAPIHono<{
         created_at: new Date(),
         expires_at: new Date(Date.now() + OTP_EXPIRATION_TIME),
       });
+
+      i18next.changeLanguage(client.tenant.language || "sv");
 
       if (send === "link") {
         await sendLink(ctx.env, client, email, code, {
