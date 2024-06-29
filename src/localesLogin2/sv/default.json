@@ -10,6 +10,7 @@
   "callback_url_mismatch": "Callback URL mismatch",
   "callback_url_not_allowed": "The provided redirect_uri is not in the list of allowed callback URLs.",
   "code_email_enter_code": "Skriv in koden på {{vendorName}} för att slutföra inloggningen",
+  "code_email_subject": "Välkommen till {{vendorName}}! {{code}} är koden för att logga in",
   "code_email_title": "Välkommen till {{vendorName}}! {{code}} är koden för att logga in",
   "code_valid_30_minutes": "Koden är giltig i 30 minuter",
   "confirm_password": "Bekräfta lösenord",

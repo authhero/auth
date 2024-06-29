@@ -10,6 +10,7 @@
   "callback_url_mismatch": "Callback URL mismatch",
   "callback_url_not_allowed": "The provided redirect_uri is not in the list of allowed callback URLs.",
   "code_email_enter_code": "Enter the code at {{vendorName}} to complete the login",
+  "code_email_subject": "Welcome to {{vendorName}}! {{code}} is the login code",
   "code_email_title": "Welcome to {{vendorName}}! {{code}} is the login code",
   "code_valid_30_minutes": "The code is valid for 30 minutes",
   "confirm_password": "Confirm password",

@@ -10,6 +10,7 @@
   "callback_url_mismatch": "Niezgodność adresu URL wywołania zwrotnego",
   "callback_url_not_allowed": "Podany adres redirect_uri nie znajduje się na liście dozwolonych adresów URL wywołania zwrotnego.",
   "code_email_enter_code": "Wpisz kod na stronie {{vendorName}}, aby się zalogować.",
+  "code_email_subject": "Witamy na {{vendorName}}! {{code}} to kod logowania do Twojego konta.",
   "code_email_title": "Witamy na {{vendorName}}! {{code}} to kod logowania.",
   "code_valid_30_minutes": "Kod jest ważny przez 30 minut",
   "confirm_password": "Potwierdź hasło",

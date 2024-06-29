@@ -10,6 +10,7 @@
   "callback_url_mismatch": "Mancata corrispondenza dell'URL di callback",
   "callback_url_not_allowed": "Il redirect_uri fornito non è nell'elenco degli URL di callback consentiti.",
   "code_email_enter_code": "Inserite il codice all'indirizzo {{vendorName}} per completare il login.",
+  "code_email_subject": "Benvenuti su {{vendorName}}! {{code}} è il codice di accesso",
   "code_email_title": "Benvenuti su {{vendorName}}! {{code}} è il codice di accesso",
   "code_valid_30_minutes": "Il codice è valido per 30 minuti",
   "confirm_password": "Confermare la password",

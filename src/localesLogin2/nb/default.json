@@ -10,6 +10,7 @@
   "callback_url_mismatch": "Callback-URLen samsvarer ikke",
   "callback_url_not_allowed": "Den oppgitte redirect_uri er ikke på listen over tillatte tilbakeringings-URLer.",
   "code_email_enter_code": "Skriv inn koden på {{vendorName}} for å fullføre påloggingen",
+  "code_email_subject": "Velkommen til {{vendorName}} ! {{code}} er påloggingskoden",
   "code_email_title": "Velkommen til {{vendorName}}! {{code}} er påloggingskoden",
   "code_valid_30_minutes": "Koden er gyldig i 30 minutter",
   "confirm_password": "Bekreft passord",

@@ -150,9 +150,10 @@ export async function sendLink(
         value: codeEmailBody,
       },
     ],
-    subject: translate(language, "codeEmailTitle")
-      .replace("{{vendorName}}", client.tenant.name)
-      .replace("{{code}}", code),
+    subject: t("code_email_subject", {
+      vendorName: client.tenant.name,
+      code,
+    }),
   });
 }
 
