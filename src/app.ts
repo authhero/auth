@@ -30,11 +30,11 @@ import { authenticateRoutes } from "./routes/oauth2/authenticate";
 import { authorizeRoutes } from "./routes/oauth2/authorize";
 import { userinfoRoutes } from "./routes/oauth2/userinfo";
 import { brandingRoutes } from "./routes/management-api/branding";
-import en from "../../localesLogin2/en/default.json";
-import it from "../../localesLogin2/it/default.json";
-import nb from "../../localesLogin2/nb/default.json";
-import sv from "../../localesLogin2/sv/default.json";
-import pl from "../../localesLogin2/pl/default.json";
+import en from "./localesLogin2/en/default.json";
+import it from "./localesLogin2/it/default.json";
+import nb from "./localesLogin2/nb/default.json";
+import sv from "./localesLogin2/sv/default.json";
+import pl from "./localesLogin2/pl/default.json";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
