@@ -57,6 +57,7 @@ export async function sendCode(
       welcomeToYourAccount: t("welcome_to_your_account"),
       codeEmailTitle: t("code_email_title"),
       codeValid30Mins: t("code_valid_30_mins"),
+      contactUs: t("contact_us"),
     },
   );
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
