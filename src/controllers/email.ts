@@ -1,4 +1,5 @@
 import { Liquid } from "liquidjs";
+import { t } from "i18next";
 import { translate } from "../utils/i18n";
 import { AuthParams, Client, Env } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
@@ -80,9 +81,10 @@ export async function sendCode(
         value: codeEmailBody,
       },
     ],
-    subject: translate(language, "codeEmailTitle")
-      .replace("{{vendorName}}", client.tenant.name)
-      .replace("{{code}}", code),
+    subject: t("code_email_subject", {
+      vendorName: client.tenant.name,
+      code,
+    }),
   });
 }
 
