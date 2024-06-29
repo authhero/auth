@@ -59,7 +59,7 @@ export async function sendCode(
       codeEmailTitle: t("code_email_title"),
       codeValid30Mins: t("code_valid_30_minutes"),
       contactUs: t("contact_us"),
-      copyright: t("copyright_sesamy"),
+      copyright: t("copyright"),
       supportInfo: t("support_info"),
     },
   );
