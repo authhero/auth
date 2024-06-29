@@ -62,6 +62,7 @@
   "password": "Hasło",
   "password_has_been_reset": "Hasło zostało zresetowane",
   "password_has_been_reset_title": "Sukces",
+  "password_reset_subject": "Zmień hasło do konta {{vendorName}} ",
   "privacy_policy": "Polityka prywatności",
   "redirecting": "Przekierowanie",
   "reenter_new_password_placeholder": "Potwierdź hasło",

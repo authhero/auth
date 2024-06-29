@@ -62,6 +62,7 @@
   "password": "Passord",
   "password_has_been_reset": "Passordet har blitt tilbakestilt",
   "password_has_been_reset_title": "Suksess",
+  "password_reset_subject": "Endre passord for {{vendorName}} kontoen din",
   "privacy_policy": "Personvernerklæring",
   "redirecting": "Omdirigerer",
   "reenter_new_password_placeholder": "Bekreft passord",

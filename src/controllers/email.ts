@@ -212,10 +212,9 @@ export async function sendResetPassword(
         value: passwordResetBody,
       },
     ],
-    subject: translate(language, "passwordResetTitle").replace(
-      "{{vendorName}}",
-      client.tenant.name,
-    ),
+    subject: t("password_reset_subject", {
+      vendorName: client.tenant.name,
+    }),
   });
 }
 
