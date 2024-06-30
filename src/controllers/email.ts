@@ -47,29 +47,25 @@ export async function sendCode(
   const sendCodeUniversalTemplate = engine.parse(codeV2);
 
   i18next.changeLanguage(client.tenant.language || "sv");
-  // const sendCodeTemplateString = await engine.render(
+  const options = {
+    code,
+    vendorName: client.tenant.name,
+  };
+
   const codeEmailBody = await engine.render(sendCodeUniversalTemplate, {
     code,
     vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     buttonColor: client.tenant.primary_color || "#7d68f4",
-    welcomeToYourAccount: t("welcome_to_your_account"),
-    codeEmailEnterCode: t("code_email_enter_code"),
-    codeEmailTitle: t("code_email_title"),
+    welcomeToYourAccount: t("welcome_to_your_account", options),
+    codeEmailEnterCode: t("code_email_enter_code", options),
+    codeEmailTitle: t("code_email_title", options),
     codeValid30Mins: t("code_valid_30_minutes"),
     contactUs: t("contact_us"),
     copyright: t("copyright"),
     supportInfo: t("support_info"),
   });
-  // const sendCodeTemplate = engine.parse(sendCodeTemplateString);
-  // const codeEmailBody = await engine.render(sendCodeTemplate, {
-  //   code,
-  //   vendorName: client.tenant.name,
-  //   logo,
-  //   supportUrl: client.tenant.support_url || "https://support.sesamy.com",
-  //   buttonColor: client.tenant.primary_color || "#7d68f4",
-  // });
 
   await env.sendEmail(client, {
     to: [{ email: to, name: to }],
