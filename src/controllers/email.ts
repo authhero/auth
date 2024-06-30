@@ -111,28 +111,26 @@ export async function sendLink(
 
   const sendCodeUniversalTemplate = engine.parse(linkV2);
 
-  await i18next.changeLanguage(client.tenant.language || "sv");
-  const sendCodeTemplateString = await engine.render(
-    sendCodeUniversalTemplate,
-    {
-      ...locale,
-      // pass in variables twice! no harm to overdo it
-      code,
-      vendorName: client.tenant.name,
-      logo,
-      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
-      magicLink,
-      buttonColor: client.tenant.primary_color || "#7d68f4",
-    },
-  );
-  const sendCodeTemplate = engine.parse(sendCodeTemplateString);
-  const codeEmailBody = await engine.render(sendCodeTemplate, {
+  const options = {
+    vendorName: client.tenant.name,
+    lng: client.tenant.language || "sv",
+  };
+
+  const codeEmailBody = await engine.render(sendCodeUniversalTemplate, {
     code,
     vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     magicLink,
     buttonColor: client.tenant.primary_color || "#7d68f4",
+    welcomeToYourAccount: t("welcome_to_your_account", options),
+    linkEmailClickToLogin: t("link_email_click_to_login", options),
+    linkEmailLogin: t("link_email_login", options),
+    linkEmailOrEnterCode: t("link_email_or_enter_code", options),
+    codeValid30Mins: t("code_valid_30_minutes", options),
+    supportInfo: t("support_info", options),
+    contactUs: t("contact_us", options),
+    copyright: t("copyright", options),
   });
 
   await env.sendEmail(client, {
