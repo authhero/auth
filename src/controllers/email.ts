@@ -187,7 +187,7 @@ export async function sendResetPassword(
       resetPasswordEmailReset: t("reset_password_email_reset"),
       supportInfo: t("support_info"),
       contactUs: t("contact_us"),
-      copyright: t("copyright_sesamy"),
+      copyright: t("copyright"),
     },
   );
   const sendPasswordResetTemplate = engine.parse(
