@@ -49,6 +49,7 @@
   "invalid-email": "Invalid email",
   "invalid_password": "Invalid password",
   "link_email_click_to_login": "Click the button to log in",
+  "link_email_login": "Login",
   "link_email_or_enter_code": "Or enter the code at {{vendorName}} to complete the login.",
   "link_page_body": "Enter your email address to unlock this show on {{service}}",
   "link_page_headline": "Link your account with {{service}}",

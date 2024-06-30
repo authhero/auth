@@ -49,6 +49,7 @@
   "invalid-email": "Ogiltig e-postadress",
   "invalid_password": "Ogiltigt lösenord",
   "link_email_click_to_login": "Klicka på knappen för att logga in",
+  "link_email_login": "Logga in",
   "link_email_or_enter_code": "Eller skriv koden på {{vendorName}} för att slutföra inloggningen.",
   "link_page_body": "Ange din epost för att låsa upp den här showen på {{service}}",
   "link_page_headline": "Koppla ditt konto till {{service}}",

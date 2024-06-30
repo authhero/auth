@@ -49,6 +49,7 @@
   "invalid-email": "Nieprawidłowy adres e-mail",
   "invalid_password": "Nieprawidłowe hasło",
   "link_email_click_to_login": "Kliknij przycisk, aby się zalogować",
+  "link_email_login": "Zaloguj się",
   "link_email_or_enter_code": "Lub wprowadź kod na stronie {{vendorName}}, aby dokończyć logowanie.",
   "link_page_body": "Wprowadź swój adres e-mail, aby odblokować ten program na {{service}}",
   "link_page_headline": "Połącz swoje konto z {{service}}",
