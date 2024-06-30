@@ -1,6 +1,5 @@
 import { Liquid } from "liquidjs";
 import { t } from "i18next";
-import { translate } from "../utils/i18n";
 import { AuthParams, Client, Env } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
@@ -165,9 +164,6 @@ export async function sendResetPassword(
   code: string,
   state: string,
 ) {
-  const language = client.tenant.language || "sv";
-  const locale = getLocale(language);
-
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
@@ -181,12 +177,17 @@ export async function sendResetPassword(
   const sendPasswordResetTemplateString = await engine.render(
     sendPasswordResetUniversalTemplate,
     {
-      ...locale,
       vendorName: client.tenant.name,
       logo,
       passwordResetUrl,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
       buttonColor: client.tenant.primary_color || "#7d68f4",
+      passwordResetTitle: t("password_reset_title"),
+      resetPasswordEmailClickToReset: t("reset_password_email_click_to_reset"),
+      resetPasswordEmailReset: t("reset_password_email_reset"),
+      supportInfo: t("support_info"),
+      contactUs: t("contact_us"),
+      copyright: t("copyright_sesamy"),
     },
   );
   const sendPasswordResetTemplate = engine.parse(
