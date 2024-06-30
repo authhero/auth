@@ -95,6 +95,7 @@
   "validate_email_body": "Check your inbox for email validation instructions.",
   "validate_email_title": "Signed up",
   "verify_email_click_to_verify": "Click the button to verify your email address",
+  "verify_email_subject": "Validate your email address",
   "verify_email_title": "Validate your email address",
   "verify_email_verify": "Verify account",
   "verify_your_email": "Verify your email",

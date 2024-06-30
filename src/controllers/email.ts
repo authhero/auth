@@ -225,10 +225,6 @@ export async function sendValidateEmailAddress(
   code: string,
   state: string,
 ) {
-  // const response = await env.AUTH_TEMPLATES.get(
-  //   "templates/email/verify-email.liquid",
-  // );
-
   const language = client.tenant.language || "sv";
   const locale = getLocale(language);
 
@@ -276,9 +272,8 @@ export async function sendValidateEmailAddress(
         value: emailValidationBody,
       },
     ],
-    subject: translate(language, "verifyEmailTitle").replace(
-      "{{vendorName}}",
-      client.tenant.name,
-    ),
+    subject: t("verify_email_subject", {
+      vendorName: client.tenant.name,
+    }),
   });
 }
