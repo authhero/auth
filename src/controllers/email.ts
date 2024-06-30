@@ -46,7 +46,7 @@ export async function sendCode(
 
   const sendCodeUniversalTemplate = engine.parse(codeV2);
 
-  i18next.changeLanguage(client.tenant.language || "sv");
+  await i18next.changeLanguage(client.tenant.language || "sv");
   const options = {
     code,
     vendorName: client.tenant.name,
@@ -111,7 +111,7 @@ export async function sendLink(
 
   const sendCodeUniversalTemplate = engine.parse(linkV2);
 
-  i18next.changeLanguage(client.tenant.language || "sv");
+  await i18next.changeLanguage(client.tenant.language || "sv");
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
@@ -173,7 +173,7 @@ export async function sendResetPassword(
 
   const sendPasswordResetUniversalTemplate = engine.parse(passwordReset);
 
-  i18next.changeLanguage(client.tenant.language || "sv");
+  await i18next.changeLanguage(client.tenant.language || "sv");
   const sendPasswordResetTemplateString = await engine.render(
     sendPasswordResetUniversalTemplate,
     {
@@ -237,7 +237,7 @@ export async function sendValidateEmailAddress(
 
   const sendEmailValidationUniversalTemplate = engine.parse(verifyEmail);
 
-  i18next.changeLanguage(client.tenant.language || "sv");
+  await i18next.changeLanguage(client.tenant.language || "sv");
   const sendEmailValidationTemplateString = await engine.render(
     sendEmailValidationUniversalTemplate,
     {

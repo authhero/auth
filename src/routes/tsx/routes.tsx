@@ -73,7 +73,7 @@ async function initJSXRoute(state: string, env: Env) {
     session.authParams.vendor_id,
   );
 
-  i18next.changeLanguage(tenant.language || "sv");
+  await i18next.changeLanguage(tenant.language || "sv");
 
   return { vendorSettings, client, tenant, session };
 }
