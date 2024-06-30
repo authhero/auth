@@ -1,5 +1,5 @@
 import { Liquid } from "liquidjs";
-import { t } from "i18next";
+import i18next, { t } from "i18next";
 import { AuthParams, Client, Env } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import en from "../locales/en/default.json";
@@ -63,6 +63,8 @@ export async function sendCode(
     },
   );
   const sendCodeTemplate = engine.parse(sendCodeTemplateString);
+
+  i18next.changeLanguage(client.tenant.language || "sv");
   const codeEmailBody = await engine.render(sendCodeTemplate, {
     code,
     vendorName: client.tenant.name,
@@ -114,6 +116,8 @@ export async function sendLink(
   );
 
   const sendCodeUniversalTemplate = engine.parse(linkV2);
+
+  i18next.changeLanguage(client.tenant.language || "sv");
   const sendCodeTemplateString = await engine.render(
     sendCodeUniversalTemplate,
     {
@@ -174,6 +178,8 @@ export async function sendResetPassword(
   const passwordResetUrl = `${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
 
   const sendPasswordResetUniversalTemplate = engine.parse(passwordReset);
+
+  i18next.changeLanguage(client.tenant.language || "sv");
   const sendPasswordResetTemplateString = await engine.render(
     sendPasswordResetUniversalTemplate,
     {
@@ -236,6 +242,8 @@ export async function sendValidateEmailAddress(
   const emailValidationUrl = `${env.ISSUER}u/validate-email?state=${state}&code=${code}`;
 
   const sendEmailValidationUniversalTemplate = engine.parse(verifyEmail);
+
+  i18next.changeLanguage(client.tenant.language || "sv");
   const sendEmailValidationTemplateString = await engine.render(
     sendEmailValidationUniversalTemplate,
     {

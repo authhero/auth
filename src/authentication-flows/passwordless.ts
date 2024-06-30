@@ -12,6 +12,7 @@ import { sendValidateEmailAddress } from "../controllers/email";
 import { waitUntil } from "../utils/wait-until";
 import { Context } from "hono";
 import instanceToJson from "../utils/instanceToJson";
+import i18next from "i18next";
 
 // de-dupe
 const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
