@@ -4,6 +4,7 @@ import { Var, Env, Client, AuthParams, LogTypes } from "../types";
 import {
   getPrimaryUserByEmailAndProvider,
   getUserByEmailAndProvider,
+  getUsersByEmail,
 } from "../utils/users";
 import { CODE_EXPIRATION_TIME } from "../constants";
 import generateOTP from "../utils/otp";
@@ -22,7 +23,7 @@ export async function requestPasswordReset(
   email: string,
   state: string,
 ) {
-  const user = await getPrimaryUserByEmailAndProvider({
+  let user = await getPrimaryUserByEmailAndProvider({
     userAdapter: ctx.env.data.users,
     tenant_id: client.tenant_id,
     email,
@@ -30,7 +31,28 @@ export async function requestPasswordReset(
   });
 
   if (!user) {
-    return;
+    const matchingUser = await getUsersByEmail(
+      ctx.env.data.users,
+      client.tenant_id,
+      email,
+    );
+
+    if (!matchingUser.length) {
+      return;
+    }
+
+    // Create a new user if it doesn't exist
+    user = await ctx.env.data.users.create(client.tenant_id, {
+      id: nanoid(),
+      email,
+      email_verified: false,
+      is_social: false,
+      login_count: 0,
+      provider: "auth2",
+      connection: "Username-Password-Authentication",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
   }
 
   const code = generateOTP();
