@@ -17,11 +17,6 @@ import {
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import i18next from "i18next";
-import en from "../../localesLogin2/en/default.json";
-import it from "../../localesLogin2/it/default.json";
-import nb from "../../localesLogin2/nb/default.json";
-import sv from "../../localesLogin2/sv/default.json";
-import pl from "../../localesLogin2/pl/default.json";
 import EnterPasswordPage from "../../components/EnterPasswordPage";
 import EnterEmailPage from "../../components/EnterEmailPage";
 import EnterCodePage from "../../components/EnterCodePage";
@@ -78,26 +73,13 @@ async function initJSXRoute(state: string, env: Env) {
     session.authParams.vendor_id,
   );
 
-  initI18n(tenant.language || "sv");
+  await i18next.changeLanguage(tenant.language || "sv");
 
   return { vendorSettings, client, tenant, session };
 }
 
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
-
-function initI18n(lng: string) {
-  i18next.init({
-    lng,
-    resources: {
-      en: { translation: en },
-      it: { translation: it },
-      nb: { translation: nb },
-      sv: { translation: sv },
-      pl: { translation: pl },
-    },
-  });
-}
 
 async function handleLogin(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
