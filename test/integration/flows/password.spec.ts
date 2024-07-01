@@ -900,6 +900,48 @@ describe("password-flow", () => {
       expect(idTokenPayload.aud).toBe("clientId");
     });
 
+    it("should send password reset email for users with a matching email but no password user", async () => {
+      const env = await getEnv({
+        testTenantLanguage: "sv",
+      });
+      const oauthClient = testClient(oauthApp, env);
+
+      await env.data.users.create("tenantId", {
+        id: "email|userId",
+        email: "test@example.com",
+        email_verified: true,
+        name: "test",
+        login_count: 0,
+        provider: "email",
+        connection: "email",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      //-------------------
+      // send password reset email
+      //-------------------
+      const passwordResetSendResponse =
+        await oauthClient.dbconnections.change_password.$post({
+          json: {
+            client_id: "clientId",
+            email: "test@example.com",
+            connection: "Username-Password-Authentication",
+          },
+        });
+      expect(passwordResetSendResponse.status).toBe(200);
+      expect(await passwordResetSendResponse.text()).toBe(
+        "We've just sent you an email to reset your password.",
+      );
+
+      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+
+      expect(to).toBe("test@example.com");
+      expect(code).toBeDefined();
+      expect(state).toBeDefined();
+    });
+
     it("should reject weak passwords", async () => {
       const env = await getEnv({
         // vendor_id: "kvartal",
