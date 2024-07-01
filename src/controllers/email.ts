@@ -41,10 +41,10 @@ export async function sendCode(
     welcomeToYourAccount: t("welcome_to_your_account", options),
     codeEmailEnterCode: t("code_email_enter_code", options),
     codeEmailTitle: t("code_email_title", options),
-    codeValid30Mins: t("code_valid_30_minutes"),
-    contactUs: t("contact_us"),
-    copyright: t("copyright"),
-    supportInfo: t("support_info"),
+    codeValid30Mins: t("code_valid_30_minutes", options),
+    contactUs: t("contact_us", options),
+    copyright: t("copyright", options),
+    supportInfo: t("support_info", options),
   });
 
   await env.sendEmail(client, {
