@@ -2,13 +2,14 @@ import { Context } from "hono";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
+import i18next from "i18next";
 import { Env, Var } from "./types";
 import packageJson from "../package.json";
 import swaggerUi from "./routes/swagger-ui";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
-import { loginRoutes } from "./routes/tsx/routes";
+import { loginRoutes } from "./routes/universal-login/routes";
 import { wellKnownRoutes } from "./routes/oauth2/well-known";
 import { userRoutes } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";
@@ -29,6 +30,11 @@ import { authenticateRoutes } from "./routes/oauth2/authenticate";
 import { authorizeRoutes } from "./routes/oauth2/authorize";
 import { userinfoRoutes } from "./routes/oauth2/userinfo";
 import { brandingRoutes } from "./routes/management-api/branding";
+import en from "./localesLogin2/en/default.json";
+import it from "./localesLogin2/it/default.json";
+import nb from "./localesLogin2/nb/default.json";
+import sv from "./localesLogin2/sv/default.json";
+import pl from "./localesLogin2/pl/default.json";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -41,6 +47,16 @@ const ALLOWED_ORIGINS = [
   "https://auth-admin.sesamy.dev",
   "https://auth-admin.sesamy.com",
 ];
+
+i18next.init({
+  resources: {
+    en: { translation: en },
+    it: { translation: it },
+    nb: { translation: nb },
+    sv: { translation: sv },
+    pl: { translation: pl },
+  },
+});
 
 const rootApp = new OpenAPIHono<{ Bindings: Env; Variables: Var }>();
 

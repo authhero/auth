@@ -96,6 +96,20 @@ test("only allows existing breakit users to progress to the enter code step", as
   expect(nonExistingUserEmailResponse.status).toBe(400);
   await snapshotResponse(nonExistingUserEmailResponse);
 
+  const { logs } = await env.data.logs.list("breakit", {
+    page: 0,
+    per_page: 100,
+    include_totals: true,
+  });
+  expect(logs[0]).toMatchObject({
+    type: "fs",
+    tenant_id: "breakit",
+    user_name: "not-a-real-breakit-user@example.com",
+    // different to auth0, at this point we don't have a connection
+    connection: "",
+    client_id: "breakit",
+  });
+
   // ----------------------------
   //  Try going past email address step with existing breakit user
   // ----------------------------
@@ -116,8 +130,22 @@ test("only allows existing breakit users to progress to the enter code step", as
   expect(
     existingUserEmailResponseLocation!.startsWith("/u/enter-code"),
   ).toBeTruthy();
+
+  // ----------------------------
+  // if sign ups are disabled, the create account link should not be shown
+  // ----------------------------
+
+  const loginFormNoSignupResponse = await oauthClient.u.login.$get({
+    query: {
+      state: query.state,
+    },
+  });
+
+  await snapshotResponse(loginFormNoSignupResponse);
 });
 
+// this test name isn't correct as there is no "enter code" step with a social login. This test is testing that a new SSO user
+// cannot be redirect back to the callback
 test("only allows existing breakit users to progress to the enter code step with social signon", async () => {
   const testTenantLanguage = "en";
   const env = await getEnv({
@@ -186,7 +214,9 @@ test("only allows existing breakit users to progress to the enter code step with
 
   const socialStateParamNonExistingUser = osloBtoa({
     authParams: {
-      redirect_uri: "https://login2.sesamy.dev/callback",
+      // With the "fix" on this PR, this need testing... if we do want this approach, I can duplicate this test with this here and check that auth2 doesn't do the existing user check
+      // redirect_uri: "https://login2.sesamy.dev/callback",
+      redirect_uri: "https://example.com/callback",
       scope: "openid profile email",
       state: STATE,
       client_id: "breakit",
@@ -209,6 +239,20 @@ test("only allows existing breakit users to progress to the enter code step with
 
   // This is the error page we expect to see when the user does not exist
   await snapshotResponse(socialCallbackResponse);
+
+  const { logs } = await env.data.logs.list("breakit", {
+    page: 0,
+    per_page: 100,
+    include_totals: true,
+  });
+  expect(logs[0]).toMatchObject({
+    type: "fs",
+    tenant_id: "breakit",
+    user_name: "örjan.lindström@example.com",
+    connection: "other-social-provider",
+    client_id: "breakit",
+    description: "Public signup is disabled",
+  });
 
   // ----------------------------
   //  Try going past email address step with existing breakit user

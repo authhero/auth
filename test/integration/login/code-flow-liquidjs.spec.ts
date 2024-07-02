@@ -20,7 +20,9 @@ function getCodeAndTo(email: EmailOptions) {
 
   const to = email.to[0].email;
 
-  return { code, to };
+  const subject = email.subject;
+
+  return { code, to, subject };
 }
 
 describe("Login with code on liquidjs template", () => {
@@ -117,8 +119,23 @@ describe("Login with code on liquidjs template", () => {
     // flush pipe
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(env.data.emails.length).toBe(1);
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("test@example.com");
+    expect(subject).toBe(
+      `Velkommen til Test Tenant ! ${code} er påloggingskoden`,
+    );
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "cls",
+      tenant_id: "tenantId",
+      user_id: "", // this is correct. Auth0 does not tie this log to a user account
+      description: "test@example.com", // we only know which user it is by looking at the description field
+    });
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -158,7 +175,9 @@ describe("Login with code on liquidjs template", () => {
 
   it("is an existing primary user", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const env = await getEnv({
+      testTenantLanguage: "pl",
+    });
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -216,6 +235,19 @@ describe("Login with code on liquidjs template", () => {
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
 
+    // -----------------
+    // snapshot enter code form in polish
+    // -----------------
+
+    const codeInputFormResponse = await oauthClient.u["enter-email"].$get({
+      query: {
+        state: query.state,
+      },
+    });
+
+    expect(codeInputFormResponse.status).toBe(200);
+    await snapshotResponse(codeInputFormResponse);
+
     const postSendCodeResponse = await oauthClient.u["enter-email"].$post({
       query: { state: query.state },
       form: {
@@ -225,8 +257,12 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("bar@example.com");
+    expect(subject).toBe(
+      `Witamy na Test Tenant! ${code} to kod logowania do Twojego konta.`,
+    );
+    await snapshotEmail(env.data.emails[0], true);
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -256,6 +292,19 @@ describe("Login with code on liquidjs template", () => {
     // assert we get the same user back that we created at the start of this test
     expect(accessTokenPayload.sub).toBe("email|userId2");
     expect(idTokenPayload.email).toBe("bar@example.com");
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "s",
+      tenant_id: "tenantId",
+      user_name: "bar@example.com",
+      connection: "email",
+      client_id: "clientId",
+    });
 
     // TO TEST
     // - same things as on previous test
@@ -312,8 +361,11 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
+    expect(subject).toBe(
+      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+    );
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -378,8 +430,11 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
+    expect(subject).toBe(
+      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+    );
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -550,9 +605,12 @@ describe("Login with code on liquidjs template", () => {
       const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
       await new Promise((resolve) => setTimeout(resolve, 0));
-      const { to, code } = getCodeAndTo(env.data.emails[0]);
+      const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
 
       expect(to).toBe("same-email@example.com");
+      expect(subject).toBe(
+        `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+      );
 
       // Authenticate using the code
 
@@ -795,8 +853,11 @@ describe("Login with code on liquidjs template", () => {
     );
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("foo@example.com");
+    expect(subject).toBe(
+      `Velkommen til Test Tenant ! ${code} er påloggingskoden`,
+    );
 
     const authenticateResponse = await oauthClient.u["enter-code"].$post({
       query: {
@@ -900,8 +961,11 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
     expect(to).toBe("john-doe@example.com");
+    expect(subject).toBe(
+      `Välkommen till Test Tenant! ${code} är koden för att logga in`,
+    );
 
     const enterCodeParams = enterCodeLocation!.split("?")[1];
     const enterCodeQuery = Object.fromEntries(

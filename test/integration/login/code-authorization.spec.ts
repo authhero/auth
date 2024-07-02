@@ -84,6 +84,19 @@ test("code authorization flow should work", async () => {
   expect(idTokenPayload.sub).toEqual("auth2|userId");
 
   // TO TEST? more fields on tokens?
+
+  const { logs } = await env.data.logs.list("tenantId", {
+    page: 0,
+    per_page: 100,
+    include_totals: true,
+  });
+  expect(logs[0]).toMatchObject({
+    type: "seacft",
+    tenant_id: "tenantId",
+    user_name: "foo@example.com",
+    connection: "Username-Password-Authentication",
+    client_id: "clientId",
+  });
 });
 
 // TO TEST

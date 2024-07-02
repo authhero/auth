@@ -1,15 +1,22 @@
 import { Context } from "hono";
 import { Env } from "../types";
 import { Var } from "../types/Var";
-import instanceToJson from "../utils/instanceToJson";
+import instanceToJson from "./instanceToJson";
 import { LogType, Log } from "../types";
 
-export function createTypeLog(
-  logType: LogType,
+type LogParams = {
+  userId?: string;
+};
+
+export function createLogMessage(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
+  logType: LogType,
   body: unknown,
   description?: string,
+  logParams?: LogParams,
 ) {
+  const { userId } = logParams || {};
+
   const log: Log = {
     type: logType,
     description: ctx.var.description || description || "",
@@ -28,7 +35,7 @@ export function createTypeLog(
     isMobile: false,
     client_id: ctx.var.client_id,
     client_name: "",
-    user_id: ctx.var.userId || "",
+    user_id: userId || ctx.var.userId || "",
     hostname: ctx.req.header("host") || "",
     user_name: ctx.var.userName || "",
     connection_id: "",

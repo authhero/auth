@@ -82,6 +82,19 @@ describe("logout", () => {
 
     expect(logoutResponse.status).toBe(302);
 
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "slo",
+      tenant_id: "tenantId",
+      user_name: "foo@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
+
     //--------------------------------------------------------------
     // Now reuse the previous auth cookie. This should no longer work because the session is cleared
     //--------------------------------------------------------------

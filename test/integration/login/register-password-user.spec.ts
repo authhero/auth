@@ -78,6 +78,26 @@ describe("Register password user", () => {
 
     expect(postSignupResponse.status).toBe(200);
     await snapshotResponse(postSignupResponse);
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "ss",
+      tenant_id: "tenantId",
+      user_name: "test@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
+
+    // get user with this id and check is the correct id
+    const user = await env.data.users.get("tenantId", logs[0].user_id!);
+
+    expect(user).toMatchObject({
+      email: "test@example.com",
+    });
   });
 
   it("should reject a weak password", async () => {

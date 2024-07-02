@@ -18,4 +18,6 @@ export const headers = {
 
 export const UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS = 60 * 60 * 24; // 1 day
 
+export const CODE_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+
 export const CLIENT_ID = process.env.CLIENT_ID || "default";

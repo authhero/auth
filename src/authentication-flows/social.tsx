@@ -16,12 +16,10 @@ import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
 import { LogTypes } from "../types";
-import {
-  getPrimaryUserByEmailAndProvider,
-  getPrimaryUserByEmail,
-} from "../utils/users";
+import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
+import { createLogMessage } from "../utils/create-log-message";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -33,7 +31,15 @@ export async function socialAuth(
     (p) => p.name === connection,
   );
   if (!connectionInstance) {
-    ctx.set("logType", LogTypes.FAILED_LOGIN);
+    ctx.set("client_id", client.id);
+    const log = createLogMessage(
+      ctx,
+      LogTypes.FAILED_LOGIN,
+      {},
+      "Connection not found",
+    );
+    await ctx.env.data.logs.create(client.tenant_id, log);
+
     throw new HTTPException(403, { message: "Connection Not Found" });
   }
 
@@ -96,8 +102,15 @@ export async function socialAuthCallback({
   const client = await getClient(env, state.authParams.client_id);
 
   if (!client) {
-    // I'm not sure if these are correct as need to reverse engineer what Auth0 does
-    ctx.set("logType", LogTypes.FAILED_LOGIN);
+    ctx.set("client_id", state.authParams.client_id);
+    const log = createLogMessage(
+      ctx,
+      LogTypes.FAILED_SIGNUP,
+      {},
+      "Client not found",
+    );
+    // where should we log this? if client not found then there's no tenant_id...
+    await ctx.env.data.logs.create("DEFAULT_TENANT", log);
     throw new HTTPException(403, { message: "Client not found" });
   }
   const connection = client.connections.find(
@@ -105,14 +118,26 @@ export async function socialAuthCallback({
   );
 
   if (!connection) {
-    // same here. unsure
-    ctx.set("logType", LogTypes.FAILED_LOGIN);
+    ctx.set("client_id", client.id);
+    const log = createLogMessage(
+      ctx,
+      LogTypes.FAILED_LOGIN,
+      {},
+      "Connection not found",
+    );
+    await ctx.env.data.logs.create(client.tenant_id, log);
     throw new HTTPException(403, { message: "Connection not found" });
   }
 
   if (!state.authParams.redirect_uri) {
-    // same here. unsure
-    ctx.set("logType", LogTypes.FAILED_LOGIN);
+    ctx.set("client_id", client.id);
+    const log = createLogMessage(
+      ctx,
+      LogTypes.FAILED_LOGIN,
+      {},
+      "Redirect URI not defined",
+    );
+    await ctx.env.data.logs.create(client.tenant_id, log);
     throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
 
@@ -188,8 +213,19 @@ export async function socialAuthCallback({
   });
 
   if (!user) {
-    if (client.disable_sign_ups) {
-      ctx.set("logType", LogTypes.FAILED_LOGIN);
+    const callerIsLogin2 = state.authParams.redirect_uri.includes("login2");
+
+    if (client.disable_sign_ups && !callerIsLogin2) {
+      ctx.set("userName", email);
+      ctx.set("client_id", client.id);
+      ctx.set("connection", connection.name);
+      const log = createLogMessage(
+        ctx,
+        LogTypes.FAILED_SIGNUP,
+        {},
+        "Public signup is disabled",
+      );
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       const vendorSettings = await fetchVendorSettings(
         env,
@@ -206,15 +242,7 @@ export async function socialAuthCallback({
       );
     }
 
-    ctx.set("logType", LogTypes.SUCCESS_SIGNUP);
-
-    const primaryUser = await getPrimaryUserByEmail({
-      userAdapter: env.data.users,
-      tenant_id: client.tenant_id,
-      email: email,
-    });
-
-    const newSocialUser = await env.data.users.create(client.tenant_id, {
+    user = await env.data.users.create(client.tenant_id, {
       id: `${state.connection}|${sub}`,
       email,
       name: email,
@@ -230,18 +258,12 @@ export async function socialAuthCallback({
       profileData: JSON.stringify(profileData),
     });
 
-    // this means we have a primary account
-    if (primaryUser) {
-      user = primaryUser;
-
-      // link user with existing user
-      await env.data.users.update(client.tenant_id, newSocialUser.id, {
-        linked_to: primaryUser.id,
-      });
-    } else {
-      // here we are using the new user as the primary ccount
-      user = newSocialUser;
-    }
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+    ctx.set("client_id", client.id);
+    ctx.set("userId", user.id);
+    const log = createLogMessage(ctx, "ss", "Successful signup");
+    await ctx.env.data.logs.create(client.tenant_id, log);
   }
 
   const sessionId = await setSilentAuthCookies(
@@ -251,7 +273,7 @@ export async function socialAuthCallback({
     user,
   );
 
-  return generateAuthResponse({
+  const authResponse = generateAuthResponse({
     env,
     tenantId: client.tenant_id,
     userId: user.id,
@@ -263,4 +285,13 @@ export async function socialAuthCallback({
     responseType:
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });
+
+  ctx.set("userName", user.email);
+  ctx.set("connection", user.connection);
+  ctx.set("client_id", client.id);
+  ctx.set("userId", user.id);
+  const log = createLogMessage(ctx, "s", "Successful login");
+  await ctx.env.data.logs.create(client.tenant_id, log);
+
+  return authResponse;
 }

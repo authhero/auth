@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, test, expect } from "vitest";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp, managementApp } from "../../../src/app";
@@ -23,7 +23,9 @@ function getCodeStateTo(email: EmailOptions) {
   // this is a param on the verify email magic link
   const state = verifyEmailBody.match(/state=([^&]+)/)![1];
 
-  return { code, state, to };
+  const subject = email.subject;
+
+  return { code, state, to, subject };
 }
 
 describe("Register password", () => {
@@ -60,6 +62,21 @@ describe("Register password", () => {
     expect(createUserResponse.status).toBe(200);
     await snapshotResponse(createUserResponse);
 
+    const {
+      logs: [successSignUpLog],
+    } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(successSignUpLog).toMatchObject({
+      type: "ss",
+      tenant_id: "tenantId",
+      user_name: "password-login-test@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
+
     const blockedLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: query.state,
@@ -71,14 +88,32 @@ describe("Register password", () => {
     expect(blockedLoginResponse.status).toBe(400);
     await snapshotResponse(blockedLoginResponse);
 
+    const {
+      logs: [failedLogin],
+    } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+
+    expect(failedLogin).toMatchObject({
+      type: "f",
+      tenant_id: "tenantId",
+      user_name: "password-login-test@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+      description: "Email not verified",
+    });
+
     // this is the original email sent after signing up
-    const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+    const { to, code, state, subject } = getCodeStateTo(env.data.emails[0]);
 
     await snapshotEmail(env.data.emails[0]);
 
     expect(to).toBe("password-login-test@example.com");
     expect(code).toBeDefined();
     expect(state).toBeTypeOf("string");
+    expect(subject).toBe("Bekräfta din e-postadress");
 
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
@@ -163,9 +198,11 @@ describe("Register password", () => {
     // -----------------------------
     // validate email
     // -----------------------------
-    const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+    const { to, code, state, subject } = getCodeStateTo(env.data.emails[0]);
     expect(to).toBe("existing-code-user@example.com");
     expect(code).toBeDefined();
+    expect(subject).toBe("Bekräfta din e-postadress");
+
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
         state,
@@ -309,11 +346,13 @@ describe("Register password", () => {
     // THIS IS THE ONLY CHANGE HERE - we're not using the initially sent email, we're using the email sent
     // after a failed login
     // -------------------------------
-    const { to, code, state } = getCodeStateTo(env.data.emails[1]);
+    const { to, code, state, subject } = getCodeStateTo(env.data.emails[1]);
     await snapshotEmail(env.data.emails[1]);
     expect(to).toBe("password-login-test@example.com");
     expect(code).toBeDefined();
     expect(state).toBeTypeOf("string");
+    expect(subject).toBe("Bekräfta din e-postadress");
+
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
         state,
@@ -333,6 +372,210 @@ describe("Register password", () => {
       },
     });
     expect(workingLoginResponse.status).toBe(302);
+  });
+
+  // the previous tests sign up, follow the verify email link, and then manually go to the email+password login page to login...
+  // this test follows the new CTA button on the email verified page... we could just modify the existing tests... probably a good idea to have ONE test that does the above
+  it("should create a new user with a password and follow the email validation CTA to login again and continue flow", async () => {
+    const password = "Password1234!";
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const searchParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+      username: "password-login-test@example.com",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: searchParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "password-login-test@example.com",
+        password,
+      },
+    });
+
+    const { code, state } = getCodeStateTo(env.data.emails[0]);
+
+    const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+
+    expect(emailValidatedRes.status).toBe(200);
+
+    const emailValidatedBody = await emailValidatedRes.text();
+
+    // next step anchor is like <a href="/u/login?state={}""
+    const nextStepState = emailValidatedBody.match(
+      /\/u\/login\?state=([^&"]+)">/,
+    )![1];
+
+    //-------------------
+    // follow CTA on email validated page
+    //-------------------
+    const workingLoginForm = await oauthClient.u["enter-password"].$get({
+      query: {
+        state: nextStepState,
+      },
+    });
+    expect(workingLoginForm.status).toBe(200);
+    await snapshotResponse(workingLoginForm);
+
+    const workingLoginResponse = await oauthClient.u["enter-password"].$post({
+      query: {
+        state: nextStepState,
+      },
+      form: {
+        password,
+      },
+    });
+    expect(workingLoginResponse.status).toBe(302);
+
+    // -----------------------------
+    // now inspect params and check we're back on the redirect_uri
+    // -----------------------------
+
+    const loginLocation = workingLoginResponse.headers.get("location");
+    expect(loginLocation?.split("#")[0]).toBe("http://localhost:3000/callback");
+  });
+
+  test("should be able to continue flow when new email validation email is sent out from a new flow", async () => {
+    const password = "Password1234!";
+    const env = await getEnv();
+    const oauthClient = testClient(oauthApp, env);
+
+    const initialAuthorizeUniversalLoginParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+      username: "password-login-test@example.com",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: initialAuthorizeUniversalLoginParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "password-login-test@example.com",
+        password,
+      },
+    });
+
+    // -------------------------------
+    // start another session with slightly different params
+    // now log-in with correct password but will be blocked because have not verified email address
+    // -------------------------------
+
+    const secondAuthorizeUniversalLoginParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      username: "password-login-test@example.com",
+      // these two are different to initial
+      redirect_uri: "http://example.com",
+      state: "another-state-key",
+    };
+
+    const authorizeRes2 = await oauthClient.authorize.$get({
+      query: secondAuthorizeUniversalLoginParams,
+    });
+    expect(authorizeRes2.status).toBe(302);
+    const authorizeRes2URlSearchParams = new URLSearchParams(
+      authorizeRes2.headers.get("location")!.split("?")[1],
+    );
+    const authorizeRes2Query = Object.fromEntries(
+      authorizeRes2URlSearchParams.entries(),
+    );
+
+    const blockedLogin = await oauthClient.u["enter-password"].$post({
+      query: {
+        state: authorizeRes2Query.state,
+      },
+      form: {
+        password,
+      },
+    });
+    expect(blockedLogin.status).toBe(400);
+
+    // -------------------------------
+    // now follow validate-email link from latest sent email
+    // -------------------------------
+
+    // this is the second email sent.. the first one was after sign up, this is for a failed login
+    // should the emails actually be the same? would help with testing to make them different (less chance of a false positive...)
+    const { code, state } = getCodeStateTo(env.data.emails[1]);
+    const emailValidatedRes = await oauthClient.u["validate-email"].$get({
+      query: {
+        state,
+        code,
+      },
+    });
+
+    expect(emailValidatedRes.status).toBe(200);
+
+    const emailValidatedBody = await emailValidatedRes.text();
+
+    const nextStepState = emailValidatedBody.match(
+      /\/u\/login\?state=([^&"]+)">/,
+    )![1];
+
+    //-------------------
+    // follow CTA on email validated page
+    //-------------------
+    const workingLoginForm = await oauthClient.u["enter-password"].$get({
+      query: {
+        state: nextStepState,
+      },
+    });
+    expect(workingLoginForm.status).toBe(200);
+
+    const workingLoginResponse = await oauthClient.u["enter-password"].$post({
+      query: {
+        state: nextStepState,
+      },
+      form: {
+        password,
+      },
+    });
+    expect(workingLoginResponse.status).toBe(302);
+
+    // -----------------------------
+    // now inspect params and check we're on the redirect_uri from the failed login request
+    // along with the new state key...
+    // -----------------------------
+
+    const loginLocation = workingLoginResponse.headers.get("location");
+
+    // these show we are continuing the flow from the second failed login request
+    expect(loginLocation?.split("#")[0]).toBe("http://example.com/");
+
+    const hash = new URLSearchParams(loginLocation!.split("#")[1]);
+    expect(hash.get("state")).toBe("another-state-key");
   });
 });
 
@@ -400,6 +643,19 @@ describe("Login with password user", () => {
     const idToken = hash.get("id_token");
     expect(idToken).toBeTruthy();
     // TODO - decode this and assert params
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "s",
+      tenant_id: "tenantId",
+      user_name: "foo@example.com",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+    });
   });
 
   it("should reject non-existent email", async () => {
@@ -492,5 +748,20 @@ describe("Login with password user", () => {
     });
 
     await snapshotResponse(incorrectPasswordResponse);
+
+    const { logs } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(logs[0]).toMatchObject({
+      type: "fp",
+      tenant_id: "tenantId",
+      user_name: "foo@example.com",
+      user_id: "auth2|userId",
+      connection: "Username-Password-Authentication",
+      client_id: "clientId",
+      description: "Wrong email or password.",
+    });
   });
 });

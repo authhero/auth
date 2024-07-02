@@ -6,12 +6,11 @@ import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
 import { LogTypes } from "../types";
-import {
-  getPrimaryUserByEmail,
-  getPrimaryUserByEmailAndProvider,
-} from "../utils/users";
+import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
+import { createLogMessage } from "../utils/create-log-message";
+import { waitUntil } from "../utils/wait-until";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -34,7 +33,6 @@ export async function ticketAuth(
 ) {
   const { env } = ctx;
 
-  ctx.set("logType", LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION);
   ctx.set("connection", realm);
 
   const ticket = await env.data.tickets.get(tenant_id, ticketId);
@@ -129,7 +127,16 @@ export async function ticketAuth(
         login2UniverifiedEmailUrl.searchParams.set("connection", connection2);
       }
 
-      ctx.set("logType", LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD);
+      ctx.set("userName", user.email);
+      ctx.set("connection", user.connection);
+      ctx.set("client_id", client.id);
+      const log = createLogMessage(
+        ctx,
+        LogTypes.FAILED_LOGIN,
+        {},
+        "Email not verified",
+      );
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return new Response("Redirecting", {
         status: 302,
@@ -147,14 +154,6 @@ export async function ticketAuth(
       );
     }
 
-    const primaryUser = await getPrimaryUserByEmail({
-      userAdapter: env.data.users,
-      tenant_id,
-      email: ticket.email,
-    });
-
-    const linkedTo = primaryUser?.id;
-
     user = await env.data.users.create(tenant_id, {
       id: `email|${userIdGenerate()}`,
       email: ticket.email,
@@ -168,14 +167,9 @@ export async function ticketAuth(
       last_login: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      linked_to: linkedTo,
     });
 
     // TODO - set logging identity provider here
-
-    if (primaryUser) {
-      user = primaryUser;
-    }
   }
 
   ctx.set("userId", user.id);
@@ -195,6 +189,16 @@ export async function ticketAuth(
     // This is specific to cloudflare
     last_ip: ctx.req.header("cf-connecting-ip") || "",
   });
+
+  const log = createLogMessage(
+    ctx,
+    "scoa",
+    // do we want to tunnel the body through?
+    undefined,
+    "Successful cross-origin authentication",
+    { userId: user.id },
+  );
+  waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
   return generateAuthResponse({
     env,

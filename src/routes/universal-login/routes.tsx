@@ -1,6 +1,13 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, User, AuthorizationResponseType, Client, Var } from "../../types";
+import {
+  Env,
+  User,
+  AuthorizationResponseType,
+  Client,
+  Var,
+  LogTypes,
+} from "../../types";
 import ResetPasswordPage from "../../components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import {
@@ -10,27 +17,20 @@ import {
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import i18next from "i18next";
-import en from "../../localesLogin2/en/default.json";
-import it from "../../localesLogin2/it/default.json";
-import nb from "../../localesLogin2/nb/default.json";
-import sv from "../../localesLogin2/sv/default.json";
 import EnterPasswordPage from "../../components/EnterPasswordPage";
 import EnterEmailPage from "../../components/EnterEmailPage";
 import EnterCodePage from "../../components/EnterCodePage";
 import SignupPage from "../../components/SignUpPage";
 import UnverifiedEmail from "../../components/UnverifiedEmailPage";
 import MessagePage from "../../components/Message";
+import EmailValidatedPage from "../../components/EmailValidatedPage";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
-import {
-  generateAuthData,
-  generateAuthResponse,
-} from "../../helpers/generate-auth-response";
-import { getTokenResponseRedirectUri } from "../../helpers/apply-token-response";
+import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { Context } from "hono";
 import ForgotPasswordPage from "../../components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
-import { sendResetPassword, sendLink, sendCode } from "../../controllers/email";
+import { sendLink, sendCode } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
@@ -44,6 +44,12 @@ import {
 import { setCookie, getCookie } from "hono/cookie";
 import { waitUntil } from "../../utils/wait-until";
 import { fetchVendorSettings } from "../../utils/fetchVendorSettings";
+import { createLogMessage } from "../../utils/create-log-message";
+import {
+  loginWithPassword,
+  requestPasswordReset,
+} from "../../authentication-flows/password";
+import { CustomException } from "../../models/CustomError";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -67,7 +73,7 @@ async function initJSXRoute(state: string, env: Env) {
     session.authParams.vendor_id,
   );
 
-  initI18n(tenant.language || "sv");
+  await i18next.changeLanguage(tenant.language || "sv");
 
   return { vendorSettings, client, tenant, session };
 }
@@ -75,23 +81,10 @@ async function initJSXRoute(state: string, env: Env) {
 // duplicated from /passwordless route
 const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
-function initI18n(lng: string) {
-  i18next.init({
-    lng,
-    resources: {
-      en: { translation: en },
-      it: { translation: it },
-      nb: { translation: nb },
-      sv: { translation: sv },
-    },
-  });
-}
-
 async function handleLogin(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   user: User,
   session: UniversalLoginSession,
-  ctx: Context<{ Bindings: Env; Variables: Var }>,
   client: Client,
 ) {
   if (session.authParams.redirect_uri) {
@@ -109,8 +102,26 @@ async function handleLogin(
       ...authParams
     } = session.authParams;
 
-    const authResponse = await generateAuthData({
-      env,
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+    ctx.set("client_id", client.id);
+    const log = createLogMessage(ctx, "s", "Successful login");
+
+    waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
+
+    // Update the user's last login
+    waitUntil(
+      ctx,
+      ctx.env.data.users.update(client.tenant_id, user.id, {
+        last_login: new Date().toISOString(),
+        login_count: user.login_count + 1,
+        // This is specific to cloudflare
+        last_ip: ctx.req.header("cf-connecting-ip") || "",
+      }),
+    );
+
+    return generateAuthResponse({
+      env: ctx.env,
       tenantId: session.tenant_id,
       userId: user.id,
       sid: nanoid(),
@@ -118,17 +129,10 @@ async function handleLogin(
       authParams,
       user,
     });
-
-    const redirectUrl = getTokenResponseRedirectUri(
-      authResponse,
-      session.authParams,
-    );
-
-    return ctx.redirect(redirectUrl.href);
   }
 
   const vendorSettings = await fetchVendorSettings(
-    env,
+    ctx.env,
     client.id,
     session.authParams.vendor_id,
   );
@@ -196,6 +200,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           vendorSettings={vendorSettings}
           email={session.authParams.username}
           state={state}
+          client={client}
         />,
       );
     },
@@ -234,7 +239,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { env } = ctx;
       const { state } = ctx.req.valid("query");
-      const { password } = ctx.req.valid("form");
+      const body = ctx.req.valid("form");
+      const { password } = body;
 
       const { vendorSettings, client, session } = await initJSXRoute(
         state,
@@ -247,86 +253,45 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(400, { message: "Username required" });
       }
 
-      const user = await getUserByEmailAndProvider({
-        userAdapter: ctx.env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      if (!user) {
-        return ctx.html(
-          <EnterPasswordPage
-            vendorSettings={vendorSettings}
-            email={username}
-            error={i18next.t("invalid_password")}
-            state={state}
-          />,
-          400,
-        );
-      }
-
-      const { valid } = await env.data.passwords.validate(client.tenant_id, {
-        user_id: user.id,
-        password: password,
-      });
-
-      if (!valid) {
-        return ctx.html(
-          <EnterPasswordPage
-            vendorSettings={vendorSettings}
-            email={username}
-            error={i18next.t("invalid_password")}
-            state={state}
-          />,
-          400,
-        );
-      }
-
-      if (!user.email_verified) {
-        await sendEmailVerificationEmail({
-          env: ctx.env,
-          client,
-          user,
-        });
-
-        // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
-        return ctx.html(
-          <UnverifiedEmail vendorSettings={vendorSettings} />,
-          400,
-        );
-      }
-
-      // want to return primary user if different BUT password is linked to auth2 user
-      const primaryUser = await getPrimaryUserByEmailAndProvider({
-        userAdapter: env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      if (!primaryUser) {
-        // this should never really happen...
-        throw new HTTPException(400, { message: "primaryUser User not found" });
-      }
-
       try {
-        // Update the user's last login
-        await env.data.users.update(client.tenant_id, primaryUser.id, {
-          last_login: new Date().toISOString(),
-          login_count: user.login_count + 1,
-          // This is specific to cloudflare
-          last_ip: ctx.req.header("cf-connecting-ip") || "",
+        const user = await loginWithPassword(ctx, client, {
+          ...session.authParams,
+          password,
         });
 
-        return handleLogin(env, primaryUser, session, ctx, client);
-      } catch (err: any) {
+        return handleLogin(ctx, user, session, client);
+      } catch (err) {
+        const customException = err as CustomException;
+
+        if (
+          customException.code === "INVALID_PASSWORD" ||
+          customException.code === "USER_NOT_FOUND"
+        ) {
+          return ctx.html(
+            <EnterPasswordPage
+              vendorSettings={vendorSettings}
+              email={username}
+              error={i18next.t("invalid_password")}
+              state={state}
+              client={client}
+            />,
+            400,
+          );
+        } else if (customException.code === "EMAIL_NOT_VERIFIED") {
+          // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
+          return ctx.html(
+            <UnverifiedEmail vendorSettings={vendorSettings} />,
+            400,
+          );
+        }
+
         return ctx.html(
           <EnterPasswordPage
             vendorSettings={vendorSettings}
             email={username}
-            error={err.message}
+            error={customException.message}
             state={state}
+            client={client}
           />,
           400,
         );
@@ -588,32 +553,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         await env.data.universalLoginSessions.update(session.id, session);
       }
 
-      const user = await getUserByEmailAndProvider({
-        userAdapter: env.data.users,
-        tenant_id: client.tenant_id,
-        email: username,
-        provider: "auth2",
-      });
-
-      if (user) {
-        const code = generateOTP();
-
-        await env.data.codes.create(client.tenant_id, {
-          id: nanoid(),
-          code,
-          type: "password_reset",
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-        });
-
-        // Get typescript errors here but works on the mgmt api users route...
-        // ctx.set("log", `Code: ${code}`);
-
-        await sendResetPassword(env, client, username, code, state);
-      } else {
-        console.log("User not found");
-      }
+      await requestPasswordReset(ctx, client, username, session.id);
 
       return ctx.html(
         <MessagePage
@@ -659,6 +599,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           vendorSettings={vendorSettings}
           session={session}
           client={client}
+          email={session.authParams.username}
         />,
       );
     },
@@ -718,6 +659,18 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         );
 
         if (!user) {
+          // Auth0 doesn't set this, it's nested inside details
+          ctx.set("userName", params.username);
+          ctx.set("client_id", client.id);
+          const log = createLogMessage(
+            ctx,
+            LogTypes.FAILED_SIGNUP,
+            params,
+            "Public signup is disabled",
+          );
+
+          await ctx.env.data.logs.create(client.tenant_id, log);
+
           return ctx.html(
             <EnterEmailPage
               vendorSettings={vendorSettings}
@@ -779,39 +732,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
       if (sendType === "link") {
-        const magicLink = new URL(env.ISSUER);
-        magicLink.pathname = "passwordless/verify_redirect";
-        if (session.authParams.scope) {
-          magicLink.searchParams.set("scope", session.authParams.scope);
-        }
-        if (session.authParams.response_type) {
-          magicLink.searchParams.set(
-            "response_type",
-            session.authParams.response_type,
-          );
-        }
-        if (session.authParams.redirect_uri) {
-          magicLink.searchParams.set(
-            "redirect_uri",
-            session.authParams.redirect_uri,
-          );
-        }
-        if (session.authParams.audience) {
-          magicLink.searchParams.set("audience", session.authParams.audience);
-        }
-        if (session.authParams.state) {
-          magicLink.searchParams.set("state", session.authParams.state);
-        }
-        if (session.authParams.nonce) {
-          magicLink.searchParams.set("nonce", session.authParams.nonce);
-        }
-
-        magicLink.searchParams.set("connection", "email");
-        magicLink.searchParams.set("client_id", session.authParams.client_id);
-        magicLink.searchParams.set("email", session.authParams.username);
-        magicLink.searchParams.set("verification_code", code);
-        magicLink.searchParams.set("nonce", "nonce");
-
         waitUntil(
           ctx,
           sendLink(env, client, params.username, code, session.authParams),
@@ -819,6 +739,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       } else {
         waitUntil(ctx, sendCode(env, client, params.username, code));
       }
+
+      const log = createLogMessage(ctx, "cls", params, params.username);
+      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.redirect(
         `/u/enter-code?state=${state}&username=${params.username}`,
@@ -938,7 +861,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           verification_code: code,
         });
 
-        return generateAuthResponse({
+        const authResponse = await generateAuthResponse({
           env,
           tenantId: session.tenant_id,
           userId: user.id,
@@ -949,6 +872,15 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           authParams: session.authParams,
           user,
         });
+
+        ctx.set("userName", user.email);
+        ctx.set("connection", user.connection);
+        ctx.set("client_id", client.id);
+        const log = createLogMessage(ctx, "s", "Successful login");
+
+        await ctx.env.data.logs.create(client.tenant_id, log);
+
+        return authResponse;
       } catch (err) {
         return ctx.html(
           <EnterCodePage
@@ -1093,7 +1025,16 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           env: ctx.env,
           client,
           user: newUser,
+          authParams: session.authParams,
         });
+
+        ctx.set("userId", newUser.id);
+        ctx.set("userName", newUser.email);
+        ctx.set("connection", newUser.connection);
+        ctx.set("client_id", client.id);
+        const log = createLogMessage(ctx, "ss", "Successful signup");
+
+        await ctx.env.data.logs.create(client.tenant_id, log);
 
         return ctx.html(
           <MessagePage
@@ -1186,6 +1127,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         client.tenant_id,
         email,
       );
+
       const usersWithSameEmailButNotUsernamePassword =
         usersWithSameEmail.filter((user) => user.provider !== "auth2");
 
@@ -1214,11 +1156,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       return ctx.html(
-        <MessagePage
-          message={i18next.t("email_validated")}
-          pageTitle={i18next.t("email_validated")}
-          vendorSettings={vendorSettings}
-        />,
+        <EmailValidatedPage vendorSettings={vendorSettings} state={state} />,
       );
     },
   )

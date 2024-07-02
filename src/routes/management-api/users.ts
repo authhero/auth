@@ -1,7 +1,7 @@
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
-import { enrichUser } from "../../utils/enrichUser";
+import renameId from "../../utils/rename-id";
 import {
   Env,
   Log,
@@ -13,7 +13,7 @@ import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
-import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { createLogMessage } from "../../utils/create-log-message";
 import { Var } from "../../types/Var";
 import { waitUntil } from "../../utils/wait-until";
 import authenticationMiddleware from "../../middlewares/authentication";
@@ -96,14 +96,8 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           });
         }
 
-        const primaryAccountEnriched = await enrichUser(
-          ctx.env,
-          tenant_id,
-          primaryAccount,
-        );
-
         return ctx.json([
-          auth0UserResponseSchema.parse(primaryAccountEnriched),
+          auth0UserResponseSchema.parse(renameId(primaryAccount, "user_id")),
         ]);
       }
 
@@ -123,11 +117,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const primarySqlUsers = result.users.filter((user) => !user.linked_to);
 
-      const users = await Promise.all(
-        primarySqlUsers.map((primarySqlUser) => {
-          return enrichUser(ctx.env, tenant_id, primarySqlUser);
-        }),
-      );
+      const users = primarySqlUsers.map((u) => renameId(u, "user_id"));
 
       if (include_totals) {
         return ctx.json(
@@ -192,9 +182,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
       }
 
-      const userResponse = await enrichUser(ctx.env, tenant_id, user);
-
-      return ctx.json(auth0UserResponseSchema.parse(userResponse));
+      return ctx.json(auth0UserResponseSchema.parse(renameId(user, "user_id")));
     },
   )
   // --------------------------------
@@ -305,9 +293,8 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       });
 
       ctx.set("userId", data.id);
-      ctx.set("tenantId", tenant_id);
 
-      const log: Log = createTypeLog("sapi", ctx, body, `Create a User`);
+      const log: Log = createLogMessage(ctx, "sapi", body, `Create a User`);
       waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
       const userResponse = {
@@ -419,9 +406,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(500);
       }
 
-      const userResponse = await enrichUser(ctx.env, tenant_id, patchedUser);
-
-      return ctx.json(userResponse);
+      return ctx.json(renameId(patchedUser, "user_id"));
     },
   )
   // --------------------------------
@@ -564,8 +549,8 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(404);
       }
 
-      const userResponse = await enrichUser(ctx.env, tenant_id, user);
-
-      return ctx.json([auth0UserResponseSchema.parse(userResponse)]);
+      return ctx.json([
+        auth0UserResponseSchema.parse(renameId(user, "user_id")),
+      ]);
     },
   );

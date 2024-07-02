@@ -152,7 +152,6 @@ describe("users management API endpoint", () => {
         const token = await getAdminToken();
 
         const env = await getEnv();
-        const client = testClient(oauthApp, env);
         const managementClient = testClient(managementApp, env);
 
         // ----------------------
@@ -228,6 +227,8 @@ describe("users management API endpoint", () => {
               json: {
                 email: "existing-code-user@example.com",
                 connection: "email",
+                email_verified: true,
+                verify_email: false,
               },
               header: {
                 "tenant-id": "tenantId",
@@ -1329,7 +1330,7 @@ describe("users management API endpoint", () => {
         },
       ]);
       // this shows we have unlinked
-      expect(user2.identities.length).toBe(1);
+      expect(user2.identities?.length).toBe(1);
     });
 
     it("should link two users using user_id and provider parameter", async () => {

@@ -1,11 +1,7 @@
 import { Liquid } from "liquidjs";
-import { translate } from "../utils/i18n";
+import { t } from "i18next";
 import { AuthParams, Client, Env } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
-import en from "../locales/en/default.json";
-import sv from "../locales/sv/default.json";
-import nb from "../locales/nb/default.json";
-import it from "../locales/it/default.json";
 import {
   codeV2,
   linkV2,
@@ -13,21 +9,6 @@ import {
   verifyEmail,
 } from "../templates/email/ts";
 import { createMagicLink } from "../utils/magicLink";
-import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
-
-const SUPPORTED_LOCALES: { [key: string]: object } = {
-  en,
-  sv,
-  nb,
-  it,
-};
-
-function getLocale(language: string) {
-  if (SUPPORTED_LOCALES[language]) {
-    return SUPPORTED_LOCALES[language];
-  }
-  return en;
-}
 
 const engine = new Liquid();
 
@@ -37,9 +18,6 @@ export async function sendCode(
   to: string,
   code: string,
 ) {
-  const language = client.tenant.language || "sv";
-  const locale = getLocale(language);
-
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
@@ -47,24 +25,26 @@ export async function sendCode(
   );
 
   const sendCodeUniversalTemplate = engine.parse(codeV2);
-  const sendCodeTemplateString = await engine.render(
-    sendCodeUniversalTemplate,
-    {
-      ...locale,
-      code,
-      vendorName: client.tenant.name,
-      logo,
-      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
-      buttonColor: client.tenant.primary_color || "#7d68f4",
-    },
-  );
-  const sendCodeTemplate = engine.parse(sendCodeTemplateString);
-  const codeEmailBody = await engine.render(sendCodeTemplate, {
+
+  const options = {
+    code,
+    vendorName: client.tenant.name,
+    lng: client.tenant.language || "sv",
+  };
+
+  const codeEmailBody = await engine.render(sendCodeUniversalTemplate, {
     code,
     vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     buttonColor: client.tenant.primary_color || "#7d68f4",
+    welcomeToYourAccount: t("welcome_to_your_account", options),
+    codeEmailEnterCode: t("code_email_enter_code", options),
+    codeEmailTitle: t("code_email_title", options),
+    codeValid30Mins: t("code_valid_30_minutes", options),
+    contactUs: t("contact_us", options),
+    copyright: t("copyright", options),
+    supportInfo: t("support_info", options),
   });
 
   await env.sendEmail(client, {
@@ -79,9 +59,7 @@ export async function sendCode(
         value: codeEmailBody,
       },
     ],
-    subject: translate(language, "codeEmailTitle")
-      .replace("{{vendorName}}", client.tenant.name)
-      .replace("{{code}}", code),
+    subject: t("code_email_subject", options),
   });
 }
 
@@ -92,9 +70,6 @@ export async function sendLink(
   code: string,
   authParams: AuthParams,
 ) {
-  const language = client.tenant.language || "sv";
-  const locale = getLocale(language);
-
   const magicLink = createMagicLink({
     issuer: env.ISSUER,
     code,
@@ -109,27 +84,28 @@ export async function sendLink(
   );
 
   const sendCodeUniversalTemplate = engine.parse(linkV2);
-  const sendCodeTemplateString = await engine.render(
-    sendCodeUniversalTemplate,
-    {
-      ...locale,
-      // pass in variables twice! no harm to overdo it
-      code,
-      vendorName: client.tenant.name,
-      logo,
-      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
-      magicLink,
-      buttonColor: client.tenant.primary_color || "#7d68f4",
-    },
-  );
-  const sendCodeTemplate = engine.parse(sendCodeTemplateString);
-  const codeEmailBody = await engine.render(sendCodeTemplate, {
+
+  const options = {
+    vendorName: client.tenant.name,
+    code,
+    lng: client.tenant.language || "sv",
+  };
+
+  const codeEmailBody = await engine.render(sendCodeUniversalTemplate, {
     code,
     vendorName: client.tenant.name,
     logo,
     supportUrl: client.tenant.support_url || "https://support.sesamy.com",
     magicLink,
     buttonColor: client.tenant.primary_color || "#7d68f4",
+    welcomeToYourAccount: t("welcome_to_your_account", options),
+    linkEmailClickToLogin: t("link_email_click_to_login", options),
+    linkEmailLogin: t("link_email_login", options),
+    linkEmailOrEnterCode: t("link_email_or_enter_code", options),
+    codeValid30Mins: t("code_valid_30_minutes", options),
+    supportInfo: t("support_info", options),
+    contactUs: t("contact_us", options),
+    copyright: t("copyright", options),
   });
 
   await env.sendEmail(client, {
@@ -144,9 +120,7 @@ export async function sendLink(
         value: codeEmailBody,
       },
     ],
-    subject: translate(language, "codeEmailTitle")
-      .replace("{{vendorName}}", client.tenant.name)
-      .replace("{{code}}", code),
+    subject: t("code_email_subject", options),
   });
 }
 
@@ -158,9 +132,6 @@ export async function sendResetPassword(
   code: string,
   state: string,
 ) {
-  const language = client.tenant.language || "sv";
-  const locale = getLocale(language);
-
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
@@ -171,27 +142,31 @@ export async function sendResetPassword(
   const passwordResetUrl = `${env.ISSUER}u/reset-password?state=${state}&code=${code}`;
 
   const sendPasswordResetUniversalTemplate = engine.parse(passwordReset);
-  const sendPasswordResetTemplateString = await engine.render(
+
+  const options = {
+    vendorName: client.tenant.name,
+    lng: client.tenant.language || "sv",
+  };
+
+  const passwordResetBody = await engine.render(
     sendPasswordResetUniversalTemplate,
     {
-      ...locale,
       vendorName: client.tenant.name,
       logo,
       passwordResetUrl,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
       buttonColor: client.tenant.primary_color || "#7d68f4",
+      passwordResetTitle: t("password_reset_title", options),
+      resetPasswordEmailClickToReset: t(
+        "reset_password_email_click_to_reset",
+        options,
+      ),
+      resetPasswordEmailReset: t("reset_password_email_reset", options),
+      supportInfo: t("support_info", options),
+      contactUs: t("contact_us", options),
+      copyright: t("copyright", options),
     },
   );
-  const sendPasswordResetTemplate = engine.parse(
-    sendPasswordResetTemplateString,
-  );
-  const passwordResetBody = await engine.render(sendPasswordResetTemplate, {
-    passwordResetUrl,
-    vendorName: client.tenant.name,
-    logo,
-    supportUrl: client.tenant.support_url || "https://support.sesamy.com",
-    buttonColor: client.tenant.primary_color || "#7d68f4",
-  });
 
   await env.sendEmail(client, {
     to: [{ email: to, name: to }],
@@ -205,10 +180,7 @@ export async function sendResetPassword(
         value: passwordResetBody,
       },
     ],
-    subject: translate(language, "passwordResetTitle").replace(
-      "{{vendorName}}",
-      client.tenant.name,
-    ),
+    subject: t("password_reset_subject", options),
   });
 }
 
@@ -219,13 +191,6 @@ export async function sendValidateEmailAddress(
   code: string,
   state: string,
 ) {
-  // const response = await env.AUTH_TEMPLATES.get(
-  //   "templates/email/verify-email.liquid",
-  // );
-
-  const language = client.tenant.language || "sv";
-  const locale = getLocale(language);
-
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
@@ -236,27 +201,27 @@ export async function sendValidateEmailAddress(
   const emailValidationUrl = `${env.ISSUER}u/validate-email?state=${state}&code=${code}`;
 
   const sendEmailValidationUniversalTemplate = engine.parse(verifyEmail);
-  const sendEmailValidationTemplateString = await engine.render(
+
+  const options = {
+    vendorName: client.tenant.name,
+    lng: client.tenant.language || "sv",
+  };
+
+  const emailValidationBody = await engine.render(
     sendEmailValidationUniversalTemplate,
     {
-      ...locale,
       vendorName: client.tenant.name,
       logo,
       emailValidationUrl,
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",
       buttonColor: client.tenant.primary_color || "#7d68f4",
+      welcomeToYourAccount: t("welcome_to_your_account", options),
+      verifyEmailVerify: t("verify_email_verify", options),
+      supportInfo: t("support_info", options),
+      contactUs: t("contact_us", options),
+      copyright: t("copyright", options),
     },
   );
-  const sendEmailValidationTemplate = engine.parse(
-    sendEmailValidationTemplateString,
-  );
-  const emailValidationBody = await engine.render(sendEmailValidationTemplate, {
-    emailValidationUrl,
-    vendorName: client.tenant.name,
-    logo,
-    supportUrl: client.tenant.support_url || "https://support.sesamy.com",
-    buttonColor: client.tenant.primary_color || "#7d68f4",
-  });
 
   await env.sendEmail(client, {
     to: [{ email: to, name: to }],
@@ -270,9 +235,6 @@ export async function sendValidateEmailAddress(
         value: emailValidationBody,
       },
     ],
-    subject: translate(language, "verifyEmailTitle").replace(
-      "{{vendorName}}",
-      client.tenant.name,
-    ),
+    subject: t("verify_email_subject", options),
   });
 }

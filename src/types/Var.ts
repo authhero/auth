@@ -2,12 +2,8 @@ import { LogType, Auth0Client } from "./auth0";
 import { z } from "zod";
 
 export type Var = {
-  vendorId?: string;
   startAt: number;
   userId?: string;
-  tenantId?: string;
-  log: string;
-  logType?: LogType;
   client_id?: string;
   description?: string;
   user?: {

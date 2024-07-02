@@ -14,14 +14,14 @@ import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
+import { addDataHooks } from "../../../src/hooks";
 
 type getEnvParams = {
   testTenantLanguage?: string;
+  emailValidation?: "enabled" | "enforced" | "disabled";
 };
 
-export async function getEnv(args?: getEnvParams) {
-  const testTenantLanguage = args?.testTenantLanguage;
-
+export async function getEnv(args: getEnvParams = {}) {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
@@ -95,7 +95,7 @@ export async function getEnv(args?: getEnvParams) {
     support_url: "https://example.com/support",
     created_at: "created_at",
     updated_at: "updated_at",
-    language: testTenantLanguage,
+    language: args.testTenantLanguage,
   };
 
   const testApplication: Application = {
@@ -105,7 +105,7 @@ export async function getEnv(args?: getEnvParams) {
     allowed_callback_urls: "https://example.com/callback",
     allowed_logout_urls: "",
     allowed_web_origins: "example.com",
-    email_validation: "enforced",
+    email_validation: args.emailValidation || "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
     disable_sign_ups: false,
@@ -118,7 +118,7 @@ export async function getEnv(args?: getEnvParams) {
     allowed_callback_urls: "https://example.com/callback2",
     allowed_logout_urls: "",
     allowed_web_origins: "",
-    email_validation: "enforced",
+    email_validation: args.emailValidation || "enforced",
     created_at: "created_at",
     updated_at: "updated_at",
     disable_sign_ups: false,
@@ -205,14 +205,7 @@ export async function getEnv(args?: getEnvParams) {
   });
 
   return {
-    data: {
-      ...data,
-      emails,
-      templates: {
-        get: async (...inputs: any[]) =>
-          `<div>${JSON.stringify(inputs, null, 2)}</div>`,
-      },
-    },
+    data: { ...addDataHooks(data), emails },
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     TOKEN_SERVICE: {
       fetch: async () => ({

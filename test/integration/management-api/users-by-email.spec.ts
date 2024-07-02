@@ -9,7 +9,6 @@ import { Identity } from "../../../src/types/auth0/Identity";
 describe("users by email", () => {
   it("should return empty list if there are no users with queried email address", async () => {
     const env = await getEnv();
-    const client = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
@@ -29,7 +28,7 @@ describe("users by email", () => {
       },
     );
 
-    const users = (await response.json()) as UserResponse[];
+    const users = await response.json();
 
     expect(users).toHaveLength(0);
   });

@@ -81,6 +81,20 @@ describe("code-flow", () => {
 
     await snapshotEmail(env.data.emails[0], true);
 
+    const {
+      logs: [clsLog],
+    } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(clsLog).toMatchObject({
+      type: "cls",
+      tenant_id: "tenantId",
+      user_id: "", // this is correct. Auth0 does not tie this log to a user account
+      description: "test@example.com", // we only know which user it is by looking at the description field
+    });
+
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
@@ -140,6 +154,20 @@ describe("code-flow", () => {
     const idTokenPayload = parseJwt(idToken!);
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
+
+    const {
+      logs: [scoaLog],
+    } = await env.data.logs.list("tenantId", {
+      page: 0,
+      per_page: 100,
+      include_totals: true,
+    });
+    expect(scoaLog).toMatchObject({
+      type: "scoa",
+      tenant_id: "tenantId",
+      user_id: accessTokenPayload.sub,
+      user_name: "test@example.com",
+    });
 
     // now check silent auth works when logged in with code----------------------------------------
     const setCookiesHeader = tokenResponse.headers.get("set-cookie")!;

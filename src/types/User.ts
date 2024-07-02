@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { baseEntitySchema } from "./BaseEntity";
+import { identitySchema } from "./auth0/Identity";
 
-const baseUserSchema = z.object({
-  // One of the following is required
+export const baseUserSchema = z.object({
   email: z.string().optional(),
   username: z.string().optional(),
   given_name: z.string().optional(),
@@ -15,8 +15,11 @@ const baseUserSchema = z.object({
   profileData: z.string().optional(),
 });
 
+export type BaseUser = z.infer<typeof baseUserSchema>;
+
 export const userInsertSchema = baseUserSchema.extend({
   email_verified: z.boolean().default(false),
+  verify_email: z.boolean().optional(),
   last_ip: z.string().optional(),
   last_login: z.string().optional(),
   provider: z.string().default("email"),
@@ -26,40 +29,17 @@ export const userInsertSchema = baseUserSchema.extend({
 export const userSchema = userInsertSchema
   .extend(baseEntitySchema.shape)
   .extend({
+    // TODO: this not might be correct if you use the username
+    email: z.string(),
     is_social: z.boolean(),
     login_count: z.number(),
+    identities: z.array(identitySchema).optional(),
   });
+
+export type User = z.infer<typeof userSchema>;
 
 export const auth0UserResponseSchema = userSchema
   .extend({
     user_id: z.string(),
-    // TODO: Type identities
-    identities: z.array(z.any()),
   })
   .omit({ id: true });
-
-export interface BaseUser {
-  // TODO - Auth0 requires the id OR the email but for our current usage with durable objects and Sesamy's architecture, we need email!
-  email: string;
-  given_name?: string;
-  family_name?: string;
-  nickname?: string;
-  name?: string;
-  picture?: string;
-  locale?: string;
-  linked_to?: string;
-  profileData?: string;
-}
-
-export interface User extends BaseUser {
-  id: string;
-  email_verified: boolean;
-  last_ip?: string;
-  last_login?: string;
-  login_count: number;
-  provider: string;
-  connection: string;
-  is_social: boolean;
-  created_at: string;
-  updated_at: string;
-}

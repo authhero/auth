@@ -21,7 +21,7 @@ const DisabledSubmitButton = ({
         id="loading-btn"
         disabled
       >
-        {children}
+        &nbsp;
       </Button>
     </>
   );
