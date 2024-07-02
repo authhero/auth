@@ -13,7 +13,7 @@ import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
-import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { createLogMessage } from "../../utils/create-log-message";
 import { Var } from "../../types/Var";
 import { waitUntil } from "../../utils/wait-until";
 import authenticationMiddleware from "../../middlewares/authentication";
@@ -294,7 +294,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       ctx.set("userId", data.id);
 
-      const log: Log = createTypeLog("sapi", ctx, body, `Create a User`);
+      const log: Log = createLogMessage(ctx, "sapi", body, `Create a User`);
       waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
       const userResponse = {

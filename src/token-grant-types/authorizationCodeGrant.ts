@@ -9,7 +9,7 @@ import { HTTPException } from "hono/http-exception";
 import { generateAuthData } from "../helpers/generate-auth-response";
 import { Context } from "hono";
 import { nanoid } from "nanoid";
-import { createTypeLog } from "../tsoa-middlewares/logger";
+import { createLogMessage } from "../utils/create-log-message";
 
 export async function authorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -57,9 +57,9 @@ export async function authorizeCodeGrant(
   ctx.set("userName", user.email);
   ctx.set("connection", user.connection);
   ctx.set("client_id", client.id);
-  const log = createTypeLog(
-    "seacft",
+  const log = createLogMessage(
     ctx,
+    "seacft",
     "Authorization Code for Access Token",
   );
 

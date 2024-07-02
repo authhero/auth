@@ -9,7 +9,7 @@ import { LogTypes } from "../types";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
-import { createTypeLog } from "../tsoa-middlewares/logger";
+import { createLogMessage } from "../utils/create-log-message";
 import { waitUntil } from "../utils/wait-until";
 
 function getProviderFromRealm(realm: string) {
@@ -130,9 +130,9 @@ export async function ticketAuth(
       ctx.set("userName", user.email);
       ctx.set("connection", user.connection);
       ctx.set("client_id", client.id);
-      const log = createTypeLog(
-        LogTypes.FAILED_LOGIN,
+      const log = createLogMessage(
         ctx,
+        LogTypes.FAILED_LOGIN,
         {},
         "Email not verified",
       );
@@ -190,9 +190,9 @@ export async function ticketAuth(
     last_ip: ctx.req.header("cf-connecting-ip") || "",
   });
 
-  const log = createTypeLog(
-    "scoa",
+  const log = createLogMessage(
     ctx,
+    "scoa",
     // do we want to tunnel the body through?
     undefined,
     "Successful cross-origin authentication",

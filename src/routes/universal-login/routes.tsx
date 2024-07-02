@@ -44,7 +44,7 @@ import {
 import { setCookie, getCookie } from "hono/cookie";
 import { waitUntil } from "../../utils/wait-until";
 import { fetchVendorSettings } from "../../utils/fetchVendorSettings";
-import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { createLogMessage } from "../../utils/create-log-message";
 import {
   loginWithPassword,
   requestPasswordReset,
@@ -105,7 +105,7 @@ async function handleLogin(
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
     ctx.set("client_id", client.id);
-    const log = createTypeLog("s", ctx, "Successful login");
+    const log = createLogMessage(ctx, "s", "Successful login");
 
     waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
 
@@ -662,9 +662,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           // Auth0 doesn't set this, it's nested inside details
           ctx.set("userName", params.username);
           ctx.set("client_id", client.id);
-          const log = createTypeLog(
-            LogTypes.FAILED_SIGNUP,
+          const log = createLogMessage(
             ctx,
+            LogTypes.FAILED_SIGNUP,
             params,
             "Public signup is disabled",
           );
@@ -740,7 +740,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         waitUntil(ctx, sendCode(env, client, params.username, code));
       }
 
-      const log = createTypeLog("cls", ctx, params, params.username);
+      const log = createLogMessage(ctx, "cls", params, params.username);
       await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.redirect(
@@ -876,7 +876,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ctx.set("userName", user.email);
         ctx.set("connection", user.connection);
         ctx.set("client_id", client.id);
-        const log = createTypeLog("s", ctx, "Successful login");
+        const log = createLogMessage(ctx, "s", "Successful login");
 
         await ctx.env.data.logs.create(client.tenant_id, log);
 
@@ -1032,7 +1032,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ctx.set("userName", newUser.email);
         ctx.set("connection", newUser.connection);
         ctx.set("client_id", client.id);
-        const log = createTypeLog("ss", ctx, "Successful signup");
+        const log = createLogMessage(ctx, "ss", "Successful signup");
 
         await ctx.env.data.logs.create(client.tenant_id, log);
 

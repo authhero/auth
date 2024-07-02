@@ -12,7 +12,7 @@ import {
 import renderAuthIframe from "../templates/authIframe";
 import { generateAuthData } from "../helpers/generate-auth-response";
 import { Var } from "../types/Var";
-import { createTypeLog } from "../tsoa-middlewares/logger";
+import { createLogMessage } from "../utils/create-log-message";
 
 interface SilentAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
@@ -88,9 +88,9 @@ export async function silentAuth({
 
         ctx.set("userName", user.email);
         ctx.set("connection", user.connection);
-        const log = createTypeLog(
-          LogTypes.SUCCESS_SILENT_AUTH,
+        const log = createLogMessage(
           ctx,
+          LogTypes.SUCCESS_SILENT_AUTH,
           {},
           "Successful silent authentication",
         );
@@ -111,9 +111,9 @@ export async function silentAuth({
 
   ctx.set("description", "Login required");
 
-  const log = createTypeLog(
-    LogTypes.FAILED_SILENT_AUTH,
+  const log = createLogMessage(
     ctx,
+    LogTypes.FAILED_SILENT_AUTH,
     {},
     "Login required",
   );
