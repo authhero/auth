@@ -1,16 +1,16 @@
 import { Context } from "hono";
 import { Env } from "../types";
 import { Var } from "../types/Var";
-import instanceToJson from "../utils/instanceToJson";
+import instanceToJson from "./instanceToJson";
 import { LogType, Log } from "../types";
 
 type LogParams = {
   userId?: string;
 };
 
-export function createTypeLog(
-  logType: LogType,
+export function createLogMessage(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
+  logType: LogType,
   body: unknown,
   description?: string,
   logParams?: LogParams,

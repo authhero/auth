@@ -9,7 +9,7 @@ import swaggerUi from "./routes/swagger-ui";
 import loggerMiddleware from "./middlewares/logger";
 import renderOauthRedirectHtml from "./routes/oauth2-redirect";
 import { validateUrl } from "./utils/validate-redirect-url";
-import { loginRoutes } from "./routes/tsx/routes";
+import { loginRoutes } from "./routes/universal-login/routes";
 import { wellKnownRoutes } from "./routes/oauth2/well-known";
 import { userRoutes } from "./routes/management-api/users";
 import { registerComponent } from "./middlewares/register-component";

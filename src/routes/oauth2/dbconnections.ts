@@ -7,7 +7,7 @@ import { getPrimaryUserByEmailAndProvider } from "../../utils/users";
 import { AuthParams, Env, Var } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import validatePassword from "../../utils/validatePassword";
-import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { createLogMessage } from "../../utils/create-log-message";
 import { requestPasswordReset } from "../../authentication-flows/password";
 import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
@@ -111,7 +111,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       ctx.set("userName", newUser.email);
       ctx.set("connection", newUser.connection);
       ctx.set("client_id", client.id);
-      const log = createTypeLog("ss", ctx, "Successful signup");
+      const log = createLogMessage(ctx, "ss", "Successful signup");
 
       await ctx.env.data.logs.create(client.tenant_id, log);
 

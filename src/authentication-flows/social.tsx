@@ -19,7 +19,7 @@ import { LogTypes } from "../types";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
-import { createTypeLog } from "../tsoa-middlewares/logger";
+import { createLogMessage } from "../utils/create-log-message";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -32,9 +32,9 @@ export async function socialAuth(
   );
   if (!connectionInstance) {
     ctx.set("client_id", client.id);
-    const log = createTypeLog(
-      LogTypes.FAILED_LOGIN,
+    const log = createLogMessage(
       ctx,
+      LogTypes.FAILED_LOGIN,
       {},
       "Connection not found",
     );
@@ -103,9 +103,9 @@ export async function socialAuthCallback({
 
   if (!client) {
     ctx.set("client_id", state.authParams.client_id);
-    const log = createTypeLog(
-      LogTypes.FAILED_SIGNUP,
+    const log = createLogMessage(
       ctx,
+      LogTypes.FAILED_SIGNUP,
       {},
       "Client not found",
     );
@@ -119,9 +119,9 @@ export async function socialAuthCallback({
 
   if (!connection) {
     ctx.set("client_id", client.id);
-    const log = createTypeLog(
-      LogTypes.FAILED_LOGIN,
+    const log = createLogMessage(
       ctx,
+      LogTypes.FAILED_LOGIN,
       {},
       "Connection not found",
     );
@@ -131,9 +131,9 @@ export async function socialAuthCallback({
 
   if (!state.authParams.redirect_uri) {
     ctx.set("client_id", client.id);
-    const log = createTypeLog(
-      LogTypes.FAILED_LOGIN,
+    const log = createLogMessage(
       ctx,
+      LogTypes.FAILED_LOGIN,
       {},
       "Redirect URI not defined",
     );
@@ -219,9 +219,9 @@ export async function socialAuthCallback({
       ctx.set("userName", email);
       ctx.set("client_id", client.id);
       ctx.set("connection", connection.name);
-      const log = createTypeLog(
-        LogTypes.FAILED_SIGNUP,
+      const log = createLogMessage(
         ctx,
+        LogTypes.FAILED_SIGNUP,
         {},
         "Public signup is disabled",
       );
@@ -262,7 +262,7 @@ export async function socialAuthCallback({
     ctx.set("connection", user.connection);
     ctx.set("client_id", client.id);
     ctx.set("userId", user.id);
-    const log = createTypeLog("ss", ctx, "Successful signup");
+    const log = createLogMessage(ctx, "ss", "Successful signup");
     await ctx.env.data.logs.create(client.tenant_id, log);
   }
 
@@ -290,7 +290,7 @@ export async function socialAuthCallback({
   ctx.set("connection", user.connection);
   ctx.set("client_id", client.id);
   ctx.set("userId", user.id);
-  const log = createTypeLog("s", ctx, "Successful login");
+  const log = createLogMessage(ctx, "s", "Successful login");
   await ctx.env.data.logs.create(client.tenant_id, log);
 
   return authResponse;

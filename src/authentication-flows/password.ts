@@ -9,7 +9,7 @@ import {
 import { CODE_EXPIRATION_TIME } from "../constants";
 import generateOTP from "../utils/otp";
 import { sendResetPassword } from "../controllers/email";
-import { createTypeLog } from "../tsoa-middlewares/logger";
+import { createLogMessage } from "../utils/create-log-message";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { HTTPException } from "hono/http-exception";
 import { CustomException } from "../models/CustomError";
@@ -109,7 +109,7 @@ export async function loginWithPassword(
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
     ctx.set("client_id", client.id);
-    const log = createTypeLog("fp", ctx, {}, "Wrong email or password.");
+    const log = createLogMessage(ctx, "fp", {}, "Wrong email or password.");
 
     await ctx.env.data.logs.create(client.tenant_id, log);
 
@@ -128,9 +128,9 @@ export async function loginWithPassword(
       authParams: cleanAuthParams,
     });
 
-    const log = createTypeLog(
-      LogTypes.FAILED_LOGIN,
+    const log = createLogMessage(
       ctx,
+      LogTypes.FAILED_LOGIN,
       {},
       "Email not verified",
     );

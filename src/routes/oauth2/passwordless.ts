@@ -14,7 +14,7 @@ import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { createTypeLog } from "../../tsoa-middlewares/logger";
+import { createLogMessage } from "../../utils/create-log-message";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -86,7 +86,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
       }
 
       // the description is the user email. this matches auth0
-      const log = createTypeLog("cls", ctx, body, email);
+      const log = createLogMessage(ctx, "cls", body, email);
       await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.html("OK");
