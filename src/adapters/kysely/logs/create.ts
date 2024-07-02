@@ -17,7 +17,7 @@ export function createLog(db: Kysely<Database>) {
       tenant_id,
       ...params,
       auth0_client: stringifyIfTruthy(params.auth0_client),
-      details: stringifyIfTruthy(details),
+      details: stringifyIfTruthy(details)?.substring(0, 8192),
       scope: params.scope?.join(","),
       isMobile: params.isMobile ? 1 : 0,
       user_agent: params.user_agent.slice(0, USER_AGENT_MAX_LENGTH),
