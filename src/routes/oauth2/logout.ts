@@ -1,4 +1,4 @@
-import { Env, Var } from "../../types";
+import { Env, LogTypes, Var } from "../../types";
 import { getClient } from "../../services/clients";
 import {
   getStateFromCookie,
@@ -40,6 +40,8 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
       }
+      ctx.set("client_id", client_id);
+
       const redirectUri = returnTo || ctx.req.header("referer");
       if (!redirectUri) {
         throw new Error("No return to url found");
@@ -68,13 +70,15 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
               ctx.set("userName", user.email);
               ctx.set("userId", user.id);
               ctx.set("connection", user.connection);
-              ctx.set("client_id", client_id);
             }
           }
           await ctx.env.data.sessions.remove(client.tenant_id, tokenState);
         }
       }
-      const log = createLogMessage(ctx, "slo", "User successfully logged out");
+      const log = createLogMessage(ctx, {
+        type: LogTypes.SUCCESS_LOGOUT,
+        description: "User successfully logged out",
+      });
 
       await ctx.env.data.logs.create(client.tenant_id, log);
 

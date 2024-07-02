@@ -32,12 +32,10 @@ export async function socialAuth(
   );
   if (!connectionInstance) {
     ctx.set("client_id", client.id);
-    const log = createLogMessage(
-      ctx,
-      LogTypes.FAILED_LOGIN,
-      {},
-      "Connection not found",
-    );
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_LOGIN,
+      description: "Connection not found",
+    });
     await ctx.env.data.logs.create(client.tenant_id, log);
 
     throw new HTTPException(403, { message: "Connection Not Found" });
@@ -99,44 +97,38 @@ export async function socialAuthCallback({
   code,
 }: socialAuthCallbackParams) {
   const { env } = ctx;
+  ctx.set("client_id", state.authParams.client_id);
   const client = await getClient(env, state.authParams.client_id);
 
   if (!client) {
-    ctx.set("client_id", state.authParams.client_id);
-    const log = createLogMessage(
-      ctx,
-      LogTypes.FAILED_SIGNUP,
-      {},
-      "Client not found",
-    );
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_SIGNUP,
+      description: "Client not found",
+    });
     // where should we log this? if client not found then there's no tenant_id...
     await ctx.env.data.logs.create("DEFAULT_TENANT", log);
     throw new HTTPException(403, { message: "Client not found" });
   }
+
   const connection = client.connections.find(
     (p) => p.name === state.connection,
   );
 
   if (!connection) {
-    ctx.set("client_id", client.id);
-    const log = createLogMessage(
-      ctx,
-      LogTypes.FAILED_LOGIN,
-      {},
-      "Connection not found",
-    );
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_LOGIN,
+      description: "Connection not found",
+    });
     await ctx.env.data.logs.create(client.tenant_id, log);
     throw new HTTPException(403, { message: "Connection not found" });
   }
+  ctx.set("connection", connection.name);
 
   if (!state.authParams.redirect_uri) {
-    ctx.set("client_id", client.id);
-    const log = createLogMessage(
-      ctx,
-      LogTypes.FAILED_LOGIN,
-      {},
-      "Redirect URI not defined",
-    );
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_LOGIN,
+      description: "Redirect URI not defined",
+    });
     await ctx.env.data.logs.create(client.tenant_id, log);
     throw new HTTPException(403, { message: "Redirect URI not defined" });
   }
@@ -203,6 +195,7 @@ export async function socialAuthCallback({
   const { sub, email: emailRaw, ...profileData } = userinfo;
 
   const email = emailRaw.toLocaleLowerCase();
+  ctx.set("userName", email);
   const strictEmailVerified = !!profileData.email_verified;
 
   let user = await getPrimaryUserByEmailAndProvider({
@@ -216,15 +209,10 @@ export async function socialAuthCallback({
     const callerIsLogin2 = state.authParams.redirect_uri.includes("login2");
 
     if (client.disable_sign_ups && !callerIsLogin2) {
-      ctx.set("userName", email);
-      ctx.set("client_id", client.id);
-      ctx.set("connection", connection.name);
-      const log = createLogMessage(
-        ctx,
-        LogTypes.FAILED_SIGNUP,
-        {},
-        "Public signup is disabled",
-      );
+      const log = createLogMessage(ctx, {
+        type: LogTypes.FAILED_SIGNUP,
+        description: "Public signup is disabled",
+      });
       await ctx.env.data.logs.create(client.tenant_id, log);
 
       const vendorSettings = await fetchVendorSettings(
@@ -257,12 +245,12 @@ export async function socialAuthCallback({
       updated_at: new Date().toISOString(),
       profileData: JSON.stringify(profileData),
     });
-
-    ctx.set("userName", user.email);
-    ctx.set("connection", user.connection);
-    ctx.set("client_id", client.id);
     ctx.set("userId", user.id);
-    const log = createLogMessage(ctx, "ss", "Successful signup");
+
+    const log = createLogMessage(ctx, {
+      type: LogTypes.SUCCESS_SIGNUP,
+      description: "Successful signup",
+    });
     await ctx.env.data.logs.create(client.tenant_id, log);
   }
 
@@ -286,11 +274,10 @@ export async function socialAuthCallback({
       state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 
-  ctx.set("userName", user.email);
-  ctx.set("connection", user.connection);
-  ctx.set("client_id", client.id);
-  ctx.set("userId", user.id);
-  const log = createLogMessage(ctx, "s", "Successful login");
+  const log = createLogMessage(ctx, {
+    type: LogTypes.SUCCESS_LOGIN,
+    description: "Successful login",
+  });
   await ctx.env.data.logs.create(client.tenant_id, log);
 
   return authResponse;

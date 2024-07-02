@@ -16,14 +16,12 @@ export enum LogTypes {
   // FAILED_LOGIN_INVALID_EMAIL_USERNAME = "fu",
   //
   SUCCESS_LOGOUT = "slo",
-  //
   SUCCESS_CROSS_ORIGIN_AUTHENTICATION = "scoa",
   FAILED_CROSS_ORIGIN_AUTHENTICATION = "fcoa",
-
   SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN = "seacft",
+  CODE_LINK_SENT = "cls",
   // TODO - not implemented - just for completion as we do get this in our latest auth0 logs
   NOT_IMPLEMENTED_1 = "seccft",
-  NOT_IMPLEMENTED_2 = "cls",
 }
 
 // Enum for LogTypes

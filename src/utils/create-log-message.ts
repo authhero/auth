@@ -5,21 +5,19 @@ import instanceToJson from "./instanceToJson";
 import { LogType, Log } from "../types";
 
 type LogParams = {
+  type: LogType;
+  description?: string;
   userId?: string;
+  body?: unknown;
 };
 
 export function createLogMessage(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
-  logType: LogType,
-  body: unknown,
-  description?: string,
-  logParams?: LogParams,
+  params: LogParams,
 ) {
-  const { userId } = logParams || {};
-
   const log: Log = {
-    type: logType,
-    description: ctx.var.description || description || "",
+    type: params.type,
+    description: params.description || ctx.var.description || "",
     ip: ctx.req.header("x-real-ip") || "",
     user_agent: ctx.req.header("user-agent") || "",
     date: new Date().toISOString(),
@@ -29,13 +27,13 @@ export function createLogMessage(
         path: ctx.req.path,
         headers: instanceToJson(ctx.req.raw.headers),
         qs: ctx.req.queries(),
-        body,
+        body: params.body || ctx.var.body || "",
       },
     },
     isMobile: false,
     client_id: ctx.var.client_id,
     client_name: "",
-    user_id: userId || ctx.var.userId || "",
+    user_id: params.userId || ctx.var.userId || "",
     hostname: ctx.req.header("host") || "",
     user_name: ctx.var.userName || "",
     connection_id: "",

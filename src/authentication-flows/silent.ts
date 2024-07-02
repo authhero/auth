@@ -62,8 +62,11 @@ export async function silentAuth({
       headers.set("set-cookie", cookie);
 
       const user = await env.data.users.get(tenant_id, session.user_id);
-      ctx.set("userName", user?.email);
+
       if (user) {
+        ctx.set("userName", user.email);
+        ctx.set("connection", user.connection);
+
         const tokenResponse = await generateAuthData({
           env,
           tenantId: tenant_id,
@@ -86,14 +89,10 @@ export async function silentAuth({
           used_at: new Date().toISOString(),
         });
 
-        ctx.set("userName", user.email);
-        ctx.set("connection", user.connection);
-        const log = createLogMessage(
-          ctx,
-          LogTypes.SUCCESS_SILENT_AUTH,
-          {},
-          "Successful silent authentication",
-        );
+        const log = createLogMessage(ctx, {
+          type: LogTypes.SUCCESS_SILENT_AUTH,
+          description: "Successful silent authentication",
+        });
         await ctx.env.data.logs.create(tenant_id, log);
 
         return ctx.html(
@@ -111,12 +110,10 @@ export async function silentAuth({
 
   ctx.set("description", "Login required");
 
-  const log = createLogMessage(
-    ctx,
-    LogTypes.FAILED_SILENT_AUTH,
-    {},
-    "Login required",
-  );
+  const log = createLogMessage(ctx, {
+    type: LogTypes.FAILED_SILENT_AUTH,
+    description: "Login required",
+  });
   await ctx.env.data.logs.create(tenant_id, log);
 
   return ctx.html(

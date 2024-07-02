@@ -761,7 +761,7 @@ describe("Login with password user", () => {
       user_id: "auth2|userId",
       connection: "Username-Password-Authentication",
       client_id: "clientId",
-      description: "Wrong email or password.",
+      description: "Invalid password",
     });
   });
 });

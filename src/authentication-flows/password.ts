@@ -81,6 +81,9 @@ export async function loginWithPassword(
     throw new HTTPException(400, { message: "Username is required" });
   }
 
+  ctx.set("client_id", client.id);
+  ctx.set("userName", email);
+
   const user = await getUserByEmailAndProvider({
     userAdapter: ctx.env.data.users,
     tenant_id: client.tenant_id,
@@ -95,9 +98,8 @@ export async function loginWithPassword(
     });
   }
 
-  ctx.set("userName", user.email);
   ctx.set("connection", user.connection);
-  ctx.set("client_id", client.id);
+  ctx.set("userId", user.id);
 
   const { valid } = await env.data.passwords.validate(client.tenant_id, {
     user_id: user.id,
@@ -105,11 +107,10 @@ export async function loginWithPassword(
   });
 
   if (!valid) {
-    ctx.set("userId", user.id);
-    ctx.set("userName", user.email);
-    ctx.set("connection", user.connection);
-    ctx.set("client_id", client.id);
-    const log = createLogMessage(ctx, "fp", {}, "Wrong email or password.");
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD,
+      description: "Invalid password",
+    });
 
     await ctx.env.data.logs.create(client.tenant_id, log);
 
@@ -128,12 +129,10 @@ export async function loginWithPassword(
       authParams: cleanAuthParams,
     });
 
-    const log = createLogMessage(
-      ctx,
-      LogTypes.FAILED_LOGIN,
-      {},
-      "Email not verified",
-    );
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_LOGIN,
+      description: "Email not verified",
+    });
     await ctx.env.data.logs.create(client.tenant_id, log);
 
     throw new CustomException(403, {

@@ -5,6 +5,7 @@ import renameId from "../../utils/rename-id";
 import {
   Env,
   Log,
+  LogTypes,
   auth0UserResponseSchema,
   totalsSchema,
   userInsertSchema,
@@ -266,6 +267,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const body = ctx.req.valid("json");
+      ctx.set("body", body);
 
       const { email: emailRaw } = body;
 
@@ -294,7 +296,10 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       ctx.set("userId", data.id);
 
-      const log: Log = createLogMessage(ctx, "sapi", body, `Create a User`);
+      const log: Log = createLogMessage(ctx, {
+        type: LogTypes.SUCCESS_API_OPERATION,
+        description: "User created",
+      });
       waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
       const userResponse = {
