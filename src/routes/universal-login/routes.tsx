@@ -13,6 +13,7 @@ import validatePassword from "../../utils/validatePassword";
 import {
   getUserByEmailAndProvider,
   getPrimaryUserByEmailAndProvider,
+  getPrimaryUserByEmail,
 } from "../../utils/users";
 import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
@@ -50,6 +51,7 @@ import {
   requestPasswordReset,
 } from "../../authentication-flows/password";
 import { CustomException } from "../../models/CustomError";
+import { LayoutTag } from "liquidjs";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -105,8 +107,11 @@ async function handleLogin(
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
     ctx.set("client_id", client.id);
-    const log = createLogMessage(ctx, "s", "Successful login");
-
+    ctx.set("userId", user.id);
+    const log = createLogMessage(ctx, {
+      type: LogTypes.SUCCESS_LOGIN,
+      description: "Successful login",
+    });
     waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
 
     // Update the user's last login
@@ -641,33 +646,34 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       },
     }),
     async (ctx) => {
-      const { state } = ctx.req.valid("query");
-      // backwards compatible to maintain pasted code
-      const params = ctx.req.valid("form");
-
       const { env } = ctx;
+      const { state } = ctx.req.valid("query");
+      const params = ctx.req.valid("form");
+      ctx.set("body", params);
+      ctx.set("userName", params.username);
+
       const { client, session, vendorSettings } = await initJSXRoute(
         state,
         env,
       );
+      ctx.set("client_id", client.id);
+
+      const user = await getPrimaryUserByEmail({
+        userAdapter: env.data.users,
+        tenant_id: client.tenant_id,
+        email: params.username,
+      });
+      if (user) {
+        ctx.set("userId", user.id);
+      }
 
       if (client.disable_sign_ups) {
-        const [user] = await getUsersByEmail(
-          env.data.users,
-          client.tenant_id,
-          params.username,
-        );
-
         if (!user) {
           // Auth0 doesn't set this, it's nested inside details
-          ctx.set("userName", params.username);
-          ctx.set("client_id", client.id);
-          const log = createLogMessage(
-            ctx,
-            LogTypes.FAILED_SIGNUP,
-            params,
-            "Public signup is disabled",
-          );
+          const log = createLogMessage(ctx, {
+            type: LogTypes.FAILED_SIGNUP,
+            description: "Public signup is disabled",
+          });
 
           await ctx.env.data.logs.create(client.tenant_id, log);
 
@@ -727,21 +733,16 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
       });
 
-      // request.ctx.set("log", `Code: ${code}`);
-
       const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);
 
       if (sendType === "link") {
         waitUntil(
           ctx,
-          sendLink(env, client, params.username, code, session.authParams),
+          sendLink(ctx, client, params.username, code, session.authParams),
         );
       } else {
-        waitUntil(ctx, sendCode(env, client, params.username, code));
+        waitUntil(ctx, sendCode(ctx, client, params.username, code));
       }
-
-      const log = createLogMessage(ctx, "cls", params, params.username);
-      await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.redirect(
         `/u/enter-code?state=${state}&username=${params.username}`,
@@ -847,6 +848,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         state,
         env,
       );
+      ctx.set("client_id", client.id);
 
       if (!session.authParams.username) {
         throw new HTTPException(400, {
@@ -860,6 +862,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           email: session.authParams.username,
           verification_code: code,
         });
+        ctx.set("userName", user.email);
+        ctx.set("connection", user.connection);
 
         const authResponse = await generateAuthResponse({
           env,
@@ -873,10 +877,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           user,
         });
 
-        ctx.set("userName", user.email);
-        ctx.set("connection", user.connection);
-        ctx.set("client_id", client.id);
-        const log = createLogMessage(ctx, "s", "Successful login");
+        const log = createLogMessage(ctx, {
+          type: LogTypes.SUCCESS_LOGIN,
+          description: "Successful login",
+        });
 
         await ctx.env.data.logs.create(client.tenant_id, log);
 
@@ -975,6 +979,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         state,
         env,
       );
+      ctx.set("client_id", client.id);
 
       if (!validatePassword(loginParams.password)) {
         return ctx.html(
@@ -1015,6 +1020,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           is_social: false,
           login_count: 0,
         });
+        ctx.set("userId", newUser.id);
+        ctx.set("userName", newUser.email);
+        ctx.set("connection", newUser.connection);
 
         await env.data.passwords.create(client.tenant_id, {
           user_id: newUser.id,
@@ -1028,12 +1036,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           authParams: session.authParams,
         });
 
-        ctx.set("userId", newUser.id);
-        ctx.set("userName", newUser.email);
-        ctx.set("connection", newUser.connection);
-        ctx.set("client_id", client.id);
-        const log = createLogMessage(ctx, "ss", "Successful signup");
-
+        const log = createLogMessage(ctx, {
+          type: LogTypes.SUCCESS_SIGNUP,
+          description: "Successful signup",
+        });
         await ctx.env.data.logs.create(client.tenant_id, log);
 
         return ctx.html(

@@ -90,7 +90,7 @@ describe("logs", () => {
       throw new Error("Expected log to be of type fsa");
     }
     expect(log.ip).toBe("1.2.3.4");
-    expect(log.description).toBe("Create a User");
+    expect(log.description).toBe("User created");
     expect(typeof log.date).toBe("string");
     // no client_id here when creating a user - just tenant_id
     expect(log.client_id).toBeNull();

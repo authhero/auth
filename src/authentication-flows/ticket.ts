@@ -53,12 +53,16 @@ export async function ticketAuth(
   });
 
   if (user) {
+    ctx.set("userName", user.email);
+    ctx.set("connection", user.connection);
+
     if (realm === "Username-Password-Authentication" && !user.email_verified) {
       const client = await getClient(ctx.env, ticket.client_id);
 
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
       }
+      ctx.set("client_id", client.id);
 
       await sendEmailVerificationEmail({
         env,
@@ -127,15 +131,10 @@ export async function ticketAuth(
         login2UniverifiedEmailUrl.searchParams.set("connection", connection2);
       }
 
-      ctx.set("userName", user.email);
-      ctx.set("connection", user.connection);
-      ctx.set("client_id", client.id);
-      const log = createLogMessage(
-        ctx,
-        LogTypes.FAILED_LOGIN,
-        {},
-        "Email not verified",
-      );
+      const log = createLogMessage(ctx, {
+        type: LogTypes.FAILED_LOGIN,
+        description: "Email not verified",
+      });
       await ctx.env.data.logs.create(client.tenant_id, log);
 
       return new Response("Redirecting", {
@@ -190,14 +189,10 @@ export async function ticketAuth(
     last_ip: ctx.req.header("cf-connecting-ip") || "",
   });
 
-  const log = createLogMessage(
-    ctx,
-    "scoa",
-    // do we want to tunnel the body through?
-    undefined,
-    "Successful cross-origin authentication",
-    { userId: user.id },
-  );
+  const log = createLogMessage(ctx, {
+    type: LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION,
+    description: "Successful cross-origin authentication",
+  });
   waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
   return generateAuthResponse({

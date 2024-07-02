@@ -1,6 +1,7 @@
+import { Context } from "hono";
 import { Liquid } from "liquidjs";
 import { t } from "i18next";
-import { AuthParams, Client, Env } from "../types";
+import { AuthParams, Client, Env, LogTypes, Var } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import {
   codeV2,
@@ -9,15 +10,19 @@ import {
   verifyEmail,
 } from "../templates/email/ts";
 import { createMagicLink } from "../utils/magicLink";
+import { createLogMessage } from "../utils/create-log-message";
+import { waitUntil } from "../utils/wait-until";
 
 const engine = new Liquid();
 
 export async function sendCode(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   client: Client,
   to: string,
   code: string,
 ) {
+  const { env } = ctx;
+
   const logo = getClientLogoPngGreyBg(
     client.tenant.logo ||
       "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
@@ -61,15 +66,23 @@ export async function sendCode(
     ],
     subject: t("code_email_subject", options),
   });
+
+  const log = createLogMessage(ctx, {
+    type: LogTypes.CODE_LINK_SENT,
+    description: to,
+  });
+  waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
 }
 
 export async function sendLink(
-  env: Env,
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
   client: Client,
   to: string,
   code: string,
   authParams: AuthParams,
 ) {
+  const { env } = ctx;
+
   const magicLink = createMagicLink({
     issuer: env.ISSUER,
     code,
@@ -122,6 +135,12 @@ export async function sendLink(
     ],
     subject: t("code_email_subject", options),
   });
+
+  const log = createLogMessage(ctx, {
+    type: LogTypes.CODE_LINK_SENT,
+    description: to,
+  });
+  waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
 }
 
 export async function sendResetPassword(

@@ -2,6 +2,7 @@ import {
   AuthorizationCodeGrantTypeParams,
   AuthorizationResponseType,
   Env,
+  LogTypes,
   Var,
 } from "../types";
 import { getClient } from "../services/clients";
@@ -19,6 +20,7 @@ export async function authorizeCodeGrant(
   if (!client) {
     throw new HTTPException(400, { message: "Client not found" });
   }
+  ctx.set("client_id", client.id);
 
   // TODO: this does not set the used_at attribute
   const { user_id, nonce, authParams, used_at, expires_at } =
@@ -32,6 +34,8 @@ export async function authorizeCodeGrant(
   if (!user) {
     throw new HTTPException(400, { message: "User not found" });
   }
+  ctx.set("userName", user.email);
+  ctx.set("connection", user.connection);
 
   // TODO: Temporary fix for the default client
   const defaultClient = await getClient(ctx.env, "DEFAULT_CLIENT");
@@ -54,14 +58,10 @@ export async function authorizeCodeGrant(
     tenantId: client.tenant_id,
   });
 
-  ctx.set("userName", user.email);
-  ctx.set("connection", user.connection);
-  ctx.set("client_id", client.id);
-  const log = createLogMessage(
-    ctx,
-    "seacft",
-    "Authorization Code for Access Token",
-  );
+  const log = createLogMessage(ctx, {
+    type: LogTypes.SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN,
+    description: "Authorization Code for Access Token",
+  });
 
   await ctx.env.data.logs.create(client.tenant_id, log);
 

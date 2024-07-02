@@ -130,6 +130,7 @@ describe("Login with code on liquidjs template", () => {
       per_page: 100,
       include_totals: true,
     });
+
     expect(logs[0]).toMatchObject({
       type: "cls",
       tenant_id: "tenantId",

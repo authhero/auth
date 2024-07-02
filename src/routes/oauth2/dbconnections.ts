@@ -4,7 +4,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { getClient } from "../../services/clients";
 import { getPrimaryUserByEmailAndProvider } from "../../utils/users";
-import { AuthParams, Env, Var } from "../../types";
+import { AuthParams, Env, LogTypes, Var } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import validatePassword from "../../utils/validatePassword";
 import { createLogMessage } from "../../utils/create-log-message";
@@ -70,6 +70,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       if (!client) {
         throw new HTTPException(400, { message: "Client not found" });
       }
+      ctx.set("client_id", client.id);
 
       const existingUser = await getPrimaryUserByEmailAndProvider({
         userAdapter: ctx.env.data.users,
@@ -95,6 +96,10 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         login_count: 0,
       });
 
+      ctx.set("userId", newUser.id);
+      ctx.set("userName", newUser.email);
+      ctx.set("connection", newUser.connection);
+
       // Store the password
       await ctx.env.data.passwords.create(client.tenant_id, {
         user_id: newUser.id,
@@ -107,12 +112,10 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         user: newUser,
       });
 
-      ctx.set("userId", newUser.id);
-      ctx.set("userName", newUser.email);
-      ctx.set("connection", newUser.connection);
-      ctx.set("client_id", client.id);
-      const log = createLogMessage(ctx, "ss", "Successful signup");
-
+      const log = createLogMessage(ctx, {
+        type: LogTypes.SUCCESS_SIGNUP,
+        description: "Successful signup",
+      });
       await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.json({
