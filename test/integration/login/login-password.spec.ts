@@ -77,7 +77,7 @@ describe("Register password", () => {
       client_id: "clientId",
     });
 
-    const blockedLoginResponse = await oauthClient.u.login.$post({
+    const blockedLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: query.state,
       },
@@ -129,7 +129,7 @@ describe("Register password", () => {
     // login again now to check that it works
     //-------------------
 
-    const workingLoginResponse = await oauthClient.u.login.$post({
+    const workingLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: query.state,
       },
@@ -228,7 +228,7 @@ describe("Register password", () => {
     // -----------------------------
     // login with password
     // -----------------------------
-    const loginResponse = await oauthClient.u.login.$post({
+    const loginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: query.state,
       },
@@ -332,7 +332,7 @@ describe("Register password", () => {
       },
     });
     expect(createUserResponse.status).toBe(200);
-    const blockedLoginResponse = await oauthClient.u.login.$post({
+    const blockedLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: query.state,
       },
@@ -363,7 +363,7 @@ describe("Register password", () => {
     //-------------------
     // login again now to check that it works
     //-------------------
-    const workingLoginResponse = await oauthClient.u.login.$post({
+    const workingLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: query.state,
       },
@@ -428,7 +428,7 @@ describe("Register password", () => {
     //-------------------
     // follow CTA on email validated page
     //-------------------
-    const workingLoginForm = await oauthClient.u.login.$get({
+    const workingLoginForm = await oauthClient.u["enter-password"].$get({
       query: {
         state: nextStepState,
       },
@@ -436,7 +436,7 @@ describe("Register password", () => {
     expect(workingLoginForm.status).toBe(200);
     await snapshotResponse(workingLoginForm);
 
-    const workingLoginResponse = await oauthClient.u.login.$post({
+    const workingLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: nextStepState,
       },
@@ -512,7 +512,7 @@ describe("Register password", () => {
       authorizeRes2URlSearchParams.entries(),
     );
 
-    const blockedLogin = await oauthClient.u.login.$post({
+    const blockedLogin = await oauthClient.u["enter-password"].$post({
       query: {
         state: authorizeRes2Query.state,
       },
@@ -547,14 +547,14 @@ describe("Register password", () => {
     //-------------------
     // follow CTA on email validated page
     //-------------------
-    const workingLoginForm = await oauthClient.u.login.$get({
+    const workingLoginForm = await oauthClient.u["enter-password"].$get({
       query: {
         state: nextStepState,
       },
     });
     expect(workingLoginForm.status).toBe(200);
 
-    const workingLoginResponse = await oauthClient.u.login.$post({
+    const workingLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: nextStepState,
       },
@@ -607,7 +607,7 @@ describe("Login with password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    const loginFormResponse = await oauthClient.u.login.$get({
+    const loginFormResponse = await oauthClient.u["enter-password"].$get({
       query: {
         state: query.state,
       },
@@ -621,7 +621,7 @@ describe("Login with password user", () => {
 
     await snapshotResponse(loginFormResponse);
 
-    const postLoginResponse = await oauthClient.u.login.$post({
+    const postLoginResponse = await oauthClient.u["enter-password"].$post({
       query: {
         state: loginSearchParamsQuery.state,
       },
@@ -679,7 +679,7 @@ describe("Login with password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    await oauthClient.u.login.$get({
+    await oauthClient.u["enter-password"].$get({
       query: {
         state: query.state,
       },
@@ -690,14 +690,16 @@ describe("Login with password user", () => {
       loginSearchParams.entries(),
     );
 
-    const nonexistingUserResponse = await oauthClient.u.login.$post({
-      query: {
-        state: loginSearchParamsQuery.state,
+    const nonexistingUserResponse = await oauthClient.u["enter-password"].$post(
+      {
+        query: {
+          state: loginSearchParamsQuery.state,
+        },
+        form: {
+          password: "password",
+        },
       },
-      form: {
-        password: "password",
-      },
-    });
+    );
 
     await snapshotResponse(nonexistingUserResponse);
   });
@@ -723,7 +725,7 @@ describe("Login with password user", () => {
     const query = Object.fromEntries(stateParam.entries());
 
     // Open login page
-    await oauthClient.u.login.$get({
+    await oauthClient.u["enter-password"].$get({
       query: {
         state: query.state,
       },
@@ -734,7 +736,9 @@ describe("Login with password user", () => {
       loginSearchParams.entries(),
     );
 
-    const incorrectPasswordResponse = await oauthClient.u.login.$post({
+    const incorrectPasswordResponse = await oauthClient.u[
+      "enter-password"
+    ].$post({
       query: {
         state: loginSearchParamsQuery.state,
       },

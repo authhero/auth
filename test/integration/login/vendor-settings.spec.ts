@@ -33,7 +33,7 @@ describe("Vendor settings", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await oauthClient.u.code.$get({
+    const codeInputFormResponse = await oauthClient.u["enter-email"].$get({
       query: {
         state: query.state,
       },
@@ -64,7 +64,7 @@ describe("Vendor settings", () => {
 
     const query = Object.fromEntries(stateParam.entries());
 
-    const codeInputFormResponse = await oauthClient.u.code.$get({
+    const codeInputFormResponse = await oauthClient.u["enter-email"].$get({
       query: {
         state: query.state,
       },

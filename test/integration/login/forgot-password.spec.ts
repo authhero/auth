@@ -136,7 +136,7 @@ describe("Forgot password", () => {
     // ---------------------
 
     // TODO - should the user be redirected straight to this page to login and continue the flow?
-    const loginResponse = await oauthClient.u.login.$post({
+    const loginResponse = await oauthClient.u["enter-password"].$post({
       form: {
         password: "New-password-1234!",
       },

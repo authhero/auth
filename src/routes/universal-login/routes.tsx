@@ -148,13 +148,13 @@ async function handleLogin(
 
 export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
   // --------------------------------
-  // GET /u/login
+  // GET /u/enter-password
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["login"],
       method: "get",
-      path: "/login",
+      path: "/enter-password",
       request: {
         query: z.object({
           state: z.string().openapi({
@@ -206,13 +206,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     },
   )
   // --------------------------------
-  // POST /u/login
+  // POST /u/enter-password
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["login"],
       method: "post",
-      path: "/login",
+      path: "/enter-password",
       request: {
         query: z.object({
           state: z.string().openapi({
@@ -565,13 +565,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     },
   )
   // --------------------------------
-  // GET /u/code
+  // GET /u/enter-email
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["login"],
       method: "get",
-      path: "/code",
+      path: "/enter-email",
       request: {
         query: z.object({
           state: z.string().openapi({
@@ -605,13 +605,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     },
   )
   // --------------------------------
-  // POST /u/code
+  // POST /u/enter-email
   // --------------------------------
   .openapi(
     createRoute({
       tags: ["login"],
       method: "post",
-      path: "/code",
+      path: "/enter-email",
       request: {
         query: z.object({
           state: z.string().openapi({

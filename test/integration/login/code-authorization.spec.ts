@@ -36,7 +36,7 @@ test("code authorization flow should work", async () => {
   // --------------------------------
   // Login to get PKCE code
   // --------------------------------
-  const postLoginResponse = await oauthClient.u.login.$post({
+  const postLoginResponse = await oauthClient.u["enter-password"].$post({
     query: {
       state: query.state,
     },

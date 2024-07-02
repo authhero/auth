@@ -34,7 +34,7 @@ test("Should prefill email with login_hint if passed to /authorize", async () =>
 
   const query = Object.fromEntries(stateParam.entries());
 
-  const getSendCodeResponse = await oauthClient.u.code.$get({
+  const getSendCodeResponse = await oauthClient.u["enter-email"].$get({
     query: { state: query.state },
   });
 
