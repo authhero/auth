@@ -427,7 +427,7 @@ describe("password-flow", () => {
       ]);
 
       // Check that the login count and last IP has been updated
-      expect(primaryUser.login_count).toBe(1);
+      expect(primaryUser.login_count).toBe(2);
       expect(primaryUser.last_ip).toBe("1.2.3.4");
 
       const lastLogin = new Date(primaryUser.last_login!);

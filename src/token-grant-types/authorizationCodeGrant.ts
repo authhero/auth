@@ -30,6 +30,9 @@ export async function authorizeCodeGrant(
     throw new HTTPException(400, { message: "Code not found or expired" });
   }
 
+  // Set the response_type to token id_token for the code grant flow
+  authParams.response_type = AuthorizationResponseType.TOKEN_ID_TOKEN;
+
   const user = await ctx.env.data.users.get(client.tenant_id, user_id);
   if (!user) {
     throw new HTTPException(400, { message: "User not found" });
@@ -48,13 +51,11 @@ export async function authorizeCodeGrant(
   }
 
   const tokens = await generateAuthData({
-    userId: user_id,
+    ctx,
     authParams,
     nonce,
     user,
     sid: nanoid(),
-    responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
-    env: ctx.env,
     tenantId: client.tenant_id,
   });
 

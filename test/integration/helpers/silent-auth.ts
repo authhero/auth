@@ -73,13 +73,9 @@ export async function doSilentAuthRequestAndReturnTokens(
   }
 
   const iframeResponseJSON = JSON.parse(responseBody.replace("response: ", ""));
-
   const silentAuthIdToken = iframeResponseJSON.id_token;
-
   const silentAuthIdTokenPayload = parseJwt(silentAuthIdToken);
-
   const silentAuthToken = iframeResponseJSON.access_token;
-
   const silentAuthTokenPayload = parseJwt(silentAuthToken);
 
   return {

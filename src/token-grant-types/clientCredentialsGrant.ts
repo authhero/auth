@@ -1,6 +1,5 @@
 import {
   ClientCredentialsGrantTypeParams,
-  AuthorizationResponseType,
   AuthParams,
   Env,
   Var,
@@ -31,10 +30,9 @@ export async function clientCredentialsGrant(
   };
 
   return generateAuthResponse({
-    responseType: AuthorizationResponseType.TOKEN,
-    env: ctx.env,
+    ctx,
     tenantId: client.tenant_id,
-    userId: client.id,
+    user: client,
     sid: nanoid(),
     authParams,
   });

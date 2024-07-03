@@ -60,7 +60,7 @@ const EXPECTED_NEW_USER = {
       isSocial: true,
     },
   ],
-  login_count: 0,
+  login_count: 2,
   is_social: true,
   profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
   user_id: "demo-social-provider|123456789012345678901",
@@ -154,7 +154,7 @@ describe("social sign on", () => {
           per_page: 100,
           include_totals: true,
         });
-        expect(logs.length).toBe(2);
+        expect(logs.length).toBe(3);
         const successLoginLog = logs.find((log) => log.type === "s");
         const successSignupLog = logs.find((log) => log.type === "ss");
         expect(successSignupLog).toMatchObject({

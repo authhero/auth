@@ -3,6 +3,7 @@ import { testClient } from "hono/testing";
 import { oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { AuthorizationResponseType } from "../../../src/types";
+import { a } from "vitest/dist/suite-IbNSsUWN";
 
 describe("token", () => {
   it("should handle a code grant flow", async () => {
@@ -61,6 +62,7 @@ describe("token", () => {
     });
 
     expect(tokenResponse.status).toEqual(200);
+
     const { access_token, id_token, token_type } =
       (await tokenResponse.json()) as {
         access_token: string;
