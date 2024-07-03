@@ -102,7 +102,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
           response_type: z.nativeEnum(AuthorizationResponseType),
           redirect_uri: z.string(),
           state: z.string(),
-          nonce: z.string(),
+          nonce: z.string().optional(),
           verification_code: z.string(),
           connection: z.string(),
           client_id: z.string(),
