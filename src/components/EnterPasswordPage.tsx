@@ -80,7 +80,10 @@ const EnterPasswordPage: FC<Props> = ({
               {i18next.t("or")}
             </div>
           </div>
-          <form method="post" action={`/u/code?${loginLinkParams.toString()}`}>
+          <form
+            method="post"
+            action={`/u/enter-code?${loginLinkParams.toString()}`}
+          >
             <input type="hidden" name="login_selection" value="code" />
             <input type="hidden" name="username" value={email} />
             <Button variant="secondary" className="block">
