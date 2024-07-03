@@ -19,6 +19,12 @@ import { createLogMessage } from "../utils/create-log-message";
 import { Context } from "hono";
 import { waitUntil } from "../utils/wait-until";
 
+export type AuthFlowType =
+  | "cross-origin"
+  | "same-origin"
+  | "refresh-token"
+  | "code";
+
 export interface GenerateAuthResponseParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
   user: User | Client;
@@ -27,7 +33,22 @@ export interface GenerateAuthResponseParams {
   state?: string;
   nonce?: string;
   authParams: AuthParams;
-  authFlow?: "cross-origin" | "same-origin" | "refresh-token";
+  authFlow?: AuthFlowType;
+}
+
+function getLogTypeByAuthFlow(authFlow?: AuthFlowType) {
+  switch (authFlow) {
+    case "cross-origin":
+      return LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION;
+    case "same-origin":
+      return LogTypes.SUCCESS_LOGIN;
+    case "refresh-token":
+      return LogTypes.SUCCESS_EXCHANGE_REFRESH_TOKEN_FOR_ACCESS_TOKEN;
+    case "code":
+      return LogTypes.SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN;
+    default:
+      return LogTypes.SUCCESS_LOGIN;
+  }
 }
 
 async function generateCode({
@@ -147,10 +168,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
 export async function generateAuthData(params: GenerateAuthResponseParams) {
   const { ctx } = params;
   const log = createLogMessage(params.ctx, {
-    type:
-      params.authFlow === "cross-origin"
-        ? LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION
-        : LogTypes.SUCCESS_LOGIN,
+    type: getLogTypeByAuthFlow(params.authFlow),
     description: "Successful login",
   });
   waitUntil(ctx, ctx.env.data.logs.create(params.tenantId, log));

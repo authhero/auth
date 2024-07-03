@@ -62,6 +62,7 @@ export const tokenRoutes = new OpenAPIHono<{
           body.client_secret = body.client_secret || client_secret;
         }
       }
+      ctx.set("body", body);
 
       if (!body.client_id) {
         throw new HTTPException(400, { message: "client_id is required" });
