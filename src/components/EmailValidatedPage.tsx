@@ -26,7 +26,7 @@ const EmailValidatedPage: FC<Props> = ({ vendorSettings, state }) => {
       <div class="flex flex-1 flex-col justify-center mb-7">
         <Button
           Component="a"
-          href={`/u/login?${loginLinkParams}`}
+          href={`/u/enter-password?${loginLinkParams}`}
           className="text-base sm:mt-4 md:text-base"
         >
           <div className="flex items-center space-x-2">

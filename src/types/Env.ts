@@ -15,10 +15,6 @@ export type Env = {
   DATABASE_USERNAME: string;
   TOKEN_SERVICE: Fetcher;
   AUTH_URL: string;
-  // Can we remove this? only used by src/routes/login - what is this?
-  AUTH_TEMPLATES: R2Bucket;
-  // what is this?
-  EMAIL_TEMPLATES: R2Bucket;
   READ_PERMISSION?: string;
   WRITE_PERMISSION?: string;
   ENVIRONMENT: string;

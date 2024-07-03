@@ -420,9 +420,9 @@ describe("Register password", () => {
 
     const emailValidatedBody = await emailValidatedRes.text();
 
-    // next step anchor is like <a href="/u/login?state={}""
+    // next step anchor is like <a href="/u/enter-password?state={}""
     const nextStepState = emailValidatedBody.match(
-      /\/u\/login\?state=([^&"]+)">/,
+      /\/u\/enter-password\?state=([^&"]+)">/,
     )![1];
 
     //-------------------
@@ -541,7 +541,7 @@ describe("Register password", () => {
     const emailValidatedBody = await emailValidatedRes.text();
 
     const nextStepState = emailValidatedBody.match(
-      /\/u\/login\?state=([^&"]+)">/,
+      /\/u\/enter-password\?state=([^&"]+)">/,
     )![1];
 
     //-------------------
