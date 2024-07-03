@@ -135,7 +135,7 @@ test("only allows existing breakit users to progress to the enter code step", as
   // if sign ups are disabled, the create account link should not be shown
   // ----------------------------
 
-  const loginFormNoSignupResponse = await oauthClient.u["enter-code"].$get({
+  const loginFormNoSignupResponse = await oauthClient.u["enter-password"].$get({
     query: {
       state: query.state,
     },
