@@ -51,8 +51,7 @@ export async function pkceAuthorizeCodeGrant(
 
   return generateAuthResponse({
     ...state,
-    env: ctx.env,
+    ctx,
     tenantId: client.tenant_id,
-    responseType: AuthorizationResponseType.TOKEN_ID_TOKEN,
   });
 }
