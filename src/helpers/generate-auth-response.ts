@@ -90,6 +90,19 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
   const { ctx, authParams, user, state, sid, nonce } = params;
   const { env } = ctx;
 
+  // Update the user's last login
+  if ("email" in params.user) {
+    waitUntil(
+      ctx,
+      ctx.env.data.users.update(params.tenantId, params.user.id, {
+        last_login: new Date().toISOString(),
+        login_count: params.user.login_count + 1,
+        // This is specific to cloudflare
+        last_ip: ctx.req.header("cf-connecting-ip"),
+      }),
+    );
+  }
+
   const certificates = await env.data.keys.list();
   const certificate = certificates[certificates.length - 1];
 
@@ -172,19 +185,6 @@ export async function generateAuthData(params: GenerateAuthResponseParams) {
     description: "Successful login",
   });
   waitUntil(ctx, ctx.env.data.logs.create(params.tenantId, log));
-
-  // Update the user's last login
-  if ("email" in params.user) {
-    waitUntil(
-      ctx,
-      ctx.env.data.users.update(params.tenantId, params.user.id, {
-        last_login: new Date().toISOString(),
-        login_count: params.user.login_count + 1,
-        // This is specific to cloudflare
-        last_ip: ctx.req.header("cf-connecting-ip"),
-      }),
-    );
-  }
 
   switch (params.authParams.response_type) {
     case AuthorizationResponseType.CODE:
