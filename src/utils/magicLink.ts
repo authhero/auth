@@ -1,4 +1,3 @@
-import { connect } from "http2";
 import { AuthParams } from "../types";
 import { setSearchParams } from "./url";
 
