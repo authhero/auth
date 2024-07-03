@@ -87,11 +87,11 @@ async function generateCode({
 }
 
 export async function generateTokens(params: GenerateAuthResponseParams) {
-  const { ctx, authParams, user, state, sid, nonce } = params;
+  const { ctx, authParams, user, state, sid, nonce, authFlow } = params;
   const { env } = ctx;
 
-  // Update the user's last login
-  if ("email" in params.user) {
+  // Update the user's last login. Skip for client_credentials and refresh_tokens
+  if (authFlow !== "refresh-token" && "email" in params.user) {
     waitUntil(
       ctx,
       ctx.env.data.users.update(params.tenantId, params.user.id, {
