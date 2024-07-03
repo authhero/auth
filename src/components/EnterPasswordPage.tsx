@@ -82,7 +82,7 @@ const EnterPasswordPage: FC<Props> = ({
           </div>
           <form
             method="post"
-            action={`/u/enter-code?${loginLinkParams.toString()}`}
+            action={`/u/enter-email?${loginLinkParams.toString()}`}
           >
             <input type="hidden" name="login_selection" value="code" />
             <input type="hidden" name="username" value={email} />
