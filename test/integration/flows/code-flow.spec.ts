@@ -155,14 +155,16 @@ describe("code-flow", () => {
     expect(idTokenPayload.email).toBe("test@example.com");
     expect(idTokenPayload.aud).toBe("clientId");
 
-    const {
-      logs: [scoaLog],
-    } = await env.data.logs.list("tenantId", {
+    const { logs } = await env.data.logs.list("tenantId", {
       page: 0,
       per_page: 100,
       include_totals: true,
     });
-    expect(scoaLog).toMatchObject({
+
+    expect(logs.length).toBe(3);
+    const log = logs.find((log) => log.type === "scoa");
+
+    expect(log).toMatchObject({
       type: "scoa",
       tenant_id: "tenantId",
       user_id: accessTokenPayload.sub,
