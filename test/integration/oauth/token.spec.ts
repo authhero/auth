@@ -3,7 +3,6 @@ import { testClient } from "hono/testing";
 import { oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { AuthorizationResponseType } from "../../../src/types";
-import { a } from "vitest/dist/suite-IbNSsUWN";
 
 describe("token", () => {
   it("should handle a code grant flow", async () => {
