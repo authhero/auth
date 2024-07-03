@@ -490,7 +490,7 @@ describe("password-flow", () => {
         },
       );
       expect(res.headers.get("location")).toBe(
-        "https://login2.sesamy.dev/unverified-email?email=password-login-test%2540example.com&lang=sv",
+        "https://login2.sesamy.dev/unverified-email?email=password-login-test%40example.com&lang=sv",
       );
 
       // this is the difference to the previous test - we are using the verified email that is sent after a failed login

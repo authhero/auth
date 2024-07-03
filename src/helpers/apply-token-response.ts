@@ -1,3 +1,4 @@
+import { setSearchParams } from "../utils/url";
 import {
   AuthParams,
   AuthorizationResponseMode,
@@ -18,28 +19,18 @@ function getTokenResponseAsQueryRedirectUri(
   const redirectUri = new URL(redirect_uri);
 
   if ("code" in tokenResponse) {
-    redirectUri.searchParams.set("code", tokenResponse.code);
-    if (authParams.state) {
-      redirectUri.searchParams.set("state", authParams.state);
-    }
+    setSearchParams(redirectUri, {
+      code: tokenResponse.code,
+      state: authParams.state,
+    });
   } else {
-    redirectUri.searchParams.set("access_token", tokenResponse.access_token);
-    if (tokenResponse.id_token) {
-      redirectUri.searchParams.set("id_token", tokenResponse.id_token);
-    }
-    if (tokenResponse.refresh_token) {
-      redirectUri.searchParams.set(
-        "refresh_token",
-        tokenResponse.refresh_token,
-      );
-    }
-    if (authParams.state) {
-      redirectUri.searchParams.set("state", authParams.state);
-    }
-    redirectUri.searchParams.set(
-      "expires_in",
-      tokenResponse.expires_in.toString(),
-    );
+    setSearchParams(redirectUri, {
+      access_token: tokenResponse.access_token,
+      id_token: tokenResponse.id_token,
+      refresh_token: tokenResponse.refresh_token,
+      state: authParams.state,
+      expires_in: tokenResponse.expires_in.toString(),
+    });
   }
 
   return redirectUri;
