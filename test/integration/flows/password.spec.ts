@@ -191,7 +191,10 @@ describe("password-flow", () => {
         per_page: 100,
         include_totals: true,
       });
-      expect(logs[0]).toMatchObject({
+
+      expect(logs.length).toBe(4);
+      const log = logs.find((log) => log.type === "scoa");
+      expect(log).toMatchObject({
         type: "scoa",
         tenant_id: "tenantId",
         user_id: accessTokenPayload.sub,
@@ -427,7 +430,7 @@ describe("password-flow", () => {
       ]);
 
       // Check that the login count and last IP has been updated
-      expect(primaryUser.login_count).toBe(1);
+      expect(primaryUser.login_count).toBe(2);
       expect(primaryUser.last_ip).toBe("1.2.3.4");
 
       const lastLogin = new Date(primaryUser.last_login!);

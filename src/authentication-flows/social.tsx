@@ -262,16 +262,13 @@ export async function socialAuthCallback({
   );
 
   const authResponse = generateAuthResponse({
-    env,
+    ctx,
     tenantId: client.tenant_id,
-    userId: user.id,
     sid: sessionId,
     state: state.authParams.state,
     nonce: state.authParams.nonce,
     authParams: state.authParams,
     user,
-    responseType:
-      state.authParams.response_type || AuthorizationResponseType.TOKEN,
   });
 
   const log = createLogMessage(ctx, {

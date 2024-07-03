@@ -61,6 +61,7 @@ describe("token", () => {
     });
 
     expect(tokenResponse.status).toEqual(200);
+
     const { access_token, id_token, token_type } =
       (await tokenResponse.json()) as {
         access_token: string;

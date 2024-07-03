@@ -51,7 +51,6 @@ import {
   requestPasswordReset,
 } from "../../authentication-flows/password";
 import { CustomException } from "../../models/CustomError";
-import { LayoutTag } from "liquidjs";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -90,48 +89,16 @@ async function handleLogin(
   client: Client,
 ) {
   if (session.authParams.redirect_uri) {
-    const responseType =
-      session.authParams.response_type ||
-      AuthorizationResponseType.TOKEN_ID_TOKEN;
-
-    // these don't exist in authentication_codes
-    const {
-      vendor_id,
-      audience,
-      code_challenge_method,
-      code_challenge,
-      username,
-      ...authParams
-    } = session.authParams;
-
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
     ctx.set("client_id", client.id);
     ctx.set("userId", user.id);
-    const log = createLogMessage(ctx, {
-      type: LogTypes.SUCCESS_LOGIN,
-      description: "Successful login",
-    });
-    waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
-
-    // Update the user's last login
-    waitUntil(
-      ctx,
-      ctx.env.data.users.update(client.tenant_id, user.id, {
-        last_login: new Date().toISOString(),
-        login_count: user.login_count + 1,
-        // This is specific to cloudflare
-        last_ip: ctx.req.header("cf-connecting-ip") || "",
-      }),
-    );
 
     return generateAuthResponse({
-      env: ctx.env,
+      ctx,
       tenantId: session.tenant_id,
-      userId: user.id,
       sid: nanoid(),
-      responseType,
-      authParams,
+      authParams: session.authParams,
       user,
     });
   }
@@ -866,13 +833,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ctx.set("connection", user.connection);
 
         const authResponse = await generateAuthResponse({
-          env,
+          ctx,
           tenantId: session.tenant_id,
-          userId: user.id,
           sid: nanoid(),
-          responseType:
-            session.authParams.response_type ||
-            AuthorizationResponseType.TOKEN_ID_TOKEN,
           authParams: session.authParams,
           user,
         });

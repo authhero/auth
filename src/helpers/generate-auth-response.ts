@@ -1,4 +1,12 @@
-import { Env, AuthParams, AuthorizationResponseType, User } from "../types";
+import {
+  Env,
+  Var,
+  AuthParams,
+  AuthorizationResponseType,
+  User,
+  LogTypes,
+  Client,
+} from "../types";
 import { CodeResponse, TokenResponse } from "../types/Token";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { pemToBuffer } from "../utils/jwt";
@@ -7,10 +15,13 @@ import { TimeSpan } from "oslo";
 import { serializeStateInCookie } from "../services/cookies";
 import { applyTokenResponse } from "./apply-token-response-new";
 import { nanoid } from "nanoid";
+import { createLogMessage } from "../utils/create-log-message";
+import { Context } from "hono";
+import { waitUntil } from "../utils/wait-until";
 
-interface GenerateAuthResponseParamsBase {
-  env: Env;
-  userId: string;
+export interface GenerateAuthResponseParams {
+  ctx: Context<{ Bindings: Env; Variables: Var }>;
+  user: User | Client;
   sid: string;
   tenantId: string;
   state?: string;
@@ -18,35 +29,19 @@ interface GenerateAuthResponseParamsBase {
   authParams: AuthParams;
 }
 
-interface GenerateAuthResponseParamsForCode
-  extends GenerateAuthResponseParamsBase {
-  responseType: AuthorizationResponseType.CODE;
-  user: User;
-}
-
-export interface GenerateAuthResponseParamsForToken
-  extends GenerateAuthResponseParamsBase {
-  responseType: AuthorizationResponseType.TOKEN;
-}
-
-interface GenerateAuthResponseParamsForIdToken
-  extends GenerateAuthResponseParamsBase {
-  responseType: AuthorizationResponseType.TOKEN_ID_TOKEN;
-  user: User;
-}
-
 async function generateCode({
-  env,
+  ctx,
   tenantId,
-  userId,
+  user,
   state,
   nonce,
   authParams,
-}: GenerateAuthResponseParamsForCode) {
+}: GenerateAuthResponseParams) {
+  const { env } = ctx;
   const code = nanoid();
 
   await env.data.authenticationCodes.create(tenantId, {
-    user_id: userId,
+    user_id: user.id,
     authParams: {
       client_id: authParams.client_id,
       redirect_uri: authParams.redirect_uri,
@@ -69,12 +64,9 @@ async function generateCode({
   return codeResponse;
 }
 
-export async function generateTokens(
-  params:
-    | GenerateAuthResponseParamsForToken
-    | GenerateAuthResponseParamsForIdToken,
-) {
-  const { env, authParams, userId, state, responseType, sid, nonce } = params;
+export async function generateTokens(params: GenerateAuthResponseParams) {
+  const { ctx, authParams, user, state, sid, nonce } = params;
+  const { env } = ctx;
 
   const certificates = await env.data.keys.list();
   const certificate = certificates[certificates.length - 1];
@@ -87,7 +79,7 @@ export async function generateTokens(
     {
       aud: authParams.audience || "default",
       scope: authParams.scope || "",
-      sub: userId,
+      sub: user.id,
       iss: env.ISSUER,
       azp: params.tenantId,
     },
@@ -109,16 +101,17 @@ export async function generateTokens(
   };
 
   // ID TOKEN
-  if (responseType === AuthorizationResponseType.TOKEN_ID_TOKEN) {
-    const { user } = params;
-
+  if (
+    authParams.response_type === AuthorizationResponseType.TOKEN_ID_TOKEN &&
+    "email" in user
+  ) {
     tokenResponse.id_token = await createJWT(
       "RS256",
       keyBuffer,
       {
         // The audience for an id token is the client id
         aud: authParams.client_id,
-        sub: userId,
+        sub: user.id,
         iss: env.ISSUER,
         sid,
         nonce: nonce || authParams.nonce,
@@ -150,18 +143,34 @@ export async function generateTokens(
   return tokenResponse;
 }
 
-type GenerateAuthResponseParams =
-  | GenerateAuthResponseParamsForToken
-  | GenerateAuthResponseParamsForIdToken
-  | GenerateAuthResponseParamsForCode;
-
 export async function generateAuthData(params: GenerateAuthResponseParams) {
-  switch (params.responseType) {
-    case AuthorizationResponseType.TOKEN:
-    case AuthorizationResponseType.TOKEN_ID_TOKEN:
-      return generateTokens(params);
+  const { ctx } = params;
+  const log = createLogMessage(params.ctx, {
+    type: LogTypes.SUCCESS_LOGIN,
+    description: "Successful login",
+  });
+  waitUntil(ctx, ctx.env.data.logs.create(params.tenantId, log));
+
+  // Update the user's last login
+  if ("email" in params.user) {
+    waitUntil(
+      ctx,
+      ctx.env.data.users.update(params.tenantId, params.user.id, {
+        last_login: new Date().toISOString(),
+        login_count: params.user.login_count + 1,
+        // This is specific to cloudflare
+        last_ip: ctx.req.header("cf-connecting-ip"),
+      }),
+    );
+  }
+
+  switch (params.authParams.response_type) {
     case AuthorizationResponseType.CODE:
       return generateCode(params);
+    case AuthorizationResponseType.TOKEN:
+    case AuthorizationResponseType.TOKEN_ID_TOKEN:
+    default:
+      return generateTokens(params);
   }
 }
 

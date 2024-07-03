@@ -37,5 +37,5 @@ export async function universalAuth({
 
   await ctx.env.data.universalLoginSessions.create(session);
 
-  return ctx.redirect(`/u/code?state=${session.id}`);
+  return ctx.redirect(`/u/enter-email?state=${session.id}`);
 }

@@ -4,6 +4,7 @@ import {
   serializeStateInCookie,
 } from "../services/cookies";
 import {
+  AuthorizationResponseMode,
   AuthorizationResponseType,
   CodeChallengeMethod,
   Env,
@@ -36,7 +37,6 @@ export async function silentAuth({
   redirect_uri,
   state,
   nonce,
-  response_type,
   client_id,
   code_challenge_method,
   code_challenge,
@@ -68,21 +68,21 @@ export async function silentAuth({
         ctx.set("connection", user.connection);
 
         const tokenResponse = await generateAuthData({
-          env,
+          ctx,
           tenantId: tenant_id,
           state,
           nonce,
-          userId: session.user_id,
           authParams: {
             client_id,
             audience,
             code_challenge_method,
             code_challenge,
             scope,
+            // Always set the response type to token id_token for silent auth
+            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
           },
           user,
           sid: tokenState,
-          responseType: response_type,
         });
 
         await env.data.sessions.update(tenant_id, tokenState, {
@@ -107,8 +107,6 @@ export async function silentAuth({
       }
     }
   }
-
-  ctx.set("description", "Login required");
 
   const log = createLogMessage(ctx, {
     type: LogTypes.FAILED_SILENT_AUTH,

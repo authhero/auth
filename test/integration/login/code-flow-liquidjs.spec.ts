@@ -90,7 +90,7 @@ describe("Login with code on liquidjs template", () => {
     expect(response.status).toBe(302);
     const location = response.headers.get("location");
 
-    expect(location!.startsWith("/u/code")).toBeTruthy();
+    expect(location!.startsWith("/u/enter-email")).toBeTruthy();
 
     const stateParam = new URLSearchParams(location!.split("?")[1]);
 

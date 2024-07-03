@@ -196,8 +196,7 @@ export async function ticketAuth(
   waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
   return generateAuthResponse({
-    env,
-    userId: user.id,
+    ctx,
     state: authParams.state,
     authParams: {
       scope: ticket.authParams?.scope,
@@ -205,7 +204,6 @@ export async function ticketAuth(
     },
     sid: sessionId,
     user,
-    responseType: authParams.response_type || AuthorizationResponseType.TOKEN,
     tenantId: ticket.tenant_id,
   });
 }
