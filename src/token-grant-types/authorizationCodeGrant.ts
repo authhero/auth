@@ -39,6 +39,7 @@ export async function authorizeCodeGrant(
   }
   ctx.set("userName", user.email);
   ctx.set("connection", user.connection);
+  ctx.set("userId", user.id);
 
   // TODO: Temporary fix for the default client
   const defaultClient = await getClient(ctx.env, "DEFAULT_CLIENT");
@@ -57,14 +58,8 @@ export async function authorizeCodeGrant(
     user,
     sid: nanoid(),
     tenantId: client.tenant_id,
+    authFlow: "code",
   });
-
-  const log = createLogMessage(ctx, {
-    type: LogTypes.SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN,
-    description: "Authorization Code for Access Token",
-  });
-
-  await ctx.env.data.logs.create(client.tenant_id, log);
 
   return ctx.json(tokens);
 }
