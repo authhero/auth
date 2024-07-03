@@ -1,6 +1,6 @@
 {
   "name": "auth2",
-  "version": "1.249.8",
+  "version": "1.249.9",
   "description": "",
   "main": "app.js",
   "scripts": {
