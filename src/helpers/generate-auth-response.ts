@@ -27,6 +27,7 @@ export interface GenerateAuthResponseParams {
   state?: string;
   nonce?: string;
   authParams: AuthParams;
+  authFlow?: "cross-origin" | "same-origin" | "refresh-token";
 }
 
 async function generateCode({
@@ -146,7 +147,10 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
 export async function generateAuthData(params: GenerateAuthResponseParams) {
   const { ctx } = params;
   const log = createLogMessage(params.ctx, {
-    type: LogTypes.SUCCESS_LOGIN,
+    type:
+      params.authFlow === "cross-origin"
+        ? LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION
+        : LogTypes.SUCCESS_LOGIN,
     description: "Successful login",
   });
   waitUntil(ctx, ctx.env.data.logs.create(params.tenantId, log));

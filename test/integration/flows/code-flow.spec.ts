@@ -161,7 +161,7 @@ describe("code-flow", () => {
       include_totals: true,
     });
 
-    expect(logs.length).toBe(3);
+    expect(logs.length).toBe(2);
     const log = logs.find((log) => log.type === "scoa");
 
     expect(log).toMatchObject({
