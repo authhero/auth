@@ -11,6 +11,7 @@ import it from "../../localesLogin2/it/default.json";
 import nb from "../../localesLogin2/nb/default.json";
 import sv from "../../localesLogin2/sv/default.json";
 import pl from "../../localesLogin2/pl/default.json";
+import { setSearchParams } from "../../utils/url";
 
 function initI18n(lng: string) {
   i18next.init({
@@ -89,20 +90,13 @@ export const callbackRoutes = new OpenAPIHono<{
         }
 
         const redirectUri = new URL(redirect_uri);
-
-        redirectUri.searchParams.set("error", error);
-        if (error_description) {
-          redirectUri.searchParams.set("error_description", error_description);
-        }
-        if (error_code) {
-          redirectUri.searchParams.set("error_code", error_code);
-        }
-        if (error_reason) {
-          redirectUri.searchParams.set("error_reason", error_reason);
-        }
-        if (loginState.authParams.state) {
-          redirectUri.searchParams.set("state", loginState.authParams.state);
-        }
+        setSearchParams(redirectUri, {
+          error,
+          error_description,
+          error_code,
+          error_reason,
+          state: loginState.authParams.state,
+        });
 
         return ctx.redirect(redirectUri.href);
       }
@@ -179,19 +173,13 @@ export const callbackRoutes = new OpenAPIHono<{
 
         const redirectUri = new URL(redirect_uri);
 
-        redirectUri.searchParams.set("error", error);
-        if (error_description) {
-          redirectUri.searchParams.set("error_description", error_description);
-        }
-        if (error_code) {
-          redirectUri.searchParams.set("error_code", error_code);
-        }
-        if (error_reason) {
-          redirectUri.searchParams.set("error_reason", error_reason);
-        }
-        if (loginState.authParams.state) {
-          redirectUri.searchParams.set("state", loginState.authParams.state);
-        }
+        setSearchParams(redirectUri, {
+          error,
+          error_description,
+          error_code,
+          error_reason,
+          state: loginState.authParams.state,
+        });
 
         return ctx.redirect(redirectUri.href);
       }

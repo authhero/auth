@@ -20,6 +20,7 @@ import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
 import { createLogMessage } from "../utils/create-log-message";
+import { setSearchParams } from "../utils/url";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -44,24 +45,15 @@ export async function socialAuth(
   const state = stateEncode({ authParams, connection });
 
   const oauthLoginUrl = new URL(connectionInstance.authorization_endpoint!);
-  if (connectionInstance.scope) {
-    oauthLoginUrl.searchParams.set("scope", connectionInstance.scope);
-  }
-  oauthLoginUrl.searchParams.set("state", state);
-  oauthLoginUrl.searchParams.set("redirect_uri", `${ctx.env.ISSUER}callback`);
-  oauthLoginUrl.searchParams.set("client_id", connectionInstance.client_id!);
-  if (connectionInstance.response_type) {
-    oauthLoginUrl.searchParams.set(
-      "response_type",
-      connectionInstance.response_type,
-    );
-  }
-  if (connectionInstance.response_mode) {
-    oauthLoginUrl.searchParams.set(
-      "response_mode",
-      connectionInstance.response_mode,
-    );
-  }
+
+  setSearchParams(oauthLoginUrl, {
+    scope: connectionInstance.scope,
+    client_id: connectionInstance.client_id,
+    redirect_uri: `${ctx.env.ISSUER}callback`,
+    response_type: connectionInstance.response_type,
+    response_mode: connectionInstance.response_mode,
+    state,
+  });
 
   return ctx.redirect(oauthLoginUrl.href);
 }

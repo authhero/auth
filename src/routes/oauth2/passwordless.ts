@@ -14,7 +14,7 @@ import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
-import { createLogMessage } from "../../utils/create-log-message";
+import { setSearchParams } from "../../utils/url";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 
@@ -182,56 +182,19 @@ export const passwordlessRoutes = new OpenAPIHono<{
         const login2ExpiredCodeUrl = new URL(`${env.LOGIN2_URL}/expired-code`);
 
         const stateDecoded = new URLSearchParams(state);
-
-        login2ExpiredCodeUrl.searchParams.set("email", email);
-
-        login2ExpiredCodeUrl.searchParams.set("lang", locale);
-
-        const redirectUri = stateDecoded.get("redirect_uri");
-        if (redirectUri) {
-          login2ExpiredCodeUrl.searchParams.set("redirect_uri", redirectUri);
-        }
-
-        const audience = stateDecoded.get("audience");
-        if (audience) {
-          login2ExpiredCodeUrl.searchParams.set("audience", audience);
-        }
-
-        const nonce = stateDecoded.get("nonce");
-        if (nonce) {
-          login2ExpiredCodeUrl.searchParams.set("nonce", nonce);
-        }
-
-        const scope = stateDecoded.get("scope");
-        if (scope) {
-          login2ExpiredCodeUrl.searchParams.set("scope", scope);
-        }
-
-        const responseType = stateDecoded.get("response_type");
-        if (responseType) {
-          login2ExpiredCodeUrl.searchParams.set("response_type", responseType);
-        }
-
-        const state2 = stateDecoded.get("state");
-        if (state2) {
-          login2ExpiredCodeUrl.searchParams.set("state", state2);
-        }
-
-        const client_id = stateDecoded.get("client_id");
-        if (client_id) {
-          login2ExpiredCodeUrl.searchParams.set("client_id", client_id);
-        }
-
-        // this will always be auth2
-        const connection2 = stateDecoded.get("connection");
-        if (connection2) {
-          login2ExpiredCodeUrl.searchParams.set("connection", connection2);
-        }
-
-        const vendorId = stateDecoded.get("vendor_id");
-        if (vendorId) {
-          login2ExpiredCodeUrl.searchParams.set("vendor_id", vendorId);
-        }
+        setSearchParams(login2ExpiredCodeUrl, {
+          email,
+          lang: locale,
+          redirect_uri: stateDecoded.get("redirect_uri"),
+          audience: stateDecoded.get("audience"),
+          nonce: stateDecoded.get("nonce"),
+          scope: stateDecoded.get("scope"),
+          response_type,
+          state,
+          client_id: stateDecoded.get("client_id"),
+          connection: stateDecoded.get("connection"),
+          vendor_id: stateDecoded.get("vendor_id"),
+        });
 
         return ctx.redirect(login2ExpiredCodeUrl.toString());
       }

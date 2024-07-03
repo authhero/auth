@@ -11,6 +11,7 @@ import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
 import { createLogMessage } from "../utils/create-log-message";
 import { waitUntil } from "../utils/wait-until";
+import { setSearchParams } from "../utils/url";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {
@@ -77,59 +78,18 @@ export async function ticketAuth(
 
       const stateDecoded = new URLSearchParams(authParams.state);
 
-      login2UniverifiedEmailUrl.searchParams.set(
-        "email",
-        encodeURIComponent(ticket.email),
-      );
-
-      login2UniverifiedEmailUrl.searchParams.set(
-        "lang",
-        client.tenant.language || "sv",
-      );
-
-      const redirectUri = stateDecoded.get("redirect_uri");
-      if (redirectUri) {
-        login2UniverifiedEmailUrl.searchParams.set("redirect_uri", redirectUri);
-      }
-
-      const audience = stateDecoded.get("audience");
-      if (audience) {
-        login2UniverifiedEmailUrl.searchParams.set("audience", audience);
-      }
-
-      const nonce = stateDecoded.get("nonce");
-      if (nonce) {
-        login2UniverifiedEmailUrl.searchParams.set("nonce", nonce);
-      }
-
-      const scope = stateDecoded.get("scope");
-      if (scope) {
-        login2UniverifiedEmailUrl.searchParams.set("scope", scope);
-      }
-
-      const responseType = stateDecoded.get("response_type");
-      if (responseType) {
-        login2UniverifiedEmailUrl.searchParams.set(
-          "response_type",
-          responseType,
-        );
-      }
-
-      const state2 = stateDecoded.get("state");
-      if (state2) {
-        login2UniverifiedEmailUrl.searchParams.set("state", state2);
-      }
-
-      const client_id = stateDecoded.get("client_id");
-      if (client_id) {
-        login2UniverifiedEmailUrl.searchParams.set("client_id", client_id);
-      }
-
-      // this will always be auth2
-      const connection2 = stateDecoded.get("connection");
-      if (connection2) {
-        login2UniverifiedEmailUrl.searchParams.set("connection", connection2);
-      }
+      setSearchParams(login2UniverifiedEmailUrl, {
+        email: ticket.email,
+        lang: client.tenant.language || "sv",
+        redirect_uri: stateDecoded.get("redirect_uri"),
+        audience: stateDecoded.get("audience"),
+        nonce: stateDecoded.get("nonce"),
+        scope: stateDecoded.get("scope"),
+        response_type: stateDecoded.get("response_type"),
+        state: stateDecoded.get("state"),
+        client_id: stateDecoded.get("client_id"),
+        connection: stateDecoded.get("connection"),
+      });
 
       const log = createLogMessage(ctx, {
         type: LogTypes.FAILED_LOGIN,
