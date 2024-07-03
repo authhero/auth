@@ -670,7 +670,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         if (passwordLoginSelection === SesamyPasswordLoginSelection.password) {
           return ctx.redirect(
-            `/u/login?state=${state}&username=${params.username}`,
+            `/u/enter-password?state=${state}&username=${params.username}`,
           );
         }
       }

@@ -91,7 +91,9 @@ test("after entering email should go to enter password step if password cookie i
 
   const enterEmailResponseLocation = enterEmailResponse.headers.get("location");
 
-  expect(enterEmailResponseLocation!.startsWith("/u/login")).toBeTruthy();
+  expect(
+    enterEmailResponseLocation!.startsWith("/u/enter-password"),
+  ).toBeTruthy();
 });
 
 test("after entering email should go to enter code step if password cookie is set BUT have posted up login_selection code override", async () => {

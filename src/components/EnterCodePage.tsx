@@ -93,7 +93,7 @@ const EnterCodePage: FC<Props> = ({
               </div>
               <Button
                 Component="a"
-                href={`/u/login?${passwordLoginLinkParams.toString()}`}
+                href={`/u/enter-password?${passwordLoginLinkParams.toString()}`}
                 variant="secondary"
                 className="block"
               >
