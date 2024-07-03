@@ -197,7 +197,9 @@ export async function socialAuthCallback({
     provider: connection.name,
   });
 
-  if (!user) {
+  if (user) {
+    ctx.set("userId", user.id);
+  } else {
     const callerIsLogin2 = state.authParams.redirect_uri.includes("login2");
 
     if (client.disable_sign_ups && !callerIsLogin2) {
@@ -262,12 +264,6 @@ export async function socialAuthCallback({
     authParams: state.authParams,
     user,
   });
-
-  const log = createLogMessage(ctx, {
-    type: LogTypes.SUCCESS_LOGIN,
-    description: "Successful login",
-  });
-  await ctx.env.data.logs.create(client.tenant_id, log);
 
   return authResponse;
 }

@@ -154,7 +154,7 @@ describe("social sign on", () => {
           per_page: 100,
           include_totals: true,
         });
-        expect(logs.length).toBe(3);
+        expect(logs.length).toBe(2);
         const successLoginLog = logs.find((log) => log.type === "s");
         const successSignupLog = logs.find((log) => log.type === "ss");
         expect(successSignupLog).toMatchObject({
