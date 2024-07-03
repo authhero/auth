@@ -56,6 +56,7 @@ export async function ticketAuth(
   if (user) {
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
+    ctx.set("userId", user.id);
 
     if (realm === "Username-Password-Authentication" && !user.email_verified) {
       const client = await getClient(ctx.env, ticket.client_id);
@@ -104,9 +105,7 @@ export async function ticketAuth(
         },
       });
     }
-  }
-
-  if (!user) {
+  } else {
     if (realm === "Username-Password-Authentication") {
       throw new Error(
         "ticket flow should not arrive here with non existent user - probably the provider is not set on the user",
@@ -128,11 +127,9 @@ export async function ticketAuth(
       updated_at: new Date().toISOString(),
     });
 
-    // TODO - set logging identity provider here
+    ctx.set("userId", user.id);
+    ctx.set("userName", user.name || user.email);
   }
-
-  ctx.set("userId", user.id);
-  ctx.set("userName", user.name || user.email);
 
   const sessionId = await setSilentAuthCookies(
     env,
@@ -140,20 +137,6 @@ export async function ticketAuth(
     ticket.client_id,
     user,
   );
-
-  // Update the user's last login
-  await env.data.users.update(tenant_id, user.id, {
-    last_login: new Date().toISOString(),
-    login_count: user.login_count + 1,
-    // This is specific to cloudflare
-    last_ip: ctx.req.header("cf-connecting-ip") || "",
-  });
-
-  const log = createLogMessage(ctx, {
-    type: LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION,
-    description: "Successful cross-origin authentication",
-  });
-  waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
   return generateAuthResponse({
     ctx,
@@ -165,5 +148,6 @@ export async function ticketAuth(
     sid: sessionId,
     user,
     tenantId: ticket.tenant_id,
+    authFlow: "cross-origin",
   });
 }

@@ -192,7 +192,7 @@ describe("password-flow", () => {
         include_totals: true,
       });
 
-      expect(logs.length).toBe(4);
+      expect(logs.length).toBe(3);
       const log = logs.find((log) => log.type === "scoa");
       expect(log).toMatchObject({
         type: "scoa",
