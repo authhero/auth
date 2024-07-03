@@ -15,14 +15,6 @@ export function createLogMessage(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   params: LogParams,
 ) {
-  const headers = instanceToJson(ctx.req.raw.headers);
-  if (headers.cookie) {
-    headers.cookie = "REDACTED";
-  }
-  if (headers.authorization) {
-    headers.authorization = "REDACTED";
-  }
-
   const log: Log = {
     type: params.type,
     description: params.description || ctx.var.description || "",
@@ -33,7 +25,6 @@ export function createLogMessage(
       request: {
         method: ctx.req.method,
         path: ctx.req.path,
-        headers: instanceToJson(ctx.req.raw.headers),
         qs: ctx.req.queries(),
         body: params.body || ctx.var.body || "",
       },
