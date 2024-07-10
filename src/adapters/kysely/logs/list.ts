@@ -13,16 +13,17 @@ export function listLogs(db: Kysely<Database>) {
       query = luceneFilter(db, query, params.q, ["user_id", "ip"]);
     }
 
-    // TEMP FIX - hardcoded date desc for now
-    query = query.orderBy("date", "desc");
+    let filteredQuery = query;
 
-    // TODO - sorting not implemented anywhere yet
-    // if (params.sort && params.sort.sort_by) {
-    //   const { ref } = db.dynamic;
-    //   query = query.orderBy(ref(params.sort.sort_by), params.sort.sort_order);
-    // }
+    if (params.sort && params.sort.sort_by) {
+      const { ref } = db.dynamic;
+      filteredQuery = filteredQuery.orderBy(
+        ref(params.sort.sort_by),
+        params.sort.sort_order,
+      );
+    }
 
-    const filteredQuery = query
+    filteredQuery = query
       .offset(params.page * params.per_page)
       .limit(params.per_page);
 

@@ -5,7 +5,11 @@ import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { AuthorizationResponseType, UserResponse } from "../../../src/types";
+import {
+  AuthorizationResponseType,
+  LogTypes,
+  UserResponse,
+} from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import {
   snapshotResponse,
@@ -89,21 +93,6 @@ describe("password-flow", () => {
       // this will not work! need to validate the email before allowing a login
       expect(loginResponse.status).toBe(403);
 
-      const {
-        logs: [failedLogin],
-      } = await env.data.logs.list("tenantId", {
-        page: 0,
-        per_page: 100,
-        include_totals: true,
-      });
-      expect(failedLogin).toMatchObject({
-        type: "f",
-        tenant_id: "tenantId",
-        user_name: "password-login-test@example.com",
-        connection: "Username-Password-Authentication",
-        client_id: "clientId",
-        description: "Email not verified",
-      });
       // get user with this id and check is the correct id
       const user = await env.data.users.get(
         "tenantId",
@@ -186,31 +175,6 @@ describe("password-flow", () => {
       expect(idTokenPayload.email).toBe("password-login-test@example.com");
       expect(idTokenPayload.aud).toBe("clientId");
 
-      const { logs } = await env.data.logs.list("tenantId", {
-        page: 0,
-        per_page: 100,
-        include_totals: true,
-      });
-
-      expect(logs.length).toBe(3);
-      const log = logs.find((log) => log.type === "scoa");
-      expect(log).toMatchObject({
-        type: "scoa",
-        tenant_id: "tenantId",
-        user_id: accessTokenPayload.sub,
-        user_name: "password-login-test@example.com",
-        connection: "Username-Password-Authentication",
-        // TODO - we also want these fields populated... maybe we want another test for this?
-        // auth0_client: {
-        //   name: "auth0.js",
-        //   version: "9.26.1",
-        // },
-        // client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
-        // date: "2024-06-10T10:30:50.545Z",
-        // ip: "78.46.40.111",
-        // user_agent: "Mobile Safari 17.4.0 / iOS 14.4.0",
-      });
-
       const authCookieHeader = tokenResponse.headers.get("set-cookie")!;
       // now check silent auth works after password login
       const { idToken: silentAuthIdTokenPayload } =
@@ -237,20 +201,58 @@ describe("password-flow", () => {
         iss: "https://example.com/",
       });
 
-      const {
-        logs: [silentAuthSuccess],
-      } = await env.data.logs.list("tenantId", {
+      // Validate the logs
+      const { logs } = await env.data.logs.list("tenantId", {
         page: 0,
         per_page: 100,
         include_totals: true,
       });
-      expect(silentAuthSuccess).toMatchObject({
+
+      const failedLoginLog = logs.find(
+        (log) => log.type === LogTypes.FAILED_LOGIN,
+      );
+
+      expect(failedLoginLog).toMatchObject({
+        type: "f",
+        tenant_id: "tenantId",
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        client_id: "clientId",
+        description: "Email not verified",
+      });
+
+      const silentAuthSuccessLog = logs.find(
+        (logs) => logs.type === LogTypes.SUCCESS_SILENT_AUTH,
+      );
+
+      expect(silentAuthSuccessLog).toMatchObject({
         type: "ssa",
         tenant_id: "tenantId",
         user_id: accessTokenPayload.sub,
         user_name: "password-login-test@example.com",
         connection: "Username-Password-Authentication",
         description: "Successful silent authentication",
+      });
+
+      const sucessfulCrossOriginAuthentictationLog = logs.find(
+        (log) => log.type === LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION,
+      );
+
+      expect(sucessfulCrossOriginAuthentictationLog).toMatchObject({
+        type: "scoa",
+        tenant_id: "tenantId",
+        user_id: accessTokenPayload.sub,
+        user_name: "password-login-test@example.com",
+        connection: "Username-Password-Authentication",
+        // TODO - we also want these fields populated... maybe we want another test for this?
+        // auth0_client: {
+        //   name: "auth0.js",
+        //   version: "9.26.1",
+        // },
+        // client_id: "0N0wUHXFl0TMTY2L9aDJYvwX7Xy84HkW",
+        // date: "2024-06-10T10:30:50.545Z",
+        // ip: "78.46.40.111",
+        // user_agent: "Mobile Safari 17.4.0 / iOS 14.4.0",
       });
     });
 

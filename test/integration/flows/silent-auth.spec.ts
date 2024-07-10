@@ -6,6 +6,7 @@ import { testClient } from "hono/testing";
 import {
   AuthorizationResponseType,
   AuthorizationResponseMode,
+  LogTypes,
 } from "../../../src/types";
 
 function getDefaultSilentAuthSearchParams() {
@@ -166,14 +167,17 @@ describe("silent-auth", () => {
       );
     expect(silentAuthAccessTokenPayloadOtherClient).toBeDefined();
 
-    const {
-      logs: [silentAuthSuccess],
-    } = await env.data.logs.list("tenantId", {
+    const { logs } = await env.data.logs.list("tenantId", {
       page: 0,
       per_page: 100,
       include_totals: true,
     });
-    expect(silentAuthSuccess).toMatchObject({
+
+    const silentAuthSucessLog = logs.find(
+      (log) => log.type === LogTypes.SUCCESS_SILENT_AUTH,
+    );
+
+    expect(silentAuthSucessLog).toMatchObject({
       type: "ssa",
       tenant_id: "tenantId",
       user_id: "auth2|userId",

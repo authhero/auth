@@ -4,6 +4,7 @@ import { ListParams } from "../../../adapters/interfaces/ListParams";
 import { luceneFilter } from "../helpers/filter";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { ListConnectionsResponse } from "../../../adapters/interfaces/Connections";
+import { removeNullProperties } from "../helpers/remove-nulls";
 
 export function list(db: Kysely<Database>) {
   return async (
@@ -31,7 +32,7 @@ export function list(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      connections,
+      connections: connections.map(removeNullProperties),
       start: params.page * params.per_page,
       limit: params.per_page,
       length: countInt,
