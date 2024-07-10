@@ -28,7 +28,7 @@ export enum LogTypes {
 // Enum for LogTypes
 const LogType = z.enum([
   "sapi", // SUCCESS_API_OPERATION
-  // "ssa", SUCCESS_SILENT_AUTH - omitted for brevity and since it's clear from context
+  "ssa", // SUCCESS_SILENT_AUTH - omitted for brevity and since it's clear from context
   "fsa", // FAILED_SILENT_AUTH
   "ss", // SUCCESS_SIGNUP
   "ssa", /// SUCCESS_SILENT_AUTH

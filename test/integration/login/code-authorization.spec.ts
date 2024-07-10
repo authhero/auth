@@ -2,7 +2,7 @@ import { test, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import { AuthorizationResponseType } from "../../../src/types";
+import { AuthorizationResponseType, LogTypes } from "../../../src/types";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 
 test("code authorization flow should work", async () => {
@@ -83,14 +83,19 @@ test("code authorization flow should work", async () => {
 
   expect(idTokenPayload.sub).toEqual("auth2|userId");
 
-  // TO TEST? more fields on tokens?
-
   const { logs } = await env.data.logs.list("tenantId", {
     page: 0,
     per_page: 100,
     include_totals: true,
   });
-  expect(logs[0]).toMatchObject({
+
+  const authCodeLog = logs.find(
+    (log) =>
+      log.type ===
+      LogTypes.SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN,
+  );
+
+  expect(authCodeLog).toMatchObject({
     type: "seacft",
     tenant_id: "tenantId",
     user_name: "foo@example.com",

@@ -6,7 +6,7 @@ import {
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import { AuthorizationResponseType } from "../../../src/types";
+import { AuthorizationResponseType, LogTypes } from "../../../src/types";
 
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {
@@ -87,7 +87,10 @@ describe("logout", () => {
       per_page: 100,
       include_totals: true,
     });
-    expect(logs[0]).toMatchObject({
+
+    const logoutLog = logs.find((log) => log.type === LogTypes.SUCCESS_LOGOUT);
+
+    expect(logoutLog).toMatchObject({
       type: "slo",
       tenant_id: "tenantId",
       user_name: "foo@example.com",

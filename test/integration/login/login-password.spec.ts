@@ -88,13 +88,13 @@ describe("Register password", () => {
     expect(blockedLoginResponse.status).toBe(400);
     await snapshotResponse(blockedLoginResponse);
 
-    const {
-      logs: [failedLogin],
-    } = await env.data.logs.list("tenantId", {
+    const { logs } = await env.data.logs.list("tenantId", {
       page: 0,
       per_page: 100,
       include_totals: true,
     });
+
+    const failedLogin = logs.find((l) => l.type === "f");
 
     expect(failedLogin).toMatchObject({
       type: "f",

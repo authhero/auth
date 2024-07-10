@@ -7,7 +7,7 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
-import { AuthorizationResponseType } from "../../../src/types";
+import { AuthorizationResponseType, LogTypes } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { UserResponse } from "../../../src/types";
@@ -299,7 +299,10 @@ describe("Login with code on liquidjs template", () => {
       per_page: 100,
       include_totals: true,
     });
-    expect(logs[0]).toMatchObject({
+
+    const loginLog = logs.find((log) => log.type === LogTypes.SUCCESS_LOGIN);
+
+    expect(loginLog).toMatchObject({
       type: "s",
       tenant_id: "tenantId",
       user_name: "bar@example.com",
