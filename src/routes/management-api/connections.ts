@@ -3,7 +3,6 @@ import { getDbFromEnv } from "../../services/db";
 import { headers } from "../../constants";
 import { Env, totalsSchema } from "../../types";
 import { HTTPException } from "hono/http-exception";
-import { nanoid } from "nanoid";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import {
