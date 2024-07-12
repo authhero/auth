@@ -16,12 +16,6 @@ export function listLogs(db: Kysely<Database>) {
     let filteredQuery = query;
 
     if (params.sort && params.sort.sort_by) {
-      console.log(
-        "params.sort.sort_by",
-        params.sort.sort_by,
-        params.sort.sort_order,
-      );
-
       const { ref } = db.dynamic;
       filteredQuery = filteredQuery.orderBy(
         ref(params.sort.sort_by),
