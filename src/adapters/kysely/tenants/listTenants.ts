@@ -2,6 +2,7 @@ import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
+import { removeNullProperties } from "../helpers/remove-nulls";
 
 export function listTenants(db: Kysely<Database>) {
   return async (params: ListParams) => {
@@ -35,7 +36,7 @@ export function listTenants(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      tenants,
+      tenants: tenants.map(removeNullProperties),
       start: (params.page - 1) * params.per_page,
       limit: params.per_page,
       length: countInt,
