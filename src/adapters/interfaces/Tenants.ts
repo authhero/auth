@@ -12,7 +12,7 @@ export interface CreateTenantParams {
 
 export interface TenantsDataAdapter {
   create(params: CreateTenantParams): Promise<Tenant>;
-  get(id: string): Promise<Tenant | undefined>;
+  get(id: string): Promise<Tenant | null>;
   list(params: ListParams): Promise<{ tenants: Tenant[]; totals?: Totals }>;
   update(id: string, tenant: Partial<Tenant>): Promise<void>;
   remove(tenantId: string): Promise<boolean>;
