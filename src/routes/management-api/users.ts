@@ -279,7 +279,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const data = await ctx.env.data.users.create(tenant_id, {
         email,
-        id: `${body.provider}|${userIdGenerate()}`,
+        id: `${body.provider}|${body["user_id"] || userIdGenerate()}`,
         name: body.name || email,
         provider: body.provider,
         connection: body.connection,
