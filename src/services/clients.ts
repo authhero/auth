@@ -1,6 +1,7 @@
 import { Env } from "../types";
 import { Client, ClientSchema, PartialClientSchema } from "../types/Client";
 import { DefaultSettings, getDefaultSettings } from "../models/DefaultSettings";
+import { HTTPException } from "hono/http-exception";
 
 // Thsese default settings are static and don't contain any keys
 const defaultSettings: DefaultSettings = {
@@ -33,13 +34,10 @@ const defaultSettings: DefaultSettings = {
   ],
 };
 
-export async function getClient(
-  env: Env,
-  clientId: string,
-): Promise<Client | undefined> {
+export async function getClient(env: Env, clientId: string): Promise<Client> {
   const clientRawObj = await env.data.clients.get(clientId);
   if (!clientRawObj) {
-    return;
+    throw new HTTPException(403, { message: "Client not found" });
   }
 
   const client = PartialClientSchema.parse(clientRawObj);

@@ -30,9 +30,6 @@ export async function validateCode(
   const { env } = ctx;
 
   const client = await getClient(env, params.client_id);
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
-  }
 
   const otps = await env.data.OTP.list(client.tenant_id, params.email);
   const otp = otps.find((otp) => otp.code === params.verification_code);

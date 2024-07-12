@@ -37,9 +37,6 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { client_id, returnTo } = ctx.req.valid("query");
 
       const client = await getClient(ctx.env, client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
       ctx.set("client_id", client_id);
 
       const redirectUri = returnTo || ctx.req.header("referer");

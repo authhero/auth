@@ -50,10 +50,6 @@ export const authenticateRoutes = new OpenAPIHono<{
       const { client_id, username, otp, password } = ctx.req.valid("json");
       const client = await getClient(ctx.env, client_id);
 
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-
       const email = username.toLocaleLowerCase();
 
       let ticket: Ticket = {

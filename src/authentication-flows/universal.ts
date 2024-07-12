@@ -19,10 +19,6 @@ export async function universalAuth({
 }: UniversalAuthParams) {
   const client = await getClient(ctx.env, authParams.client_id);
 
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
-  }
-
   const session: UniversalLoginSession = {
     id: nanoid(),
     tenant_id: client.tenant_id,
