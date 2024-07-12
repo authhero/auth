@@ -1,8 +1,7 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 
-const token =
-  "eyJraWQiOiJZdjdFdFNWalRjcDZVS3k4SzBCa08iLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkZWZhdWx0Iiwic2NvcGUiOiJvcGVuaWQgZW1haWwgcHJvZmlsZSIsInBlcm1pc3Npb25zIjpbImF1dGg6cmVhZCIsImF1dGg6d3JpdGUiLCJyZWFkOnN0YXRlIl0sInN1YiI6Imdvb2dsZS1vYXV0aDJ8MTA4NzkxMDA0NjcxMDcyODE3Nzk0Iiwia2lkIjoiWXY3RXRTVmpUY3A2VUt5OEswQmtPIiwiaXNzIjoiaHR0cHM6Ly90b2tlbi5zZXNhbXkuY29tLyIsImlhdCI6MTcyMDc2NzcwNiwiZXhwIjoxNzIwODU0MTA2fQ.3M5k-DhaRfGgk714lBceE-gc_SvW82S1euFKJyFpRIkwdVZsMJmCh-N6b45p0SJeeUQ7svATjEzzgNpXv1uLhDTxGQJIBScj0Mo3dGGEsQnhCGR4tWK_e-Ny1vDVSQ-8l2aBwnTKe1dnYceHothjmlL-WM_grz7jmRcU5HjZAyMSkvHdDhw5jYLFwOH3YWY3P3FUgL2l4UnlLQdCkQPcPJ-wnAxKY3m-gNPitjNT5LGuxNKswE_rjXnUW2l12ZNKMwduAoWkKS7NOmKAnl7-UslmD_cQnBwwyt379AOMKsbLu1H4NBT9DMo9MocttwYpJaSYZYEySNi2NlhTUEVskZ3jF_QVVYdajZtaEzAeVBmqPmUh_E7Rk_sWi1nfHE0vhVaJ_MYGaI-0TYP_p5aejJoXjN116ZcyhM1ozuSmiLlRReDZgSzF9JgqqhNVGlQvDOueId9iMCOnih3tPsygPaiy6Q047iklR-6FdgcT2JJy9kQzuTERs-RpoSNS_QzEpmMOQRP1h5oXjOzWQ7Io76Tptotf_Xvwg-xqXnuronwpqGdRwvpfrX-pPeO_Ls5PWNmPgApS22IC2cbDGRwnJ2_G4Ef-LX7wYzoxDpd3HQPEEYBoPOLmiTzGrTLzNrHQmKroZxz1DKGss3PjvSCbX-obJjmjot_hFe4eSuL5f0k";
+const token = "add token here...";
 
 function getProviderAndId(id) {
   const [provider, userId] = id.split("|");
@@ -13,11 +12,22 @@ function getProviderAndId(id) {
         provider: "google-oauth2",
         connection: "google-oauth2",
         user_id: userId,
+        is_social: true,
       };
     case "facebook":
-      return { provider: "facebook", connection: "facebook", user_id: userId };
+      return {
+        provider: "facebook",
+        connection: "facebook",
+        user_id: userId,
+        is_social: true,
+      };
     case "apple":
-      return { provider: "apple", connection: "apple", user_id: userId };
+      return {
+        provider: "apple",
+        connection: "apple",
+        user_id: userId,
+        is_social: true,
+      };
     case "email":
       return { provider: "email", connection: "email", user_id: userId };
     case "auth0":
