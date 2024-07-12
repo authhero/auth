@@ -16,6 +16,12 @@ export function listLogs(db: Kysely<Database>) {
     let filteredQuery = query;
 
     if (params.sort && params.sort.sort_by) {
+      console.log(
+        "params.sort.sort_by",
+        params.sort.sort_by,
+        params.sort.sort_order,
+      );
+
       const { ref } = db.dynamic;
       filteredQuery = filteredQuery.orderBy(
         ref(params.sort.sort_by),
@@ -23,7 +29,7 @@ export function listLogs(db: Kysely<Database>) {
       );
     }
 
-    filteredQuery = query
+    filteredQuery = filteredQuery
       .offset(params.page * params.per_page)
       .limit(params.per_page);
 
@@ -37,7 +43,7 @@ export function listLogs(db: Kysely<Database>) {
 
     return {
       logs: logs.map(getLogResponse),
-      start: (params.page - 1) * params.per_page,
+      start: params.page * params.per_page,
       limit: params.per_page,
       length: countInt,
     };
