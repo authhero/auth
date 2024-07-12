@@ -92,9 +92,6 @@ export const authorizeRoutes = new OpenAPIHono<{
       } = ctx.req.valid("query");
 
       const client = await getClient(env, client_id);
-      if (!client) {
-        throw new Error("Client not found");
-      }
 
       const authParams: AuthParams = {
         redirect_uri,

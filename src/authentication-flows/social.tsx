@@ -92,16 +92,6 @@ export async function socialAuthCallback({
   ctx.set("client_id", state.authParams.client_id);
   const client = await getClient(env, state.authParams.client_id);
 
-  if (!client) {
-    const log = createLogMessage(ctx, {
-      type: LogTypes.FAILED_SIGNUP,
-      description: "Client not found",
-    });
-    // where should we log this? if client not found then there's no tenant_id...
-    await ctx.env.data.logs.create("DEFAULT_TENANT", log);
-    throw new HTTPException(403, { message: "Client not found" });
-  }
-
   const connection = client.connections.find(
     (p) => p.name === state.connection,
   );

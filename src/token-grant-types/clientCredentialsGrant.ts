@@ -15,9 +15,6 @@ export async function clientCredentialsGrant(
   params: ClientCredentialsGrantTypeParams,
 ) {
   const client = await getClient(ctx.env, params.client_id);
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
-  }
 
   if (client.client_secret !== params.client_secret) {
     throw new HTTPException(403, { message: "Invalid secret" });

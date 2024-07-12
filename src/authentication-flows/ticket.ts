@@ -10,7 +10,6 @@ import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
 import { createLogMessage } from "../utils/create-log-message";
-import { waitUntil } from "../utils/wait-until";
 import { setSearchParams } from "../utils/url";
 
 function getProviderFromRealm(realm: string) {
@@ -41,6 +40,7 @@ export async function ticketAuth(
   if (!ticket) {
     throw new HTTPException(403, { message: "Ticket not found" });
   }
+  ctx.set("client_id", ticket.client_id);
 
   await env.data.tickets.remove(tenant_id, ticketId);
 
@@ -60,11 +60,6 @@ export async function ticketAuth(
 
     if (realm === "Username-Password-Authentication" && !user.email_verified) {
       const client = await getClient(ctx.env, ticket.client_id);
-
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
-      ctx.set("client_id", client.id);
 
       await sendEmailVerificationEmail({
         env,

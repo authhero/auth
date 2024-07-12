@@ -59,9 +59,6 @@ async function initJSXRoute(state: string, env: Env) {
   }
 
   const client = await getClient(env, session.authParams.client_id);
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
-  }
 
   const tenant = await env.data.tenants.get(client.tenant_id);
   if (!tenant) {

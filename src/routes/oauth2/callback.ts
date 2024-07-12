@@ -72,9 +72,6 @@ export const callbackRoutes = new OpenAPIHono<{
       }
 
       const client = await getClient(ctx.env, loginState.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
       const tenant = await ctx.env.data.tenants.get(client.tenant_id);
       if (!tenant) {
         throw new HTTPException(400, { message: "Tenant not found" });
@@ -160,9 +157,6 @@ export const callbackRoutes = new OpenAPIHono<{
       }
 
       const client = await getClient(ctx.env, loginState.authParams.client_id);
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
 
       if (error) {
         const { redirect_uri } = loginState.authParams;

@@ -66,10 +66,6 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       }
 
       const client = await getClient(ctx.env, client_id);
-
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
       ctx.set("client_id", client.id);
 
       const existingUser = await getPrimaryUserByEmailAndProvider({
@@ -157,10 +153,6 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       const { email, client_id } = ctx.req.valid("json");
 
       const client = await getClient(ctx.env, client_id);
-
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
 
       const authParams: AuthParams = {
         client_id: client_id,

@@ -54,12 +54,8 @@ export const passwordlessRoutes = new OpenAPIHono<{
     }),
     async (ctx) => {
       const body = ctx.req.valid("json");
-      const { client_id, email, send, authParams, connection } = body;
+      const { client_id, email, send, authParams } = body;
       const client = await getClient(ctx.env, client_id);
-
-      if (!client) {
-        throw new HTTPException(400, { message: "Client not found" });
-      }
 
       const code = generateOTP();
 
@@ -130,9 +126,6 @@ export const passwordlessRoutes = new OpenAPIHono<{
         nonce,
       } = ctx.req.valid("query");
       const client = await getClient(env, client_id);
-      if (!client) {
-        throw new Error("Client not found");
-      }
 
       try {
         const user = await validateCode(ctx, {

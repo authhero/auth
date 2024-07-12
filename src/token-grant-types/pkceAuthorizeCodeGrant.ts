@@ -29,9 +29,6 @@ export async function pkceAuthorizeCodeGrant(
   }
 
   const client = await getClient(ctx.env, state.authParams.client_id);
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
-  }
 
   if (state.authParams.client_id !== client.id) {
     throw new HTTPException(403, { message: "Invalid Client" });

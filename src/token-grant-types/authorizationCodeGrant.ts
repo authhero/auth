@@ -17,9 +17,6 @@ export async function authorizeCodeGrant(
   params: AuthorizationCodeGrantTypeParams,
 ) {
   const client = await getClient(ctx.env, params.client_id);
-  if (!client) {
-    throw new HTTPException(400, { message: "Client not found" });
-  }
   ctx.set("client_id", client.id);
 
   // TODO: this does not set the used_at attribute
