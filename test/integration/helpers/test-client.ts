@@ -185,7 +185,7 @@ export async function getEnv(args: getEnvParams = {}) {
   });
 
   await data.users.create("tenantId", {
-    id: "auth2|userId",
+    user_id: "auth2|userId",
     email: "foo@example.com",
     email_verified: true,
     name: "Åkesson Þorsteinsson",

@@ -62,8 +62,10 @@ async function generateCode({
   const { env } = ctx;
   const code = nanoid();
 
+  const user_id = "user_id" in user ? user.user_id : user.id;
+
   await env.data.authenticationCodes.create(tenantId, {
-    user_id: user.id,
+    user_id,
     authParams: {
       client_id: authParams.client_id,
       redirect_uri: authParams.redirect_uri,
@@ -90,11 +92,13 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
   const { ctx, authParams, user, state, sid, nonce, authFlow } = params;
   const { env } = ctx;
 
+  const user_id = "user_id" in user ? user.user_id : user.id;
+
   // Update the user's last login. Skip for client_credentials and refresh_tokens
   if (authFlow !== "refresh-token" && "email" in params.user) {
     waitUntil(
       ctx,
-      ctx.env.data.users.update(params.tenantId, params.user.id, {
+      ctx.env.data.users.update(params.tenantId, user_id, {
         last_login: new Date().toISOString(),
         login_count: params.user.login_count + 1,
         // This is specific to cloudflare
@@ -114,7 +118,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
     {
       aud: authParams.audience || "default",
       scope: authParams.scope || "",
-      sub: user.id,
+      sub: user_id,
       iss: env.ISSUER,
       azp: params.tenantId,
     },
@@ -146,7 +150,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
       {
         // The audience for an id token is the client id
         aud: authParams.client_id,
-        sub: user.id,
+        sub: user.user_id,
         iss: env.ISSUER,
         sid,
         nonce: nonce || authParams.nonce,

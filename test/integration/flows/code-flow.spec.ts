@@ -294,7 +294,7 @@ describe("code-flow", () => {
     // Create the user to log in with the code
     // -----------------
     env.data.users.create("tenantId", {
-      id: "email|userId2",
+      user_id: "email|userId2",
       email: "bar@example.com",
       email_verified: true,
       name: "",
@@ -405,7 +405,7 @@ describe("code-flow", () => {
     // Create the linked user to log in with the magic link
     // -----------------
     env.data.users.create("tenantId", {
-      id: "email|userId2",
+      user_id: "email|userId2",
       // same email address as existing primary user... but this isn't needed
       // do we need more tests where this is different? In case I've taken shortcuts looking up by email address...
       email: "foo@example.com",
@@ -743,7 +743,7 @@ describe("code-flow", () => {
       // -----------------
 
       await env.data.users.create("tenantId", {
-        id: "email|the-base-user",
+        user_id: "email|the-base-user",
         email: "the-base-user@example.com",
         email_verified: true,
         login_count: 0,
@@ -759,7 +759,7 @@ describe("code-flow", () => {
       // -----------------
 
       await env.data.users.create("tenantId", {
-        id: "auth2|the-auth2-same-email-user",
+        user_id: "auth2|the-auth2-same-email-user",
         email: "same-email@example.com",
         email_verified: true,
         login_count: 0,
@@ -1246,7 +1246,7 @@ describe("code-flow", () => {
 
       // create new password user
       env.data.users.create("tenantId", {
-        id: "auth2|base-user",
+        user_id: "auth2|base-user",
         email: "base-user@example.com",
         email_verified: true,
         login_count: 0,
@@ -1258,7 +1258,7 @@ describe("code-flow", () => {
       });
       // create new code user and link this to the password user
       env.data.users.create("tenantId", {
-        id: "auth2|code-user",
+        user_id: "auth2|code-user",
         email: "code-user@example.com",
         email_verified: true,
         login_count: 0,

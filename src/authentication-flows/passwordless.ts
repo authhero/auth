@@ -53,7 +53,7 @@ export async function validateCode(
   }
 
   const user = await env.data.users.create(client.tenant_id, {
-    id: `email|${userIdGenerate()}`,
+    user_id: `email|${userIdGenerate()}`,
     email: params.email,
     name: params.email,
     provider: "email",
@@ -66,7 +66,7 @@ export async function validateCode(
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
-  ctx.set("userId", user.id);
+  ctx.set("userId", user.user_id);
 
   const log = createLogMessage(ctx, {
     type: LogTypes.SUCCESS_SIGNUP,
@@ -124,7 +124,7 @@ export async function sendEmailVerificationEmail({
     id: nanoid(),
     code,
     type: "validation",
-    user_id: user.id,
+    user_id: user.user_id,
     created_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
   });

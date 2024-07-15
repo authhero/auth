@@ -17,6 +17,7 @@ import { createKeysAdapter } from "./keys";
 import { createDomainsAdapter } from "./domains";
 import { createBrandingAdapter } from "./branding";
 import { createAuthenticationCodesAdapter } from "./authenticationCodes";
+import { createHooksAdapter } from "./hooks";
 
 export default function createAdapters(db: Kysely<Database>) {
   return {
@@ -37,5 +38,6 @@ export default function createAdapters(db: Kysely<Database>) {
     codes: createCodesAdapter(db),
     connections: createConnectionsAdapter(db),
     domains: createDomainsAdapter(db),
+    hooks: createHooksAdapter(db),
   };
 }

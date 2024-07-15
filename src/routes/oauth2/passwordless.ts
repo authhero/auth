@@ -12,7 +12,7 @@ import { Env, Var } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
-import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie-new";
+import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { setSearchParams } from "../../utils/url";
 

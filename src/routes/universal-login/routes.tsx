@@ -89,7 +89,7 @@ async function handleLogin(
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
     ctx.set("client_id", client.id);
-    ctx.set("userId", user.id);
+    ctx.set("userId", user.user_id);
 
     return generateAuthResponse({
       ctx,
@@ -396,7 +396,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       try {
-        const codes = await env.data.codes.list(client.tenant_id, user.id);
+        const codes = await env.data.codes.list(client.tenant_id, user.user_id);
         const foundCode = codes.find((storedCode) => storedCode.code === code);
 
         if (!foundCode) {
@@ -414,13 +414,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         }
 
         await env.data.passwords.update(client.tenant_id, {
-          user_id: user.id,
+          user_id: user.user_id,
           password,
         });
 
         // we could do this on the GET...
         if (!user.email_verified) {
-          await env.data.users.update(client.tenant_id, user.id, {
+          await env.data.users.update(client.tenant_id, user.user_id, {
             email_verified: true,
           });
         }
@@ -628,7 +628,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         email: params.username,
       });
       if (user) {
-        ctx.set("userId", user.id);
+        ctx.set("userId", user.user_id);
       }
 
       if (client.disable_sign_ups) {
@@ -970,7 +970,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         }
 
         const newUser = await ctx.env.data.users.create(client.tenant_id, {
-          id: `auth2|${userIdGenerate()}`,
+          user_id: `auth2|${userIdGenerate()}`,
           email: loginParams.username,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -980,12 +980,12 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           is_social: false,
           login_count: 0,
         });
-        ctx.set("userId", newUser.id);
+        ctx.set("userId", newUser.user_id);
         ctx.set("userName", newUser.email);
         ctx.set("connection", newUser.connection);
 
         await env.data.passwords.create(client.tenant_id, {
-          user_id: newUser.id,
+          user_id: newUser.user_id,
           password: loginParams.password,
         });
 
@@ -1077,14 +1077,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(500, { message: "No user found" });
       }
 
-      const codes = await env.data.codes.list(client.tenant_id, user.id);
+      const codes = await env.data.codes.list(client.tenant_id, user.user_id);
       const foundCode = codes.find((storedCode) => storedCode.code === code);
 
       if (!foundCode) {
         throw new HTTPException(400, { message: "Code not found or expired" });
       }
 
-      await env.data.users.update(client.tenant_id, user.id, {
+      await env.data.users.update(client.tenant_id, user.user_id, {
         email_verified: true,
       });
 
@@ -1115,8 +1115,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         // now actually link this username-password user to the primary user
         if (primaryUsers.length === 1) {
-          await env.data.users.update(client.tenant_id, user.id, {
-            linked_to: primaryUsers[0].id,
+          await env.data.users.update(client.tenant_id, user.user_id, {
+            linked_to: primaryUsers[0].user_id,
           });
         }
       }

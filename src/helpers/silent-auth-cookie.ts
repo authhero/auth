@@ -10,7 +10,7 @@ export async function setSilentAuthCookies(
 ) {
   const session: Session = {
     id: nanoid(),
-    user_id: user.id,
+    user_id: user.user_id,
     tenant_id,
     client_id,
     created_at: new Date(),

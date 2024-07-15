@@ -1,7 +1,6 @@
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
-import renameId from "../../utils/rename-id";
 import {
   Env,
   Log,
@@ -97,9 +96,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           });
         }
 
-        return ctx.json([
-          auth0UserResponseSchema.parse(renameId(primaryAccount, "user_id")),
-        ]);
+        return ctx.json([auth0UserResponseSchema.parse(primaryAccount)]);
       }
 
       // Filter out linked users
@@ -118,12 +115,10 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const primarySqlUsers = result.users.filter((user) => !user.linked_to);
 
-      const users = primarySqlUsers.map((u) => renameId(u, "user_id"));
-
       if (include_totals) {
         return ctx.json(
           usersWithTotalsSchema.parse({
-            users: users,
+            users: primarySqlUsers,
             length: result.length,
             start: result.start,
             limit: result.limit,
@@ -131,7 +126,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         );
       }
 
-      return ctx.json(z.array(auth0UserResponseSchema).parse(users));
+      return ctx.json(z.array(auth0UserResponseSchema).parse(primarySqlUsers));
     },
   )
   // --------------------------------
@@ -183,7 +178,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
       }
 
-      return ctx.json(auth0UserResponseSchema.parse(renameId(user, "user_id")));
+      return ctx.json(auth0UserResponseSchema.parse(user));
     },
   )
   // --------------------------------
@@ -277,9 +272,11 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const email = emailRaw.toLowerCase();
 
+      const user_id = `${body.provider}|${body["user_id"] || userIdGenerate()}`;
+
       const data = await ctx.env.data.users.create(tenant_id, {
         email,
-        id: `${body.provider}|${body["user_id"] || userIdGenerate()}`,
+        user_id,
         name: body.name || email,
         provider: body.provider,
         connection: body.connection,
@@ -294,7 +291,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         updated_at: new Date().toISOString(),
       });
 
-      ctx.set("userId", data.id);
+      ctx.set("userId", data.user_id);
 
       const log: Log = createLogMessage(ctx, {
         type: LogTypes.SUCCESS_API_OPERATION,
@@ -304,12 +301,11 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const userResponse = {
         ...data,
-        user_id: data.id,
         identities: [
           {
             connection: data.connection,
             provider: data.provider,
-            user_id: userIdParse(data.id),
+            user_id: userIdParse(data.user_id),
             isSocial: data.is_social,
           },
         ],
@@ -373,7 +369,10 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         );
 
         // If there is an existing user with the same email address, and it is not the same user
-        if (existingUser.length && existingUser.some((u) => u.id !== user_id)) {
+        if (
+          existingUser.length &&
+          existingUser.some((u) => u.user_id !== user_id)
+        ) {
           throw new HTTPException(409, {
             message: "Another user with the same email address already exists.",
           });
@@ -411,7 +410,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(500);
       }
 
-      return ctx.json(renameId(patchedUser, "user_id"));
+      return ctx.json(patchedUser);
     },
   )
   // --------------------------------
@@ -496,7 +495,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const identities = [user, ...linkedusers.users].map((u) => ({
         connection: u.connection,
         provider: u.provider,
-        user_id: userIdParse(u.id),
+        user_id: userIdParse(u.user_id),
         isSocial: u.is_social,
       }));
 
@@ -554,8 +553,6 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(404);
       }
 
-      return ctx.json([
-        auth0UserResponseSchema.parse(renameId(user, "user_id")),
-      ]);
+      return ctx.json([auth0UserResponseSchema.parse(user)]);
     },
   );

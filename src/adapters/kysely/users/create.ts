@@ -13,7 +13,7 @@ export function create(db: Kysely<Database>) {
       tenant_id: tenantId,
       email_verified: user.email_verified ? 1 : 0,
       is_social: user.is_social ? 1 : 0,
-      user_id: user.id,
+      id: user.user_id,
     };
 
     try {

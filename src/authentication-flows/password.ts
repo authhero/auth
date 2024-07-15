@@ -13,6 +13,7 @@ import { createLogMessage } from "../utils/create-log-message";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { HTTPException } from "hono/http-exception";
 import { CustomException } from "../models/CustomError";
+import userIdGenerate from "../utils/userIdGenerate";
 
 export async function requestPasswordReset(
   ctx: Context<{
@@ -43,7 +44,7 @@ export async function requestPasswordReset(
 
     // Create a new user if it doesn't exist
     user = await ctx.env.data.users.create(client.tenant_id, {
-      id: nanoid(),
+      user_id: `email|${userIdGenerate()}`,
       email,
       email_verified: false,
       is_social: false,
@@ -61,7 +62,7 @@ export async function requestPasswordReset(
     id: nanoid(),
     code,
     type: "password_reset",
-    user_id: user.id,
+    user_id: user.user_id,
     created_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
   });
@@ -99,10 +100,10 @@ export async function loginWithPassword(
   }
 
   ctx.set("connection", user.connection);
-  ctx.set("userId", user.id);
+  ctx.set("userId", user.user_id);
 
   const { valid } = await env.data.passwords.validate(client.tenant_id, {
-    user_id: user.id,
+    user_id: user.user_id,
     password: authParams.password,
   });
 

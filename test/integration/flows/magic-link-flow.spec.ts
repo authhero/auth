@@ -177,7 +177,7 @@ describe("magic link flow", () => {
       // Create the user to log in with the magic link
       // -----------------
       env.data.users.create("tenantId", {
-        id: "email|userId2",
+        user_id: "email|userId2",
         email: "bar@example.com",
         email_verified: true,
         name: "",
@@ -307,7 +307,7 @@ describe("magic link flow", () => {
       // Create the linked user to log in with the magic link
       // -----------------
       env.data.users.create("tenantId", {
-        id: "userId2",
+        user_id: "userId2",
         email: "foo@example.com",
         email_verified: true,
         name: "",

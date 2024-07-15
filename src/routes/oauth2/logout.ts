@@ -65,7 +65,7 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             );
             if (user) {
               ctx.set("userName", user.email);
-              ctx.set("userId", user.id);
+              ctx.set("userId", user.user_id);
               ctx.set("connection", user.connection);
             }
           }

@@ -115,6 +115,7 @@ async function addUser(user: User) {
 
     const sqlUser: SqlUser = {
       id,
+      user_id: id,
       email: user.email || "",
       email_verified,
       login_count: 0,

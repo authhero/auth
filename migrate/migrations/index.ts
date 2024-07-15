@@ -38,6 +38,7 @@ import * as n37_disableSignUps from "./2024-06-03T10:00:00_disable-sign-ups";
 import * as n38_otpIpAddress from "./2024-06-05T10:00:00_otp-ip-address";
 import * as n39_increaseUserAgentLength from "./2024-06-19T10:00:00_increase-user-agent-length";
 import * as n40_userId from "./2024-07-15T10:00:00_user_id";
+import * as n41_hooks from "./2024-07-15T12:52:00_hooks";
 
 // These need to be in alphabetic order
 export default {
@@ -81,4 +82,5 @@ export default {
   n38_otpIpAddress,
   n39_increaseUserAgentLength,
   n40_userId,
+  n41_hooks,
 };
