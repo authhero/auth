@@ -1,59 +1,97 @@
 const fs = require("fs");
-const readline = require("readline");
+const csv = require("csv-parser");
 
-const token = "Add token here...";
+const token = "add token here...";
+
+function getProviderAndId(id) {
+  const [provider, userId] = id.split("|");
+
+  switch (provider) {
+    case "google-oauth2":
+      return {
+        provider: "google-oauth2",
+        connection: "google-oauth2",
+        user_id: userId,
+        is_social: true,
+      };
+    case "facebook":
+      return {
+        provider: "facebook",
+        connection: "facebook",
+        user_id: userId,
+        is_social: true,
+      };
+    case "apple":
+      return {
+        provider: "apple",
+        connection: "apple",
+        user_id: userId,
+        is_social: true,
+      };
+    case "email":
+      return { provider: "email", connection: "email", user_id: userId };
+    case "auth0":
+      return {
+        provider: "auth0",
+        connection: "Username-Password-Authentication",
+        user_id: userId,
+      };
+    default:
+      throw new Error(`Unknown provider: ${provider}`);
+  }
+}
 
 async function postUser(user) {
   const body = JSON.stringify({
-    name: user.name,
-    email: user.email,
-    nickname: user.nickname,
-    picture: user.picture,
-    given_name: user.given_name,
-    family_name: user.family_name,
-    id: user.user_id,
-    created_at: user.created_at,
-    modified_at: user.updated_at,
+    name: user["Address Name"],
+    email: user.Email,
+    nickname: user["Nickname"],
+    picture: user.picture || "", // Assuming there's no picture field in CSV, add a default or handle it accordingly
+    given_name: user["First Name"],
+    family_name: user["Last name"],
+    created_at: user["User creation date"],
+    modified_at: user["User modified date"],
+    ...getProviderAndId(user["User id"]),
   });
 
-  const response = await fetch(
-    "https://auth2.sesamy.dev/tenants/AH_1eG1-Ouam8jRlSd1fI/users",
-    {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-      body,
+  const response = await fetch("http://localhost:8787/api/v2/users", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+      "tenant-id": "0DNqqRWQ1KsGzMNVu5qkY",
     },
-  );
+    body,
+  });
 
   if (!response.ok) {
     console.log(
       `Status: ${response.status}, with error ${await response.text()}`,
     );
+  } else {
+    console.log(`User: ${user["User id"]} posted successfully`);
   }
 }
 
 async function importUsers(filePath) {
   const fileStream = fs.createReadStream(filePath);
 
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity, // so it can handle even `\r\n` ending lines correctly
-  });
+  const users = [];
 
-  let counter = 0;
-
-  for await (const line of rl) {
-    try {
-      const user = JSON.parse(line);
-
-      await postUser(user);
-    } catch (error) {
-      console.error(`Failed to parse line: ${line}. Error: ${error.message}`);
-    }
-  }
+  fileStream
+    .pipe(csv())
+    .on("data", (data) => users.push(data))
+    .on("end", async () => {
+      for (const user of users) {
+        try {
+          await postUser(user);
+        } catch (error) {
+          console.error(
+            `Failed to post user: ${user["User id"]}. Error: ${error.message}`,
+          );
+        }
+      }
+    });
 }
 
-importUsers("./data/auth0-dev.json");
+importUsers("./data/feber.csv");
