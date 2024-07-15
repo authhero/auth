@@ -36,7 +36,7 @@ export async function authorizeCodeGrant(
   }
   ctx.set("userName", user.email);
   ctx.set("connection", user.connection);
-  ctx.set("userId", user.id);
+  ctx.set("userId", user.user_id);
 
   // TODO: Temporary fix for the default client
   const defaultClient = await getClient(ctx.env, "DEFAULT_CLIENT");

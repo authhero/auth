@@ -81,7 +81,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       }
 
       const newUser = await ctx.env.data.users.create(client.tenant_id, {
-        id: `auth2|${userIdGenerate()}`,
+        user_id: `auth2|${userIdGenerate()}`,
         email,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -92,13 +92,13 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         login_count: 0,
       });
 
-      ctx.set("userId", newUser.id);
+      ctx.set("userId", newUser.user_id);
       ctx.set("userName", newUser.email);
       ctx.set("connection", newUser.connection);
 
       // Store the password
       await ctx.env.data.passwords.create(client.tenant_id, {
-        user_id: newUser.id,
+        user_id: newUser.user_id,
         password,
       });
 
@@ -115,7 +115,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       await ctx.env.data.logs.create(client.tenant_id, log);
 
       return ctx.json({
-        _id: newUser.id,
+        _id: newUser.user_id,
         email: newUser.email,
         email_verified: false,
         app_metadata: {},

@@ -160,7 +160,7 @@ describe("users management API endpoint", () => {
 
         await env.data.users.create("tenantId", {
           email: "primary@example.com",
-          id: "auth2|primaryId",
+          user_id: "auth2|primaryId",
           provider: "auth2",
           email_verified: true,
           connection: "Username-Password-Authentication",
@@ -172,7 +172,7 @@ describe("users management API endpoint", () => {
 
         await env.data.users.create("tenantId", {
           email: "existing-code-user@example.com",
-          id: "email|existingCodeUserId",
+          user_id: "existingCodeUserId",
           provider: "email",
           email_verified: true,
           connection: "email",
@@ -287,8 +287,7 @@ describe("users management API endpoint", () => {
       const newUser = await managementClient.api.v2.users[":user_id"].$get(
         {
           param: {
-            // this is not correct! should be user_id... interesting
-            user_id: user!.id,
+            user_id: user!.user_id,
           },
           header: {
             "tenant-id": "tenantId",
@@ -608,7 +607,7 @@ describe("users management API endpoint", () => {
       expect(users.length).toBe(3);
 
       // check we have linked user1 to user2
-      const user1 = users.find((u) => u.id === newUser1.user_id);
+      const user1 = users.find((u) => u.user_id === newUser1.user_id);
       expect(user1?.linked_to).toBe(newUser2.user_id);
 
       // --------------------------------------------------
@@ -637,8 +636,8 @@ describe("users management API endpoint", () => {
 
       expect(usersNowDeleted.length).toBe(1);
 
-      expect(usersNowDeleted[0].id).not.toBe(newUser1.user_id);
-      expect(usersNowDeleted[0].id).not.toBe(newUser2.user_id);
+      expect(usersNowDeleted[0].user_id).not.toBe(newUser1.user_id);
+      expect(usersNowDeleted[0].user_id).not.toBe(newUser2.user_id);
     });
   });
   // TODO - split these tests up into a new test suite one for each HTTP verb!
@@ -899,7 +898,7 @@ describe("users management API endpoint", () => {
 
       // create new password user
       env.data.users.create("tenantId", {
-        id: "auth2|base-user",
+        user_id: "auth2|base-user",
         email: "base-user@example.com",
         email_verified: true,
         login_count: 0,
@@ -911,7 +910,7 @@ describe("users management API endpoint", () => {
       });
       // create new code user WITH DIFFERENT EMAIL ADDRESS and link this to the password user
       env.data.users.create("tenantId", {
-        id: "auth2|code-user",
+        user_id: "auth2|code-user",
         email: "code-user@example.com",
         email_verified: true,
         login_count: 0,

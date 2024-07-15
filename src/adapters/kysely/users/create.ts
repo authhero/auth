@@ -1,19 +1,19 @@
 import { Kysely } from "kysely";
-import { Database, User } from "../../../types";
+import { Database, SqlUser, User } from "../../../types";
 import { HTTPException } from "hono/http-exception";
 
 export function create(db: Kysely<Database>) {
   return async (tenantId: string, user: User): Promise<User> => {
     const { identities, ...rest } = user;
 
-    const sqlUser = {
+    const sqlUser: SqlUser = {
       ...rest,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       tenant_id: tenantId,
       email_verified: user.email_verified ? 1 : 0,
       is_social: user.is_social ? 1 : 0,
-      user_id: user.id,
+      id: user.user_id,
     };
 
     try {

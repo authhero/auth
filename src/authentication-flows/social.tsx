@@ -7,7 +7,7 @@ import {
   Env,
   LoginState,
 } from "../types";
-import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
+import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";
@@ -188,7 +188,7 @@ export async function socialAuthCallback({
   });
 
   if (user) {
-    ctx.set("userId", user.id);
+    ctx.set("userId", user.user_id);
   } else {
     const callerIsLogin2 = state.authParams.redirect_uri.includes("login2");
 
@@ -215,7 +215,7 @@ export async function socialAuthCallback({
     }
 
     user = await env.data.users.create(client.tenant_id, {
-      id: `${state.connection}|${sub}`,
+      user_id: `${state.connection}|${sub}`,
       email,
       name: email,
       provider: connection.name,
@@ -229,7 +229,7 @@ export async function socialAuthCallback({
       updated_at: new Date().toISOString(),
       profileData: JSON.stringify(profileData),
     });
-    ctx.set("userId", user.id);
+    ctx.set("userId", user.user_id);
 
     const log = createLogMessage(ctx, {
       type: LogTypes.SUCCESS_SIGNUP,

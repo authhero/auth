@@ -269,7 +269,7 @@ describe("password-flow", () => {
       // create code user
       // -------------------------------
       await env.data.users.create("tenantId", {
-        id: "email|codeUserId",
+        user_id: "email|codeUserId",
         email: "existing-code-user@example.com",
         email_verified: true,
         provider: "email",
@@ -912,7 +912,7 @@ describe("password-flow", () => {
       const oauthClient = testClient(oauthApp, env);
 
       await env.data.users.create("tenantId", {
-        id: "email|userId",
+        user_id: "email|userId",
         email: "test@example.com",
         email_verified: true,
         name: "test",

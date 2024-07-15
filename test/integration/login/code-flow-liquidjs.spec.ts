@@ -186,7 +186,7 @@ describe("Login with code on liquidjs template", () => {
     // Create the user to log in with the code
     // -----------------
     env.data.users.create("tenantId", {
-      id: "email|userId2",
+      user_id: "email|userId2",
       email: "bar@example.com",
       email_verified: true,
       name: "",
@@ -322,7 +322,7 @@ describe("Login with code on liquidjs template", () => {
     // Create the linked user to log in with the magic link
     // -----------------
     env.data.users.create("tenantId", {
-      id: "email|userId2",
+      user_id: "email|userId2",
       // same email address as existing primary user... but this isn't necessary it could be any email address
       // do we need more tests where this is different? In case I've taken shortcuts looking up by email address...
       email: "foo@example.com",
@@ -510,7 +510,7 @@ describe("Login with code on liquidjs template", () => {
       // -----------------
 
       await env.data.users.create("tenantId", {
-        id: "email|the-base-user",
+        user_id: "email|the-base-user",
         email: "the-base-user@example.com",
         email_verified: true,
         login_count: 0,
@@ -526,7 +526,7 @@ describe("Login with code on liquidjs template", () => {
       // -----------------
 
       await env.data.users.create("tenantId", {
-        id: "auth2|the-auth2-same-email-user",
+        user_id: "auth2|the-auth2-same-email-user",
         email: "same-email@example.com",
         email_verified: true,
         login_count: 0,

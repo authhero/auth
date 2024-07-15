@@ -6,18 +6,19 @@ import {
   Member,
   Migration,
   SqlSession,
-  SqlUser,
   SqlCode,
   SqlTicket,
   SqlOTP,
   SqlPassword,
   SqlUniversalLoginSession,
   SqlLog,
+  User,
 } from "../";
 import { Connection } from "../Connection";
 import { SqlBranding } from "./Branding";
 import { SqlAuthenticationCode } from "./AuthenticationCode";
 import { Hook } from "../Hooks";
+import { SqlUser } from "./User";
 
 // Keys of this interface are table names.
 export interface Database {
@@ -27,6 +28,7 @@ export interface Database {
   domains: Domain & { tenant_id: string };
   hooks: Hook & { tenant_id: string };
   keys: Certificate;
+  // TODO: keep the id here for now until we changed primary key
   users: SqlUser;
   members: Member;
   applications: Application & { tenant_id: string };

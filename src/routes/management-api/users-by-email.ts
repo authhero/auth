@@ -1,4 +1,3 @@
-import renameId from "../../utils/rename-id";
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, userSchema } from "../../types";
@@ -49,6 +48,6 @@ export const usersByEmailRoutes = new OpenAPIHono<{
 
       const primarySqlUsers = users.filter((user) => !user.linked_to);
 
-      return ctx.json(primarySqlUsers.map((u) => renameId(u, "user_id")));
+      return ctx.json(primarySqlUsers);
     },
   );

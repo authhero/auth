@@ -5,7 +5,7 @@ import { getDb } from "../src/services/db";
 import { migrateToLatest } from "../migrate/migrate";
 import createAdapters from "../src/adapters/kysely";
 import { create } from "../src/services/rsa-key";
-import { nanoid } from "nanoid";
+import userIdGenerate from "../src/utils/userIdGenerate";
 
 const dialect = new BunSqliteDialect({
   database: new bunSqlite.Database("db.sqlite"),
@@ -38,7 +38,7 @@ const data = createAdapters(db);
   });
 
   const user = await data.users.create(tenant.id, {
-    id: `auth2|${nanoid()}`,
+    user_id: `auth2|${userIdGenerate()}`,
     email: "admin",
     email_verified: true,
     is_social: false,
@@ -51,7 +51,7 @@ const data = createAdapters(db);
   });
 
   await data.passwords.create(tenant.id, {
-    user_id: user.id,
+    user_id: user.user_id,
     password: "Password1!",
   });
 })();

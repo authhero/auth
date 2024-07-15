@@ -23,7 +23,7 @@ export function linkUsersHook(data: DataAdapters) {
 
     await data.users.create(tenant_id, {
       ...user,
-      linked_to: primaryUser.id,
+      linked_to: primaryUser.user_id,
     });
 
     // TODO: add the new user to the identities

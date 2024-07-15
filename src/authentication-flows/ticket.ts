@@ -1,7 +1,7 @@
 import { Env, AuthParams, AuthorizationResponseType } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
-import { setSilentAuthCookies } from "../helpers/silent-auth-cookie-new";
+import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
@@ -56,7 +56,7 @@ export async function ticketAuth(
   if (user) {
     ctx.set("userName", user.email);
     ctx.set("connection", user.connection);
-    ctx.set("userId", user.id);
+    ctx.set("userId", user.user_id);
 
     if (realm === "Username-Password-Authentication" && !user.email_verified) {
       const client = await getClient(ctx.env, ticket.client_id);
@@ -108,7 +108,7 @@ export async function ticketAuth(
     }
 
     user = await env.data.users.create(tenant_id, {
-      id: `email|${userIdGenerate()}`,
+      user_id: `email|${userIdGenerate()}`,
       email: ticket.email,
       name: ticket.email,
       provider: "email",
@@ -122,7 +122,7 @@ export async function ticketAuth(
       updated_at: new Date().toISOString(),
     });
 
-    ctx.set("userId", user.id);
+    ctx.set("userId", user.user_id);
     ctx.set("userName", user.name || user.email);
   }
 

@@ -10,5 +10,8 @@ export const domainInsertSchema = z.object({
 });
 export type DomainInsert = z.infer<typeof domainInsertSchema>;
 
-export const domainSchema = baseEntitySchema.extend(domainInsertSchema.shape);
+export const domainSchema = baseEntitySchema.extend({
+  ...domainInsertSchema.shape,
+  id: z.string(),
+});
 export type Domain = z.infer<typeof domainSchema>;

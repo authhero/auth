@@ -1,5 +1,5 @@
 import { Kysely } from "kysely";
-import { Database, PostUsersBody } from "../../../types";
+import { Database, SqlUser, PostUsersBody } from "../../../types";
 
 function getEmailVerified(user: Partial<PostUsersBody>): number | undefined {
   if (user.email_verified === undefined) {
@@ -12,10 +12,10 @@ function getEmailVerified(user: Partial<PostUsersBody>): number | undefined {
 export function update(db: Kysely<Database>) {
   return async (
     tenant_id: string,
-    user_id: string,
+    id: string,
     user: Partial<PostUsersBody>,
   ): Promise<boolean> => {
-    const sqlUser = {
+    const sqlUser: Partial<SqlUser> = {
       ...user,
       email_verified: getEmailVerified(user),
       updated_at: new Date().toISOString(),
@@ -25,7 +25,7 @@ export function update(db: Kysely<Database>) {
       .updateTable("users")
       .set(sqlUser)
       .where("users.tenant_id", "=", tenant_id)
-      .where("users.id", "=", user_id)
+      .where("users.id", "=", id)
       .execute();
 
     return results.length === 1;

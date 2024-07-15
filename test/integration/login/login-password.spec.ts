@@ -151,7 +151,7 @@ describe("Register password", () => {
     // create code user
     // -------------------------------
     await env.data.users.create("tenantId", {
-      id: "email|codeUserId",
+      user_id: "email|codeUserId",
       email: "existing-code-user@example.com",
       email_verified: true,
       provider: "email",

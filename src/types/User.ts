@@ -31,7 +31,6 @@ export const userInsertSchema = baseUserSchema.extend({
 export const userSchema = userInsertSchema
   .extend(baseEntitySchema.shape)
   .extend({
-    id: z.string(),
     user_id: z.string(),
     // TODO: this not might be correct if you use the username
     email: z.string(),
@@ -42,4 +41,5 @@ export const userSchema = userInsertSchema
 
 export type User = z.infer<typeof userSchema>;
 
-export const auth0UserResponseSchema = userSchema.omit({ id: true });
+// TODO: Add the login_count and other properties
+export const auth0UserResponseSchema = userSchema;

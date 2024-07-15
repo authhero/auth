@@ -46,7 +46,7 @@ test("only allows existing breakit users to progress to the enter code step", as
     disable_sign_ups: true,
   });
   await env.data.users.create("breakit", {
-    id: "email|existing-breakit-user",
+    user_id: "email|existing-breakit-user",
     email: "existing-breakit-user@example.com",
     email_verified: true,
     login_count: 0,
@@ -193,7 +193,7 @@ test("only allows existing breakit users to progress to the enter code step with
         "https://lh3.googleusercontent.com/a/ACg8ocKL2otiYIMIrdJso1GU8GtpcY9laZFqo7pfeHAPkU5J=s96-c",
       email_verified: true,
     }),
-    id: "demo-social-provider|123456789012345678901",
+    user_id: "demo-social-provider|123456789012345678901",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });

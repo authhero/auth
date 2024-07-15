@@ -595,7 +595,7 @@ describe("social sign on", () => {
         last_ip: "",
         login_count: 0,
         is_social: true,
-        id: "email|7575757575757",
+        user_id: "email|7575757575757",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -610,7 +610,7 @@ describe("social sign on", () => {
         login_count: 0,
         is_social: true,
         profileData: JSON.stringify(EXPECTED_PROFILE_DATA),
-        id: "other-social-provider|123456789012345678901",
+        user_id: "other-social-provider|123456789012345678901",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -625,7 +625,7 @@ describe("social sign on", () => {
       });
 
       expect(users.length).toBe(3);
-      expect(users.users[1].id).toBe("email|7575757575757");
+      expect(users.users[1].user_id).toBe("email|7575757575757");
 
       // ---------------------------------------------
       // now do social sign on with same email - new user registered
