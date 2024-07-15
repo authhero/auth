@@ -35,6 +35,7 @@ import it from "./localesLogin2/it/default.json";
 import nb from "./localesLogin2/nb/default.json";
 import sv from "./localesLogin2/sv/default.json";
 import pl from "./localesLogin2/pl/default.json";
+import { hooksRoutes } from "./routes/management-api/hooks";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -138,6 +139,7 @@ export const managementApp = new OpenAPIHono<{
   .route("/api/v2/applications", applicationRoutes)
   .route("/api/v2/tenants", tenantRoutes)
   .route("/api/v2/logs", logRoutes)
+  .route("/api/v2/hooks", hooksRoutes)
   .route("/api/v2/connections", connectionRoutes);
 
 registerComponent(managementApp);

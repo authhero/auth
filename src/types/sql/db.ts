@@ -17,6 +17,7 @@ import {
 import { Connection } from "../Connection";
 import { SqlBranding } from "./Branding";
 import { SqlAuthenticationCode } from "./AuthenticationCode";
+import { Hook } from "../Hooks";
 
 // Keys of this interface are table names.
 export interface Database {
@@ -24,6 +25,7 @@ export interface Database {
   branding: SqlBranding;
   codes: SqlCode;
   domains: Domain & { tenant_id: string };
+  hooks: Hook & { tenant_id: string };
   keys: Certificate;
   users: SqlUser;
   members: Member;

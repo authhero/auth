@@ -15,6 +15,7 @@ import { DomainsAdapter } from "./Domains";
 import { KeysAdapter } from "./Keys";
 import { BrandingAdapter } from "./Branding";
 import { AuthenticationCodesAdapter } from "./AuthenticationCodes";
+import { HooksAdapter } from "./Hooks";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;
@@ -33,5 +34,6 @@ export interface DataAdapters {
   connections: ConnectionsAdapter;
   domains: DomainsAdapter;
   keys: KeysAdapter;
+  hooks: HooksAdapter;
   authenticationCodes: AuthenticationCodesAdapter;
 }

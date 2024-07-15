@@ -98,6 +98,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("authentication_settings", "varchar(255)")
     .addColumn("styling_settings", "varchar(255)")
     .addColumn("email_validation", "varchar(255)")
+    .addColumn("disable_sign_ups", "boolean", (col) => col.notNull())
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
     .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
     .execute();

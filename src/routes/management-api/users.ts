@@ -277,9 +277,12 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const email = emailRaw.toLowerCase();
 
+      const user_id = `${body.provider}|${body["user_id"] || userIdGenerate()}`;
+
       const data = await ctx.env.data.users.create(tenant_id, {
         email,
-        id: `${body.provider}|${body["user_id"] || userIdGenerate()}`,
+        id: user_id,
+        user_id,
         name: body.name || email,
         provider: body.provider,
         connection: body.connection,
