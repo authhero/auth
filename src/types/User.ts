@@ -13,6 +13,7 @@ export const baseUserSchema = z.object({
   locale: z.string().optional(),
   linked_to: z.string().optional(),
   profileData: z.string().optional(),
+  user_id: z.string().optional(),
 });
 
 export type BaseUser = z.infer<typeof baseUserSchema>;
