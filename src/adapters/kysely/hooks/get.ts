@@ -9,11 +9,14 @@ export function get(db: Kysely<Database>) {
       .selectFrom("hooks")
       .where("hooks.tenant_id", "=", tenant_id)
       .where("hooks.hook_id", "=", hook_id)
+      .selectAll()
       .executeTakeFirst();
 
     if (!hook) {
       return null;
     }
+
+    hook.enabled = !!hook.enabled;
 
     return removeNullProperties(hook);
   };
