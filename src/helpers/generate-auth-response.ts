@@ -18,6 +18,7 @@ import { nanoid } from "nanoid";
 import { createLogMessage } from "../utils/create-log-message";
 import { Context } from "hono";
 import { waitUntil } from "../utils/wait-until";
+import { postUserLoginWebhook } from "../hooks/webhooks";
 
 export type AuthFlowType =
   | "cross-origin"
@@ -96,6 +97,9 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
 
   // Update the user's last login. Skip for client_credentials and refresh_tokens
   if (authFlow !== "refresh-token" && "email" in params.user) {
+    // Invoke webhooks
+    await postUserLoginWebhook(env.data)(params.tenantId, params.user);
+
     waitUntil(
       ctx,
       ctx.env.data.users.update(params.tenantId, user_id, {

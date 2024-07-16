@@ -136,7 +136,15 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
       ],
       responses: {
         200: {
-          description: "A status",
+          content: {
+            "application/json": {
+              schema: hookSchema,
+            },
+          },
+          description: "The updated hook",
+        },
+        404: {
+          description: "Hook not found",
         },
       },
     }),
@@ -146,8 +154,13 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const hook = ctx.req.valid("json");
 
       await ctx.env.data.hooks.update(tenant_id, hook_id, hook);
+      const result = await ctx.env.data.hooks.get(tenant_id, hook_id);
 
-      return ctx.text("OK");
+      if (!result) {
+        throw new HTTPException(404, { message: "Hook not found" });
+      }
+
+      return ctx.json(result);
     },
   )
   // --------------------------------
