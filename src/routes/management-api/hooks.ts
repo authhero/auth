@@ -4,6 +4,7 @@ import authenticationMiddleware from "../../middlewares/authentication";
 import { hookInsertSchema, hookSchema } from "../../types/Hooks";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+import { HTTPException } from "hono/http-exception";
 
 const hopoksWithTotalsSchema = totalsSchema.extend({
   hooks: z.array(hookSchema),
@@ -91,7 +92,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
               schema: hookSchema,
             },
           },
-          description: "List of hooks",
+          description: "The created hook",
         },
       },
     }),
@@ -145,6 +146,96 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const hook = ctx.req.valid("json");
 
       await ctx.env.data.hooks.update(tenant_id, hook_id, hook);
+
+      return ctx.text("OK");
+    },
+  )
+  // --------------------------------
+  // GET /api/v2/hooks/:hook_id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["hooks"],
+      method: "get",
+      path: "/{hook_id}",
+      request: {
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+        params: z.object({
+          hook_id: z.string(),
+        }),
+      },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
+      security: [
+        {
+          Bearer: ["auth:read"],
+        },
+      ],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: hookSchema,
+            },
+          },
+          description: "A hook",
+        },
+        404: {
+          description: "Hook not found",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const { hook_id } = ctx.req.valid("param");
+
+      const hook = await ctx.env.data.hooks.get(tenant_id, hook_id);
+
+      if (!hook) {
+        throw new HTTPException(404, { message: "Hook not found" });
+      }
+
+      return ctx.json(hook);
+    },
+  )
+  // --------------------------------
+  // DELETE /api/v2/hooks/:hook_id
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["hooks"],
+      method: "delete",
+      path: "/{hook_id}",
+      request: {
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+        params: z.object({
+          hook_id: z.string(),
+        }),
+      },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
+      security: [
+        {
+          Bearer: ["auth:read"],
+        },
+      ],
+      responses: {
+        200: {
+          description: "A hook",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+      const { hook_id } = ctx.req.valid("param");
+
+      const result = await ctx.env.data.hooks.remove(tenant_id, hook_id);
+
+      if (!result) {
+        throw new HTTPException(404, { message: "Hook not found" });
+      }
 
       return ctx.text("OK");
     },
