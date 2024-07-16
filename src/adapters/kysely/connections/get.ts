@@ -12,6 +12,7 @@ export function get(db: Kysely<Database>) {
       .selectFrom("connections")
       .where("connections.tenant_id", "=", tenant_id)
       .where("connections.id", "=", connection_id)
+      .selectAll()
       .executeTakeFirst();
 
     if (!connection) {
