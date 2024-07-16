@@ -1,9 +1,13 @@
-import { Env } from "../../types";
+import { Env, totalsSchema } from "../../types";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import authenticationMiddleware from "../../middlewares/authentication";
 import { hookInsertSchema, hookSchema } from "../../types/Hooks";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+
+const hopoksWithTotalsSchema = totalsSchema.extend({
+  hooks: z.array(hookSchema),
+});
 
 export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
@@ -30,7 +34,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
         200: {
           content: {
             "application/json": {
-              schema: z.array(hookSchema),
+              schema: z.union([z.array(hookSchema), hopoksWithTotalsSchema]),
             },
           },
           description: "List of hooks",
