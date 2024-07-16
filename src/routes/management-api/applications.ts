@@ -1,5 +1,4 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { getDbFromEnv } from "../../services/db";
 import { applicationSchema, applicationInsertSchema } from "../../types";
 import { headers } from "../../constants";
 import { Env } from "../../types";
@@ -89,20 +88,11 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
 
-      const db = getDbFromEnv(ctx.env);
-      const application = await db
-        .selectFrom("applications")
-        .where("applications.tenant_id", "=", tenant_id)
-        .where("applications.id", "=", id)
-        .selectAll()
-        .executeTakeFirst();
+      const application = await ctx.env.data.applications.get(tenant_id, id);
 
       if (!application) {
         throw new HTTPException(404);
       }
-
-      // @ts-ignore
-      application.disable_sign_ups = application.disable_sign_ups === 1;
 
       return ctx.json(applicationSchema.parse(application), {
         headers,
@@ -141,12 +131,10 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
 
-      const db = getDbFromEnv(ctx.env);
-      await db
-        .deleteFrom("applications")
-        .where("applications.tenant_id", "=", tenant_id)
-        .where("applications.id", "=", id)
-        .execute();
+      const result = await ctx.env.data.applications.remove(tenant_id, id);
+      if (!result) {
+        throw new HTTPException(404, { message: "Application not found" });
+      }
 
       return ctx.text("OK");
     },
@@ -182,7 +170,12 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
       ],
       responses: {
         200: {
-          description: "Status",
+          content: {
+            "application/json": {
+              schema: applicationSchema,
+            },
+          },
+          description: "The update application",
         },
       },
     }),
@@ -191,20 +184,14 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
-      const db = getDbFromEnv(ctx.env);
-      const application = {
-        ...body,
-        tenant_id,
-        updated_at: new Date().toISOString(),
-      };
+      await ctx.env.data.applications.update(tenant_id, id, body);
+      const application = await ctx.env.data.applications.get(tenant_id, id);
 
-      const results = await db
-        .updateTable("applications")
-        .set(application)
-        .where("id", "=", id)
-        .execute();
+      if (!application) {
+        throw new HTTPException(404, { message: "Application not found" });
+      }
 
-      return ctx.text(results[0].numUpdatedRows.toString());
+      return ctx.json(application);
     },
   )
   // --------------------------------
@@ -255,83 +242,5 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
       });
 
       return ctx.json(application, { status: 201 });
-    },
-  )
-  // --------------------------------
-  // PUT /applications/:id
-  // --------------------------------
-  .openapi(
-    createRoute({
-      tags: ["applications"],
-      method: "put",
-      path: "/{:id}",
-      request: {
-        body: {
-          content: {
-            "application/json": {
-              schema: applicationInsertSchema,
-            },
-          },
-        },
-        params: z.object({
-          id: z.string(),
-        }),
-        headers: z.object({
-          "tenant-id": z.string(),
-        }),
-      },
-      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
-      security: [
-        {
-          Bearer: ["auth:write"],
-        },
-      ],
-      responses: {
-        200: {
-          content: {
-            "application/json": {
-              schema: applicationSchema,
-            },
-          },
-          description: "An application",
-        },
-      },
-    }),
-    async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { id } = ctx.req.valid("param");
-      const body = ctx.req.valid("json");
-
-      const application = {
-        ...body,
-        tenant_id,
-        id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const db = getDbFromEnv(ctx.env);
-
-      try {
-        await db.insertInto("applications").values(application).execute();
-      } catch (err: any) {
-        if (!err.message.includes("AlreadyExists")) {
-          throw err;
-        }
-
-        const {
-          id,
-          created_at,
-          tenant_id: tenantId,
-          ...applicationUpdate
-        } = application;
-        await db
-          .updateTable("applications")
-          .set(applicationUpdate)
-          .where("id", "=", application.id)
-          .execute();
-      }
-
-      return ctx.json(application);
     },
   );

@@ -12,7 +12,6 @@ import {
   SqlPassword,
   SqlUniversalLoginSession,
   SqlLog,
-  User,
 } from "../";
 import { Connection } from "../Connection";
 import { SqlBranding } from "./Branding";
