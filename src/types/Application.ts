@@ -21,6 +21,7 @@ export const applicationInsertSchema = z.object({
   client_secret: z.string().default(""),
   disable_sign_ups: z.boolean().default(false),
 });
+export type ApplicationInsert = z.infer<typeof applicationInsertSchema>;
 
 export const applicationSchema = z
   .object({

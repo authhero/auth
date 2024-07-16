@@ -86,7 +86,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
         },
       ],
       responses: {
-        200: {
+        201: {
           content: {
             "application/json": {
               schema: hookSchema,
@@ -102,7 +102,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
 
       const hooks = await ctx.env.data.hooks.create(tenant_id, hook);
 
-      return ctx.json(hooks);
+      return ctx.json(hooks, { status: 201 });
     },
   )
   // --------------------------------
