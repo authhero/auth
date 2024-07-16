@@ -1,8 +1,13 @@
-import { Env } from "../../types";
+import { Env, totalsSchema } from "../../types";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import authenticationMiddleware from "../../middlewares/authentication";
 import { hookInsertSchema, hookSchema } from "../../types/Hooks";
-import { nanoid } from "nanoid";
+import { auth0QuerySchema } from "../../types/auth0/Query";
+import { parseSort } from "../../utils/sort";
+
+const hopoksWithTotalsSchema = totalsSchema.extend({
+  hooks: z.array(hookSchema),
+});
 
 export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
@@ -14,6 +19,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
       method: "get",
       path: "/",
       request: {
+        query: auth0QuerySchema,
         headers: z.object({
           "tenant-id": z.string(),
         }),
@@ -28,7 +34,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
         200: {
           content: {
             "application/json": {
-              schema: z.array(hookSchema),
+              schema: z.union([z.array(hookSchema), hopoksWithTotalsSchema]),
             },
           },
           description: "List of hooks",
@@ -38,7 +44,16 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
     async (ctx) => {
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
 
-      const hooks = await ctx.env.data.hooks.list(tenant_id);
+      const { page, per_page, include_totals, sort, q } =
+        ctx.req.valid("query");
+
+      const hooks = await ctx.env.data.hooks.list(tenant_id, {
+        page,
+        per_page,
+        include_totals,
+        sort: parseSort(sort),
+        q,
+      });
 
       return ctx.json(hooks);
     },
