@@ -8,6 +8,8 @@ export interface ListHooksResponse extends Totals {
 
 export interface HooksAdapter {
   create: (tenant_id: string, hook: HookInsert) => Promise<Hook>;
+  remove: (tenant_id: string, hook_id: string) => Promise<boolean>;
+  get: (tenant_id: string, hook_id: string) => Promise<Hook | null>;
   update: (
     tenant_id: string,
     hook_id: string,

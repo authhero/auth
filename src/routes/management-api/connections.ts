@@ -1,5 +1,4 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { getDbFromEnv } from "../../services/db";
 import { headers } from "../../constants";
 import { Env, totalsSchema } from "../../types";
 import { HTTPException } from "hono/http-exception";
@@ -104,13 +103,7 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
 
-      const db = getDbFromEnv(ctx.env);
-      const connection = await db
-        .selectFrom("connections")
-        .where("connections.tenant_id", "=", tenant_id)
-        .where("connections.id", "=", id)
-        .selectAll()
-        .executeTakeFirst();
+      const connection = await ctx.env.data.connections.get(tenant_id, id);
 
       if (!connection) {
         throw new HTTPException(404);
@@ -153,12 +146,12 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { id } = ctx.req.valid("param");
 
-      const db = getDbFromEnv(ctx.env);
-      await db
-        .deleteFrom("connections")
-        .where("connections.tenant_id", "=", tenant_id)
-        .where("connections.id", "=", id)
-        .execute();
+      const result = await ctx.env.data.connections.remove(tenant_id, id);
+      if (!result) {
+        throw new HTTPException(404, {
+          message: "Connection not found",
+        });
+      }
 
       return ctx.text("OK");
     },
@@ -203,20 +196,14 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
-      const db = getDbFromEnv(ctx.env);
-      const connection = {
-        ...body,
-        tenant_id,
-        updated_at: new Date().toISOString(),
-      };
+      const result = await ctx.env.data.connections.update(tenant_id, id, body);
+      if (!result) {
+        throw new HTTPException(404, {
+          message: "Connection not found",
+        });
+      }
 
-      const results = await db
-        .updateTable("connections")
-        .set(connection)
-        .where("id", "=", id)
-        .execute();
-
-      return ctx.text(results[0].numUpdatedRows.toString());
+      return ctx.text("OK");
     },
   )
   // --------------------------------
@@ -310,34 +297,13 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { id } = ctx.req.valid("param");
       const body = ctx.req.valid("json");
 
-      const connection = {
-        ...body,
-        tenant_id,
-        id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+      await ctx.env.data.connections.update(tenant_id, id, body);
+      const connection = await ctx.env.data.connections.get(tenant_id, id);
 
-      const db = getDbFromEnv(ctx.env);
-
-      try {
-        await db.insertInto("connections").values(connection).execute();
-      } catch (err: any) {
-        if (!err.message.includes("AlreadyExists")) {
-          throw err;
-        }
-
-        const {
-          id,
-          created_at,
-          tenant_id: tenantId,
-          ...connectionUpdate
-        } = connection;
-        await db
-          .updateTable("connections")
-          .set(connectionUpdate)
-          .where("id", "=", connection.id)
-          .execute();
+      if (!connection) {
+        throw new HTTPException(404, {
+          message: "Connection not found",
+        });
       }
 
       return ctx.json(connection);
