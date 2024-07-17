@@ -1,7 +1,6 @@
 import { Domain } from "../Domain";
 import {
   Tenant,
-  Application,
   Certificate,
   Member,
   Migration,
@@ -18,6 +17,7 @@ import { SqlBranding } from "./Branding";
 import { SqlAuthenticationCode } from "./AuthenticationCode";
 import { Hook } from "../Hooks";
 import { SqlUser } from "./User";
+import { Application } from "@authhero/adapter-interfaces";
 
 // Keys of this interface are table names.
 export interface Database {

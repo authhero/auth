@@ -8,7 +8,6 @@ import { TenantsDataAdapter } from "./Tenants";
 import { TicketsAdapter } from "./Tickets";
 import { UserDataAdapter } from "./Users";
 import { LogsDataAdapter } from "./Logs";
-import { ApplicationsAdapter } from "./Applications";
 import { UniversalLoginSessionsAdapter } from "./UniversalLoginSession";
 import { ConnectionsAdapter } from "./Connections";
 import { DomainsAdapter } from "./Domains";
@@ -16,6 +15,7 @@ import { KeysAdapter } from "./Keys";
 import { BrandingAdapter } from "./Branding";
 import { AuthenticationCodesAdapter } from "./AuthenticationCodes";
 import { HooksAdapter } from "./Hooks";
+import { ApplicationsAdapter } from "@authhero/adapter-interfaces";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;

@@ -1,11 +1,5 @@
 import { Context } from "hono";
-import {
-  Application,
-  Env,
-  PasswordParams,
-  Tenant,
-  User,
-} from "../../src/types";
+import { Env, PasswordParams, Tenant, User } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
 import { Var } from "../../src/types/Var";
@@ -27,6 +21,7 @@ import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
 import { ConnectionInsert } from "../../src/types/Connection";
 import { Domain } from "../../src/types/Domain";
+import { Application } from "@authhero/adapter-interfaces";
 
 interface ContextFixtureParams {
   headers?: { [key: string]: string };

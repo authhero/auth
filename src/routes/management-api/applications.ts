@@ -1,5 +1,8 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { applicationSchema, applicationInsertSchema } from "../../types";
+import {
+  applicationSchema,
+  applicationInsertSchema,
+} from "@authhero/adapter-interfaces";
 import { headers } from "../../constants";
 import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
@@ -206,7 +209,7 @@ export const applicationRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: applicationInsertSchema,
+              schema: z.object({}).extend(applicationInsertSchema.shape),
             },
           },
         },
