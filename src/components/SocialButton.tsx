@@ -1,6 +1,6 @@
 import cn from "classnames";
-import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import Button from "./Button";
+import { UniversalLoginSession } from "@authhero/adapter-interfaces";
 
 type Props = {
   connection: "google-oauth2" | "apple" | "facebook" | "vipps";

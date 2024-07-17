@@ -1,4 +1,4 @@
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
+import { UniversalLoginSession } from "@authhero/adapter-interfaces";
 import { AuthParams } from "../AuthParams";
 
 export interface SqlUniversalLoginSession
