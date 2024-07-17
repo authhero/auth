@@ -1,7 +1,7 @@
 import { Env } from "../../types";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import authenticationMiddleware from "../../middlewares/authentication";
-import { brandingSchema } from "../../types/Branding";
+import { brandingSchema } from "@authhero/adapter-interfaces";
 
 export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
   // --------------------------------
@@ -61,7 +61,7 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: brandingSchema,
+              schema: z.object({}).extend(brandingSchema.shape),
             },
           },
         },

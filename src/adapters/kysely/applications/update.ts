@@ -1,6 +1,6 @@
 import { Kysely } from "kysely";
+import { ApplicationInsert } from "@authhero/adapter-interfaces";
 import { Database } from "../../../types";
-import { ApplicationInsert } from "../../../types/Application";
 
 export function update(db: Kysely<Database>) {
   return async (

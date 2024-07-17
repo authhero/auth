@@ -1,5 +1,6 @@
 import { HTTPException } from "hono/http-exception";
-import { AuthenticationCode, Database } from "../../../types";
+import { AuthenticationCode } from "@authhero/adapter-interfaces";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function get(db: Kysely<Database>) {
