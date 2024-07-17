@@ -77,7 +77,7 @@
   "reset_password_subject": "Byt lösenord för ditt {{vendorName}} konto",
   "reset_password_title": "Återställ lösenord",
   "send_me_a_new_magic_link": "Skicka en ny inloggninglänk",
-  "sent_code_spam": "Kom ihåg att kontrollera din skräppost om du inte kan hitta mailet vi skickade.",
+  "sent_code_spam": "Kom ihåg att kontrollera din skräppost om du inte kan hitta mailet vi har skickat.",
   "sign_in": "Logga in",
   "signup_success": "Registrera dig framgångsrik",
   "spotify_already_linked_body": "Det verkar som att ditt Spotify-konto för närvarande är kopplat till ett annat Sesamy-konto. Ingen fara, vi är här för att guida dig genom processen för att lösa detta.",
