@@ -437,7 +437,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       return ctx.html(
         <MessagePage
           message={i18next.t("password_has_been_reset")}
-          pageTitle={i18next.t("password_has_been_reset_title")}
           vendorSettings={vendorSettings}
           state={state}
         />,
