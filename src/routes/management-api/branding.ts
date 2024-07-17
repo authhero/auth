@@ -27,7 +27,7 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
         200: {
           content: {
             "application/json": {
-              schema: z.object({}).extend(brandingSchema.shape),
+              schema: brandingSchema,
             },
           },
           description: "Branding settings",
@@ -61,7 +61,7 @@ export const brandingRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: brandingSchema,
+              schema: z.object({}).extend(brandingSchema.shape),
             },
           },
         },
