@@ -6,7 +6,6 @@ export * from "./Client";
 export * from "./Token";
 export * from "./SigningKey";
 export * from "./sql";
-export * from "./Session";
 export * from "./OTP";
 export * from "./Ticket";
 export * from "./Code";

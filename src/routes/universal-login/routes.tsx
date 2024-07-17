@@ -84,7 +84,7 @@ async function handleLogin(
 
     return generateAuthResponse({
       ctx,
-      tenantId: session.tenant_id,
+      tenantId: client.tenant_id,
       sid: nanoid(),
       authParams: session.authParams,
       user,
@@ -512,7 +512,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       if (session.authParams.username !== username) {
         session.authParams.username = username;
-        await env.data.universalLoginSessions.update(session.id, session);
+        await env.data.universalLoginSessions.update(
+          client.tenant_id,
+          session.id,
+          session,
+        );
       }
 
       await requestPasswordReset(ctx, client, username, session.id);
@@ -649,7 +653,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       // Add the username to the state
       session.authParams.username = params.username;
-      await env.data.universalLoginSessions.update(session.id, session);
+      await env.data.universalLoginSessions.update(
+        client.tenant_id,
+        session.id,
+        session,
+      );
 
       // we want to be able to override this with a value in the POST
       if (params.login_selection !== SesamyPasswordLoginSelection.code) {
@@ -822,7 +830,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         const authResponse = await generateAuthResponse({
           ctx,
-          tenantId: session.tenant_id,
+          tenantId: client.tenant_id,
           sid: nanoid(),
           authParams: session.authParams,
           user,
@@ -945,7 +953,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       if (session.authParams.username !== loginParams.username) {
         session.authParams.username = loginParams.username;
-        await env.data.universalLoginSessions.update(session.id, session);
+        await env.data.universalLoginSessions.update(
+          client.tenant_id,
+          session.id,
+          session,
+        );
       }
 
       try {

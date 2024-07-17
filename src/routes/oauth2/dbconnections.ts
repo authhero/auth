@@ -161,7 +161,6 @@ export const dbConnectionRoutes = new OpenAPIHono<{
 
       const session: UniversalLoginSession = {
         id: nanoid(),
-        tenant_id: client.tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         expires_at: new Date(
@@ -170,7 +169,10 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         authParams,
       };
 
-      await ctx.env.data.universalLoginSessions.create(session);
+      await ctx.env.data.universalLoginSessions.create(
+        client.tenant_id,
+        session,
+      );
 
       await requestPasswordReset(ctx, client, email, session.id);
 

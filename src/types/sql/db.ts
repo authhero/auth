@@ -4,7 +4,6 @@ import {
   Certificate,
   Member,
   Migration,
-  SqlSession,
   SqlCode,
   SqlTicket,
   SqlOTP,
@@ -18,6 +17,18 @@ import { SqlAuthenticationCode } from "./AuthenticationCode";
 import { Hook } from "../Hooks";
 import { SqlUser } from "./User";
 import { Application } from "@authhero/adapter-interfaces";
+
+// TODO: Update the colums to match the session entity
+interface SqlSession {
+  tenant_id: string;
+  created_at: string;
+  user_id: string;
+  client_id: string;
+  expires_at: string;
+  used_at: string;
+  id: string;
+  deleted_at?: string | undefined;
+}
 
 // Keys of this interface are table names.
 export interface Database {
@@ -38,6 +49,6 @@ export interface Database {
   sessions: SqlSession;
   tenants: Tenant;
   tickets: SqlTicket;
-  universal_login_sessions: SqlUniversalLoginSession;
+  universal_login_sessions: SqlUniversalLoginSession & { tenant_id: string };
   logs: SqlLog;
 }

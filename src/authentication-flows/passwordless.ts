@@ -105,7 +105,6 @@ export async function sendEmailVerificationEmail({
 
   const session: UniversalLoginSession = {
     id: nanoid(),
-    tenant_id: client.tenant_id,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     expires_at: new Date(
@@ -114,7 +113,7 @@ export async function sendEmailVerificationEmail({
     authParams,
   };
 
-  await env.data.universalLoginSessions.create(session);
+  await env.data.universalLoginSessions.create(client.tenant_id, session);
 
   const state = session.id;
 

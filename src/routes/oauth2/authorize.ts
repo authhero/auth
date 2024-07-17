@@ -164,6 +164,6 @@ export const authorizeRoutes = new OpenAPIHono<{
         );
       }
 
-      return universalAuth({ ctx, authParams, auth0Client });
+      return universalAuth({ ctx, client, authParams, auth0Client });
     },
   );
