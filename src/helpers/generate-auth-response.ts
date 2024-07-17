@@ -12,7 +12,7 @@ import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { pemToBuffer } from "../utils/jwt";
 import { createJWT } from "oslo/jwt";
 import { TimeSpan } from "oslo";
-import { serializeStateInCookie } from "../services/cookies";
+import { serializeAuthCookie } from "../services/cookies";
 import { applyTokenResponse } from "./apply-token-response-new";
 import { nanoid } from "nanoid";
 import { createLogMessage } from "../utils/create-log-message";
@@ -211,14 +211,14 @@ export async function generateAuthResponse(params: GenerateAuthResponseParams) {
 
   const redirectUrl = applyTokenResponse(tokens, authParams);
 
-  const sessionCookie = serializeStateInCookie(sid);
+  const sessionCookie = serializeAuthCookie(sid);
 
   // TODO: should we have different response for different response modes?
   return new Response("Redirecting", {
     status: 302,
     headers: {
       Location: redirectUrl,
-      "Set-Cookie": sessionCookie[0],
+      "Set-Cookie": sessionCookie,
     },
   });
 }
