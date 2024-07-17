@@ -1,12 +1,7 @@
 import { Context } from "hono";
 import { Apple } from "arctic";
-import {
-  AuthorizationResponseType,
-  AuthParams,
-  Client,
-  Env,
-  LoginState,
-} from "../types";
+import { LogTypes } from "@authhero/adapter-interfaces";
+import { AuthParams, Client, Env, LoginState } from "../types";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
@@ -15,7 +10,6 @@ import { Var } from "../types/Var";
 import { HTTPException } from "hono/http-exception";
 import { stateEncode } from "../utils/stateEncode";
 import { getClient } from "../services/clients";
-import { LogTypes } from "../types";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
@@ -121,8 +115,14 @@ export async function socialAuthCallback({
       state.authParams.redirect_uri,
     )
   ) {
+    const invalidRedirectUriMessage = `Invalid redirect URI - ${state.authParams.redirect_uri}`;
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_LOGIN,
+      description: invalidRedirectUriMessage,
+    });
+    await ctx.env.data.logs.create(client.tenant_id, log);
     throw new HTTPException(403, {
-      message: `Invalid redirect URI - ${state.authParams.redirect_uri}`,
+      message: invalidRedirectUriMessage,
     });
   }
 
@@ -169,7 +169,7 @@ export async function socialAuthCallback({
       userinfo = getProfileData(parseJwt(token.id_token));
     } else {
       throw new HTTPException(500, {
-        message: "No id_token or userinfo endpoint availeble",
+        message: "No id_token or userinfo endpoint available",
       });
     }
   }
@@ -231,6 +231,7 @@ export async function socialAuthCallback({
     });
     ctx.set("userId", user.user_id);
 
+    // TODO: this should really be handled in the hook
     const log = createLogMessage(ctx, {
       type: LogTypes.SUCCESS_SIGNUP,
       description: "Successful signup",
@@ -245,7 +246,7 @@ export async function socialAuthCallback({
     user,
   );
 
-  const authResponse = generateAuthResponse({
+  return generateAuthResponse({
     ctx,
     tenantId: client.tenant_id,
     sid: sessionId,
@@ -254,6 +255,4 @@ export async function socialAuthCallback({
     authParams: state.authParams,
     user,
   });
-
-  return authResponse;
 }

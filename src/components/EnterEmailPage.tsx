@@ -1,4 +1,5 @@
 import type { FC } from "hono/jsx";
+import { UniversalLoginSession } from "@authhero/adapter-interfaces";
 import Layout from "./Layout";
 import { VendorSettings, Client } from "../types";
 import i18next from "i18next";
@@ -7,7 +8,6 @@ import Icon from "./Icon";
 import ErrorMessage from "./ErrorMessage";
 import SocialButton from "./SocialButton";
 import Google from "./GoogleLogo";
-import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import { getSendParamFromAuth0ClientHeader } from "../utils/getSendParamFromAuth0ClientHeader";
 import DisabledSubmitButton from "./DisabledSubmitButton";
 import Form from "./Form";

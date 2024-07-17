@@ -5,26 +5,7 @@ import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Var } from "../../types/Var";
-import i18next from "i18next";
-import en from "../../localesLogin2/en/default.json";
-import it from "../../localesLogin2/it/default.json";
-import nb from "../../localesLogin2/nb/default.json";
-import sv from "../../localesLogin2/sv/default.json";
-import pl from "../../localesLogin2/pl/default.json";
 import { setSearchParams } from "../../utils/url";
-
-function initI18n(lng: string) {
-  i18next.init({
-    lng,
-    resources: {
-      en: { translation: en },
-      it: { translation: it },
-      nb: { translation: nb },
-      sv: { translation: sv },
-      pl: { translation: pl },
-    },
-  });
-}
 
 export const callbackRoutes = new OpenAPIHono<{
   Bindings: Env;
@@ -68,22 +49,14 @@ export const callbackRoutes = new OpenAPIHono<{
 
       const loginState: LoginState = stateDecode(state);
       if (!loginState) {
-        throw new Error("State not found");
+        throw new HTTPException(400, { message: "State not found" });
       }
-
-      const client = await getClient(ctx.env, loginState.authParams.client_id);
-      const tenant = await ctx.env.data.tenants.get(client.tenant_id);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      initI18n(tenant.language || "sv");
 
       if (error) {
         const { redirect_uri } = loginState.authParams;
 
         if (!redirect_uri) {
-          throw new Error("Redirect uri not found");
+          throw new HTTPException(400, { message: "Redirect uri not found" });
         }
 
         const redirectUri = new URL(redirect_uri);
@@ -98,15 +71,16 @@ export const callbackRoutes = new OpenAPIHono<{
         return ctx.redirect(redirectUri.href);
       }
 
-      if (code) {
-        return socialAuthCallback({
-          ctx,
-          state: loginState,
-          code,
-        });
+      if (!code) {
+        // The code is not present if there's an error, so this will not be reached
+        throw new HTTPException(400, { message: "Code is required" });
       }
 
-      throw new HTTPException(400, { message: "State and code are required" });
+      return socialAuthCallback({
+        ctx,
+        state: loginState,
+        code,
+      });
     },
   )
   // --------------------------------

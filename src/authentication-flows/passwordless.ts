@@ -1,10 +1,9 @@
 import { HTTPException } from "hono/http-exception";
-import { Env, Var, LogTypes } from "../types";
+import { Env, Var } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import { User, Client, AuthParams } from "../types";
-import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import generateOTP from "../utils/otp";
 import {
@@ -15,6 +14,7 @@ import { sendValidateEmailAddress } from "../controllers/email";
 import { waitUntil } from "../utils/wait-until";
 import { Context } from "hono";
 import { createLogMessage } from "../utils/create-log-message";
+import { LogTypes, UniversalLoginSession } from "@authhero/adapter-interfaces";
 
 interface LoginParams {
   client_id: string;

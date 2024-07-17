@@ -8,6 +8,8 @@ import { managementApp, oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { AuthorizationResponseType } from "../../../src/types";
 import { base64url } from "oslo/encoding";
+import { LogTypes } from "@authhero/adapter-interfaces";
+import { Log } from "kysely";
 
 function osloBtoa(payload: object) {
   const str = JSON.stringify(payload);
@@ -155,8 +157,12 @@ describe("social sign on", () => {
           include_totals: true,
         });
         expect(logs.length).toBe(2);
-        const successLoginLog = logs.find((log) => log.type === "s");
-        const successSignupLog = logs.find((log) => log.type === "ss");
+        const successLoginLog = logs.find(
+          (log) => log.type === LogTypes.SUCCESS_LOGIN,
+        );
+        const successSignupLog = logs.find(
+          (log) => log.type === LogTypes.SUCCESS_SIGNUP,
+        );
         expect(successSignupLog).toMatchObject({
           type: "ss",
           tenant_id: "tenantId",

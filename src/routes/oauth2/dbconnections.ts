@@ -9,8 +9,8 @@ import { sendEmailVerificationEmail } from "../../authentication-flows/passwordl
 import validatePassword from "../../utils/validatePassword";
 import { createLogMessage } from "../../utils/create-log-message";
 import { requestPasswordReset } from "../../authentication-flows/password";
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
+import { UniversalLoginSession } from "@authhero/adapter-interfaces";
 
 export const dbConnectionRoutes = new OpenAPIHono<{
   Bindings: Env;

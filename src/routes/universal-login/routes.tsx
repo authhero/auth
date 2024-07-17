@@ -1,13 +1,6 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import {
-  Env,
-  User,
-  AuthorizationResponseType,
-  Client,
-  Var,
-  LogTypes,
-} from "../../types";
+import { Env, User, Client, Var, LogTypes } from "../../types";
 import ResetPasswordPage from "../../components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import {
@@ -25,7 +18,6 @@ import SignupPage from "../../components/SignUpPage";
 import UnverifiedEmail from "../../components/UnverifiedEmailPage";
 import MessagePage from "../../components/Message";
 import EmailValidatedPage from "../../components/EmailValidatedPage";
-import { UniversalLoginSession } from "../../adapters/interfaces/UniversalLoginSession";
 import { nanoid } from "nanoid";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { Context } from "hono";
@@ -52,6 +44,7 @@ import {
 } from "../../authentication-flows/password";
 import { CustomException } from "../../models/CustomError";
 import { CODE_EXPIRATION_TIME } from "../../constants";
+import { UniversalLoginSession } from "@authhero/adapter-interfaces";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);

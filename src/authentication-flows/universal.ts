@@ -1,10 +1,9 @@
-import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { AuthParams, Env, Var } from "../types";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../constants";
 import { nanoid } from "nanoid";
-import { UniversalLoginSession } from "../adapters/interfaces/UniversalLoginSession";
 import { getClient } from "../services/clients";
+import { UniversalLoginSession } from "@authhero/adapter-interfaces";
 
 interface UniversalAuthParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
