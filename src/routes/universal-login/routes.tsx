@@ -51,6 +51,7 @@ import {
   requestPasswordReset,
 } from "../../authentication-flows/password";
 import { CustomException } from "../../models/CustomError";
+import { CODE_EXPIRATION_TIME } from "../../constants";
 
 async function initJSXRoute(state: string, env: Env) {
   const session = await env.data.universalLoginSessions.get(state);
@@ -75,9 +76,6 @@ async function initJSXRoute(state: string, env: Env) {
 
   return { vendorSettings, client, tenant, session };
 }
-
-// duplicated from /passwordless route
-const CODE_EXPIRATION_TIME = 30 * 60 * 1000;
 
 async function handleLogin(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -439,8 +437,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       return ctx.html(
         <MessagePage
           message={i18next.t("password_has_been_reset")}
-          pageTitle={i18next.t("password_has_been_reset_title")}
           vendorSettings={vendorSettings}
+          state={state}
         />,
       );
     },
@@ -473,7 +471,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const { vendorSettings } = await initJSXRoute(state, env);
 
-      return ctx.html(<ForgotPasswordPage vendorSettings={vendorSettings} />);
+      return ctx.html(
+        <ForgotPasswordPage vendorSettings={vendorSettings} state={state} />,
+      );
     },
   )
   // -------------------------------
@@ -527,8 +527,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       return ctx.html(
         <MessagePage
           message={i18next.t("forgot_password_email_sent")}
-          pageTitle={i18next.t("forgot_password_title")}
           vendorSettings={vendorSettings}
+          state={state}
         />,
       );
     },
@@ -708,9 +708,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         waitUntil(ctx, sendCode(ctx, client, params.username, code));
       }
 
-      return ctx.redirect(
-        `/u/enter-code?state=${state}&username=${params.username}`,
-      );
+      return ctx.redirect(`/u/enter-code?state=${state}`);
     },
   )
   // --------------------------------
@@ -1007,6 +1005,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             message={i18next.t("validate_email_body")}
             pageTitle={i18next.t("validate_email_title")}
             vendorSettings={vendorSettings}
+            state={state}
           />,
         );
       } catch (err: any) {
@@ -1154,12 +1153,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
     async (ctx) => {
       const vendorSettings = await fetchVendorSettings(ctx.env);
+      const { state } = ctx.req.valid("query");
 
       return ctx.html(
         <MessagePage
           message="Not implemented"
           pageTitle="User info"
           vendorSettings={vendorSettings}
+          state={state}
         />,
       );
     },

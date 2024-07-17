@@ -7,6 +7,7 @@ import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
 import Icon from "./Icon";
 import Form from "./Form";
+import { GoBack } from "./GoBack";
 
 type Props = {
   error?: string;
@@ -43,13 +44,13 @@ const EnterPasswordPage: FC<Props> = ({
             placeholder={i18next.t("email_placeholder")}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
             value={email}
-            disabled
           />
           <input
             type="password"
             name="password"
             placeholder={i18next.t("password") || ""}
             class="mb-2 w-full rounded-lg bg-gray-100 px-4 py-5 text-base placeholder:text-gray-300 dark:bg-gray-600 md:text-base"
+            required
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <DisabledSubmitButton className="text-base sm:mt-4 md:text-base">
@@ -65,14 +66,6 @@ const EnterPasswordPage: FC<Props> = ({
         >
           {i18next.t("forgot_password_link")}
         </a>
-        {!client.disable_sign_ups && (
-          <a
-            href={`/u/signup?${loginLinkParams.toString()}`}
-            className="text-primary hover:underline font-bold"
-          >
-            {i18next.t("create_new_account_link")}
-          </a>
-        )}
         <div className="text-center mb-12">
           <div className="relative mb-5 block text-center text-gray-300 dark:text-gray-300">
             <div className="absolute left-0 right-0 top-1/2 border-b border-gray-200 dark:border-gray-600" />
@@ -91,6 +84,7 @@ const EnterPasswordPage: FC<Props> = ({
             </Button>
           </form>
         </div>
+        <GoBack state={state} />
       </div>
     </Layout>
   );

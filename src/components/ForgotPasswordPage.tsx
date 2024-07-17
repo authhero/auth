@@ -5,13 +5,15 @@ import i18next from "i18next";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
 import Form from "./Form";
+import { GoBack } from "./GoBack";
 
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
+  state: string;
 };
 
-const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
+const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings, state }) => {
   return (
     <Layout
       title={i18next.t("forgot_password_title")}
@@ -24,7 +26,7 @@ const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
         {i18next.t("forgot_password_description")}
       </div>
       <div class="flex flex-1 flex-col justify-center">
-        <Form>
+        <Form className="pt-2">
           <input
             type="email"
             name="username"
@@ -37,6 +39,7 @@ const ForgotPasswordPage: FC<Props> = ({ error, vendorSettings }) => {
             {i18next.t("forgot_password_cta")}
           </DisabledSubmitButton>
         </Form>
+        <GoBack state={state} />
       </div>
     </Layout>
   );
