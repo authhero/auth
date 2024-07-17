@@ -1,7 +1,7 @@
-import { Branding } from "../../../types/Branding";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { removeNullProperties } from "../helpers/remove-nulls";
+import { Branding } from "@authhero/adapter-interfaces";
 
 export function get(db: Kysely<Database>) {
   return async (tenant_id: string): Promise<Branding | null> => {

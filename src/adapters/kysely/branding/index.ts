@@ -1,4 +1,4 @@
-import { BrandingAdapter } from "../../interfaces/Branding";
+import { BrandingAdapter } from "@authhero/adapter-interfaces";
 import { Database } from "../../../types";
 import { get } from "./get";
 import { set } from "./set";

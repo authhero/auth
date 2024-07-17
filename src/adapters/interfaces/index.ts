@@ -12,10 +12,12 @@ import { UniversalLoginSessionsAdapter } from "./UniversalLoginSession";
 import { ConnectionsAdapter } from "./Connections";
 import { DomainsAdapter } from "./Domains";
 import { KeysAdapter } from "./Keys";
-import { BrandingAdapter } from "./Branding";
-import { AuthenticationCodesAdapter } from "./AuthenticationCodes";
 import { HooksAdapter } from "./Hooks";
-import { ApplicationsAdapter } from "@authhero/adapter-interfaces";
+import {
+  ApplicationsAdapter,
+  AuthenticationCodesAdapter,
+  BrandingAdapter,
+} from "@authhero/adapter-interfaces";
 
 export interface DataAdapters {
   applications: ApplicationsAdapter;

@@ -1,5 +1,4 @@
 export * from "./Env";
-export * from "./AuthenticationCode";
 export * from "./AuthParams";
 export * from "./Token";
 export * from "./LoginState";

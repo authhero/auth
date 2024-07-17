@@ -1,5 +1,5 @@
-import { nanoid } from "nanoid";
-import { Database, AuthenticationCode } from "../../../types";
+import { AuthenticationCode } from "@authhero/adapter-interfaces";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function create(db: Kysely<Database>) {
