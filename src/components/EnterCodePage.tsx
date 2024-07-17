@@ -8,6 +8,7 @@ import Icon from "./Icon";
 import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
 import Form from "./Form";
+import { GoBack } from "./GoBack";
 
 type Props = {
   error?: string;
@@ -74,7 +75,10 @@ const EnterCodePage: FC<Props> = ({
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <div class="text-center sm:mt-2">
             <DisabledSubmitButton>
-              {i18next.t("validate_code")}
+              <div className="flex items-center space-x-2">
+                <span>{i18next.t("login")}</span>
+                <Icon className="text-xs" name="arrow-right" />
+              </div>
             </DisabledSubmitButton>
           </div>
           <div class="my-4 flex space-x-2 text-sm text-[#B2B2B2]">
@@ -101,14 +105,8 @@ const EnterCodePage: FC<Props> = ({
               </Button>
             </div>
           )}
-          <a
-            className="block text-primary hover:text-primaryHover text-center"
-            // TODO - when we release password login, "back" might mean going back to the password login page
-            href={`/u/enter-code?${passwordLoginLinkParams.toString()}`}
-          >
-            {i18next.t("go_back")}
-          </a>
         </Form>
+        <GoBack state={state} />
       </div>
     </Layout>
   );
