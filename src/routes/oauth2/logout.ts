@@ -1,9 +1,6 @@
 import { Env, LogTypes, Var } from "../../types";
 import { getClient } from "../../services/clients";
-import {
-  getStateFromCookie,
-  serializeClearCookie,
-} from "../../services/cookies";
+import { getAuthCookie, clearAuthCookie } from "../../services/cookies";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
@@ -52,7 +49,7 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const cookie = ctx.req.header("cookie");
 
       if (cookie) {
-        const tokenState = getStateFromCookie(cookie);
+        const tokenState = getAuthCookie(cookie);
         if (tokenState) {
           const session = await ctx.env.data.sessions.get(
             client.tenant_id,
@@ -82,7 +79,7 @@ export const logoutRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       return new Response("Redirecting", {
         status: 302,
         headers: {
-          "set-cookie": serializeClearCookie(),
+          "set-cookie": clearAuthCookie(),
           location: redirectUri,
         },
       });

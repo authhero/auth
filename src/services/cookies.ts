@@ -1,22 +1,17 @@
-import { parse, serialize } from "cookie";
+import { parseCookies, serializeCookie } from "oslo/cookie";
 
 const COOKIE_NAME = "auth-token";
 
-export function getStateFromCookie(cookieHeaders?: string): string | null {
+export function getAuthCookie(cookieHeaders?: string): string | undefined {
   if (!cookieHeaders) {
-    return null;
+    return undefined;
   }
 
-  const cookies = parse(cookieHeaders);
-  const authCookie = cookies[COOKIE_NAME] || cookies[`${COOKIE_NAME}_compat`];
-  if (!authCookie) {
-    return null;
-  }
-
-  return authCookie;
+  const cookies = parseCookies(cookieHeaders);
+  return cookies.get(COOKIE_NAME);
 }
 
-export function serializeClearCookie() {
+export function clearAuthCookie() {
   const options = {
     path: "/",
     httpOnly: true,
@@ -24,13 +19,13 @@ export function serializeClearCookie() {
     maxAge: 0,
   };
 
-  return serialize(COOKIE_NAME, "", {
+  return serializeCookie(COOKIE_NAME, "", {
     ...options,
     sameSite: "none",
   });
 }
 
-export function serializeStateInCookie(payload: string) {
+export function serializeAuthCookie(payload: string) {
   const options = {
     path: "/",
     httpOnly: true,
@@ -38,11 +33,8 @@ export function serializeStateInCookie(payload: string) {
     maxAge: 60 * 60 * 24 * 7, // 1 week
   };
 
-  return [
-    serialize(COOKIE_NAME, payload, {
-      ...options,
-      sameSite: "none",
-    }),
-    // serialize(`${COOKIE_NAME}_compat`, payload, options),
-  ];
+  return serializeCookie(COOKIE_NAME, payload, {
+    ...options,
+    sameSite: "none",
+  });
 }

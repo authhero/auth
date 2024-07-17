@@ -1,8 +1,5 @@
 import { Context } from "hono";
-import {
-  getStateFromCookie,
-  serializeStateInCookie,
-} from "../services/cookies";
+import { getAuthCookie, serializeAuthCookie } from "../services/cookies";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -45,7 +42,7 @@ export async function silentAuth({
 }: SilentAuthParams) {
   const { env } = ctx;
 
-  const tokenState = getStateFromCookie(cookie_header);
+  const tokenState = getAuthCookie(cookie_header);
   const redirectURL = new URL(redirect_uri);
 
   ctx.set("client_id", client_id);
@@ -58,7 +55,7 @@ export async function silentAuth({
 
       // Update the cookie
       const headers = new Headers();
-      const [cookie] = serializeStateInCookie(tokenState);
+      const cookie = serializeAuthCookie(tokenState);
       headers.set("set-cookie", cookie);
 
       const user = await env.data.users.get(tenant_id, session.user_id);
