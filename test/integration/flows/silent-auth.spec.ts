@@ -101,7 +101,7 @@ describe("silent-auth", () => {
     expect(idToken).toBeDefined();
     const session = await env.data.sessions.get("tenantId", idToken.sid);
 
-    expect(session!.used_at > postLoginDate).toBe(true);
+    expect(new Date(session!.used_at) > postLoginDate).toBe(true);
   });
 
   it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {

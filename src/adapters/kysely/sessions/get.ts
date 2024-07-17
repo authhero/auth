@@ -1,4 +1,5 @@
-import { Database, Session } from "../../../types";
+import { Session } from "@authhero/adapter-interfaces";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function get(db: Kysely<Database>) {
@@ -14,13 +15,12 @@ export function get(db: Kysely<Database>) {
     if (!sqlSession) return null;
 
     const session: Session = {
-      id: sqlSession.id,
+      session_id: sqlSession.id,
       user_id: sqlSession.user_id,
-      tenant_id: sqlSession.tenant_id,
       client_id: sqlSession.client_id,
-      created_at: new Date(sqlSession.created_at),
-      expires_at: new Date(sqlSession.expires_at),
-      used_at: new Date(sqlSession.used_at),
+      created_at: sqlSession.created_at,
+      expires_at: sqlSession.expires_at,
+      used_at: sqlSession.used_at,
     };
 
     return session;

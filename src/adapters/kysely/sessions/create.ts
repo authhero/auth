@@ -1,18 +1,26 @@
-import { Database, Session, SqlSession } from "../../../types";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { Session, SessionInsert } from "@authhero/adapter-interfaces";
 
 export function create(db: Kysely<Database>) {
-  return async (session: Session) => {
-    const sqlSession: SqlSession = {
-      id: session.id,
+  return async (
+    tenant_id: string,
+    session: SessionInsert,
+  ): Promise<Session> => {
+    // TODO: Update the column names to match the sesion entity
+    const createdSession = {
       user_id: session.user_id,
-      tenant_id: session.tenant_id,
       client_id: session.client_id,
-      created_at: session.created_at.toISOString(),
-      expires_at: session.expires_at.toISOString(),
-      used_at: session.used_at.toISOString(),
+      created_at: new Date().toISOString(),
+      expires_at: new Date().toISOString(),
+      used_at: session.used_at,
     };
 
-    await db.insertInto("sessions").values(sqlSession).execute();
+    await db
+      .insertInto("sessions")
+      .values({ ...createdSession, tenant_id, id: session.session_id })
+      .execute();
+
+    return { ...session, ...createdSession };
   };
 }

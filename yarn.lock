@@ -31,10 +31,10 @@
   dependencies:
     openapi3-ts "^4.1.2"
 
-"@authhero/adapter-interfaces@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@authhero/adapter-interfaces/-/adapter-interfaces-0.1.3.tgz#fe816010b01fd1a5afc3f94496f6c16e2a44c625"
-  integrity sha512-D8o65JGRUVLsZndfSVPdi9gX4iZoRCS7PFaSDd9D9aMtCbXum69DXLqFrbRhFRWh/Zj/SJNpg7GyASPIVriQJQ==
+"@authhero/adapter-interfaces@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@authhero/adapter-interfaces/-/adapter-interfaces-0.2.2.tgz#f09a70d593b851d788b6f9a917ead42c58b7f01a"
+  integrity sha512-wtlVCtTJBWM8xsr4tetiGM+h0evIwYPcrp7mTu83WHYy29QiYVQE8e7WJGnWsuqM9fShwmwMTFDTTBn4nRA7Mw==
   dependencies:
     "@hono/zod-openapi" "^0.14.5"
 

@@ -1,4 +1,4 @@
-import { SessionsAdapter } from "../../interfaces/Sessions";
+import { SessionsAdapter } from "@authhero/adapter-interfaces";
 import { Database } from "../../../types";
 import { get } from "./get";
 import { create } from "./create";

@@ -3,7 +3,6 @@ import { CodesAdapter } from "./Codes";
 import { MembersDataAdapter } from "./Members";
 import { OTPAdapter } from "./OTP";
 import { PasswordsAdapter } from "./Passwords";
-import { SessionsAdapter } from "./Sessions";
 import { TenantsDataAdapter } from "./Tenants";
 import { TicketsAdapter } from "./Tickets";
 import { UserDataAdapter } from "./Users";
@@ -16,6 +15,7 @@ import {
   ApplicationsAdapter,
   AuthenticationCodesAdapter,
   BrandingAdapter,
+  SessionsAdapter,
   UniversalLoginSessionsAdapter,
 } from "@authhero/adapter-interfaces";
 

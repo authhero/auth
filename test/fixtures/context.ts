@@ -1,4 +1,5 @@
 import { Context } from "hono";
+import { Application, SessionInsert } from "@authhero/adapter-interfaces";
 import { Env, PasswordParams, Tenant, User } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
@@ -8,7 +9,6 @@ import { getCertificate } from "../integration/helpers/token";
 import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
 import { OTP } from "../../src/types/OTP";
-import { Session } from "../../src/types/Session";
 import {
   APPLICATION_FIXTURE,
   TENANT_FIXTURE,
@@ -21,13 +21,12 @@ import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
 import { ConnectionInsert } from "../../src/types/Connection";
 import { Domain } from "../../src/types/Domain";
-import { Application } from "@authhero/adapter-interfaces";
 
 interface ContextFixtureParams {
   headers?: { [key: string]: string };
   stateData?: { [key: string]: string };
   tickets?: Ticket[];
-  sessions?: Session[];
+  sessions?: SessionInsert[];
   otps?: OTP[];
   passwords?: PasswordParams[];
   users?: User[];
@@ -139,13 +138,13 @@ export async function contextFixture(
 
   if (sessions) {
     sessions.forEach(async (session) => {
-      data.sessions.create(session);
+      data.sessions.create(TENANT_FIXTURE.id, session);
     });
   }
 
   if (passwords) {
     passwords.forEach((password) => {
-      data.passwords.create("tenantId", password);
+      data.passwords.create(TENANT_FIXTURE.id, password);
     });
   }
 
