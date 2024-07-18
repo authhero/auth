@@ -1,4 +1,4 @@
-import { OTPAdapter } from "../../interfaces/OTP";
+import { OTPAdapter } from "@authhero/adapter-interfaces";
 import { Database } from "../../../types";
 import { list } from "./list";
 import { create } from "./create";

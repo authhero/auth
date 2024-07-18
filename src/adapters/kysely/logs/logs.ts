@@ -1,4 +1,4 @@
-import { SqlLog, LogsResponse } from "../types";
+import { SqlLog, LogsResponse } from "../../../types";
 
 function tryParseJSON(jsonString?: string): any {
   if (!jsonString) {

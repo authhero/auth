@@ -16,7 +16,7 @@ import { SqlBranding } from "./Branding";
 import { SqlAuthenticationCode } from "./AuthenticationCode";
 import { Hook } from "../Hooks";
 import { SqlUser } from "./User";
-import { Application } from "@authhero/adapter-interfaces";
+import { Application, OTP } from "@authhero/adapter-interfaces";
 
 // TODO: Update the colums to match the session entity
 interface SqlSession {

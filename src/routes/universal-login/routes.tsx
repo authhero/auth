@@ -685,7 +685,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ...otpAuthParams
       } = session.authParams;
 
-      await env.data.OTP.create({
+      await env.data.OTP.create(client.tenant_id, {
         id: nanoid(),
         code,
         // is this a reasonable assumption?
@@ -694,8 +694,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         send: "code",
         authParams: otpAuthParams,
         tenant_id: client.tenant_id,
-        created_at: new Date(),
-        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME),
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
       });
 
       const sendType = getSendParamFromAuth0ClientHeader(session.auth0Client);

@@ -555,4 +555,54 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       return ctx.json([auth0UserResponseSchema.parse(user)]);
     },
+  ) // --------------------------------
+  // GET /users/:user_id/sessions
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["users"],
+      method: "get",
+      path: "/{user_id}/sessions",
+      request: {
+        headers: z.object({
+          "tenant-id": z.string(),
+        }),
+        params: z.object({
+          user_id: z.string(),
+        }),
+      },
+      middleware: [authenticationMiddleware({ scopes: ["auth:read"] })],
+      security: [
+        {
+          Bearer: ["auth:read"],
+        },
+      ],
+      responses: {
+        200: {
+          // TODO: will be exposed in next version for the adapter interfaces
+          // content: {
+          //   "application/json": {
+          //     schema: z.union([
+          //       z.array(sessionSchema),
+          //       sessionsWithTotalsSchema,
+          //     ]),
+          //   },
+          // },
+          description: "List of sessions",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { user_id } = ctx.req.valid("param");
+      const { "tenant-id": tenant_id } = ctx.req.valid("header");
+
+      const sessions = await ctx.env.data.sessions.list(tenant_id, {
+        page: 0,
+        per_page: 10,
+        include_totals: false,
+        q: `user_id:${user_id}`,
+      });
+
+      return ctx.json(sessions);
+    },
   );

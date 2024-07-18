@@ -1,6 +1,6 @@
 import { Database, LogsResponse } from "../../../types";
 import { Kysely } from "kysely";
-import { getLogResponse } from "../../../utils/logs";
+import { getLogResponse } from "./logs";
 
 export function getLogs(db: Kysely<Database>) {
   return async (
