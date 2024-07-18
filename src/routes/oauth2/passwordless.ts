@@ -145,6 +145,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
           client_id,
           redirect_uri,
           state,
+          nonce,
           scope,
           audience,
           response_type,
@@ -161,8 +162,6 @@ export const passwordlessRoutes = new OpenAPIHono<{
           ctx,
           tenant_id: client.tenant_id,
           sid: sessionId,
-          state,
-          nonce,
           user,
           authParams,
         });

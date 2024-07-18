@@ -1,13 +1,4 @@
-import {
-  Env,
-  Var,
-  AuthParams,
-  AuthorizationResponseType,
-  User,
-  LogTypes,
-  Client,
-} from "../types";
-import { CodeResponse, TokenResponse } from "../types/Token";
+import { Env, Var, AuthorizationResponseType, User, Client } from "../types";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { pemToBuffer } from "../utils/jwt";
 import { createJWT } from "oslo/jwt";
@@ -19,6 +10,12 @@ import { createLogMessage } from "../utils/create-log-message";
 import { Context } from "hono";
 import { waitUntil } from "../utils/wait-until";
 import { postUserLoginWebhook } from "../hooks/webhooks";
+import {
+  AuthParams,
+  CodeResponse,
+  LogTypes,
+  TokenResponse,
+} from "@authhero/adapter-interfaces";
 
 export type AuthFlowType =
   | "cross-origin"
@@ -31,8 +28,6 @@ export interface GenerateAuthResponseParams {
   user: User | Client;
   sid: string;
   tenant_id: string;
-  state?: string;
-  nonce?: string;
   authParams: AuthParams;
   authFlow?: AuthFlowType;
 }
@@ -56,8 +51,6 @@ async function generateCode({
   ctx,
   tenant_id,
   user,
-  state,
-  nonce,
   authParams,
 }: GenerateAuthResponseParams) {
   const { env } = ctx;
@@ -69,13 +62,11 @@ async function generateCode({
     user_id,
     authParams: {
       client_id: authParams.client_id,
-      redirect_uri: authParams.redirect_uri,
-      response_type: authParams.response_type,
-      response_mode: authParams.response_mode,
       scope: authParams.scope,
-      nonce,
+      response_type: authParams.response_type,
+      nonce: authParams.nonce,
+      state: authParams.state,
     },
-    nonce,
     created_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + 30 * 1000).toISOString(),
     code,
@@ -83,14 +74,14 @@ async function generateCode({
 
   const codeResponse: CodeResponse = {
     code,
-    state,
+    state: authParams.state,
   };
 
   return codeResponse;
 }
 
 export async function generateTokens(params: GenerateAuthResponseParams) {
-  const { ctx, authParams, user, state, sid, nonce, authFlow } = params;
+  const { ctx, authParams, user, sid, authFlow } = params;
   const { env } = ctx;
 
   const user_id = "user_id" in user ? user.user_id : user.id;
@@ -138,7 +129,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
   const tokenResponse: TokenResponse = {
     access_token: accessToken,
     token_type: "Bearer",
-    state,
+    state: authParams.state,
     scope: authParams.scope,
     expires_in: ACCESS_TOKEN_EXPIRE_IN_SECONDS,
   };
@@ -157,7 +148,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
         sub: user.user_id,
         iss: env.ISSUER,
         sid,
-        nonce: nonce || authParams.nonce,
+        nonce: authParams.nonce,
         given_name: user.given_name,
         family_name: user.family_name,
         nickname: user.nickname,

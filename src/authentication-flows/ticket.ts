@@ -1,4 +1,5 @@
-import { Env, AuthParams, AuthorizationResponseType } from "../types";
+import { AuthParams } from "@authhero/adapter-interfaces";
+import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
@@ -135,7 +136,6 @@ export async function ticketAuth(
 
   return generateAuthResponse({
     ctx,
-    state: authParams.state,
     authParams: {
       scope: ticket.authParams?.scope,
       ...authParams,

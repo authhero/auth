@@ -31,7 +31,7 @@ export function clearAuthCookie(tenant_id: string) {
   });
 }
 
-export function serializeAuthCookie(tenant_id: string, payload: string) {
+export function serializeAuthCookie(tenant_id: string, value: string) {
   const options = {
     path: "/",
     httpOnly: true,
@@ -39,7 +39,7 @@ export function serializeAuthCookie(tenant_id: string, payload: string) {
     maxAge: 60 * 60 * 24 * 7, // 1 mo
   };
 
-  return serializeCookie(getCookieName(tenant_id), payload, {
+  return serializeCookie(getCookieName(tenant_id), value, {
     ...options,
     sameSite: "none",
   });

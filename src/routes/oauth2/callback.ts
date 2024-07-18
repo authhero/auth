@@ -130,8 +130,6 @@ export const callbackRoutes = new OpenAPIHono<{
         throw new HTTPException(400, { message: "State not found" });
       }
 
-      const client = await getClient(ctx.env, loginState.authParams.client_id);
-
       if (error) {
         const { redirect_uri } = loginState.authParams;
 

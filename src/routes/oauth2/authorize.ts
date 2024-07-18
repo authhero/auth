@@ -2,7 +2,6 @@ import { verifyRequestOrigin } from "oslo/request";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
-  AuthParams,
   CodeChallengeMethod,
   Env,
   Var,
@@ -17,6 +16,8 @@ import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import { getAuthCookie } from "../../services/cookies";
+import { AuthParams } from "@authhero/adapter-interfaces";
 
 export const authorizeRoutes = new OpenAPIHono<{
   Bindings: Env;
@@ -88,6 +89,7 @@ export const authorizeRoutes = new OpenAPIHono<{
         auth0Client,
         username,
         login_hint,
+        // TODO: This is incorrect.. Remove
         email_hint,
       } = ctx.req.valid("query");
 
@@ -127,7 +129,16 @@ export const authorizeRoutes = new OpenAPIHono<{
         }
       }
 
-      // Silent authentication
+      // Fetch the cookie
+      const authCookie = getAuthCookie(
+        client.tenant_id,
+        ctx.req.header("cookie"),
+      );
+      const session = authCookie
+        ? await env.data.sessions.get(client.tenant_id, authCookie)
+        : null;
+
+      // Silent authentication with iframe
       if (prompt == "none") {
         if (!response_type) {
           throw new HTTPException(400, {
@@ -137,7 +148,7 @@ export const authorizeRoutes = new OpenAPIHono<{
 
         return silentAuth({
           ctx,
-          cookie_header: ctx.req.header("cookie"),
+          session: session || undefined,
           redirect_uri,
           state,
           response_type,
@@ -163,6 +174,12 @@ export const authorizeRoutes = new OpenAPIHono<{
         );
       }
 
-      return universalAuth({ ctx, client, authParams, auth0Client });
+      return universalAuth({
+        ctx,
+        client,
+        authParams,
+        auth0Client,
+        login_hint,
+      });
     },
   );
