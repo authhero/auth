@@ -15,6 +15,7 @@ import UserNotFound from "../components/UserNotFoundPage";
 import { fetchVendorSettings } from "../utils/fetchVendorSettings";
 import { createLogMessage } from "../utils/create-log-message";
 import { setSearchParams } from "../utils/url";
+import i18next from "i18next";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -204,6 +205,8 @@ export async function socialAuthCallback({
         client.id,
         state.authParams.vendor_id,
       );
+
+      await i18next.changeLanguage(client.tenant.language || "sv");
 
       return ctx.html(
         <UserNotFound
