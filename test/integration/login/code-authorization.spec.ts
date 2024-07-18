@@ -44,6 +44,7 @@ test("code authorization flow should work", async () => {
       password: "Test1234!",
     },
   });
+
   expect(postLoginResponse.status).toBe(302);
   const loginLocation = postLoginResponse.headers.get("location");
   const redirectUrl = new URL(loginLocation!);

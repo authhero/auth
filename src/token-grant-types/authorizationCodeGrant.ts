@@ -2,7 +2,6 @@ import {
   AuthorizationCodeGrantTypeParams,
   AuthorizationResponseType,
   Env,
-  LogTypes,
   Var,
 } from "../types";
 import { getClient } from "../services/clients";
@@ -10,7 +9,6 @@ import { HTTPException } from "hono/http-exception";
 import { generateAuthData } from "../helpers/generate-auth-response";
 import { Context } from "hono";
 import { nanoid } from "nanoid";
-import { createLogMessage } from "../utils/create-log-message";
 
 export async function authorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -50,8 +48,7 @@ export async function authorizeCodeGrant(
 
   const tokens = await generateAuthData({
     ctx,
-    authParams,
-    nonce,
+    authParams: { ...authParams, nonce },
     user,
     sid: nanoid(),
     tenant_id: client.tenant_id,

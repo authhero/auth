@@ -250,8 +250,6 @@ export async function socialAuthCallback({
     ctx,
     tenant_id: client.tenant_id,
     sid: sessionId,
-    state: state.authParams.state,
-    nonce: state.authParams.nonce,
     authParams: state.authParams,
     user,
   });
