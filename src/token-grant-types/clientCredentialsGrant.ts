@@ -28,7 +28,7 @@ export async function clientCredentialsGrant(
 
   return generateAuthResponse({
     ctx,
-    tenantId: client.tenant_id,
+    tenant_id: client.tenant_id,
     user: client,
     sid: nanoid(),
     authParams,

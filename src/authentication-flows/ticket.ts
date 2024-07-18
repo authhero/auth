@@ -142,7 +142,7 @@ export async function ticketAuth(
     },
     sid: sessionId,
     user,
-    tenantId: ticket.tenant_id,
+    tenant_id: ticket.tenant_id,
     authFlow: "cross-origin",
   });
 }

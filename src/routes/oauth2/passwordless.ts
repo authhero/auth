@@ -159,7 +159,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
 
         return generateAuthResponse({
           ctx,
-          tenantId: client.tenant_id,
+          tenant_id: client.tenant_id,
           sid: sessionId,
           state,
           nonce,

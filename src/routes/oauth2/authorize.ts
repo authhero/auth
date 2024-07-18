@@ -137,12 +137,11 @@ export const authorizeRoutes = new OpenAPIHono<{
 
         return silentAuth({
           ctx,
-          tenant_id: client.tenant_id,
           cookie_header: ctx.req.header("cookie"),
           redirect_uri,
           state,
           response_type,
-          client_id,
+          client,
           nonce,
           code_challenge_method,
           code_challenge,
