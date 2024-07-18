@@ -84,7 +84,7 @@ async function handleLogin(
 
     return generateAuthResponse({
       ctx,
-      tenantId: client.tenant_id,
+      tenant_id: client.tenant_id,
       sid: nanoid(),
       authParams: session.authParams,
       user,
@@ -829,7 +829,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         const authResponse = await generateAuthResponse({
           ctx,
-          tenantId: client.tenant_id,
+          tenant_id: client.tenant_id,
           sid: nanoid(),
           authParams: session.authParams,
           user,

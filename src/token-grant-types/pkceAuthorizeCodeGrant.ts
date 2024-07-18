@@ -49,6 +49,6 @@ export async function pkceAuthorizeCodeGrant(
   return generateAuthResponse({
     ...state,
     ctx,
-    tenantId: client.tenant_id,
+    tenant_id: client.tenant_id,
   });
 }

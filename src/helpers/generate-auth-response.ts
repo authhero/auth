@@ -30,7 +30,7 @@ export interface GenerateAuthResponseParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
   user: User | Client;
   sid: string;
-  tenantId: string;
+  tenant_id: string;
   state?: string;
   nonce?: string;
   authParams: AuthParams;
@@ -54,7 +54,7 @@ function getLogTypeByAuthFlow(authFlow?: AuthFlowType) {
 
 async function generateCode({
   ctx,
-  tenantId,
+  tenant_id,
   user,
   state,
   nonce,
@@ -65,7 +65,7 @@ async function generateCode({
 
   const user_id = "user_id" in user ? user.user_id : user.id;
 
-  await env.data.authenticationCodes.create(tenantId, {
+  await env.data.authenticationCodes.create(tenant_id, {
     user_id,
     authParams: {
       client_id: authParams.client_id,
@@ -98,11 +98,11 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
   // Update the user's last login. Skip for client_credentials and refresh_tokens
   if (authFlow !== "refresh-token" && "email" in params.user) {
     // Invoke webhooks
-    await postUserLoginWebhook(env.data)(params.tenantId, params.user);
+    await postUserLoginWebhook(env.data)(params.tenant_id, params.user);
 
     waitUntil(
       ctx,
-      ctx.env.data.users.update(params.tenantId, user_id, {
+      ctx.env.data.users.update(params.tenant_id, user_id, {
         last_login: new Date().toISOString(),
         login_count: params.user.login_count + 1,
         // This is specific to cloudflare
@@ -124,7 +124,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
       scope: authParams.scope || "",
       sub: user_id,
       iss: env.ISSUER,
-      azp: params.tenantId,
+      azp: params.tenant_id,
     },
     {
       includeIssuedTimestamp: true,
@@ -192,7 +192,7 @@ export async function generateAuthData(params: GenerateAuthResponseParams) {
     type: getLogTypeByAuthFlow(params.authFlow),
     description: "Successful login",
   });
-  waitUntil(ctx, ctx.env.data.logs.create(params.tenantId, log));
+  waitUntil(ctx, ctx.env.data.logs.create(params.tenant_id, log));
 
   switch (params.authParams.response_type) {
     case AuthorizationResponseType.CODE:
@@ -205,13 +205,13 @@ export async function generateAuthData(params: GenerateAuthResponseParams) {
 }
 
 export async function generateAuthResponse(params: GenerateAuthResponseParams) {
-  const { authParams, sid } = params;
+  const { authParams, sid, tenant_id } = params;
 
   const tokens = await generateAuthData(params);
 
   const redirectUrl = applyTokenResponse(tokens, authParams);
 
-  const sessionCookie = serializeAuthCookie(sid);
+  const sessionCookie = serializeAuthCookie(tenant_id, sid);
 
   // TODO: should we have different response for different response modes?
   return new Response("Redirecting", {

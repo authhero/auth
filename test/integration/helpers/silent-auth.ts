@@ -17,7 +17,7 @@ export async function doSilentAuthRequest(
   clientId: string,
 ): Promise<string> {
   const cookies = setCookiesHeader.split(";").map((c) => c.trim());
-  const authCookie = cookies.find((c) => c.startsWith("auth-token"))!;
+  const authCookie = cookies.find((c) => c.includes("auth-token"))!;
 
   const silentAuthResponse = await client.authorize.$get(
     {

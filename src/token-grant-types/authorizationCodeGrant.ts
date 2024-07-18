@@ -54,7 +54,7 @@ export async function authorizeCodeGrant(
     nonce,
     user,
     sid: nanoid(),
-    tenantId: client.tenant_id,
+    tenant_id: client.tenant_id,
     authFlow: "code",
   });
 
