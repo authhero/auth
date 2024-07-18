@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { Application, SessionInsert } from "@authhero/adapter-interfaces";
+import { Application, OTP, SessionInsert } from "@authhero/adapter-interfaces";
 import { Env, PasswordParams, Tenant, User } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
@@ -8,7 +8,6 @@ import createAdapters from "../../src/adapters/kysely";
 import { getCertificate } from "../integration/helpers/token";
 import { sendLink, sendCode } from "../../src/controllers/email";
 import { Ticket } from "../../src/types/Ticket";
-import { OTP } from "../../src/types/OTP";
 import {
   APPLICATION_FIXTURE,
   TENANT_FIXTURE,
@@ -132,7 +131,7 @@ export async function contextFixture(
 
   if (otps) {
     otps.forEach((otp) => {
-      data.OTP.create(otp);
+      data.OTP.create(TENANT_FIXTURE.id, otp);
     });
   }
 

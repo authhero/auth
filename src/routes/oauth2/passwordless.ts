@@ -59,17 +59,17 @@ export const passwordlessRoutes = new OpenAPIHono<{
 
       const code = generateOTP();
 
-      await ctx.env.data.OTP.create({
+      await ctx.env.data.OTP.create(client.tenant_id, {
         id: nanoid(),
         code,
+        // TODO: this will be removed in next adapter version
+        tenant_id: client.tenant_id,
         email: email,
         client_id: client_id,
         send: send,
-        authParams: authParams,
-        tenant_id: client.tenant_id,
+        authParams: { ...authParams, client_id },
         ip: ctx.req.header("x-real-ip"),
-        created_at: new Date(),
-        expires_at: new Date(Date.now() + OTP_EXPIRATION_TIME),
+        expires_at: new Date(Date.now() + OTP_EXPIRATION_TIME).toISOString(),
       });
 
       if (send === "link") {

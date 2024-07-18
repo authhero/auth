@@ -1,7 +1,6 @@
 import { Context } from "hono";
 import { getAuthCookie, serializeAuthCookie } from "../services/cookies";
 import {
-  AuthorizationResponseMode,
   AuthorizationResponseType,
   CodeChallengeMethod,
   Env,

@@ -1,8 +1,9 @@
-import { Database, OTP } from "../../../types";
+import { OTP, OTPInsert } from "@authhero/adapter-interfaces";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function create(db: Kysely<Database>) {
-  return async (otp: OTP) => {
+  return async (tenant_id: string, otp: OTPInsert) => {
     const { authParams, ...rest } = otp;
 
     await db
@@ -10,8 +11,10 @@ export function create(db: Kysely<Database>) {
       .values({
         ...rest,
         ...authParams,
-        created_at: rest.created_at.toISOString(),
-        expires_at: rest.expires_at.toISOString(),
+        created_at: new Date().toISOString(),
+        tenant_id,
+        // TODO: this will be fixed in next version of the adapter
+        send: otp.send === "code" ? "code" : "link",
       })
       .execute();
   };

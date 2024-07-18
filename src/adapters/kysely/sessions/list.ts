@@ -1,16 +1,23 @@
-import { Kysely } from "kysely";
+import {
+  ListParams,
+  ListSesssionsResponse,
+} from "@authhero/adapter-interfaces";
 import { Database } from "../../../types";
-import { ListParams } from "../../interfaces/ListParams";
-import getCountAsInt from "../../../utils/getCountAsInt";
+import { Kysely } from "kysely";
 import { luceneFilter } from "../helpers/filter";
-import { getLogResponse } from "./logs";
+import getCountAsInt from "../../../utils/getCountAsInt";
 
-export function listLogs(db: Kysely<Database>) {
-  return async (tenant_id: string, params: ListParams) => {
-    let query = db.selectFrom("logs").where("logs.tenant_id", "=", tenant_id);
+export function list(db: Kysely<Database>) {
+  return async (
+    tenant_id: string,
+    params: ListParams,
+  ): Promise<ListSesssionsResponse> => {
+    let query = db
+      .selectFrom("sessions")
+      .where("sessions.tenant_id", "=", tenant_id);
 
     if (params.q) {
-      query = luceneFilter(db, query, params.q, ["user_id", "ip"]);
+      query = luceneFilter(db, query, params.q, ["user_id", "id"]);
     }
 
     let filteredQuery = query;
@@ -27,7 +34,7 @@ export function listLogs(db: Kysely<Database>) {
       .offset(params.page * params.per_page)
       .limit(params.per_page);
 
-    const logs = await filteredQuery.selectAll().execute();
+    const sessions = await filteredQuery.selectAll().execute();
 
     const [{ count }] = await query
       .select((eb) => eb.fn.countAll().as("count"))
@@ -36,7 +43,10 @@ export function listLogs(db: Kysely<Database>) {
     const countInt = getCountAsInt(count);
 
     return {
-      logs: logs.map(getLogResponse),
+      sessions: sessions.map((session) => {
+        const { id, ...rest } = session;
+        return { session_id: id, ...rest };
+      }),
       start: params.page * params.per_page,
       limit: params.per_page,
       length: countInt,
