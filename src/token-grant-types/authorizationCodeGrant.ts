@@ -50,8 +50,7 @@ export async function authorizeCodeGrant(
     ctx,
     authParams: { ...authParams, nonce },
     user,
-    sid: nanoid(),
-    tenant_id: client.tenant_id,
+    client,
     authFlow: "code",
   });
 
