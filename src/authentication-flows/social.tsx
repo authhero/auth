@@ -242,17 +242,9 @@ export async function socialAuthCallback({
     await ctx.env.data.logs.create(client.tenant_id, log);
   }
 
-  const sessionId = await setSilentAuthCookies(
-    env,
-    client.tenant_id,
-    client.id,
-    user,
-  );
-
   return generateAuthResponse({
     ctx,
-    tenant_id: client.tenant_id,
-    sid: sessionId,
+    client,
     authParams: state.authParams,
     user,
   });

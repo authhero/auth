@@ -53,7 +53,7 @@ export async function silentAuth({
 
       const tokenResponse = await generateAuthData({
         ctx,
-        tenant_id: client.tenant_id,
+        client,
         authParams: {
           client_id: client.id,
           audience,

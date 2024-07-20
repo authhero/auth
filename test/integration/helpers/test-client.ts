@@ -21,6 +21,11 @@ type getEnvParams = {
   emailValidation?: "enabled" | "enforced" | "disabled";
 };
 
+export const testPasswordUser = {
+  user_id: "auth2|userId",
+  password: "Test1234!",
+};
+
 export async function getEnv(args: getEnvParams = {}) {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
@@ -199,10 +204,7 @@ export async function getEnv(args: getEnvParams = {}) {
     updated_at: new Date().toISOString(),
   });
 
-  await data.passwords.create("tenantId", {
-    user_id: "auth2|userId",
-    password: "Test1234!",
-  });
+  await data.passwords.create("tenantId", testPasswordUser);
 
   return {
     data: { ...addDataHooks(data), emails },

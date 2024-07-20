@@ -41,6 +41,7 @@ export async function ticketAuth(
   if (!ticket) {
     throw new HTTPException(403, { message: "Ticket not found" });
   }
+  const client = await getClient(ctx.env, ticket.client_id);
   ctx.set("client_id", ticket.client_id);
 
   await env.data.tickets.remove(tenant_id, ticketId);
@@ -127,22 +128,14 @@ export async function ticketAuth(
     ctx.set("userName", user.name || user.email);
   }
 
-  const sessionId = await setSilentAuthCookies(
-    env,
-    ticket.tenant_id,
-    ticket.client_id,
-    user,
-  );
-
   return generateAuthResponse({
     ctx,
     authParams: {
       scope: ticket.authParams?.scope,
       ...authParams,
     },
-    sid: sessionId,
     user,
-    tenant_id: ticket.tenant_id,
+    client,
     authFlow: "cross-origin",
   });
 }

@@ -16,6 +16,7 @@ import {
   LogTypes,
   TokenResponse,
 } from "@authhero/adapter-interfaces";
+import { setSilentAuthCookies } from "./silent-auth-cookie";
 
 export type AuthFlowType =
   | "cross-origin"
@@ -25,9 +26,9 @@ export type AuthFlowType =
 
 export interface GenerateAuthResponseParams {
   ctx: Context<{ Bindings: Env; Variables: Var }>;
-  user: User | Client;
-  sid: string;
-  tenant_id: string;
+  client: Client;
+  user?: User;
+  sid?: string;
   authParams: AuthParams;
   authFlow?: AuthFlowType;
 }
@@ -49,17 +50,15 @@ function getLogTypeByAuthFlow(authFlow?: AuthFlowType) {
 
 async function generateCode({
   ctx,
-  tenant_id,
+  client,
   user,
   authParams,
 }: GenerateAuthResponseParams) {
   const { env } = ctx;
   const code = nanoid();
 
-  const user_id = "user_id" in user ? user.user_id : user.id;
-
-  await env.data.authenticationCodes.create(tenant_id, {
-    user_id,
+  await env.data.authenticationCodes.create(client.tenant_id, {
+    user_id: user?.user_id || client.id,
     authParams: {
       client_id: authParams.client_id,
       scope: authParams.scope,
@@ -81,21 +80,19 @@ async function generateCode({
 }
 
 export async function generateTokens(params: GenerateAuthResponseParams) {
-  const { ctx, authParams, user, sid, authFlow } = params;
+  const { ctx, client, authParams, user, sid, authFlow } = params;
   const { env } = ctx;
 
-  const user_id = "user_id" in user ? user.user_id : user.id;
-
   // Update the user's last login. Skip for client_credentials and refresh_tokens
-  if (authFlow !== "refresh-token" && "email" in params.user) {
+  if (authFlow !== "refresh-token" && user) {
     // Invoke webhooks
-    await postUserLoginWebhook(env.data)(params.tenant_id, params.user);
+    await postUserLoginWebhook(env.data)(client.tenant_id, user);
 
     waitUntil(
       ctx,
-      ctx.env.data.users.update(params.tenant_id, user_id, {
+      ctx.env.data.users.update(client.tenant_id, user.user_id, {
         last_login: new Date().toISOString(),
-        login_count: params.user.login_count + 1,
+        login_count: user.login_count + 1,
         // This is specific to cloudflare
         last_ip: ctx.req.header("cf-connecting-ip"),
       }),
@@ -113,9 +110,9 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
     {
       aud: authParams.audience || "default",
       scope: authParams.scope || "",
-      sub: user_id,
+      sub: user?.user_id || client.id,
       iss: env.ISSUER,
-      azp: params.tenant_id,
+      azp: client.tenant_id,
     },
     {
       includeIssuedTimestamp: true,
@@ -137,7 +134,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
   // ID TOKEN
   if (
     authParams.response_type === AuthorizationResponseType.TOKEN_ID_TOKEN &&
-    "email" in user
+    user
   ) {
     tokenResponse.id_token = await createJWT(
       "RS256",
@@ -178,12 +175,12 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
 }
 
 export async function generateAuthData(params: GenerateAuthResponseParams) {
-  const { ctx } = params;
+  const { ctx, client } = params;
   const log = createLogMessage(params.ctx, {
     type: getLogTypeByAuthFlow(params.authFlow),
     description: "Successful login",
   });
-  waitUntil(ctx, ctx.env.data.logs.create(params.tenant_id, log));
+  waitUntil(ctx, ctx.env.data.logs.create(client.tenant_id, log));
 
   switch (params.authParams.response_type) {
     case AuthorizationResponseType.CODE:
@@ -196,20 +193,24 @@ export async function generateAuthData(params: GenerateAuthResponseParams) {
 }
 
 export async function generateAuthResponse(params: GenerateAuthResponseParams) {
-  const { authParams, sid, tenant_id } = params;
+  const { ctx, authParams, sid, client, user } = params;
 
   const tokens = await generateAuthData(params);
 
-  const redirectUrl = applyTokenResponse(tokens, authParams);
+  const headers = new Headers();
+  headers.set("location", applyTokenResponse(tokens, authParams));
 
-  const sessionCookie = serializeAuthCookie(tenant_id, sid);
+  if (user) {
+    const sessionId =
+      sid ||
+      (await setSilentAuthCookies(ctx.env, client.tenant_id, client.id, user));
+
+    headers.set("set-cookie", serializeAuthCookie(client.tenant_id, sessionId));
+  }
 
   // TODO: should we have different response for different response modes?
   return new Response("Redirecting", {
     status: 302,
-    headers: {
-      Location: redirectUrl,
-      "Set-Cookie": sessionCookie,
-    },
+    headers,
   });
 }

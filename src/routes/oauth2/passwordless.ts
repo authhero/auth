@@ -151,17 +151,9 @@ export const passwordlessRoutes = new OpenAPIHono<{
           response_type,
         };
 
-        const sessionId = await setSilentAuthCookies(
-          env,
-          client.tenant_id,
-          client.id,
-          user,
-        );
-
         return generateAuthResponse({
           ctx,
-          tenant_id: client.tenant_id,
-          sid: sessionId,
+          client,
           user,
           authParams,
         });

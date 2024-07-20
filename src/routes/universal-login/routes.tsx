@@ -45,8 +45,14 @@ import {
 import { CustomException } from "../../models/CustomError";
 import { CODE_EXPIRATION_TIME } from "../../constants";
 import { UniversalLoginSession } from "@authhero/adapter-interfaces";
+import CheckEmailPage from "../../components/CheckEmailPage";
+import { getAuthCookie } from "../../services/cookies";
 
-async function initJSXRoute(state: string, env: Env) {
+async function initJSXRoute(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  state: string,
+) {
+  const { env } = ctx;
   const session = await env.data.universalLoginSessions.get(state);
   if (!session) {
     throw new HTTPException(400, { message: "Session not found" });
@@ -84,8 +90,7 @@ async function handleLogin(
 
     return generateAuthResponse({
       ctx,
-      tenant_id: client.tenant_id,
-      sid: nanoid(),
+      client,
       authParams: session.authParams,
       user,
     });
@@ -131,11 +136,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
 
-      const { env } = ctx;
-
       const { vendorSettings, client, session } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
 
       setCookie(
@@ -203,8 +206,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { password } = body;
 
       const { vendorSettings, client, session } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
 
       const { username } = session.authParams;
@@ -285,9 +288,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
 
-      const { env } = ctx;
-
-      const { vendorSettings, session } = await initJSXRoute(state, env);
+      const { vendorSettings, session } = await initJSXRoute(ctx, state);
 
       if (!session.authParams.username) {
         throw new HTTPException(400, { message: "Username required" });
@@ -343,8 +344,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { env } = ctx;
 
       const { vendorSettings, client, session } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
 
       if (!session.authParams.username) {
@@ -462,7 +463,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const { env } = ctx;
 
-      const { vendorSettings } = await initJSXRoute(state, env);
+      const { vendorSettings } = await initJSXRoute(ctx, state);
 
       return ctx.html(
         <ForgotPasswordPage vendorSettings={vendorSettings} state={state} />,
@@ -506,8 +507,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { env } = ctx;
 
       const { vendorSettings, client, session } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
 
       if (session.authParams.username !== username) {
@@ -556,8 +557,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const { env } = ctx;
       const { vendorSettings, session, client } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
 
       return ctx.html(
@@ -614,8 +615,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       ctx.set("userName", params.username);
 
       const { client, session, vendorSettings } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
       ctx.set("client_id", client.id);
 
@@ -737,8 +738,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const { env } = ctx;
       const { vendorSettings, session, client } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
 
       setCookie(
@@ -804,11 +805,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { state } = ctx.req.valid("query");
       const { code } = ctx.req.valid("form");
 
-      const { env } = ctx;
-
       const { vendorSettings, session, client } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
       ctx.set("client_id", client.id);
 
@@ -829,8 +828,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         const authResponse = await generateAuthResponse({
           ctx,
-          tenant_id: client.tenant_id,
-          sid: nanoid(),
+          client,
+          sid: session.id,
           authParams: session.authParams,
           user,
         });
@@ -881,7 +880,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
       const { env } = ctx;
-      const { vendorSettings, session } = await initJSXRoute(state, env);
+      const { vendorSettings, session } = await initJSXRoute(ctx, state);
 
       const { username } = session.authParams;
 
@@ -934,8 +933,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { env } = ctx;
 
       const { vendorSettings, client, session } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
       ctx.set("client_id", client.id);
 
@@ -1059,8 +1058,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { env } = ctx;
 
       const { client, session, vendorSettings } = await initJSXRoute(
+        ctx,
         state,
-        env,
       );
 
       const email = session.authParams.username;
@@ -1167,5 +1166,115 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           state={state}
         />,
       );
+    },
+  )
+  // --------------------------------
+  // GET /u/check-account
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/check-account",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { env } = ctx;
+      const { state } = ctx.req.valid("query");
+
+      const { vendorSettings, client } = await initJSXRoute(ctx, state);
+
+      // Fetch the cookie
+      const authCookie = getAuthCookie(
+        client.tenant_id,
+        ctx.req.header("cookie"),
+      );
+      const authSession = authCookie
+        ? await env.data.sessions.get(client.tenant_id, authCookie)
+        : null;
+
+      if (!authSession) {
+        return ctx.redirect(`/u/enter-email?state=${state}`);
+      }
+
+      const user = await env.data.users.get(
+        client.tenant_id,
+        authSession.user_id,
+      );
+
+      if (!user) {
+        return ctx.redirect(`/u/enter-email?state=${state}`);
+      }
+
+      return ctx.html(
+        <CheckEmailPage
+          vendorSettings={vendorSettings}
+          state={state}
+          user={user}
+        />,
+      );
+    },
+  )
+  // --------------------------------
+  // POST /u/check-account
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/check-account",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        302: {
+          description: "Redirect",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { env } = ctx;
+      const { state } = ctx.req.valid("query");
+
+      const { session, client } = await initJSXRoute(ctx, state);
+
+      // Fetch the cookie
+      const authCookie = getAuthCookie(
+        client.tenant_id,
+        ctx.req.header("cookie"),
+      );
+      const authSession = authCookie
+        ? await env.data.sessions.get(client.tenant_id, authCookie)
+        : null;
+
+      if (!authSession) {
+        return ctx.redirect(`/u/enter-email?state=${state}`);
+      }
+
+      const user = await env.data.users.get(
+        client.tenant_id,
+        authSession.user_id,
+      );
+
+      if (!user) {
+        return ctx.redirect(`/u/enter-email?state=${state}`);
+      }
+
+      return handleLogin(ctx, user, session, client);
     },
   );

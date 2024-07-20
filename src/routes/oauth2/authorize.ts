@@ -180,6 +180,7 @@ export const authorizeRoutes = new OpenAPIHono<{
         authParams,
         auth0Client,
         login_hint,
+        session: session || undefined,
       });
     },
   );

@@ -37,7 +37,7 @@ export async function universalAuth({
     if (user?.email === login_hint) {
       return generateAuthResponse({
         ctx,
-        tenant_id: client.tenant_id,
+        client,
         sid: session.session_id,
         authParams,
         user,
@@ -58,6 +58,11 @@ export async function universalAuth({
     client.tenant_id,
     universalLoginSession,
   );
+
+  // If there is a sesion we redirect to the check-account page
+  if (session) {
+    return ctx.redirect(`/u/check-account?state=${universalLoginSession.id}`);
+  }
 
   return ctx.redirect(`/u/enter-email?state=${universalLoginSession.id}`);
 }
