@@ -1,5 +1,4 @@
 export * from "./Branding";
-export * from "./Code";
 export * from "./Tenant";
 export * from "./User";
 export * from "./Member";

@@ -1,7 +1,7 @@
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
-import { Domain, DomainInsert } from "../../../types/Domain";
 import { nanoid } from "nanoid";
+import { Domain, DomainInsert } from "@authhero/adapter-interfaces";
 
 export function create(db: Kysely<Database>) {
   return async (tenant_id: string, params: DomainInsert): Promise<Domain> => {
