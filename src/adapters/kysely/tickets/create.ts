@@ -1,4 +1,5 @@
-import { Database, Ticket, SqlTicket } from "../../../types";
+import { Ticket } from "@authhero/adapter-interfaces";
+import { Database, SqlTicket } from "../../../types";
 import { Kysely } from "kysely";
 
 export function create(db: Kysely<Database>) {

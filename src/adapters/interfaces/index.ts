@@ -1,8 +1,6 @@
 import { ClientsAdapter } from "./Clients";
-import { TicketsAdapter } from "./Tickets";
 import { UserDataAdapter } from "./Users";
 import { LogsDataAdapter } from "./Logs";
-import { KeysAdapter } from "./Keys";
 import {
   ApplicationsAdapter,
   AuthenticationCodesAdapter,
@@ -11,10 +9,12 @@ import {
   ConnectionsAdapter,
   DomainsAdapter,
   HooksAdapter,
+  KeysAdapter,
   OTPAdapter,
   PasswordsAdapter,
   SessionsAdapter,
   TenantsDataAdapter,
+  TicketsAdapter,
   UniversalLoginSessionsAdapter,
 } from "@authhero/adapter-interfaces";
 

@@ -6,6 +6,7 @@ import {
   OTP,
   SessionInsert,
   Tenant,
+  Ticket,
 } from "@authhero/adapter-interfaces";
 import { Env, PasswordParams, User } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
@@ -14,7 +15,6 @@ import { Var } from "../../src/types/Var";
 import createAdapters from "../../src/adapters/kysely";
 import { getCertificate } from "../integration/helpers/token";
 import { sendLink, sendCode } from "../../src/controllers/email";
-import { Ticket } from "../../src/types/Ticket";
 import {
   APPLICATION_FIXTURE,
   TENANT_FIXTURE,

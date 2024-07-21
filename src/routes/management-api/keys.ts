@@ -1,8 +1,12 @@
-import { Env, certificateSchema, signingKeySchema } from "../../types";
+import { Env } from "../../types";
 import { create } from "../../services/rsa-key";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import authenticationMiddleware from "../../middlewares/authentication";
+import {
+  certificateSchema,
+  signingKeySchema,
+} from "@authhero/adapter-interfaces";
 
 const DAY = 1000 * 60 * 60 * 24;
 
