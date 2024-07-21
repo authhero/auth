@@ -1,5 +1,4 @@
 import { ClientsAdapter } from "./Clients";
-import { CodesAdapter } from "./Codes";
 import { MembersDataAdapter } from "./Members";
 import { PasswordsAdapter } from "./Passwords";
 import { TenantsDataAdapter } from "./Tenants";
@@ -7,13 +6,14 @@ import { TicketsAdapter } from "./Tickets";
 import { UserDataAdapter } from "./Users";
 import { LogsDataAdapter } from "./Logs";
 import { ConnectionsAdapter } from "./Connections";
-import { DomainsAdapter } from "./Domains";
 import { KeysAdapter } from "./Keys";
-import { HooksAdapter } from "./Hooks";
 import {
   ApplicationsAdapter,
   AuthenticationCodesAdapter,
   BrandingAdapter,
+  CodesAdapter,
+  DomainsAdapter,
+  HooksAdapter,
   OTPAdapter,
   SessionsAdapter,
   UniversalLoginSessionsAdapter,

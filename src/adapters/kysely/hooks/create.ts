@@ -1,7 +1,7 @@
 import { Kysely } from "kysely";
 import { Database } from "../../../types";
-import { Hook, HookInsert } from "../../../types/Hooks";
 import { nanoid } from "nanoid";
+import { Hook, HookInsert } from "@authhero/adapter-interfaces";
 
 export function create(db: Kysely<Database>) {
   return async (tenant_id: string, hook: HookInsert): Promise<Hook> => {

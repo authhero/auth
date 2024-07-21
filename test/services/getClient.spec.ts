@@ -7,8 +7,7 @@ import {
   Tenant,
 } from "../../src/types";
 import { Connection } from "../../src/types/Connection";
-import { Domain } from "../../src/types/Domain";
-import { Application } from "@authhero/adapter-interfaces";
+import { Application, Domain } from "@authhero/adapter-interfaces";
 
 const TENANT_FIXTURE: Tenant = {
   id: "tenantId",

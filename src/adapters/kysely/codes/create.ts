@@ -1,4 +1,5 @@
-import { Database, Code } from "../../../types";
+import { Code } from "@authhero/adapter-interfaces";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function create(db: Kysely<Database>) {

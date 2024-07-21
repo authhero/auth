@@ -1,10 +1,8 @@
-import { Domain } from "../Domain";
 import {
   Tenant,
   Certificate,
   Member,
   Migration,
-  SqlCode,
   SqlTicket,
   SqlOTP,
   SqlPassword,
@@ -14,9 +12,8 @@ import {
 import { Connection } from "../Connection";
 import { SqlBranding } from "./Branding";
 import { SqlAuthenticationCode } from "./AuthenticationCode";
-import { Hook } from "../Hooks";
 import { SqlUser } from "./User";
-import { Application, OTP } from "@authhero/adapter-interfaces";
+import { Application, Code, Domain, Hook } from "@authhero/adapter-interfaces";
 
 // TODO: Update the colums to match the session entity
 interface SqlSession {
@@ -34,7 +31,7 @@ interface SqlSession {
 export interface Database {
   authentication_codes: SqlAuthenticationCode;
   branding: SqlBranding;
-  codes: SqlCode;
+  codes: Code & { tenant_id: string };
   domains: Domain & { tenant_id: string };
   hooks: Hook & { tenant_id: string };
   keys: Certificate;

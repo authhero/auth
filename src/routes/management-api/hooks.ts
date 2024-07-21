@@ -1,7 +1,7 @@
 import { Env, totalsSchema } from "../../types";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import authenticationMiddleware from "../../middlewares/authentication";
-import { hookInsertSchema, hookSchema } from "../../types/Hooks";
+import { hookInsertSchema, hookSchema } from "@authhero/adapter-interfaces";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import { HTTPException } from "hono/http-exception";

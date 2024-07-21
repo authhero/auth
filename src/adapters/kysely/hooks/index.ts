@@ -4,8 +4,8 @@ import { get } from "./get";
 import { remove } from "./remove";
 import { create } from "./create";
 import { Kysely } from "kysely";
-import { HooksAdapter } from "../../interfaces/Hooks";
 import { update } from "./update";
+import { HooksAdapter } from "@authhero/adapter-interfaces";
 
 export function createHooksAdapter(db: Kysely<Database>): HooksAdapter {
   return {
