@@ -1,14 +1,9 @@
-import {
-  AuthorizationCodeGrantTypeParams,
-  AuthorizationResponseType,
-  Env,
-  Var,
-} from "../types";
+import { AuthorizationCodeGrantTypeParams, Env, Var } from "../types";
 import { getClient } from "../services/clients";
 import { HTTPException } from "hono/http-exception";
 import { generateAuthData } from "../helpers/generate-auth-response";
 import { Context } from "hono";
-import { nanoid } from "nanoid";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 export async function authorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,

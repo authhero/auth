@@ -46,6 +46,6 @@ export interface Database {
   sessions: SqlSession;
   tenants: Tenant;
   tickets: SqlTicket;
-  universal_login_sessions: SqlUniversalLoginSession & { tenant_id: string };
+  universal_login_sessions: SqlUniversalLoginSession;
   logs: SqlLog;
 }

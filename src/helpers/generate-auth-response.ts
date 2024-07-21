@@ -1,4 +1,4 @@
-import { Env, Var, AuthorizationResponseType, User, Client } from "../types";
+import { Env, Var, User, Client } from "../types";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { pemToBuffer } from "../utils/jwt";
 import { createJWT } from "oslo/jwt";
@@ -12,6 +12,7 @@ import { waitUntil } from "../utils/wait-until";
 import { postUserLoginWebhook } from "../hooks/webhooks";
 import {
   AuthParams,
+  AuthorizationResponseType,
   CodeResponse,
   LogTypes,
   TokenResponse,

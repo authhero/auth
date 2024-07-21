@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
 import { getEnv } from "./helpers/test-client";
 import { oauthApp } from "../../src/app";
-import { AuthorizationResponseType } from "../../src/types";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 describe("userinfo", () => {
   it("return the userinfo for a user", async () => {

@@ -2,9 +2,9 @@ import { test, expect } from "vitest";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import { AuthorizationResponseType } from "../../../src/types";
 import { chromium } from "playwright";
 import { toMatchImageSnapshot } from "jest-image-snapshot";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 // TODO - try this globally in vite config - the issue is the types!
 expect.extend({ toMatchImageSnapshot });

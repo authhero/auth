@@ -1,17 +1,11 @@
-import {
-  AuthorizationResponseType,
-  AuthParams,
-  Env,
-  PKCEAuthorizationCodeGrantTypeParams,
-  User,
-  Var,
-} from "../types";
+import { Env, PKCEAuthorizationCodeGrantTypeParams, User, Var } from "../types";
 import { getClient } from "../services/clients";
 import { computeCodeChallenge } from "../helpers/pkce";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { stateDecode } from "../utils/stateEncode";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
+import { AuthParams } from "@authhero/adapter-interfaces";
 
 export async function pkceAuthorizeCodeGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,

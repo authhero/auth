@@ -1,4 +1,4 @@
-import { AuthParams } from "../types";
+import { AuthParams } from "@authhero/adapter-interfaces";
 import { setSearchParams } from "./url";
 
 type Args = {

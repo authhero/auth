@@ -5,16 +5,16 @@ import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import {
-  AuthorizationResponseType,
-  LogTypes,
-  UserResponse,
-} from "../../../src/types";
+import { UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
+import {
+  AuthorizationResponseType,
+  LogTypes,
+} from "@authhero/adapter-interfaces";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;

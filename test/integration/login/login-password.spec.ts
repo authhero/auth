@@ -7,9 +7,10 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
-import { AuthorizationResponseType, UserResponse } from "../../../src/types";
+import { UserResponse } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { parseJwt } from "../../../src/utils/parse-jwt";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;

@@ -3,8 +3,8 @@ import { getEnv } from "./helpers/test-client";
 import { oauthApp } from "../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "./helpers/playwrightSnapshots";
-import { AuthorizationResponseType } from "../../src/types";
 import { base64url } from "oslo/encoding";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 function osloBtoa(payload: object) {
   const str = JSON.stringify(payload);

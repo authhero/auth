@@ -4,13 +4,17 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { getClient } from "../../services/clients";
 import { getPrimaryUserByEmailAndProvider } from "../../utils/users";
-import { AuthParams, Env, LogTypes, Var } from "../../types";
+import { Env, Var } from "../../types";
 import { sendEmailVerificationEmail } from "../../authentication-flows/passwordless";
 import validatePassword from "../../utils/validatePassword";
 import { createLogMessage } from "../../utils/create-log-message";
 import { requestPasswordReset } from "../../authentication-flows/password";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
-import { UniversalLoginSession } from "@authhero/adapter-interfaces";
+import {
+  AuthParams,
+  LogTypes,
+  UniversalLoginSession,
+} from "@authhero/adapter-interfaces";
 
 export const dbConnectionRoutes = new OpenAPIHono<{
   Bindings: Env;

@@ -13,6 +13,7 @@ export function update(db: Kysely<Database>) {
       .updateTable("universal_login_sessions")
       .set({ ...authParams, ...rest })
       .where("id", "=", id)
+      .where("tenant_id", "=", tenant_id)
       .execute();
 
     return results.length === 1;
