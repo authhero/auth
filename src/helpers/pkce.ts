@@ -1,5 +1,5 @@
+import { CodeChallengeMethod } from "@authhero/adapter-interfaces";
 import hash from "../utils/hash";
-import { CodeChallengeMethod } from "../types";
 
 export async function computeCodeChallenge(
   codeVerifier: string,

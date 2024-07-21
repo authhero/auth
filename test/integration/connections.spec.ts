@@ -2,8 +2,8 @@ import { test } from "vitest";
 import { testClient } from "hono/testing";
 import { getEnv } from "./helpers/test-client";
 import { oauthApp } from "../../src/app";
-import { AuthorizationResponseType } from "../../src/types";
 import { snapshotResponse } from "./helpers/playwrightSnapshots";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 test("should hide social buttons for fokus by not specifying any connection", async () => {
   const testTenantLanguage = "en";

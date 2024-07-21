@@ -1,7 +1,13 @@
 import { Context } from "hono";
-import { Client, LogTypes, Session } from "@authhero/adapter-interfaces";
+import {
+  AuthorizationResponseType,
+  Client,
+  CodeChallengeMethod,
+  LogTypes,
+  Session,
+} from "@authhero/adapter-interfaces";
 import { serializeAuthCookie } from "../services/cookies";
-import { AuthorizationResponseType, CodeChallengeMethod, Env } from "../types";
+import { Env } from "../types";
 import renderAuthIframe from "../templates/authIframe";
 import { generateAuthData } from "../helpers/generate-auth-response";
 import { Var } from "../types/Var";

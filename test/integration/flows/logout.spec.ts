@@ -6,7 +6,10 @@ import {
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import { AuthorizationResponseType, LogTypes } from "../../../src/types";
+import {
+  AuthorizationResponseType,
+  LogTypes,
+} from "@authhero/adapter-interfaces";
 
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {

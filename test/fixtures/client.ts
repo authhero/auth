@@ -1,10 +1,11 @@
-import { Application, Domain } from "@authhero/adapter-interfaces";
-import { Connection } from "../../src/types/Connection";
 import {
+  Application,
   AuthorizationResponseMode,
   AuthorizationResponseType,
-  Tenant,
-} from "../../src/types";
+  Domain,
+} from "@authhero/adapter-interfaces";
+import { Connection } from "../../src/types/Connection";
+import { Tenant } from "../../src/types";
 
 export const APPLICATION_FIXTURE: Application = {
   id: "clientId",

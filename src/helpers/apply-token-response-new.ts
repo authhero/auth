@@ -1,10 +1,9 @@
 import { setSearchParams } from "../utils/url";
+import { CodeResponse, TokenResponse } from "../types";
 import {
   AuthParams,
   AuthorizationResponseMode,
-  CodeResponse,
-  TokenResponse,
-} from "../types";
+} from "@authhero/adapter-interfaces";
 
 function applyTokenResponseAsQuery(
   tokenResponse: TokenResponse | CodeResponse,

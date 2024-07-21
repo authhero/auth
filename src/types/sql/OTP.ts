@@ -1,4 +1,4 @@
-import { AuthorizationResponseType } from "../AuthParams";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 export interface SqlOTP {
   id: string;

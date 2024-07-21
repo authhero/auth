@@ -1,4 +1,4 @@
-import { AuthParams } from "./AuthParams";
+import { AuthParams } from "@authhero/adapter-interfaces";
 
 export interface LoginState {
   connection?: string;

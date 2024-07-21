@@ -3,7 +3,7 @@ import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
-import { AuthorizationResponseType } from "../../../src/types";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 describe("Vendor settings", () => {
   beforeEach(() => {

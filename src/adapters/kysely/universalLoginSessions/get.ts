@@ -1,4 +1,7 @@
-import { UniversalLoginSession } from "@authhero/adapter-interfaces";
+import {
+  CodeChallengeMethod,
+  UniversalLoginSession,
+} from "@authhero/adapter-interfaces";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
@@ -42,6 +45,7 @@ export function get(db: Kysely<Database>) {
         state,
         nonce,
         scope,
+        // @ts-ignore
         code_challenge_method,
         code_challenge,
         username,

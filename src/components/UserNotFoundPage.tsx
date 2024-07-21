@@ -1,8 +1,9 @@
 import Button from "./Button";
-import { VendorSettings, AuthParams } from "../types";
+import { VendorSettings } from "../types";
 import Layout from "./Layout";
 import i18next from "i18next";
 import type { FC } from "hono/jsx";
+import { AuthParams } from "@authhero/adapter-interfaces";
 
 type Props = {
   error?: string;

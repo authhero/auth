@@ -1,11 +1,5 @@
 import { verifyRequestOrigin } from "oslo/request";
-import {
-  AuthorizationResponseMode,
-  AuthorizationResponseType,
-  CodeChallengeMethod,
-  Env,
-  Var,
-} from "../../types";
+import { Env, Var } from "../../types";
 import {
   silentAuth,
   ticketAuth,
@@ -17,7 +11,12 @@ import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { getAuthCookie } from "../../services/cookies";
-import { AuthParams } from "@authhero/adapter-interfaces";
+import {
+  AuthParams,
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+  CodeChallengeMethod,
+} from "@authhero/adapter-interfaces";
 
 export const authorizeRoutes = new OpenAPIHono<{
   Bindings: Env;

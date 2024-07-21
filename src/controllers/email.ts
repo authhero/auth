@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { Liquid } from "liquidjs";
 import { t } from "i18next";
-import { AuthParams, Client, Env, LogTypes, Var } from "../types";
+import { Client, Env, Var } from "../types";
 import { getClientLogoPngGreyBg } from "../utils/clientLogos";
 import {
   codeV2,
@@ -12,6 +12,7 @@ import {
 import { createMagicLink } from "../utils/magicLink";
 import { createLogMessage } from "../utils/create-log-message";
 import { waitUntil } from "../utils/wait-until";
+import { AuthParams, LogTypes } from "@authhero/adapter-interfaces";
 
 const engine = new Liquid();
 

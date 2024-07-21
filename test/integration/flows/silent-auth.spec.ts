@@ -4,10 +4,10 @@ import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import {
-  AuthorizationResponseType,
   AuthorizationResponseMode,
+  AuthorizationResponseType,
   LogTypes,
-} from "../../../src/types";
+} from "@authhero/adapter-interfaces";
 
 function getDefaultSilentAuthSearchParams() {
   return {

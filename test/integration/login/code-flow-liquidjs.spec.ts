@@ -7,10 +7,13 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
-import { AuthorizationResponseType, LogTypes } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { UserResponse } from "../../../src/types";
+import {
+  AuthorizationResponseType,
+  LogTypes,
+} from "@authhero/adapter-interfaces";
 
 function getCodeAndTo(email: EmailOptions) {
   const codeEmailBody = email.content[0].value;

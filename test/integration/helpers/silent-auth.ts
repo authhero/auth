@@ -5,7 +5,7 @@ import { oauthApp } from "../../../src/app";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
-} from "../../../src/types";
+} from "@authhero/adapter-interfaces";
 
 const client = testClient(oauthApp, {});
 type clientAppType = typeof client;

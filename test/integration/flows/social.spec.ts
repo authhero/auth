@@ -6,10 +6,11 @@ import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
 import { managementApp, oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
-import { AuthorizationResponseType } from "../../../src/types";
 import { base64url } from "oslo/encoding";
-import { LogTypes } from "@authhero/adapter-interfaces";
-import { Log } from "kysely";
+import {
+  AuthorizationResponseType,
+  LogTypes,
+} from "@authhero/adapter-interfaces";
 
 function osloBtoa(payload: object) {
   const str = JSON.stringify(payload);

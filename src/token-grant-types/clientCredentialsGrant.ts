@@ -1,13 +1,9 @@
-import {
-  ClientCredentialsGrantTypeParams,
-  AuthParams,
-  Env,
-  Var,
-} from "../types";
+import { ClientCredentialsGrantTypeParams, Env, Var } from "../types";
 import { getClient } from "../services/clients";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
+import { AuthParams } from "@authhero/adapter-interfaces";
 
 export async function clientCredentialsGrant(
   ctx: Context<{ Bindings: Env; Variables: Var }>,

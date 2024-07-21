@@ -1,9 +1,4 @@
 import { nanoid } from "nanoid";
-import {
-  AuthParams,
-  AuthorizationResponseType,
-  authParamsSchema,
-} from "../../types/AuthParams";
 import generateOTP from "../../utils/otp";
 import { getClient } from "../../services/clients";
 import { sendCode, sendLink } from "../../controllers/email";
@@ -15,6 +10,11 @@ import { validateRedirectUrl } from "../../utils/validate-redirect-url";
 import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { setSearchParams } from "../../utils/url";
+import {
+  AuthParams,
+  AuthorizationResponseType,
+  authParamsSchema,
+} from "@authhero/adapter-interfaces";
 
 const OTP_EXPIRATION_TIME = 30 * 60 * 1000;
 

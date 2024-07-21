@@ -1,7 +1,4 @@
-import {
-  UniversalLoginSession,
-  UniversalLoginSessionInsert,
-} from "@authhero/adapter-interfaces";
+import { UniversalLoginSessionInsert } from "@authhero/adapter-interfaces";
 import { Database } from "../../../types";
 import { Kysely } from "kysely";
 

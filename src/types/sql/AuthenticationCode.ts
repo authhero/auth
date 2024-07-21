@@ -1,7 +1,7 @@
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
-} from "../AuthParams";
+} from "@authhero/adapter-interfaces";
 
 export interface SqlAuthenticationCode {
   code: string;

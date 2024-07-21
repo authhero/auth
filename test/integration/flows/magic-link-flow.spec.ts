@@ -7,8 +7,8 @@ import { testClient } from "hono/testing";
 import { managementApp, oauthApp } from "../../../src/app";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
-import { AuthorizationResponseType } from "../../../src/types";
 import { z } from "zod";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 const AUTH_PARAMS = {
   nonce: "enljIoQjQQy7l4pCVutpw9mf001nahBC",

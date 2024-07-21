@@ -1,13 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { getClient } from "../../src/services/clients";
 import { contextFixture } from "../fixtures";
-import {
-  AuthorizationResponseType,
-  AuthorizationResponseMode,
-  Tenant,
-} from "../../src/types";
+import { Tenant } from "../../src/types";
 import { Connection } from "../../src/types/Connection";
-import { Application, Domain } from "@authhero/adapter-interfaces";
+import {
+  Application,
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+  Domain,
+} from "@authhero/adapter-interfaces";
 
 const TENANT_FIXTURE: Tenant = {
   id: "tenantId",

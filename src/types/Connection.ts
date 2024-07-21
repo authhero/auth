@@ -1,8 +1,8 @@
-import { z } from "zod";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
-} from "./AuthParams";
+} from "@authhero/adapter-interfaces";
+import { z } from "zod";
 
 export const connectionInsertSchema = z.object({
   id: z.string().optional(),

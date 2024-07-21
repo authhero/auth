@@ -4,17 +4,17 @@ import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
 import { getCertificate } from "./token";
 import { Database } from "../../../src/types";
-import {
-  AuthorizationResponseMode,
-  AuthorizationResponseType,
-  Tenant,
-} from "../../../src/types";
+import { Tenant } from "../../../src/types";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import { Connection } from "../../../src/types/Connection";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { addDataHooks } from "../../../src/hooks";
-import { Application } from "@authhero/adapter-interfaces";
+import {
+  Application,
+  AuthorizationResponseMode,
+  AuthorizationResponseType,
+} from "@authhero/adapter-interfaces";
 
 type getEnvParams = {
   testTenantLanguage?: string;

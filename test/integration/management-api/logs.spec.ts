@@ -1,13 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
 import { managementApp, oauthApp } from "../../../src/app";
-import { LogsResponse } from "../../../src/types/auth0";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import {
-  AuthorizationResponseType,
   AuthorizationResponseMode,
-} from "../../../src/types";
+  AuthorizationResponseType,
+} from "@authhero/adapter-interfaces";
 
 describe("logs", () => {
   it("should return an empty list of logs for a tenant", async () => {
@@ -37,7 +36,6 @@ describe("logs", () => {
 
   it("should return a log row for a created user", async () => {
     const env = await getEnv();
-    const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();

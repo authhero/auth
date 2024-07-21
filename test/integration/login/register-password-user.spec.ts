@@ -3,8 +3,7 @@ import { oauthApp } from "../../../src/app";
 import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
-import { BREAKIT_VENDOR_SETTINGS } from "../../fixtures/vendorSettings";
-import { AuthorizationResponseType } from "../../../src/types";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 describe("Register password user", () => {
   it("should register a new user with password", async () => {

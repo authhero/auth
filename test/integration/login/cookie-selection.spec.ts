@@ -3,8 +3,8 @@ import { SesamyPasswordLoginSelection } from "../../../src/utils/authCookies";
 import { getEnv } from "../helpers/test-client";
 import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
-import { AuthorizationResponseType } from "../../../src/types";
 import cookie from "cookie";
+import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 const SESSION_FIXTURE = {
   id: "session-id",
