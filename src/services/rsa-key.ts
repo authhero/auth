@@ -1,5 +1,5 @@
+import { Certificate } from "@authhero/adapter-interfaces";
 import { nanoid } from "nanoid";
-import { Certificate } from "../types";
 
 export async function create(): Promise<Certificate> {
   let keyPair = (await crypto.subtle.generateKey(

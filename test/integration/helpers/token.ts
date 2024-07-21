@@ -1,5 +1,5 @@
 import { createJWT } from "oslo/jwt";
-import { Certificate } from "../../../src/types";
+import { Certificate } from "@authhero/adapter-interfaces";
 import { pemToBuffer } from "../../../src/utils/jwt";
 import { TimeSpan } from "oslo";
 

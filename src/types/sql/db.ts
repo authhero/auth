@@ -1,5 +1,4 @@
 import {
-  Certificate,
   Migration,
   SqlTicket,
   SqlOTP,
@@ -12,6 +11,7 @@ import { SqlAuthenticationCode } from "./AuthenticationCode";
 import { SqlUser } from "./User";
 import {
   Application,
+  Certificate,
   Code,
   Connection,
   Domain,
