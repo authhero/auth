@@ -4,11 +4,11 @@ import { Env, totalsSchema } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
+import authenticationMiddleware from "../../middlewares/authentication";
 import {
   connectionInsertSchema,
   connectionSchema,
-} from "../../types/Connection";
-import authenticationMiddleware from "../../middlewares/authentication";
+} from "@authhero/adapter-interfaces";
 
 const connectionsWithTotalsSchema = totalsSchema.extend({
   connections: z.array(connectionSchema),
@@ -218,7 +218,7 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: connectionInsertSchema,
+              schema: z.object({}).extend(connectionInsertSchema.shape),
             },
           },
         },
@@ -250,62 +250,5 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const connection = await ctx.env.data.connections.create(tenant_id, body);
 
       return ctx.json(connection, { status: 201 });
-    },
-  )
-  // --------------------------------
-  // PUT /api/v2/connections/:id
-  // --------------------------------
-  .openapi(
-    createRoute({
-      tags: ["connections"],
-      method: "put",
-      path: "/{:id}",
-      request: {
-        body: {
-          content: {
-            "application/json": {
-              schema: connectionInsertSchema,
-            },
-          },
-        },
-        params: z.object({
-          id: z.string(),
-        }),
-        headers: z.object({
-          "tenant-id": z.string(),
-        }),
-      },
-      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
-      security: [
-        {
-          Bearer: ["auth:write"],
-        },
-      ],
-      responses: {
-        200: {
-          content: {
-            "application/json": {
-              schema: connectionSchema,
-            },
-          },
-          description: "An connection",
-        },
-      },
-    }),
-    async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { id } = ctx.req.valid("param");
-      const body = ctx.req.valid("json");
-
-      await ctx.env.data.connections.update(tenant_id, id, body);
-      const connection = await ctx.env.data.connections.get(tenant_id, id);
-
-      if (!connection) {
-        throw new HTTPException(404, {
-          message: "Connection not found",
-        });
-      }
-
-      return ctx.json(connection);
     },
   );

@@ -1,5 +1,5 @@
 import type { FC } from "hono/jsx";
-import { VendorSettings } from "../types";
+import { VendorSettings } from "@authhero/adapter-interfaces";
 import AppLogo from "./AppLogo";
 import i18next from "i18next";
 import Footer from "./Footer";

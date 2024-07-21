@@ -1,8 +1,8 @@
 import Layout from "./Layout";
 import Icon from "./Icon";
 import i18next from "i18next";
-import { VendorSettings } from "../types";
 import type { FC } from "hono/jsx";
+import { VendorSettings } from "@authhero/adapter-interfaces";
 
 type Props = {
   vendorSettings: VendorSettings;

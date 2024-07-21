@@ -1,5 +1,4 @@
 import { createUsersAdapter } from "./users";
-import { createMembersAdapter } from "./members";
 import { createTenantsAdapter } from "./tenants";
 import { createLogsAdapter } from "./logs";
 import { Database } from "../../types";
@@ -25,7 +24,6 @@ export default function createAdapters(db: Kysely<Database>) {
     authenticationCodes: createAuthenticationCodesAdapter(db),
     branding: createBrandingAdapter(db),
     clients: createClientsAdapter(db),
-    members: createMembersAdapter(db),
     keys: createKeysAdapter(db),
     users: createUsersAdapter(db),
     sessions: createSessionsAdapter(db),

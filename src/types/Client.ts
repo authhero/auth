@@ -1,5 +1,5 @@
+import { connectionSchema } from "@authhero/adapter-interfaces";
 import { z } from "zod";
-import { connectionSchema } from "./Connection";
 
 const ClientDomainSchema = z.object({
   domain: z.string(),

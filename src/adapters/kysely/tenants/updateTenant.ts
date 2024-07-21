@@ -1,4 +1,5 @@
-import { Database, Tenant } from "../../../types";
+import { Tenant } from "@authhero/adapter-interfaces";
+import { Database } from "../../../types";
 import { Kysely } from "kysely";
 
 export function updateTenant(db: Kysely<Database>) {

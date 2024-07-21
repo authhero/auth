@@ -3,8 +3,8 @@ import { Kysely } from "kysely";
 import { ListParams } from "../../../adapters/interfaces/ListParams";
 import { luceneFilter } from "../helpers/filter";
 import getCountAsInt from "../../../utils/getCountAsInt";
-import { ListConnectionsResponse } from "../../../adapters/interfaces/Connections";
 import { removeNullProperties } from "../helpers/remove-nulls";
+import { ListConnectionsResponse } from "@authhero/adapter-interfaces";
 
 export function list(db: Kysely<Database>) {
   return async (

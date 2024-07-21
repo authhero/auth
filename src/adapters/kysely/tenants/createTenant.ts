@@ -1,7 +1,7 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
-import { Database, Tenant } from "../../../types";
-import { CreateTenantParams } from "../../interfaces/Tenants";
+import { Database } from "../../../types";
+import { CreateTenantParams, Tenant } from "@authhero/adapter-interfaces";
 
 export function createTenant(db: Kysely<Database>) {
   return async (params: CreateTenantParams): Promise<Tenant> => {

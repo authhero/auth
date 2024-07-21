@@ -1,4 +1,8 @@
-import { VendorSettings, vendorSettingsSchema, Env } from "../types";
+import {
+  VendorSettings,
+  vendorSettingsSchema,
+} from "@authhero/adapter-interfaces";
+import { Env } from "../types";
 
 // there is no Sesamy vendor settings... we have this on login2 as a fallback and I think there's
 // some interaction with "dark mode"
