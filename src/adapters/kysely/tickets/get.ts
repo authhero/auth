@@ -1,6 +1,6 @@
 import { Ticket } from "@authhero/adapter-interfaces";
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { Database } from "../db";
 
 export function get(db: Kysely<Database>) {
   return async (tenant_id: string, id: string): Promise<Ticket | null> => {

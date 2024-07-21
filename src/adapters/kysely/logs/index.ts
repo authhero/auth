@@ -1,9 +1,9 @@
 import { Kysely } from "kysely";
-import { Database } from "../../../types";
-import { LogsDataAdapter } from "../../interfaces/Logs";
+import { LogsDataAdapter } from "@authhero/adapter-interfaces";
 import { createLog } from "./create";
 import { listLogs } from "./list";
 import { getLogs } from "./get";
+import { Database } from "../db";
 
 export function createLogsAdapter(db: Kysely<Database>): LogsDataAdapter {
   return {

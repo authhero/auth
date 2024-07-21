@@ -1,6 +1,7 @@
-import { Database, LogsResponse } from "../../../types";
 import { Kysely } from "kysely";
+import { LogsResponse } from "@authhero/adapter-interfaces";
 import { getLogResponse } from "./logs";
+import { Database } from "../db";
 
 export function getLogs(db: Kysely<Database>) {
   return async (

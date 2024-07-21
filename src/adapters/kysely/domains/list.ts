@@ -1,8 +1,8 @@
 import { ListParams } from "../../../adapters/interfaces/ListParams";
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { luceneFilter } from "../helpers/filter";
 import getCountAsInt from "../../../utils/getCountAsInt";
+import { Database } from "../db";
 
 export function list(db: Kysely<Database>) {
   return async (tenantId: string, params: ListParams) => {

@@ -1,5 +1,5 @@
 import { Kysely } from "kysely";
-import { Database } from "../types";
+import { Database } from "../adapters/kysely/db";
 
 export async function cleanup(db: Kysely<Database>) {
   const oneWeekAgo = new Date(

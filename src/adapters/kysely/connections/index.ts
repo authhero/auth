@@ -1,11 +1,11 @@
 import { create } from "./create";
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { list } from "./list";
 import { remove } from "./remove";
 import { get } from "./get";
 import { update } from "./update";
 import { ConnectionsAdapter } from "@authhero/adapter-interfaces";
+import { Database } from "../db";
 
 export function createConnectionsAdapter(
   db: Kysely<Database>,

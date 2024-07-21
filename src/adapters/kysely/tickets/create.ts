@@ -1,6 +1,7 @@
 import { Ticket } from "@authhero/adapter-interfaces";
-import { Database, SqlTicket } from "../../../types";
+import { SqlTicket } from "../../../types";
 import { Kysely } from "kysely";
+import { Database } from "../db";
 
 export function create(db: Kysely<Database>) {
   return async (ticket: Ticket) => {

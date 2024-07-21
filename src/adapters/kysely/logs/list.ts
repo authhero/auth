@@ -1,9 +1,9 @@
 import { Kysely } from "kysely";
-import { Database } from "../../../types";
-import { ListParams } from "../../interfaces/ListParams";
+import { ListParams } from "@authhero/adapter-interfaces";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { luceneFilter } from "../helpers/filter";
 import { getLogResponse } from "./logs";
+import { Database } from "../db";
 
 export function listLogs(db: Kysely<Database>) {
   return async (tenant_id: string, params: ListParams) => {

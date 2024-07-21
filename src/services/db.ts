@@ -1,6 +1,6 @@
 import { Dialect, Kysely } from "kysely";
 // import { D1Dialect } from "kysely-d1";
-import { Database } from "../types/sql/db";
+import { Database } from "../adapters/kysely/db";
 import { Env } from "../types/Env";
 import { PlanetScaleDialect } from "kysely-planetscale";
 

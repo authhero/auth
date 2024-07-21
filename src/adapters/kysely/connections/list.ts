@@ -1,10 +1,12 @@
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
-import { ListParams } from "../../../adapters/interfaces/ListParams";
 import { luceneFilter } from "../helpers/filter";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { removeNullProperties } from "../helpers/remove-nulls";
-import { ListConnectionsResponse } from "@authhero/adapter-interfaces";
+import {
+  ListConnectionsResponse,
+  ListParams,
+} from "@authhero/adapter-interfaces";
+import { Database } from "../db";
 
 export function list(db: Kysely<Database>) {
   return async (

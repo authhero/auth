@@ -1,8 +1,8 @@
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
-import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { removeNullProperties } from "../helpers/remove-nulls";
+import { Database } from "../db";
+import { ListParams } from "@authhero/adapter-interfaces";
 
 export function listTenants(db: Kysely<Database>) {
   return async (params: ListParams) => {

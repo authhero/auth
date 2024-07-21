@@ -3,7 +3,7 @@ import SQLite from "better-sqlite3";
 import { migrateToLatest } from "../../../migrate/migrate";
 import createAdapters from "../../../src/adapters/kysely";
 import { getCertificate } from "./token";
-import { Database } from "../../../src/types";
+import { Database } from "../../../src/adapters/kysely/db";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";

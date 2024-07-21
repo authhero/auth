@@ -1,9 +1,6 @@
-import {
-  CodeChallengeMethod,
-  UniversalLoginSession,
-} from "@authhero/adapter-interfaces";
-import { Database } from "../../../types";
+import { UniversalLoginSession } from "@authhero/adapter-interfaces";
 import { Kysely } from "kysely";
+import { Database } from "../db";
 
 export function get(db: Kysely<Database>) {
   return async (id: string): Promise<UniversalLoginSession | null> => {

@@ -1,6 +1,7 @@
 import { Kysely } from "kysely";
 import bcrypt from "bcryptjs";
-import { Database, PasswordParams, PasswordResponse } from "../../../types";
+import { Database } from "../db";
+import { PasswordParams, PasswordResponse } from "@authhero/adapter-interfaces";
 
 export function validate(db: Kysely<Database>) {
   return async (

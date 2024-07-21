@@ -1,7 +1,7 @@
 import { createUsersAdapter } from "./users";
 import { createTenantsAdapter } from "./tenants";
 import { createLogsAdapter } from "./logs";
-import { Database } from "../../types";
+import { Database } from "./db";
 import { createSessionsAdapter } from "./sessions";
 import { createTicketsAdapter } from "./tickets";
 import { createOTPAdapter } from "./otps";
