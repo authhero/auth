@@ -1,5 +1,5 @@
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { Database } from "../db";
 
 export function revoke(db: Kysely<Database>) {
   return async (kid: string, revoke_at: Date) => {

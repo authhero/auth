@@ -1,5 +1,5 @@
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { Database } from "../db";
 
 export function remove(db: Kysely<Database>) {
   return async (tenant_id: string, id: string): Promise<boolean> => {

@@ -1,6 +1,6 @@
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { Session, SessionInsert } from "@authhero/adapter-interfaces";
+import { Database } from "../db";
 
 export function create(db: Kysely<Database>) {
   return async (

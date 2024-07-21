@@ -1,8 +1,9 @@
-import { Database, User, userSchema } from "../../../types";
 import { Kysely } from "kysely";
 import { removeNullProperties } from "../helpers/remove-nulls";
 import { userToIdentity } from "./user-to-identity";
 import userIdParse from "../../../utils/userIdParse";
+import { Database } from "../db";
+import { User } from "@authhero/adapter-interfaces";
 
 export function get(db: Kysely<Database>) {
   return async (tenantId: string, id: string): Promise<User | null> => {

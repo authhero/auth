@@ -1,3 +1,4 @@
+import { SqlBranding } from "../../types/sql/Branding";
 import {
   Migration,
   SqlTicket,
@@ -5,10 +6,9 @@ import {
   SqlPassword,
   SqlUniversalLoginSession,
   SqlLog,
-} from "../";
-import { SqlBranding } from "./Branding";
-import { SqlAuthenticationCode } from "./AuthenticationCode";
-import { SqlUser } from "./User";
+} from "../../types";
+import { SqlAuthenticationCode } from "../../types/sql/AuthenticationCode";
+import { SqlUser } from "../../types/sql/User";
 import {
   Application,
   Certificate,
@@ -34,7 +34,7 @@ interface SqlSession {
 // Keys of this interface are table names.
 export interface Database {
   authentication_codes: SqlAuthenticationCode;
-  branding: SqlBranding;
+  branding: SqlBranding & { tenant_id: string };
   codes: Code & { tenant_id: string };
   domains: Domain & { tenant_id: string };
   hooks: Hook & { tenant_id: string };

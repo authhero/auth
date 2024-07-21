@@ -1,6 +1,6 @@
 import { Tenant } from "@authhero/adapter-interfaces";
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { Database } from "../db";
 
 export function updateTenant(db: Kysely<Database>) {
   return async (id: string, tenant: Partial<Tenant>): Promise<void> => {

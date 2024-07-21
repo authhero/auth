@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
 import { Connection, ConnectionInsert } from "@authhero/adapter-interfaces";
+import { Database } from "../db";
 
 export function create(db: Kysely<Database>) {
   return async (

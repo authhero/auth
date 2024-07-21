@@ -1,5 +1,5 @@
 import { Kysely, SelectQueryBuilder } from "kysely";
-import { Database } from "../../../types";
+import { Database } from "../db";
 
 export function luceneFilter<TB extends keyof Database>(
   db: Kysely<Database>,

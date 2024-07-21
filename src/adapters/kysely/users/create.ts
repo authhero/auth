@@ -1,6 +1,8 @@
 import { Kysely } from "kysely";
-import { Database, SqlUser, User } from "../../../types";
+import { SqlUser } from "../../../types";
 import { HTTPException } from "hono/http-exception";
+import { Database } from "../db";
+import { User } from "@authhero/adapter-interfaces";
 
 export function create(db: Kysely<Database>) {
   return async (tenantId: string, user: User): Promise<User> => {

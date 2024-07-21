@@ -1,6 +1,5 @@
 import { ClientsAdapter } from "./Clients";
 import { UserDataAdapter } from "./Users";
-import { LogsDataAdapter } from "./Logs";
 import {
   ApplicationsAdapter,
   AuthenticationCodesAdapter,
@@ -10,6 +9,7 @@ import {
   DomainsAdapter,
   HooksAdapter,
   KeysAdapter,
+  LogsDataAdapter,
   OTPAdapter,
   PasswordsAdapter,
   SessionsAdapter,

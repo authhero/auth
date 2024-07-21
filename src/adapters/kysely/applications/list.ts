@@ -1,6 +1,6 @@
 import { Application } from "@authhero/adapter-interfaces";
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
+import { Database } from "../db";
 
 export function list(db: Kysely<Database>) {
   return async (tenantId: string) => {

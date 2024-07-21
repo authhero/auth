@@ -1,8 +1,9 @@
 import { Kysely } from "kysely";
-import { Database, PartialClient } from "../../../types";
+import { PartialClient } from "../../../types";
 import { HTTPException } from "hono/http-exception";
 import { removeNullProperties } from "../helpers/remove-nulls";
 import { connectionSchema } from "@authhero/adapter-interfaces";
+import { Database } from "../db";
 
 function splitUrls(value?: string) {
   if (!value?.length) {

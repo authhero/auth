@@ -1,12 +1,11 @@
-import { ListUsersResponse } from "../../interfaces/Users";
-import { Database } from "../../../types";
 import { Kysely } from "kysely";
-import { ListParams } from "../../interfaces/ListParams";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { luceneFilter } from "../helpers/filter";
 import { removeNullProperties } from "../helpers/remove-nulls";
 import { userToIdentity } from "./user-to-identity";
 import userIdParse from "../../../utils/userIdParse";
+import { Database } from "../db";
+import { ListParams, ListUsersResponse } from "@authhero/adapter-interfaces";
 
 export function listUsers(db: Kysely<Database>) {
   return async (

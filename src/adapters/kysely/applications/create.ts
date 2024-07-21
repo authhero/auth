@@ -1,9 +1,9 @@
 import { Kysely } from "kysely";
-import { Database } from "../../../types";
 import {
   Application,
   CreateApplicationParams,
 } from "@authhero/adapter-interfaces";
+import { Database } from "../db";
 
 export function create(db: Kysely<Database>) {
   return async (

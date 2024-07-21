@@ -24,7 +24,7 @@ import {
 import { migrateToLatest } from "../../migrate/migrate";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { Database } from "../../src/types";
+import { Database } from "../../src/adapters/kysely/db";
 
 interface ContextFixtureParams {
   headers?: { [key: string]: string };
