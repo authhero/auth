@@ -1,7 +1,10 @@
 import type { FC } from "hono/jsx";
-import { UniversalLoginSession } from "@authhero/adapter-interfaces";
+import {
+  UniversalLoginSession,
+  VendorSettings,
+} from "@authhero/adapter-interfaces";
 import Layout from "./Layout";
-import { VendorSettings, Client } from "../types";
+import { Client } from "../types";
 import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";

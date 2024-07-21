@@ -1,21 +1,20 @@
 import { ClientsAdapter } from "./Clients";
-import { MembersDataAdapter } from "./Members";
-import { PasswordsAdapter } from "./Passwords";
-import { TenantsDataAdapter } from "./Tenants";
 import { TicketsAdapter } from "./Tickets";
 import { UserDataAdapter } from "./Users";
 import { LogsDataAdapter } from "./Logs";
-import { ConnectionsAdapter } from "./Connections";
 import { KeysAdapter } from "./Keys";
 import {
   ApplicationsAdapter,
   AuthenticationCodesAdapter,
   BrandingAdapter,
   CodesAdapter,
+  ConnectionsAdapter,
   DomainsAdapter,
   HooksAdapter,
   OTPAdapter,
+  PasswordsAdapter,
   SessionsAdapter,
+  TenantsDataAdapter,
   UniversalLoginSessionsAdapter,
 } from "@authhero/adapter-interfaces";
 
@@ -24,7 +23,6 @@ export interface DataAdapters {
   branding: BrandingAdapter;
   codes: CodesAdapter;
   clients: ClientsAdapter;
-  members: MembersDataAdapter;
   OTP: OTPAdapter;
   passwords: PasswordsAdapter;
   sessions: SessionsAdapter;

@@ -3,7 +3,7 @@ import { testClient } from "hono/testing";
 import { managementApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
-import { Tenant } from "../../../src/types";
+import { Tenant } from "@authhero/adapter-interfaces";
 
 describe("tenants", () => {
   it("should add a new tenant", async () => {

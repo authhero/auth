@@ -1,6 +1,6 @@
 import type { FC } from "hono/jsx";
 import Layout from "./Layout";
-import { VendorSettings } from "../types";
+import { VendorSettings } from "@authhero/adapter-interfaces";
 import { GoBack } from "./GoBack";
 
 type Props = {

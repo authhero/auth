@@ -1,11 +1,13 @@
 import { Context } from "hono";
 import {
   Application,
+  ConnectionInsert,
   Domain,
   OTP,
   SessionInsert,
+  Tenant,
 } from "@authhero/adapter-interfaces";
-import { Env, PasswordParams, Tenant, User } from "../../src/types";
+import { Env, PasswordParams, User } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
 import { Var } from "../../src/types/Var";
@@ -23,7 +25,6 @@ import { migrateToLatest } from "../../migrate/migrate";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { Database } from "../../src/types";
-import { ConnectionInsert } from "../../src/types/Connection";
 
 interface ContextFixtureParams {
   headers?: { [key: string]: string };

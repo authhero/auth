@@ -1,7 +1,7 @@
 import { Kysely } from "kysely";
 import { Database } from "../../../types";
 import { removeNullProperties } from "../helpers/remove-nulls";
-import { Connection } from "../../../types/Connection";
+import { Connection } from "@authhero/adapter-interfaces";
 
 export function get(db: Kysely<Database>) {
   return async (

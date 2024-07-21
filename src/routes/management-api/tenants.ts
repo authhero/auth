@@ -1,10 +1,14 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, tenantInsertSchema, totalsSchema } from "../../types";
-import { tenantSchema } from "../../types";
+import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import authenticationMiddleware from "../../middlewares/authentication";
+import {
+  tenantInsertSchema,
+  tenantSchema,
+  totalsSchema,
+} from "@authhero/adapter-interfaces";
 
 const tenantsWithTotalsSchema = totalsSchema.extend({
   tenants: z.array(tenantSchema),
@@ -188,7 +192,7 @@ export const tenantRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: tenantInsertSchema,
+              schema: z.object({}).extend(tenantInsertSchema.shape),
             },
           },
         },

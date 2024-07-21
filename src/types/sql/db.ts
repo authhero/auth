@@ -1,7 +1,5 @@
 import {
-  Tenant,
   Certificate,
-  Member,
   Migration,
   SqlTicket,
   SqlOTP,
@@ -9,11 +7,17 @@ import {
   SqlUniversalLoginSession,
   SqlLog,
 } from "../";
-import { Connection } from "../Connection";
 import { SqlBranding } from "./Branding";
 import { SqlAuthenticationCode } from "./AuthenticationCode";
 import { SqlUser } from "./User";
-import { Application, Code, Domain, Hook } from "@authhero/adapter-interfaces";
+import {
+  Application,
+  Code,
+  Connection,
+  Domain,
+  Hook,
+  Tenant,
+} from "@authhero/adapter-interfaces";
 
 // TODO: Update the colums to match the session entity
 interface SqlSession {
@@ -37,7 +41,6 @@ export interface Database {
   keys: Certificate;
   // TODO: keep the id here for now until we changed primary key
   users: SqlUser;
-  members: Member;
   applications: Application & { tenant_id: string };
   connections: Connection & { tenant_id: string };
   migrations: Migration;
