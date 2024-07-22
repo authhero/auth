@@ -70,8 +70,8 @@ describe("Register password user", () => {
     const postSignupResponse = await oauthClient.u.signup.$post({
       query: { state: signupSearchParamsQuery.state },
       form: {
-        username: "test@example.com",
         password: "Password1234!",
+        "re-enter-password": "Password1234!",
       },
     });
 
@@ -147,8 +147,8 @@ describe("Register password user", () => {
     const postSignupResponse = await oauthClient.u.signup.$post({
       query: { state: signupSearchParamsQuery.state },
       form: {
-        username: "test@example.com",
         password: "weak",
+        "re-enter-password": "weak",
       },
     });
 

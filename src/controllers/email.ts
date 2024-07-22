@@ -8,6 +8,7 @@ import {
   linkV2,
   passwordReset,
   verifyEmail,
+  preSignupVerification,
 } from "../templates/email/ts";
 import { createMagicLink } from "../utils/magicLink";
 import { createLogMessage } from "../utils/create-log-message";
@@ -217,15 +218,14 @@ export async function sendValidateEmailAddress(
     env.IMAGE_PROXY_URL,
   );
 
-  // we have not checked the route name that auth0 uses
-  const emailValidationUrl = `${env.ISSUER}u/validate-email?state=${state}&code=${code}`;
-
   const sendEmailValidationUniversalTemplate = engine.parse(verifyEmail);
 
   const options = {
     vendorName: client.tenant.name,
     lng: client.tenant.language || "sv",
   };
+
+  const emailValidationUrl = `${env.ISSUER}u/signup?state=${state}&code=${code}`;
 
   const emailValidationBody = await engine.render(
     sendEmailValidationUniversalTemplate,
@@ -256,5 +256,63 @@ export async function sendValidateEmailAddress(
       },
     ],
     subject: t("verify_email_subject", options),
+  });
+}
+
+export async function sendSignupValidateEmailAddress(
+  env: Env,
+  client: Client,
+  to: string,
+  code: string,
+  state: string,
+) {
+  const logo = getClientLogoPngGreyBg(
+    client.tenant.logo ||
+      "https://assets.sesamy.com/static/images/sesamy/logo-translucent.png",
+    env.IMAGE_PROXY_URL,
+  );
+
+  // we have not checked the route name that auth0 uses
+  const signupUrl = `${env.ISSUER}u/signup?state=${state}&code=${code}`;
+
+  const sendEmailValidationUniversalTemplate = engine.parse(
+    preSignupVerification,
+  );
+
+  const options = {
+    vendorName: client.tenant.name,
+    lng: client.tenant.language || "sv",
+  };
+
+  const emailValidationBody = await engine.render(
+    sendEmailValidationUniversalTemplate,
+    {
+      vendorName: client.tenant.name,
+      logo,
+      signupUrl,
+      signup: t("signup", options),
+      registerPasswordAccount: t("register_password_account", options),
+      clickToSignUpDescription: t("click_to_sign_up_description", options),
+      supportUrl: client.tenant.support_url || "https://support.sesamy.com",
+      buttonColor: client.tenant.primary_color || "#7d68f4",
+      supportInfo: t("support_info", options),
+      contactUs: t("contact_us", options),
+      copyright: t("copyright", options),
+    },
+  );
+
+  await env.sendEmail(client, {
+    to: [{ email: to, name: to }],
+    from: {
+      email: client.tenant.sender_email,
+      name: client.tenant.sender_name,
+    },
+    content: [
+      {
+        type: "text/html",
+        value: emailValidationBody,
+      },
+    ],
+    subject: t("register_password_account", options),
   });
 }

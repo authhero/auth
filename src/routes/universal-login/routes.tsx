@@ -23,7 +23,12 @@ import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { Context } from "hono";
 import ForgotPasswordPage from "../../components/ForgotPasswordPage";
 import generateOTP from "../../utils/otp";
-import { sendLink, sendCode } from "../../controllers/email";
+import {
+  sendLink,
+  sendCode,
+  sendValidateEmailAddress,
+  sendSignupValidateEmailAddress,
+} from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { getUsersByEmail } from "../../utils/users";
 import userIdGenerate from "../../utils/userIdGenerate";
@@ -49,9 +54,12 @@ import {
   LogTypes,
   UniversalLoginSession,
   User,
+  otpInsertSchema,
 } from "@authhero/adapter-interfaces";
 import CheckEmailPage from "../../components/CheckEmailPage";
 import { getAuthCookie } from "../../services/cookies";
+import PreSignupPage from "../../components/PreSignUpPage";
+import PreSignupComfirmationPage from "../../components/PreSignUpConfirmationPage";
 
 async function initJSXRoute(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -205,7 +213,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     }),
     // very similar to authenticate + ticket flow
     async (ctx) => {
-      const { env } = ctx;
       const { state } = ctx.req.valid("query");
       const body = ctx.req.valid("form");
       const { password } = body;
@@ -560,7 +567,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
 
-      const { env } = ctx;
       const { vendorSettings, session, client } = await initJSXRoute(
         ctx,
         state,
@@ -764,12 +770,20 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
       }
 
+      const passwordUser = await getPrimaryUserByEmailAndProvider({
+        userAdapter: ctx.env.data.users,
+        tenant_id: client.tenant_id,
+        email: session.authParams.username,
+        provider: "auth2",
+      });
+
       return ctx.html(
         <EnterCodePage
           vendorSettings={vendorSettings}
           email={session.authParams.username}
           state={state}
           client={client}
+          hasPasswordLogin={!!passwordUser}
         />,
       );
     },
@@ -846,6 +860,13 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         return authResponse;
       } catch (err) {
+        const user = await getPrimaryUserByEmailAndProvider({
+          userAdapter: ctx.env.data.users,
+          tenant_id: client.tenant_id,
+          email: session.authParams.username,
+          provider: "auth2",
+        });
+
         return ctx.html(
           <EnterCodePage
             vendorSettings={vendorSettings}
@@ -853,6 +874,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             email={session.authParams.username}
             state={state}
             client={client}
+            hasPasswordLogin={!!user}
           />,
           400,
         );
@@ -872,6 +894,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
+          code: z.string().optional().openapi({
+            description: "The code parameter from an email verification link",
+          }),
         }),
       },
       responses: {
@@ -881,8 +906,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       },
     }),
     async (ctx) => {
-      const { state } = ctx.req.valid("query");
-      const { env } = ctx;
+      const { state, code } = ctx.req.valid("query");
       const { vendorSettings, session } = await initJSXRoute(ctx, state);
 
       const { username } = session.authParams;
@@ -891,8 +915,23 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(400, { message: "Username required" });
       }
 
+      if (code) {
+        return ctx.html(
+          <SignupPage
+            state={state}
+            vendorSettings={vendorSettings}
+            email={username}
+            code={code}
+          />,
+        );
+      }
+
       return ctx.html(
-        <SignupPage vendorSettings={vendorSettings} email={username} />,
+        <SignupPage
+          state={state}
+          vendorSettings={vendorSettings}
+          email={username}
+        />,
       );
     },
   )
@@ -914,10 +953,9 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           content: {
             "application/x-www-form-urlencoded": {
               schema: z.object({
-                username: z.string().transform((u) => u.toLowerCase()),
                 password: z.string(),
-                // TODO - something like this
-                // "re-enter-password": z.string(),
+                "re-enter-password": z.string(),
+                code: z.string().optional(),
               }),
             },
           },
@@ -941,31 +979,42 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       );
       ctx.set("client_id", client.id);
 
+      const email = session.authParams.username;
+      if (!email) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
+
       if (!validatePassword(loginParams.password)) {
         return ctx.html(
           <SignupPage
+            state={state}
             vendorSettings={vendorSettings}
             error={i18next.t("create_account_weak_password")}
-            email={loginParams.username}
+            email={session.authParams.username}
           />,
           400,
         );
       }
 
-      if (session.authParams.username !== loginParams.username) {
-        session.authParams.username = loginParams.username;
-        await env.data.universalLoginSessions.update(
-          client.tenant_id,
-          session.id,
-          session,
+      if (loginParams.password !== loginParams["re-enter-password"]) {
+        return ctx.html(
+          <SignupPage
+            state={state}
+            vendorSettings={vendorSettings}
+            error={i18next.t("create_account_passwords_didnt_match")}
+            email={session.authParams.username}
+          />,
+          400,
         );
       }
+
+      const otps = await env.data.OTP.list(client.tenant_id, email);
 
       try {
         const existingUser = await getPrimaryUserByEmailAndProvider({
           userAdapter: ctx.env.data.users,
           tenant_id: client.tenant_id,
-          email: loginParams.username,
+          email,
           provider: "auth2",
         });
 
@@ -973,12 +1022,16 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           throw new HTTPException(400, { message: "Invalid sign up" });
         }
 
+        const email_verified = !!otps.find(
+          (otp) => !otp.used_at && otp.code === loginParams.code,
+        );
+
         const newUser = await ctx.env.data.users.create(client.tenant_id, {
           user_id: `auth2|${userIdGenerate()}`,
-          email: loginParams.username,
+          email,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          email_verified: false,
+          email_verified,
           provider: "auth2",
           connection: "Username-Password-Authentication",
           is_social: false,
@@ -993,12 +1046,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           password: loginParams.password,
         });
 
-        await sendEmailVerificationEmail({
-          env: ctx.env,
-          client,
-          user: newUser,
-          authParams: session.authParams,
-        });
+        if (!email_verified) {
+          await sendEmailVerificationEmail({
+            env: ctx.env,
+            client,
+            user: newUser,
+            authParams: session.authParams,
+          });
+        }
 
         const log = createLogMessage(ctx, {
           type: LogTypes.SUCCESS_SIGNUP,
@@ -1022,9 +1077,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         );
         return ctx.html(
           <SignupPage
+            state={state}
             vendorSettings={vendorSettings}
             error={err.message}
-            email={loginParams.username}
+            email={email}
           />,
           400,
         );
@@ -1279,5 +1335,114 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       return handleLogin(ctx, user, session, client);
+    },
+  )
+  // --------------------------------
+  // GET /u/pre-signup
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/pre-signup",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+          code: z.string().optional().openapi({
+            description: "The code parameter from an email verification link",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state, code } = ctx.req.valid("query");
+      const { vendorSettings, session } = await initJSXRoute(ctx, state);
+
+      const { username } = session.authParams;
+
+      if (!username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
+
+      return ctx.html(
+        <PreSignupPage
+          state={state}
+          vendorSettings={vendorSettings}
+          email={username}
+          code={code}
+        />,
+      );
+    },
+  )
+  // --------------------------------
+  // POST /u/pre-signup
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "post",
+      path: "/pre-signup",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { vendorSettings, session, client } = await initJSXRoute(
+        ctx,
+        state,
+      );
+
+      const { username } = session.authParams;
+
+      if (!username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
+
+      const code = generateOTP();
+
+      await ctx.env.data.OTP.create(client.tenant_id, {
+        id: nanoid(),
+        code,
+        send: "link",
+        ip: ctx.req.header("x-real-ip"),
+        email: username,
+        authParams: {
+          client_id: session.authParams.client_id,
+        },
+        expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+      });
+
+      await sendSignupValidateEmailAddress(
+        ctx.env,
+        client,
+        username,
+        code,
+        state,
+      );
+
+      return ctx.html(
+        <PreSignupComfirmationPage
+          vendorSettings={vendorSettings}
+          state={state}
+          email={username}
+        />,
+      );
     },
   );
