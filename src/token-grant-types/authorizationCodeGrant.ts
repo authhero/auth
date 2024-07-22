@@ -13,7 +13,7 @@ export async function authorizeCodeGrant(
   ctx.set("client_id", client.id);
 
   // TODO: this does not set the used_at attribute
-  const { user_id, nonce, authParams, used_at, expires_at } =
+  const { user_id, authParams, used_at, expires_at } =
     await ctx.env.data.authenticationCodes.get(client.tenant_id, params.code);
 
   if (used_at || new Date(expires_at) < new Date()) {
@@ -43,7 +43,7 @@ export async function authorizeCodeGrant(
 
   const tokens = await generateAuthData({
     ctx,
-    authParams: { ...authParams, nonce },
+    authParams,
     user,
     client,
     authFlow: "code",

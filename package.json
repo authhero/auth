@@ -50,7 +50,7 @@
     ]
   },
   "dependencies": {
-    "@authhero/adapter-interfaces": "0.4.0",
+    "@authhero/adapter-interfaces": "0.5.3",
     "@hono/zod-openapi": "0.14.0",
     "@planetscale/database": "1.16.0",
     "arctic": "^1.8.1",

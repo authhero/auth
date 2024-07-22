@@ -6,6 +6,7 @@ import { testClient } from "hono/testing";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
+  Log,
   LogTypes,
 } from "@authhero/adapter-interfaces";
 
@@ -174,7 +175,7 @@ describe("silent-auth", () => {
     });
 
     const silentAuthSucessLog = logs.find(
-      (log) => log.type === LogTypes.SUCCESS_SILENT_AUTH,
+      (log: Log) => log.type === LogTypes.SUCCESS_SILENT_AUTH,
     );
 
     expect(silentAuthSucessLog).toMatchObject({

@@ -3,7 +3,6 @@ import { Env, Var } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { getClient } from "../services/clients";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
-import { User, Client } from "../types";
 import { nanoid } from "nanoid";
 import generateOTP from "../utils/otp";
 import {
@@ -16,8 +15,10 @@ import { Context } from "hono";
 import { createLogMessage } from "../utils/create-log-message";
 import {
   AuthParams,
+  Client,
   LogTypes,
   UniversalLoginSession,
+  User,
 } from "@authhero/adapter-interfaces";
 
 interface LoginParams {

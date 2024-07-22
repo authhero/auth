@@ -1,9 +1,10 @@
-import { Env, logSchema, totalsSchema } from "../../types";
+import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import authenticationMiddleware from "../../middlewares/authentication";
+import { logSchema, totalsSchema } from "@authhero/adapter-interfaces";
 
 const logsWithTotalsSchema = totalsSchema.extend({
   logs: z.array(logSchema),

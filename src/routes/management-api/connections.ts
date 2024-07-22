@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { headers } from "../../constants";
-import { Env, totalsSchema } from "../../types";
+import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
@@ -8,6 +8,7 @@ import authenticationMiddleware from "../../middlewares/authentication";
 import {
   connectionInsertSchema,
   connectionSchema,
+  totalsSchema,
 } from "@authhero/adapter-interfaces";
 
 const connectionsWithTotalsSchema = totalsSchema.extend({

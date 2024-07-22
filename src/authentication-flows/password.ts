@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import { Context } from "hono";
-import { Var, Env, Client } from "../types";
+import { Var, Env } from "../types";
 import {
   getPrimaryUserByEmailAndProvider,
   getUserByEmailAndProvider,
@@ -14,7 +14,7 @@ import { sendEmailVerificationEmail } from "./passwordless";
 import { HTTPException } from "hono/http-exception";
 import { CustomException } from "../models/CustomError";
 import userIdGenerate from "../utils/userIdGenerate";
-import { AuthParams, LogTypes } from "@authhero/adapter-interfaces";
+import { AuthParams, Client, LogTypes } from "@authhero/adapter-interfaces";
 
 export async function requestPasswordReset(
   ctx: Context<{

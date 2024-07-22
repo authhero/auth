@@ -1,5 +1,4 @@
 import { Kysely } from "kysely";
-import { UserDataAdapter } from "../../interfaces/Users";
 import { create } from "./create";
 import { get } from "./get";
 import { listUsers } from "./list";
@@ -7,6 +6,7 @@ import { remove } from "./remove";
 import { update } from "./update";
 import { unlink } from "./unlink";
 import { Database } from "../db";
+import { UserDataAdapter } from "@authhero/adapter-interfaces";
 
 export function createUsersAdapter(db: Kysely<Database>): UserDataAdapter {
   return {

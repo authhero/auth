@@ -9,6 +9,7 @@ import { getEnv } from "../helpers/test-client";
 import { base64url } from "oslo/encoding";
 import {
   AuthorizationResponseType,
+  Log,
   LogTypes,
 } from "@authhero/adapter-interfaces";
 
@@ -159,10 +160,10 @@ describe("social sign on", () => {
         });
         expect(logs.length).toBe(2);
         const successLoginLog = logs.find(
-          (log) => log.type === LogTypes.SUCCESS_LOGIN,
+          (log: Log) => log.type === LogTypes.SUCCESS_LOGIN,
         );
         const successSignupLog = logs.find(
-          (log) => log.type === LogTypes.SUCCESS_SIGNUP,
+          (log: Log) => log.type === LogTypes.SUCCESS_SIGNUP,
         );
         expect(successSignupLog).toMatchObject({
           type: "ss",

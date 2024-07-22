@@ -7,8 +7,9 @@ import {
   SessionInsert,
   Tenant,
   Ticket,
+  User,
 } from "@authhero/adapter-interfaces";
-import { Env, PasswordParams, User } from "../../src/types";
+import { Env, PasswordParams } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
 import { Var } from "../../src/types/Var";

@@ -1,5 +1,4 @@
-import { User } from "../types";
-import { DataAdapters } from "../adapters/interfaces";
+import { DataAdapters, User } from "@authhero/adapter-interfaces";
 import { linkUsersHook } from "./link-users";
 import { postUserRegistrationWebhook } from "./webhooks";
 

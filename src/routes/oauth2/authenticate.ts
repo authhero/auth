@@ -5,7 +5,7 @@ import { Env, Var } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { getClient } from "../../services/clients";
 import { loginWithPassword } from "../../authentication-flows/password";
-import { Ticket } from "@authhero/adapter-interfaces";
+import { OTP, Ticket } from "@authhero/adapter-interfaces";
 
 const TICKET_EXPIRATION_TIME = 30 * 60 * 1000;
 

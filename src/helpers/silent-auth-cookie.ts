@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { MONTH_IN_SECONDS } from "../constants";
-import { Env, User } from "../types";
-import { SessionInsert } from "@authhero/adapter-interfaces";
+import { Env } from "../types";
+import { SessionInsert, User } from "@authhero/adapter-interfaces";
 
 export async function setSilentAuthCookies(
   env: Env,

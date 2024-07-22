@@ -1,4 +1,4 @@
-import { Env, Var, User, Client } from "../types";
+import { Env, Var } from "../types";
 import { ACCESS_TOKEN_EXPIRE_IN_SECONDS } from "../constants";
 import { pemToBuffer } from "../utils/jwt";
 import { createJWT } from "oslo/jwt";
@@ -13,9 +13,11 @@ import { postUserLoginWebhook } from "../hooks/webhooks";
 import {
   AuthParams,
   AuthorizationResponseType,
+  Client,
   CodeResponse,
   LogTypes,
   TokenResponse,
+  User,
 } from "@authhero/adapter-interfaces";
 import { setSilentAuthCookies } from "./silent-auth-cookie";
 

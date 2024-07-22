@@ -35,6 +35,7 @@ const defaultSettings: DefaultSettings = {
 };
 
 export async function getClient(env: Env, clientId: string): Promise<Client> {
+  // TODO: we dont't have a tenant id here so we'll pass a wildcard for now. Use subdomains for
   const clientRawObj = await env.data.clients.get(clientId);
   if (!clientRawObj) {
     throw new HTTPException(403, { message: "Client not found" });

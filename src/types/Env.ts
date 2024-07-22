@@ -1,7 +1,7 @@
 import { IOAuth2ClientFactory } from "../services/oauth2-client";
-import { DataAdapters } from "../adapters/interfaces";
 import type { Client } from "./Client";
 import type { EmailOptions } from "../services/email/EmailOptions";
+import { DataAdapters } from "@authhero/adapter-interfaces";
 
 export type Env = {
   ISSUER: string;

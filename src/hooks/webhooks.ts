@@ -1,6 +1,4 @@
-import { User } from "../types";
-import { DataAdapters } from "../adapters/interfaces";
-import { Hook } from "@authhero/adapter-interfaces";
+import { DataAdapters, Hook, User } from "@authhero/adapter-interfaces";
 
 async function invokeHooks(hooks: Hook[], data: any) {
   // TODO: handle with waitUntill, but it requires that we have the context here
