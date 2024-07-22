@@ -4,6 +4,7 @@ import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import createTestUsers from "../helpers/createTestUsers";
+import { User } from "@authhero/adapter-interfaces";
 
 describe("users management API endpoint", () => {
   describe("POST", () => {
@@ -607,7 +608,7 @@ describe("users management API endpoint", () => {
       expect(users.length).toBe(3);
 
       // check we have linked user1 to user2
-      const user1 = users.find((u) => u.user_id === newUser1.user_id);
+      const user1 = users.find((u: User) => u.user_id === newUser1.user_id);
       expect(user1?.linked_to).toBe(newUser2.user_id);
 
       // --------------------------------------------------

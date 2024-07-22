@@ -5,6 +5,7 @@ import { testClient } from "hono/testing";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import {
   AuthorizationResponseType,
+  Log,
   LogTypes,
 } from "@authhero/adapter-interfaces";
 
@@ -94,7 +95,7 @@ test("code authorization flow should work", async () => {
   });
 
   const authCodeLog = logs.find(
-    (log) =>
+    (log: Log) =>
       log.type ===
       LogTypes.SUCCESS_EXCHANGE_AUTHORIZATION_CODE_FOR_ACCESS_TOKEN,
   );

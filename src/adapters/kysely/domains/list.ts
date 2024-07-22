@@ -1,8 +1,8 @@
-import { ListParams } from "../../../adapters/interfaces/ListParams";
 import { Kysely } from "kysely";
 import { luceneFilter } from "../helpers/filter";
 import getCountAsInt from "../../../utils/getCountAsInt";
 import { Database } from "../db";
+import { ListParams } from "@authhero/adapter-interfaces";
 
 export function list(db: Kysely<Database>) {
   return async (tenantId: string, params: ListParams) => {

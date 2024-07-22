@@ -1,12 +1,10 @@
-import { AuthParams } from "@authhero/adapter-interfaces";
+import { AuthParams, LogTypes } from "@authhero/adapter-interfaces";
 import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
-import { setSilentAuthCookies } from "../helpers/silent-auth-cookie";
 import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
-import { LogTypes } from "../types";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
 import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";

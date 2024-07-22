@@ -6,6 +6,7 @@ import { getEnv } from "../helpers/test-client";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
+  Log,
 } from "@authhero/adapter-interfaces";
 
 describe("logs", () => {
@@ -30,7 +31,7 @@ describe("logs", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as Log[];
     expect(body.length).toBe(0);
   });
 
@@ -78,7 +79,7 @@ describe("logs", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as Log[];
     if (!Array.isArray(body)) {
       throw new Error("Expected body to be an array");
     }
@@ -145,7 +146,7 @@ describe("logs", () => {
 
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as Log[];
     if (!Array.isArray(body)) {
       throw new Error("Expected body to be an array");
     }

@@ -1,9 +1,13 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { nanoid } from "nanoid";
 import { getDbFromEnv } from "../../services/db";
-import { Env, totalsSchema } from "../../types";
+import { Env } from "../../types";
 import { HTTPException } from "hono/http-exception";
-import { domainInsertSchema, domainSchema } from "@authhero/adapter-interfaces";
+import {
+  domainInsertSchema,
+  domainSchema,
+  totalsSchema,
+} from "@authhero/adapter-interfaces";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import authenticationMiddleware from "../../middlewares/authentication";

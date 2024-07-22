@@ -1,4 +1,4 @@
-import { BaseUser } from "../User";
+import { BaseUser } from "@authhero/adapter-interfaces";
 
 export interface SqlUser extends BaseUser {
   id: string;

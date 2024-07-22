@@ -7,10 +7,14 @@ import {
   snapshotResponse,
   snapshotEmail,
 } from "../helpers/playwrightSnapshots";
-import { UserResponse } from "../../../src/types";
 import { getAdminToken } from "../helpers/token";
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
+import {
+  AuthorizationResponseType,
+  Log,
+  User,
+  UserResponse,
+} from "@authhero/adapter-interfaces";
 
 function getCodeStateTo(email: EmailOptions) {
   const verifyEmailBody = email.content[0].value;
@@ -95,7 +99,7 @@ describe("Register password", () => {
       include_totals: true,
     });
 
-    const failedLogin = logs.find((l) => l.type === "f");
+    const failedLogin = logs.find((log: Log) => log.type === "f");
 
     expect(failedLogin).toMatchObject({
       type: "f",
@@ -222,7 +226,7 @@ describe("Register password", () => {
       q: "",
     });
     const [linkedPasswordUser] = users.users.filter(
-      (u) =>
+      (u: User) =>
         u.email === "existing-code-user@example.com" && u.provider === "auth2",
     );
     expect(linkedPasswordUser.linked_to).toBe("email|codeUserId");

@@ -1,8 +1,9 @@
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, userSchema } from "../../types";
+import { Env } from "../../types";
 import { Var } from "../../types/Var";
 import authenticationMiddleware from "../../middlewares/authentication";
+import { userSchema } from "@authhero/adapter-interfaces";
 
 export const usersByEmailRoutes = new OpenAPIHono<{
   Bindings: Env;

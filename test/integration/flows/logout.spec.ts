@@ -8,6 +8,7 @@ import { oauthApp } from "../../../src/app";
 import { testClient } from "hono/testing";
 import {
   AuthorizationResponseType,
+  Log,
   LogTypes,
 } from "@authhero/adapter-interfaces";
 
@@ -93,7 +94,9 @@ describe("logout", () => {
       include_totals: true,
     });
 
-    const logoutLog = logs.find((log) => log.type === LogTypes.SUCCESS_LOGOUT);
+    const logoutLog = logs.find(
+      (log: Log) => log.type === LogTypes.SUCCESS_LOGOUT,
+    );
 
     expect(logoutLog).toMatchObject({
       type: "slo",

@@ -1,6 +1,6 @@
 // TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env, User, Client, Var, LogTypes } from "../../types";
+import { Env, Var } from "../../types";
 import ResetPasswordPage from "../../components/ResetPasswordPage";
 import validatePassword from "../../utils/validatePassword";
 import {
@@ -44,7 +44,12 @@ import {
 } from "../../authentication-flows/password";
 import { CustomException } from "../../models/CustomError";
 import { CODE_EXPIRATION_TIME } from "../../constants";
-import { UniversalLoginSession } from "@authhero/adapter-interfaces";
+import {
+  Client,
+  LogTypes,
+  UniversalLoginSession,
+  User,
+} from "@authhero/adapter-interfaces";
 import CheckEmailPage from "../../components/CheckEmailPage";
 import { getAuthCookie } from "../../services/cookies";
 
@@ -691,10 +696,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         code,
         // is this a reasonable assumption?
         email: params.username,
-        client_id: session.authParams.client_id,
         send: "code",
         authParams: otpAuthParams,
-        tenant_id: client.tenant_id,
         expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
       });
 

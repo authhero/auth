@@ -1,14 +1,7 @@
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
-import {
-  Env,
-  Log,
-  LogTypes,
-  auth0UserResponseSchema,
-  totalsSchema,
-  userInsertSchema,
-} from "../../types";
+import { Env } from "../../types";
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
@@ -17,6 +10,12 @@ import { createLogMessage } from "../../utils/create-log-message";
 import { Var } from "../../types/Var";
 import { waitUntil } from "../../utils/wait-until";
 import authenticationMiddleware from "../../middlewares/authentication";
+import {
+  LogTypes,
+  auth0UserResponseSchema,
+  totalsSchema,
+  userInsertSchema,
+} from "@authhero/adapter-interfaces";
 
 const usersWithTotalsSchema = totalsSchema.extend({
   users: z.array(auth0UserResponseSchema),
@@ -237,7 +236,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         body: {
           content: {
             "application/json": {
-              schema: userInsertSchema,
+              schema: z.object({ ...userInsertSchema.shape }),
             },
           },
         },
@@ -293,7 +292,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       ctx.set("userId", data.user_id);
 
-      const log: Log = createLogMessage(ctx, {
+      const log = createLogMessage(ctx, {
         type: LogTypes.SUCCESS_API_OPERATION,
         description: "User created",
       });
@@ -331,9 +330,12 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         body: {
           content: {
             "application/json": {
-              schema: userInsertSchema
-                .partial()
-                .extend({ verify_email: z.boolean().optional() }),
+              schema: z
+                .object({
+                  ...userInsertSchema.shape,
+                  verify_email: z.boolean(),
+                })
+                .partial(),
             },
           },
         },

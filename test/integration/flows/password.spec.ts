@@ -5,7 +5,6 @@ import { getEnv } from "../helpers/test-client";
 import { testClient } from "hono/testing";
 import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { UserResponse } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import {
   snapshotResponse,
@@ -13,7 +12,10 @@ import {
 } from "../helpers/playwrightSnapshots";
 import {
   AuthorizationResponseType,
+  Log,
   LogTypes,
+  User,
+  UserResponse,
 } from "@authhero/adapter-interfaces";
 
 function getCodeStateTo(email: EmailOptions) {
@@ -209,7 +211,7 @@ describe("password-flow", () => {
       });
 
       const failedLoginLog = logs.find(
-        (log) => log.type === LogTypes.FAILED_LOGIN,
+        (log: Log) => log.type === LogTypes.FAILED_LOGIN,
       );
 
       expect(failedLoginLog).toMatchObject({
@@ -222,7 +224,7 @@ describe("password-flow", () => {
       });
 
       const silentAuthSuccessLog = logs.find(
-        (logs) => logs.type === LogTypes.SUCCESS_SILENT_AUTH,
+        (log: Log) => log.type === LogTypes.SUCCESS_SILENT_AUTH,
       );
 
       expect(silentAuthSuccessLog).toMatchObject({
@@ -235,7 +237,7 @@ describe("password-flow", () => {
       });
 
       const sucessfulCrossOriginAuthentictationLog = logs.find(
-        (log) => log.type === LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION,
+        (log: Log) => log.type === LogTypes.SUCCESS_CROSS_ORIGIN_AUTHENTICATION,
       );
 
       expect(sucessfulCrossOriginAuthentictationLog).toMatchObject({
@@ -317,7 +319,7 @@ describe("password-flow", () => {
         q: "",
       });
       const [linkedPasswordUser] = users.users.filter(
-        (u) =>
+        (u: User) =>
           u.email === "existing-code-user@example.com" &&
           u.provider === "auth2",
       );

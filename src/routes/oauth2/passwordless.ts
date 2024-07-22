@@ -7,7 +7,6 @@ import { Env, Var } from "../../types";
 import { HTTPException } from "hono/http-exception";
 import { validateCode } from "../../authentication-flows/passwordless";
 import { validateRedirectUrl } from "../../utils/validate-redirect-url";
-import { setSilentAuthCookies } from "../../helpers/silent-auth-cookie";
 import { generateAuthResponse } from "../../helpers/generate-auth-response";
 import { setSearchParams } from "../../utils/url";
 import {
@@ -62,10 +61,7 @@ export const passwordlessRoutes = new OpenAPIHono<{
       await ctx.env.data.OTP.create(client.tenant_id, {
         id: nanoid(),
         code,
-        // TODO: this will be removed in next adapter version
-        tenant_id: client.tenant_id,
         email: email,
-        client_id: client_id,
         send: send,
         authParams: { ...authParams, client_id },
         ip: ctx.req.header("x-real-ip"),

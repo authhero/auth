@@ -5,6 +5,4 @@ export * from "./Client";
 export * from "./Token";
 export * from "./sql";
 export * from "./Password";
-export * from "./User";
-export * from "./auth0";
 export * from "./Var";

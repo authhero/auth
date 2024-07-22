@@ -1,5 +1,4 @@
-import { User } from "../types";
-import { DataAdapters } from "../adapters/interfaces";
+import { DataAdapters, User } from "@authhero/adapter-interfaces";
 import { getPrimaryUserByEmail } from "../utils/users";
 
 export function linkUsersHook(data: DataAdapters) {

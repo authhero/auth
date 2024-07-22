@@ -16,7 +16,6 @@ export function create(db: Kysely<Database>) {
       .values({ ...authParams, ...rest, ...timestamps, tenant_id })
       .execute();
 
-    // TODO: updaate the adapter to return the created entity
-    // return { ...session, ...timestamps };
+    return { ...session, ...timestamps };
   };
 }

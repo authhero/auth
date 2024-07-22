@@ -1,5 +1,5 @@
+import { BaseUser, baseUserSchema } from "@authhero/adapter-interfaces";
 import { z } from "zod";
-import { BaseUser, baseUserSchema } from "../User";
 
 export interface PostUsersBody extends BaseUser {
   password?: string;

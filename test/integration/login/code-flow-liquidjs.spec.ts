@@ -9,10 +9,11 @@ import {
 } from "../helpers/playwrightSnapshots";
 import { getAdminToken } from "../helpers/token";
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import { UserResponse } from "../../../src/types";
 import {
   AuthorizationResponseType,
+  Log,
   LogTypes,
+  UserResponse,
 } from "@authhero/adapter-interfaces";
 
 function getCodeAndTo(email: EmailOptions) {
@@ -303,7 +304,9 @@ describe("Login with code on liquidjs template", () => {
       include_totals: true,
     });
 
-    const loginLog = logs.find((log) => log.type === LogTypes.SUCCESS_LOGIN);
+    const loginLog = logs.find(
+      (log: Log) => log.type === LogTypes.SUCCESS_LOGIN,
+    );
 
     expect(loginLog).toMatchObject({
       type: "s",

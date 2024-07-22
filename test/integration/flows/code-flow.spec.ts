@@ -8,7 +8,7 @@ import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
-import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
+import { AuthorizationResponseType, Log } from "@authhero/adapter-interfaces";
 
 const AUTH_PARAMS = {
   nonce: "ehiIoMV7yJCNbSEpRq513IQgSX7XvvBM",
@@ -162,7 +162,7 @@ describe("code-flow", () => {
     });
 
     expect(logs.length).toBe(2);
-    const log = logs.find((log) => log.type === "scoa");
+    const log = logs.find((log: Log) => log.type === "scoa");
 
     expect(log).toMatchObject({
       type: "scoa",
