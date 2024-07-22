@@ -39,7 +39,6 @@ import * as n38_otpIpAddress from "./2024-06-05T10:00:00_otp-ip-address";
 import * as n39_increaseUserAgentLength from "./2024-06-19T10:00:00_increase-user-agent-length";
 import * as n40_userId from "./2024-07-15T10:00:00_user_id";
 import * as n41_hooks from "./2024-07-15T12:52:00_hooks";
-import * as n42_userId from "./2024-07-22T10:25:00_user_id-migrate-primary";
 
 // These need to be in alphabetic order
 export default {
@@ -84,5 +83,4 @@ export default {
   n39_increaseUserAgentLength,
   n40_userId,
   n41_hooks,
-  n42_userId,
 };

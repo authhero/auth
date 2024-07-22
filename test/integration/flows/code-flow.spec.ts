@@ -1245,7 +1245,7 @@ describe("code-flow", () => {
       // -----------------
 
       // create new password user
-      env.data.users.create("tenantId", {
+      await env.data.users.create("tenantId", {
         user_id: "auth2|base-user",
         email: "base-user@example.com",
         email_verified: true,
@@ -1257,7 +1257,7 @@ describe("code-flow", () => {
         updated_at: new Date().toISOString(),
       });
       // create new code user and link this to the password user
-      env.data.users.create("tenantId", {
+      await env.data.users.create("tenantId", {
         user_id: "auth2|code-user",
         email: "code-user@example.com",
         email_verified: true,

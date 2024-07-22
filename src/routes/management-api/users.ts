@@ -177,7 +177,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         });
       }
 
-      return ctx.json(auth0UserResponseSchema.parse(user));
+      return ctx.json(user);
     },
   )
   // --------------------------------
