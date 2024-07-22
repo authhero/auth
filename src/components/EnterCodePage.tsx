@@ -1,4 +1,4 @@
-import type { FC } from "hono/jsx";
+import type { FC, JSXNode } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
 import { Client } from "../types";
@@ -10,6 +10,7 @@ import DisabledSubmitButton from "./DisabledSubmitButton";
 import Form from "./Form";
 import { GoBack } from "./GoBack";
 import { VendorSettings } from "@authhero/adapter-interfaces";
+import Trans from "./Trans";
 
 type Props = {
   error?: string;
@@ -17,6 +18,7 @@ type Props = {
   email: string;
   state: string;
   client: Client;
+  hasPasswordLogin: boolean;
 };
 
 const CODE_LENGTH = 6;
@@ -27,11 +29,8 @@ const EnterCodePage: FC<Props> = ({
   email,
   state,
   client,
+  hasPasswordLogin,
 }) => {
-  const i18nText = i18next.t("we_sent_a_code_to", { email });
-  const startText = i18nText.slice(0, i18nText.indexOf("<0>"));
-  const endText = i18nText.slice(i18nText.indexOf("</0>") + 4);
-
   const passwordLoginLinkParams = new URLSearchParams({
     state,
   });
@@ -48,9 +47,15 @@ const EnterCodePage: FC<Props> = ({
         {i18next.t("verify_your_email")}
       </div>
       <div class="mb-8 text-gray-300">
-        {startText}
-        <span class="text-black dark:text-white">{email}</span>
-        {endText}
+        <Trans
+          i18nKey="we_sent_a_code_to"
+          components={[
+            (
+              <span className="text-black dark:text-white" key="span" />
+            ) as unknown as JSXNode,
+          ]}
+          values={{ email }}
+        />
       </div>
       <div class="flex flex-1 flex-col justify-center">
         <Form className="pt-2">
@@ -75,7 +80,7 @@ const EnterCodePage: FC<Props> = ({
           />
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <div class="text-center sm:mt-2">
-            <DisabledSubmitButton>
+            <DisabledSubmitButton className="text-base sm:mt-4 md:text-base">
               <div className="flex items-center space-x-2">
                 <span>{i18next.t("login")}</span>
                 <Icon className="text-xs" name="arrow-right" />
@@ -98,7 +103,7 @@ const EnterCodePage: FC<Props> = ({
               </div>
               <Button
                 Component="a"
-                href={`/u/enter-password?${passwordLoginLinkParams.toString()}`}
+                href={`/u/${hasPasswordLogin ? "enter-password" : "pre-signup"}?${passwordLoginLinkParams.toString()}`}
                 variant="secondary"
                 className="block"
               >
