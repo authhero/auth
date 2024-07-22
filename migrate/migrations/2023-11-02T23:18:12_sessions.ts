@@ -15,7 +15,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
       "user_id_constraint",
       ["user_id", "tenant_id"],
       "users",
-      ["id", "tenant_id"],
+      ["user_id", "tenant_id"],
       (cb) => cb.onDelete("cascade"),
     )
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())

@@ -19,36 +19,26 @@ export async function up(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .createTable("users")
-    .addColumn("id", "varchar(255)", (col) => col.notNull())
+    .addColumn("user_id", "varchar(255)", (col) => col.notNull())
     .addColumn("tenant_id", "varchar(255)", (col) =>
       col.references("tenants.id").onDelete("cascade").notNull(),
     )
     .addColumn("email", "varchar(255)", (col) => col.notNull())
-    // Removed in later migration
-    // .addColumn("linked_to", "varchar(255)")
     .addColumn("given_name", "varchar(255)")
     .addColumn("family_name", "varchar(255)")
     .addColumn("nickname", "varchar(255)")
     .addColumn("name", "varchar(255)")
-    // Changed to 2083 in later migration
-    // .addColumn("picture", "varchar(255)")
     .addColumn("picture", "varchar(2083)")
     .addColumn("tags", "varchar(255)")
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
     .addColumn("modified_at", "varchar(255)", (col) => col.notNull())
-    .addPrimaryKeyConstraint("users_tenants", ["id", "tenant_id"])
-    // Added in later migration
-    // .addColumn("linked_to", "varchar(255)", (col) =>
-    //   col.references("users.id").onDelete("cascade"),
-    // )
+    .addPrimaryKeyConstraint("users_tenants", ["user_id", "tenant_id"])
     .addColumn("linked_to", "varchar(255)")
     .addForeignKeyConstraint(
       "linked_to_constraint",
       ["linked_to", "tenant_id"],
       "users",
-      ["id", "tenant_id"],
-      // planetscale doesn't support FKs so we shouldn't rely on cascades!
-      // (cb) => cb.onDelete("cascade"),
+      ["user_id", "tenant_id"],
     )
     .addColumn("last_ip", "varchar(255)")
     .addColumn("login_count", "integer", (col) => col.notNull())
@@ -63,7 +53,6 @@ export async function up(db: Kysely<Database>): Promise<void> {
       "provider",
       "tenant_id",
     ])
-    // End added columns
     .execute();
 
   await db.schema

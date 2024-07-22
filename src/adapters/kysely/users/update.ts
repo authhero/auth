@@ -14,7 +14,7 @@ function getEmailVerified(user: Partial<PostUsersBody>): number | undefined {
 export function update(db: Kysely<Database>) {
   return async (
     tenant_id: string,
-    id: string,
+    user_id: string,
     user: Partial<PostUsersBody>,
   ): Promise<boolean> => {
     const sqlUser: Partial<SqlUser> = {
@@ -27,7 +27,7 @@ export function update(db: Kysely<Database>) {
       .updateTable("users")
       .set(sqlUser)
       .where("users.tenant_id", "=", tenant_id)
-      .where("users.id", "=", id)
+      .where("users.user_id", "=", user_id)
       .execute();
 
     return results.length === 1;

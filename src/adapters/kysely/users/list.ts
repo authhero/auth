@@ -29,7 +29,7 @@ export function listUsers(db: Kysely<Database>) {
 
     const users = await filteredQuery.selectAll().execute();
 
-    const userIds = users.map((u) => u.id);
+    const userIds = users.map((u) => u.user_id);
 
     // TODO: execute these in parallel with a join
     const linkedUsers = !userIds.length
@@ -43,7 +43,7 @@ export function listUsers(db: Kysely<Database>) {
 
     const usersWithProfiles = users.map((user) => {
       const linkedUsersForUser = linkedUsers.filter(
-        (u) => u.linked_to === user.id,
+        (u) => u.linked_to === user.user_id,
       );
 
       return removeNullProperties({
@@ -54,7 +54,7 @@ export function listUsers(db: Kysely<Database>) {
           {
             connection: user.connection,
             provider: user.provider,
-            user_id: userIdParse(user.id),
+            user_id: userIdParse(user.user_id),
             isSocial: Boolean(user.is_social),
           },
           ...linkedUsersForUser.map(userToIdentity),

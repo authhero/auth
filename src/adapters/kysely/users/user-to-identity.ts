@@ -12,7 +12,7 @@ export function userToIdentity(user: any) {
   return {
     connection: user.connection,
     provider: user.provider,
-    user_id: userIdParse(user.id),
+    user_id: userIdParse(user.user_id),
     isSocial: Boolean(user.is_social),
     profileData: {
       email: user.email,

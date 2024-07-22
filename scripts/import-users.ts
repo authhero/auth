@@ -34,7 +34,7 @@ const userSchema = z.object({
   family_name: z.string().optional(),
   picture: z.string().url(),
   email_verified: z.union([z.boolean(), z.string()]).optional(),
-  id: z.string(),
+  user_id: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
   locale: z.string().optional(),
@@ -102,7 +102,7 @@ function removeNonUniqueByKey(array: Identity[]) {
 
 async function addUser(user: User) {
   for await (const identity of removeNonUniqueByKey(user.identities)) {
-    const id = `${identity.provider}|${identity.user_id}`;
+    const user_id = `${identity.provider}|${identity.user_id}`;
 
     const email_verified =
       (
@@ -114,8 +114,7 @@ async function addUser(user: User) {
         : 0;
 
     const sqlUser: SqlUser = {
-      id,
-      user_id: id,
+      user_id,
       email: user.email || "",
       email_verified,
       login_count: 0,
@@ -131,7 +130,7 @@ async function addUser(user: User) {
       tenant_id,
       created_at: user.created_at,
       updated_at: user.updated_at,
-      linked_to: user.id === id ? undefined : user.id,
+      linked_to: user.user_id === user_id ? undefined : user.user_id,
     };
 
     await db.insertInto("users").values(sqlUser).execute();
