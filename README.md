@@ -1,5 +1,8 @@
 # Authhero Auth
 
+> [!NOTE]
+> This project will be broken down in pieces and published on npm. Checkout https://github.com/markusahlstrand/authhero for more information.
+
 This is a work in progress and still evolving.
 
 The plan is to make an oauth2 compatible auth solution with support for the following login methods:

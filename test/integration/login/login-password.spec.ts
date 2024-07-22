@@ -60,8 +60,8 @@ describe("Register password", () => {
         state: query.state,
       },
       form: {
-        username: "password-login-test@example.com",
         password,
+        "re-enter-password": password,
       },
     });
     expect(createUserResponse.status).toBe(200);
@@ -194,8 +194,8 @@ describe("Register password", () => {
         state: query.state,
       },
       form: {
-        username: "existing-code-user@example.com",
         password,
+        "re-enter-password": password,
       },
     });
     expect(createUserResponse.status).toBe(200);
@@ -332,8 +332,8 @@ describe("Register password", () => {
         state: query.state,
       },
       form: {
-        username: "password-login-test@example.com",
         password,
+        "re-enter-password": password,
       },
     });
     expect(createUserResponse.status).toBe(200);
@@ -407,8 +407,8 @@ describe("Register password", () => {
         state: query.state,
       },
       form: {
-        username: "password-login-test@example.com",
         password,
+        "re-enter-password": password,
       },
     });
 
@@ -485,8 +485,8 @@ describe("Register password", () => {
         state: query.state,
       },
       form: {
-        username: "password-login-test@example.com",
         password,
+        "re-enter-password": password,
       },
     });
 
