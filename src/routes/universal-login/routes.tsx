@@ -205,7 +205,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     }),
     // very similar to authenticate + ticket flow
     async (ctx) => {
-      const { env } = ctx;
       const { state } = ctx.req.valid("query");
       const body = ctx.req.valid("form");
       const { password } = body;
@@ -560,7 +559,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
 
-      const { env } = ctx;
       const { vendorSettings, session, client } = await initJSXRoute(
         ctx,
         state,
