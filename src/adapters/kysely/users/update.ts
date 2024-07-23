@@ -1,7 +1,7 @@
 import { PostUsersBody } from "@authhero/adapter-interfaces";
 import { Kysely } from "kysely";
 import { Database } from "../db";
-import { SqlUser } from "../../../types";
+import { SqlUser } from "./SqlUser";
 
 function getEmailVerified(user: Partial<PostUsersBody>): number | undefined {
   if (user.email_verified === undefined) {

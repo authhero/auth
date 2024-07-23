@@ -1,5 +1,5 @@
 import { LogsResponse } from "@authhero/adapter-interfaces";
-import { SqlLog } from "../../../types";
+import { SqlLog } from "./Log";
 
 function tryParseJSON(jsonString?: string): any {
   if (!jsonString) {

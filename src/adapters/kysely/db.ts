@@ -1,14 +1,6 @@
-import { SqlBranding } from "../../types/sql/Branding";
-import {
-  Migration,
-  SqlTicket,
-  SqlOTP,
-  SqlPassword,
-  SqlUniversalLoginSession,
-  SqlLog,
-} from "../../types";
-import { SqlAuthenticationCode } from "../../types/sql/AuthenticationCode";
-import { SqlUser } from "../../types/sql/User";
+import { SqlBranding } from "./branding/Branding";
+import { SqlAuthenticationCode } from "./authenticationCodes/AuthenticationCode";
+import { SqlUser } from "./users/User";
 import {
   Application,
   Certificate,
@@ -18,6 +10,11 @@ import {
   Hook,
   Tenant,
 } from "@authhero/adapter-interfaces";
+import { SqlOTP } from "./otps/OTP";
+import { SqlPassword } from "./passwords/Password";
+import { SqlTicket } from "./tickets/Ticket";
+import { SqlUniversalLoginSession } from "./universalLoginSessions/UniversalLoginSession";
+import { SqlLog } from "./logs/Log";
 
 // TODO: Update the colums to match the session entity
 interface SqlSession {
@@ -43,7 +40,6 @@ export interface Database {
   users: SqlUser;
   applications: Application & { tenant_id: string };
   connections: Connection & { tenant_id: string };
-  migrations: Migration;
   otps: SqlOTP;
   passwords: SqlPassword;
   sessions: SqlSession;

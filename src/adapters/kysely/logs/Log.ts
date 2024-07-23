@@ -1,4 +1,4 @@
-import { LogType } from "../auth0";
+import { LogType } from "../../../types/auth0";
 
 export interface SqlLog {
   id: string;
