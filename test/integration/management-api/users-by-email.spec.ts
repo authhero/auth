@@ -4,7 +4,7 @@ import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 import { UserResponse } from "../../../src/types/auth0";
-import { Identity } from "../../../src/types/auth0/Identity";
+import { Identity } from "@authhero/adapter-interfaces";
 
 describe("users by email", () => {
   it("should return empty list if there are no users with queried email address", async () => {
