@@ -4,13 +4,13 @@ import bcryptjs from "bcryptjs";
 import { migrateToLatest } from "../../../migrate/migrate";
 import { getCertificate } from "./token";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
-import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { addDataHooks } from "../../../src/hooks";
 import {
   Application,
   AuthorizationResponseMode,
   AuthorizationResponseType,
+  Client,
   Connection,
   Tenant,
 } from "@authhero/adapter-interfaces";

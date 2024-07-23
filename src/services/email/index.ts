@@ -1,5 +1,5 @@
+import { Client } from "@authhero/adapter-interfaces";
 import { getDomainFromEmail } from "../../utils/email";
-import { Client } from "../../types";
 import { EmailOptions } from "./EmailOptions";
 
 import sendWithMailchannels from "./mailchannels";

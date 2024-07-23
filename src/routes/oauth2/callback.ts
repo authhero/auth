@@ -1,11 +1,11 @@
 import { socialAuthCallback } from "../../authentication-flows";
-import { Env, LoginState } from "../../types";
+import { Env } from "../../types";
 import { stateDecode } from "../../utils/stateEncode";
-import { getClient } from "../../services/clients";
 import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Var } from "../../types/Var";
 import { setSearchParams } from "../../utils/url";
+import { LoginState } from "@authhero/adapter-interfaces";
 
 export const callbackRoutes = new OpenAPIHono<{
   Bindings: Env;

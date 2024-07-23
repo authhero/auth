@@ -1,7 +1,11 @@
 import { Env } from "../types";
-import { Client, ClientSchema, PartialClientSchema } from "../types/Client";
 import { DefaultSettings, getDefaultSettings } from "../models/DefaultSettings";
 import { HTTPException } from "hono/http-exception";
+import {
+  Client,
+  ClientSchema,
+  PartialClientSchema,
+} from "@authhero/adapter-interfaces";
 
 // Thsese default settings are static and don't contain any keys
 const defaultSettings: DefaultSettings = {
