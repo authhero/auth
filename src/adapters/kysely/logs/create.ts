@@ -1,7 +1,6 @@
 import { Kysely } from "kysely";
 import { nanoid } from "nanoid";
 import { Log } from "@authhero/adapter-interfaces";
-import { SqlLog } from "../../../types";
 import { Database } from "../db";
 
 function stringifyIfTruthy<T>(value: T | undefined): string | undefined {
