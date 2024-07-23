@@ -299,7 +299,7 @@ describe("magic link flow", () => {
       });
     });
 
-    it.only("is an existing linked user", async () => {
+    it("is an existing linked user", async () => {
       const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);
 

@@ -103,7 +103,7 @@ describe("users management API endpoint", () => {
       ]);
     });
 
-    describe.only("should return a 409 if you create the same passwordless email user twice when existing user:", () => {
+    describe("should return a 409 if you create the same passwordless email user twice when existing user:", () => {
       it("is an existing primary account", async () => {
         const token = await getAdminToken();
 
