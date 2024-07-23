@@ -672,7 +672,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       );
 
       // we want to be able to override this with a value in the POST
-      if (params.login_selection !== SesamyPasswordLoginSelection.code) {
+      if (
+        params.login_selection !== SesamyPasswordLoginSelection.code &&
+        // Check that a password user is available
+        user?.identities?.find((i) => i.provider === "auth2")
+      ) {
         const passwordLoginSelection =
           parsePasswordLoginSelectionCookie(
             getCookie(ctx, getPasswordLoginSelectionCookieName(client.id)),
