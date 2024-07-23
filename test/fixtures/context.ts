@@ -4,16 +4,16 @@ import {
   ConnectionInsert,
   Domain,
   OTP,
+  Password,
   SessionInsert,
   Tenant,
   Ticket,
   User,
 } from "@authhero/adapter-interfaces";
-import { Env, PasswordParams } from "../../src/types";
+import { Env } from "../../src/types";
 import { oAuth2ClientFactory } from "./oauth2Client";
 import { EmailOptions } from "../../src/services/email/EmailOptions";
 import { Var } from "../../src/types/Var";
-import createAdapters from "../../src/adapters/kysely";
 import { getCertificate } from "../integration/helpers/token";
 import { sendLink, sendCode } from "../../src/controllers/email";
 import {
@@ -25,7 +25,7 @@ import {
 import { migrateToLatest } from "../../migrate/migrate";
 import SQLite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { Database } from "../../src/adapters/kysely/db";
+import createAdapters, { Database } from "@authhero/kysely-adapter";
 
 interface ContextFixtureParams {
   headers?: { [key: string]: string };
@@ -33,7 +33,7 @@ interface ContextFixtureParams {
   tickets?: Ticket[];
   sessions?: SessionInsert[];
   otps?: OTP[];
-  passwords?: PasswordParams[];
+  passwords?: Password[];
   users?: User[];
   userData?: { [key: string]: string | boolean };
   email?: {

@@ -1,5 +1,5 @@
 import { Kysely } from "kysely";
-import { Database } from "../../src/adapters/kysely/db";
+import { Database } from "@authhero/kysely-adapter";
 
 export async function up(db: Kysely<Database>): Promise<void> {
   // Run this is the console to update the user indexes

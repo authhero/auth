@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { Context } from "hono";
+import bcryptjs from "bcryptjs";
 import { Var, Env } from "../types";
 import {
   getPrimaryUserByEmailAndProvider,
@@ -83,9 +84,6 @@ export async function loginWithPassword(
     throw new HTTPException(400, { message: "Username is required" });
   }
 
-  ctx.set("client_id", client.id);
-  ctx.set("userName", email);
-
   const user = await getUserByEmailAndProvider({
     userAdapter: ctx.env.data.users,
     tenant_id: client.tenant_id,
@@ -103,10 +101,12 @@ export async function loginWithPassword(
   ctx.set("connection", user.connection);
   ctx.set("userId", user.user_id);
 
-  const { valid } = await env.data.passwords.validate(client.tenant_id, {
-    user_id: user.user_id,
-    password: authParams.password,
-  });
+  const { password } = await env.data.passwords.get(
+    client.tenant_id,
+    user.user_id,
+  );
+
+  const valid = await bcryptjs.compare(authParams.password, password);
 
   if (!valid) {
     const log = createLogMessage(ctx, {

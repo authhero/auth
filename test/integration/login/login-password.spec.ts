@@ -12,6 +12,7 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import {
   AuthorizationResponseType,
   Log,
+  LogTypes,
   User,
   UserResponse,
 } from "@authhero/adapter-interfaces";
@@ -64,6 +65,7 @@ describe("Register password", () => {
         "re-enter-password": password,
       },
     });
+
     expect(createUserResponse.status).toBe(200);
     await snapshotResponse(createUserResponse);
 
@@ -759,7 +761,11 @@ describe("Login with password user", () => {
       per_page: 100,
       include_totals: true,
     });
-    expect(logs[0]).toMatchObject({
+
+    const failedLoginLog = logs.find(
+      (log) => log.type === LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD,
+    );
+    expect(failedLoginLog).toMatchObject({
       type: "fp",
       tenant_id: "tenantId",
       user_name: "foo@example.com",

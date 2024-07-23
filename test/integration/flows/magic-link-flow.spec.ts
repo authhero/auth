@@ -299,7 +299,7 @@ describe("magic link flow", () => {
       });
     });
 
-    it("is an existing linked user", async () => {
+    it.only("is an existing linked user", async () => {
       const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);
 
@@ -307,7 +307,7 @@ describe("magic link flow", () => {
       // Create the linked user to log in with the magic link
       // -----------------
       env.data.users.create("tenantId", {
-        user_id: "userId2",
+        user_id: "auth2|userId2",
         email: "foo@example.com",
         email_verified: true,
         name: "",

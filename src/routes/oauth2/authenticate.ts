@@ -49,7 +49,9 @@ export const authenticateRoutes = new OpenAPIHono<{
     }),
     async (ctx) => {
       const { client_id, username, otp, password } = ctx.req.valid("json");
+      ctx.set("userName", username);
       const client = await getClient(ctx.env, client_id);
+      ctx.set("client_id", client_id);
 
       const email = username.toLocaleLowerCase();
 

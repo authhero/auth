@@ -1,5 +1,5 @@
+import { Database } from "@authhero/kysely-adapter";
 import { Kysely } from "kysely";
-import { Database } from "../adapters/kysely/db";
 
 export async function cleanup(db: Kysely<Database>) {
   const oneWeekAgo = new Date(

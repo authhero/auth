@@ -3,9 +3,9 @@ import { BunSqliteDialect } from "kysely-bun-sqlite";
 import * as bunSqlite from "bun:sqlite";
 import { getDb } from "../src/services/db";
 import { migrateToLatest } from "../migrate/migrate";
-import createAdapters from "../src/adapters/kysely";
 import { create } from "../src/services/rsa-key";
 import userIdGenerate from "../src/utils/userIdGenerate";
+import createAdapters from "@authhero/kysely-adapter";
 
 const dialect = new BunSqliteDialect({
   database: new bunSqlite.Database("db.sqlite"),

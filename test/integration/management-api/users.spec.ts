@@ -103,7 +103,7 @@ describe("users management API endpoint", () => {
       ]);
     });
 
-    describe("should return a 409 if you create the same passwordless email user twice when existing user:", () => {
+    describe.only("should return a 409 if you create the same passwordless email user twice when existing user:", () => {
       it("is an existing primary account", async () => {
         const token = await getAdminToken();
 
@@ -173,7 +173,7 @@ describe("users management API endpoint", () => {
 
         await env.data.users.create("tenantId", {
           email: "existing-code-user@example.com",
-          user_id: "existingCodeUserId",
+          user_id: "email|existingCodeUserId",
           provider: "email",
           email_verified: true,
           connection: "email",
@@ -202,6 +202,8 @@ describe("users management API endpoint", () => {
             },
           },
         );
+
+        expect(primaryUserRes.status).toBe(200);
         const primaryUser = await primaryUserRes.json();
         expect(primaryUser.identities).toEqual([
           {

@@ -4,7 +4,7 @@ import "dotenv/config";
 import ReferenceMigrationProvider from "./ReferenceMigrationProvider";
 import migrations from "./migrations";
 import { getDb } from "../src/services/db";
-import { Database } from "../src/adapters/kysely/db";
+import { Database } from "@authhero/kysely-adapter";
 
 export async function migrateToLatest(
   dialect: Dialect,

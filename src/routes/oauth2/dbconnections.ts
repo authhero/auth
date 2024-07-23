@@ -1,5 +1,6 @@
 import { HTTPException } from "hono/http-exception";
 import { nanoid } from "nanoid";
+import bcryptjs from "bcryptjs";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import userIdGenerate from "../../utils/userIdGenerate";
 import { getClient } from "../../services/clients";
@@ -103,7 +104,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       // Store the password
       await ctx.env.data.passwords.create(client.tenant_id, {
         user_id: newUser.user_id,
-        password,
+        password: bcryptjs.hashSync(password, 10),
       });
 
       await sendEmailVerificationEmail({

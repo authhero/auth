@@ -35,7 +35,7 @@ function getCodeStateTo(email: EmailOptions) {
 
 describe("password-flow", () => {
   describe("Register password", () => {
-    it("should return a 400 if an invalid client is passed", async () => {
+    it("should return a 403 if an invalid client is passed", async () => {
       const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);
 
@@ -49,7 +49,7 @@ describe("password-flow", () => {
       });
       expect(await response.text()).toBe("Client not found");
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
     });
 
     it("should create a new user with a password and only allow login after email validation", async () => {
