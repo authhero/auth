@@ -1,7 +1,6 @@
 import type { FC, JSXNode } from "hono/jsx";
 import Layout from "./Layout";
 import Button from "./Button";
-import { Client } from "../types";
 import i18next from "i18next";
 import cn from "classnames";
 import Icon from "./Icon";
@@ -9,7 +8,7 @@ import ErrorMessage from "./ErrorMessage";
 import DisabledSubmitButton from "./DisabledSubmitButton";
 import Form from "./Form";
 import { GoBack } from "./GoBack";
-import { VendorSettings } from "@authhero/adapter-interfaces";
+import { Client, VendorSettings } from "@authhero/adapter-interfaces";
 import Trans from "./Trans";
 
 type Props = {

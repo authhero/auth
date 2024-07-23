@@ -1,7 +1,12 @@
 import { Context } from "hono";
 import { Apple } from "arctic";
-import { AuthParams, LogTypes } from "@authhero/adapter-interfaces";
-import { Client, Env, LoginState } from "../types";
+import {
+  AuthParams,
+  Client,
+  LogTypes,
+  LoginState,
+} from "@authhero/adapter-interfaces";
+import { Env } from "../types";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { parseJwt } from "../utils/parse-jwt";
 import { validateRedirectUrl } from "../utils/validate-redirect-url";

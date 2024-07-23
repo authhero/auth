@@ -3,7 +3,7 @@ import {
   authorizationCodeGrantTypeParamsSchema,
   clientCredentialGrantTypeParamsSchema,
   pkceAuthorizationCodeGrantTypeParamsSchema,
-} from "../../types/Token";
+} from "@authhero/adapter-interfaces";
 import {
   authorizeCodeGrant,
   pkceAuthorizeCodeGrant,
