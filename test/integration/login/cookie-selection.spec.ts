@@ -79,7 +79,7 @@ test("after entering email should go to enter password step if password cookie i
     {
       query: { state: "session-id" },
       form: {
-        username: "test@example.com",
+        username: "foo@example.com",
       },
     },
     {
@@ -94,6 +94,31 @@ test("after entering email should go to enter password step if password cookie i
   expect(
     enterEmailResponseLocation!.startsWith("/u/enter-password"),
   ).toBeTruthy();
+});
+
+test("after entering email should go to enter code step if password cookie is set but no password user is available", async () => {
+  const env = await getEnv();
+  const oauthClient = testClient(oauthApp, env);
+
+  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+
+  const enterEmailResponse = await oauthClient.u["enter-email"].$post(
+    {
+      query: { state: "session-id" },
+      form: {
+        username: "test@example.com",
+      },
+    },
+    {
+      headers: {
+        cookie: "sesamy-password-login-selection-clientId=password",
+      },
+    },
+  );
+
+  const enterEmailResponseLocation = enterEmailResponse.headers.get("location");
+
+  expect(enterEmailResponseLocation!.startsWith("/u/enter-code")).toBeTruthy();
 });
 
 test("after entering email should go to enter code step if password cookie is set BUT have posted up login_selection code override", async () => {
