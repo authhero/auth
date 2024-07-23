@@ -1,4 +1,4 @@
-import { LogType, Auth0Client } from "./auth0";
+import { Auth0Client } from "@authhero/adapter-interfaces";
 import { z } from "zod";
 
 export type Var = {

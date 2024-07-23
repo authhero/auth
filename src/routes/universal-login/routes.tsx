@@ -1051,6 +1051,12 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           password: await bcryptjs.hash(loginParams.password, 10),
         });
 
+        const log = createLogMessage(ctx, {
+          type: LogTypes.SUCCESS_SIGNUP,
+          description: "Successful signup",
+        });
+        await ctx.env.data.logs.create(client.tenant_id, log);
+
         if (!email_verified) {
           await sendEmailVerificationEmail({
             env: ctx.env,
@@ -1058,22 +1064,18 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             user: newUser,
             authParams: session.authParams,
           });
+
+          return ctx.html(
+            <MessagePage
+              message={i18next.t("validate_email_body")}
+              pageTitle={i18next.t("validate_email_title")}
+              vendorSettings={vendorSettings}
+              state={state}
+            />,
+          );
         }
 
-        const log = createLogMessage(ctx, {
-          type: LogTypes.SUCCESS_SIGNUP,
-          description: "Successful signup",
-        });
-        await ctx.env.data.logs.create(client.tenant_id, log);
-
-        return ctx.html(
-          <MessagePage
-            message={i18next.t("validate_email_body")}
-            pageTitle={i18next.t("validate_email_title")}
-            vendorSettings={vendorSettings}
-            state={state}
-          />,
-        );
+        return handleLogin(ctx, newUser, session, client);
       } catch (err: any) {
         const vendorSettings = await fetchVendorSettings(
           env,
