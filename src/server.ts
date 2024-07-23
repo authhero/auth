@@ -1,11 +1,11 @@
 import { Env } from "./types/Env";
 import app from "./app";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
-import createAdapters from "./adapters/kysely";
 import { PlanetScaleDialect } from "kysely-planetscale";
 import { getDb } from "./services/db";
 import sendEmail from "./services/email";
 import { addDataHooks } from "./hooks";
+import createAdapters from "@authhero/kysely-adapter";
 
 const server = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {

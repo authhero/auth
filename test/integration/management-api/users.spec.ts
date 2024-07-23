@@ -173,7 +173,7 @@ describe("users management API endpoint", () => {
 
         await env.data.users.create("tenantId", {
           email: "existing-code-user@example.com",
-          user_id: "existingCodeUserId",
+          user_id: "email|existingCodeUserId",
           provider: "email",
           email_verified: true,
           connection: "email",
@@ -202,6 +202,8 @@ describe("users management API endpoint", () => {
             },
           },
         );
+
+        expect(primaryUserRes.status).toBe(200);
         const primaryUser = await primaryUserRes.json();
         expect(primaryUser.identities).toEqual([
           {

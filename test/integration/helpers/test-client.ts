@@ -1,9 +1,8 @@
 import { Kysely, SqliteDialect } from "kysely";
 import SQLite from "better-sqlite3";
+import bcryptjs from "bcryptjs";
 import { migrateToLatest } from "../../../migrate/migrate";
-import createAdapters from "../../../src/adapters/kysely";
 import { getCertificate } from "./token";
-import { Database } from "../../../src/adapters/kysely/db";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import type { Client } from "../../../src/types";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
@@ -15,6 +14,7 @@ import {
   Connection,
   Tenant,
 } from "@authhero/adapter-interfaces";
+import createAdapters, { Database } from "@authhero/kysely-adapter";
 
 type getEnvParams = {
   testTenantLanguage?: string;
@@ -204,7 +204,10 @@ export async function getEnv(args: getEnvParams = {}) {
     updated_at: new Date().toISOString(),
   });
 
-  await data.passwords.create("tenantId", testPasswordUser);
+  await data.passwords.create("tenantId", {
+    user_id: testPasswordUser.user_id,
+    password: bcryptjs.hashSync(testPasswordUser.password, 10),
+  });
 
   return {
     data: { ...addDataHooks(data), emails },

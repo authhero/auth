@@ -273,46 +273,55 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       const user_id = `${body.provider}|${body["user_id"] || userIdGenerate()}`;
 
-      const data = await ctx.env.data.users.create(tenant_id, {
-        email,
-        user_id,
-        name: body.name || email,
-        provider: body.provider,
-        connection: body.connection,
-        // we need to be careful with this as the profile service was setting this true in places where I don't think it's correct
-        // AND when does the account linking happen then? here? first login?
-        email_verified: body.email_verified || false,
-        last_ip: "",
-        login_count: 0,
-        is_social: false,
-        last_login: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+      try {
+        const data = await ctx.env.data.users.create(tenant_id, {
+          email,
+          user_id,
+          name: body.name || email,
+          provider: body.provider,
+          connection: body.connection,
+          // we need to be careful with this as the profile service was setting this true in places where I don't think it's correct
+          // AND when does the account linking happen then? here? first login?
+          email_verified: body.email_verified || false,
+          last_ip: "",
+          login_count: 0,
+          is_social: false,
+          last_login: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
 
-      ctx.set("userId", data.user_id);
+        ctx.set("userId", data.user_id);
 
-      const log = createLogMessage(ctx, {
-        type: LogTypes.SUCCESS_API_OPERATION,
-        description: "User created",
-      });
-      waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
+        const log = createLogMessage(ctx, {
+          type: LogTypes.SUCCESS_API_OPERATION,
+          description: "User created",
+        });
+        waitUntil(ctx, ctx.env.data.logs.create(tenant_id, log));
 
-      const userResponse = {
-        ...data,
-        identities: [
-          {
-            connection: data.connection,
-            provider: data.provider,
-            user_id: userIdParse(data.user_id),
-            isSocial: data.is_social,
-          },
-        ],
-      };
+        const userResponse = {
+          ...data,
+          identities: [
+            {
+              connection: data.connection,
+              provider: data.provider,
+              user_id: userIdParse(data.user_id),
+              isSocial: data.is_social,
+            },
+          ],
+        };
 
-      return ctx.json(auth0UserResponseSchema.parse(userResponse), {
-        status: 201,
-      });
+        return ctx.json(auth0UserResponseSchema.parse(userResponse), {
+          status: 201,
+        });
+      } catch (err: any) {
+        if (err.message === "User already exists") {
+          throw new HTTPException(409, {
+            message: "User already exists",
+          });
+        }
+        throw err;
+      }
     },
   )
   // --------------------------------

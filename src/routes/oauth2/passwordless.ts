@@ -153,10 +153,8 @@ export const passwordlessRoutes = new OpenAPIHono<{
           user,
           authParams,
         });
-      } catch (e) {
-        // Ideally here only catch AuthenticationCodeExpiredError
-        // redirect here always to login2.sesamy.dev/expired-code
-
+      } catch (e: any) {
+        // TODO: add the expired code page
         const locale = client.tenant.language || "sv";
 
         const login2ExpiredCodeUrl = new URL(`${env.LOGIN2_URL}/expired-code`);

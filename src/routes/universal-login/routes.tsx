@@ -26,7 +26,6 @@ import generateOTP from "../../utils/otp";
 import {
   sendLink,
   sendCode,
-  sendValidateEmailAddress,
   sendSignupValidateEmailAddress,
 } from "../../controllers/email";
 import { validateCode } from "../../authentication-flows/passwordless";
@@ -54,12 +53,12 @@ import {
   LogTypes,
   UniversalLoginSession,
   User,
-  otpInsertSchema,
 } from "@authhero/adapter-interfaces";
 import CheckEmailPage from "../../components/CheckEmailPage";
 import { getAuthCookie } from "../../services/cookies";
 import PreSignupPage from "../../components/PreSignUpPage";
 import PreSignupComfirmationPage from "../../components/PreSignUpConfirmationPage";
+import bcryptjs from "bcryptjs";
 
 async function initJSXRoute(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -72,6 +71,7 @@ async function initJSXRoute(
   }
 
   const client = await getClient(env, session.authParams.client_id);
+  ctx.set("client_id", client.id);
 
   const tenant = await env.data.tenants.get(client.tenant_id);
   if (!tenant) {
@@ -227,6 +227,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       if (!username) {
         throw new HTTPException(400, { message: "Username required" });
       }
+      ctx.set("userName", username);
 
       try {
         const user = await loginWithPassword(ctx, client, {
@@ -419,7 +420,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         await env.data.passwords.update(client.tenant_id, {
           user_id: user.user_id,
-          password,
+          password: await bcryptjs.hash(password, 10),
         });
 
         // we could do this on the GET...
@@ -1047,7 +1048,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
         await env.data.passwords.create(client.tenant_id, {
           user_id: newUser.user_id,
-          password: loginParams.password,
+          password: await bcryptjs.hash(loginParams.password, 10),
         });
 
         if (!email_verified) {

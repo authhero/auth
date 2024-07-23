@@ -1,8 +1,8 @@
 import { Dialect, Kysely } from "kysely";
 // import { D1Dialect } from "kysely-d1";
-import { Database } from "../adapters/kysely/db";
 import { Env } from "../types/Env";
 import { PlanetScaleDialect } from "kysely-planetscale";
+import { Database } from "@authhero/kysely-adapter";
 
 let _db: Kysely<Database>;
 

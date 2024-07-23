@@ -17,13 +17,6 @@
   resolved "https://registry.yarnpkg.com/@ape-egg/tailwind-rows-columns/-/tailwind-rows-columns-1.0.2.tgz#abd8c8263c2a42922af8c4c401f7de44b1365fb5"
   integrity sha512-4Fy3KFWTNp6yBqHrbuu5OIUceekFb/EgNpNzyFONBImUNuo/p6vScYj7p998PSr2D3IhDMrgBJmT9YDShMuZYw==
 
-"@asteasolutions/zod-to-openapi@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@asteasolutions/zod-to-openapi/-/zod-to-openapi-7.0.0.tgz#8713b2171000521019b5e69120f3ccbbffde6bbe"
-  integrity sha512-rJRKHD2m6nUb/9ZheeN8nqOURX24WTzY8Sex1ZKT0Kpx+xfpRcD0fTD6vEeXNHGaDGxzu65Jj/jb2x6nLTjcMw==
-  dependencies:
-    openapi3-ts "^4.1.2"
-
 "@asteasolutions/zod-to-openapi@^7.1.0":
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/@asteasolutions/zod-to-openapi/-/zod-to-openapi-7.1.1.tgz#27784396d9f854db975a3b784095efef25258422"
@@ -31,12 +24,25 @@
   dependencies:
     openapi3-ts "^4.1.2"
 
-"@authhero/adapter-interfaces@0.5.3":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@authhero/adapter-interfaces/-/adapter-interfaces-0.5.3.tgz#8b97ea58508ced8e28e4bf0a96f6f02c69444f6f"
-  integrity sha512-EsT8u+4TpHeSCMgOL+axvmhAYotdmiwRE2pFjnOuL2wj9I6T891RvFlOzt0UOd4eBJRgYfivYRyynaxeqBNrXQ==
+"@authhero/adapter-interfaces@0.8.0", "@authhero/adapter-interfaces@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@authhero/adapter-interfaces/-/adapter-interfaces-0.8.0.tgz#da3a86e9b5ce5b6a88f68da8df72e1ea6dc03071"
+  integrity sha512-RqNIG01L6LuSiZolk/e14E2VT7qI6nQDuhdl+sIdiVEVf4nUv6/cpgud4gVgtYchdwUnvKyoOvlNR0JKxSahww==
   dependencies:
     "@hono/zod-openapi" "^0.14.5"
+
+"@authhero/kysely-adapter@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@authhero/kysely-adapter/-/kysely-adapter-0.4.1.tgz#a0729b881cf7d4f09be7f81601abc6caf5e3ed62"
+  integrity sha512-YSHw33/YXltnPrCl69AwGBhErDpyVRD53TkIvgRJYpUB/9Gy3YjWRGbhSrtgZ7EcnMMldnc5/T7EW480B9Vxrg==
+  dependencies:
+    "@authhero/adapter-interfaces" "^0.8.0"
+    "@hono/zod-openapi" "^0.14.5"
+    hono "^4.4.10"
+    kysely "^0.27.4"
+    kysely-bun-sqlite "^0.3.2"
+    kysely-planetscale "^1.4.0"
+    nanoid "^5.0.7"
 
 "@babel/code-frame@^7.0.0":
   version "7.22.13"
@@ -476,13 +482,13 @@
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.0.0.tgz#f22824caff3ae506b18207bad4126dbc6ccdb6b8"
   integrity sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==
 
-"@hono/zod-openapi@0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-0.14.0.tgz#5d979fdd323d002169b216aa57ecae7530adb0e5"
-  integrity sha512-sbOdfPlm8uT/2RypeNw9BIcqZ9AkLJdWYhfx6r6/RamkE193FO9Z980W9+IaYCkqBTlDWAh5zHYWjLkN8lfmCg==
+"@hono/zod-openapi@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-0.15.1.tgz#49bc2ac8ed507bbc0fa255b4faedbcc916afd7d9"
+  integrity sha512-2Un3D5xD1j4tIvUwzQ/XkB6xwrEA0Ne23TRjB8UVw0PgUWzsB3xiB8Hl/y2ZEMfcIfrA15/ga4P6Bkct8uYaLg==
   dependencies:
-    "@asteasolutions/zod-to-openapi" "^7.0.0"
-    "@hono/zod-validator" "0.2.1"
+    "@asteasolutions/zod-to-openapi" "^7.1.0"
+    "@hono/zod-validator" "0.2.2"
 
 "@hono/zod-openapi@^0.14.5":
   version "0.14.9"
@@ -491,11 +497,6 @@
   dependencies:
     "@asteasolutions/zod-to-openapi" "^7.1.0"
     "@hono/zod-validator" "0.2.2"
-
-"@hono/zod-validator@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@hono/zod-validator/-/zod-validator-0.2.1.tgz#41ed7464fea2f1453e22e812fe9de0b5119c158e"
-  integrity sha512-HFoxln7Q6JsE64qz2WBS28SD33UB2alp3aRKmcWnNLDzEL1BLsWfbdX6e1HIiUprHYTIXf5y7ax8eYidKUwyaA==
 
 "@hono/zod-validator@0.2.2":
   version "0.2.2"
@@ -3628,6 +3629,11 @@ hono@4.4.0:
   resolved "https://registry.yarnpkg.com/hono/-/hono-4.4.0.tgz#df456c61fab856db3d546869ec8d86839ff31b54"
   integrity sha512-Bb2GHk8jmlLIuxc3U+7UBGOoA5lByJTAFnRdH2N2fqEVy9TEQzJ9saIJUQ/ZqBvEvgEFe7UjPFNSFi8cyeU+3Q==
 
+hono@^4.4.10:
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-4.5.1.tgz#a258710ffaba07d64580a0c112cba97c4319b606"
+  integrity sha512-6q8AugoWG5wlrjdGG8OFFiqEsPlPGjODjUik48sEJeko4Tae1UsLS2vUiYHLEJx1gJvOZa4BWkQC+urwDmkEvQ==
+
 hook-std@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/hook-std/-/hook-std-3.0.0.tgz#47038a01981e07ce9d83a6a3b2eb98cad0f7bd58"
@@ -4279,6 +4285,11 @@ kysely@^0.27.3:
   version "0.27.3"
   resolved "https://registry.yarnpkg.com/kysely/-/kysely-0.27.3.tgz#6cc6c757040500b43c4ac596cdbb12be400ee276"
   integrity sha512-lG03Ru+XyOJFsjH3OMY6R/9U38IjDPfnOfDgO3ynhbDr+Dz8fak+X6L62vqu3iybQnj+lG84OttBuU9KY3L9kA==
+
+kysely@^0.27.4:
+  version "0.27.4"
+  resolved "https://registry.yarnpkg.com/kysely/-/kysely-0.27.4.tgz#96a0285467b380948b4de03b20d87e82d797449b"
+  integrity sha512-dyNKv2KRvYOQPLCAOCjjQuCk4YFd33BvGdf/o5bC7FiW+BB6snA81Zt+2wT9QDFzKqxKa5rrOmvlK/anehCcgA==
 
 levn@^0.4.1:
   version "0.4.1"
@@ -5251,7 +5262,7 @@ mz@^2.4.0, mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-nanoid@5.0.7:
+nanoid@5.0.7, nanoid@^5.0.7:
   version "5.0.7"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-5.0.7.tgz#6452e8c5a816861fd9d2b898399f7e5fd6944cc6"
   integrity sha512-oLxFY2gd2IqnjcYyOXD8XGCftpGtZP2AbHbOkthDkvRywH5ayNtPVy9YlOPcHckXzbLTCHpkb7FB+yuxKV13pQ==
@@ -7722,6 +7733,11 @@ zod-validation-error@^3.0.3:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/zod-validation-error/-/zod-validation-error-3.1.0.tgz#ce6b74a67b1b28cbbc41f890e88b2778f856e1fe"
   integrity sha512-zujS6HqJjMZCsvjfbnRs7WI3PXN39ovTcY1n8a+KTm4kOH0ZXYsNiJkH1odZf4xZKMkBDL7M2rmQ913FCS1p9w==
+
+zod@3.23.8:
+  version "3.23.8"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
+  integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==
 
 zod@^3.20.6, zod@^3.22.4:
   version "3.22.4"

@@ -2,7 +2,7 @@ import * as fs from "fs";
 import { getDb } from "../src/services/db";
 import { z } from "zod";
 import { PlanetScaleDialect } from "kysely-planetscale";
-import { SqlUser } from "../src/adapters/kysely/users/SqlUser";
+import { SqlUser } from "@authhero/kysely-adapter";
 
 const profileDataSchema = z.object({
   email_verified: z.union([z.boolean(), z.string()]).optional(),
