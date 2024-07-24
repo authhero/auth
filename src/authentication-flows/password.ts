@@ -122,9 +122,6 @@ export async function loginWithPassword(
     });
   }
 
-  console.log("user.email_verified", user.email_verified);
-  console.log("email_validation", client.email_validation);
-
   if (!user.email_verified && client.email_validation === "enforced") {
     const { password, ...cleanAuthParams } = authParams;
     await sendEmailVerificationEmail({
