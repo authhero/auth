@@ -290,7 +290,7 @@ export async function sendSignupValidateEmailAddress(
       vendorName: client.tenant.name,
       logo,
       signupUrl,
-      signup: t("signup", options),
+      setPassword: t("set_password", options),
       registerPasswordAccount: t("register_password_account", options),
       clickToSignUpDescription: t("click_to_sign_up_description", options),
       supportUrl: client.tenant.support_url || "https://support.sesamy.com",

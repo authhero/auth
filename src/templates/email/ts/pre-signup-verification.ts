@@ -229,7 +229,7 @@ export const preSignupVerification = `
                                     <tr>
                                       <td align="center" bgcolor="{{buttonColor}}" role="presentation" style="border:none;border-radius:6px;cursor:auto;mso-padding-alt:15px 25px;background:{{buttonColor}};" valign="middle">
                                         <a href="{{signupUrl}}" style="display:inline-block;background:{{buttonColor}};color:#ffffff;font-family:KHTeka, Helvetica, sans-serif;font-size:16px;font-weight:normal;line-height:20px;margin:0;text-decoration:none;text-transform:none;padding:15px 25px;mso-padding-alt:0px;border-radius:6px;" target="_blank">
-                                          {{signup}}
+                                          {{setPassword}}
                                         </a>
                                       </td>
                                     </tr>

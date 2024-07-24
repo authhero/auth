@@ -995,24 +995,24 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(400, { message: "Username required" });
       }
 
-      if (!validatePassword(loginParams.password)) {
-        return ctx.html(
-          <SignupPage
-            state={state}
-            vendorSettings={vendorSettings}
-            error={i18next.t("create_account_weak_password")}
-            email={session.authParams.username}
-          />,
-          400,
-        );
-      }
-
       if (loginParams.password !== loginParams["re-enter-password"]) {
         return ctx.html(
           <SignupPage
             state={state}
             vendorSettings={vendorSettings}
             error={i18next.t("create_account_passwords_didnt_match")}
+            email={session.authParams.username}
+          />,
+          400,
+        );
+      }
+
+      if (!validatePassword(loginParams.password)) {
+        return ctx.html(
+          <SignupPage
+            state={state}
+            vendorSettings={vendorSettings}
+            error={i18next.t("create_account_weak_password")}
             email={session.authParams.username}
           />,
           400,
