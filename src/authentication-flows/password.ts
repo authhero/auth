@@ -91,9 +91,6 @@ export async function loginWithPassword(
     provider: "auth2",
   });
 
-  console.log("user", JSON.stringify(user));
-  console.log("email_validation", client.email_validation);
-
   if (!user) {
     throw new CustomException(403, {
       message: "User not found",
