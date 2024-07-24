@@ -3,12 +3,14 @@ import Icon from "./Icon";
 import i18next from "i18next";
 import type { FC } from "hono/jsx";
 import { VendorSettings } from "@authhero/adapter-interfaces";
+import { GoBack } from "./GoBack";
 
 type Props = {
   vendorSettings: VendorSettings;
+  state: string;
 };
 
-const UnverifiedEmail: FC<Props> = ({ vendorSettings }) => {
+const UnverifiedEmail: FC<Props> = ({ vendorSettings, state }) => {
   return (
     <Layout
       title={i18next.t("unverified_email")}
@@ -25,6 +27,7 @@ const UnverifiedEmail: FC<Props> = ({ vendorSettings }) => {
             {i18next.t("sent_code_spam")}
           </div>
         </div>
+        <GoBack state={state} />
       </div>
     </Layout>
   );

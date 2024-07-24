@@ -78,7 +78,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: hookInsertSchema,
+              schema: z.object(hookInsertSchema.shape),
             },
           },
         },

@@ -1,7 +1,6 @@
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { Env } from "../../types";
-import { Var } from "../../types/Var";
+import { Env, Var } from "../../types";
 import authenticationMiddleware from "../../middlewares/authentication";
 import { userSchema } from "@authhero/adapter-interfaces";
 

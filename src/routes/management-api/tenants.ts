@@ -151,7 +151,7 @@ export const tenantRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: tenantInsertSchema.partial(),
+              schema: z.object(tenantInsertSchema.shape).partial(),
             },
           },
         },
@@ -192,7 +192,7 @@ export const tenantRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: z.object({}).extend(tenantInsertSchema.shape),
+              schema: z.object(tenantInsertSchema.shape),
             },
           },
         },
