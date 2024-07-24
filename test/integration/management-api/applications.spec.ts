@@ -5,7 +5,7 @@ import { getAdminToken } from "../helpers/token";
 import { getEnv } from "../helpers/test-client";
 
 describe("applications", () => {
-  it("should add a new application", async () => {
+  it("should support crud", async () => {
     const env = await getEnv();
     const managementClient = testClient(managementApp, env);
 
@@ -29,10 +29,10 @@ describe("applications", () => {
       );
 
     expect(createApplicationResponse.status).toBe(201);
-    const createdConnection = await createApplicationResponse.json();
+    const createdApplication = await createApplicationResponse.json();
 
     const { created_at, updated_at, id, client_secret, ...rest } =
-      createdConnection;
+      createdApplication;
 
     expect(rest).toEqual({
       name: "app",
@@ -46,5 +46,101 @@ describe("applications", () => {
     expect(updated_at).toBeTypeOf("string");
     expect(client_secret).toBeTypeOf("string");
     expect(id).toBeTypeOf("string");
+
+    // --------------------------------------------
+    // PATCH
+    // --------------------------------------------
+    const patchResult = await managementClient.api.v2.applications[
+      ":id"
+    ].$patch(
+      {
+        param: {
+          id,
+        },
+        json: {
+          name: "new name",
+          email_validation: "disabled",
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    expect(patchResult.status).toBe(200);
+    const patchedApplication = await patchResult.json();
+    expect(patchedApplication.name).toBe("new name");
+    expect(patchedApplication.email_validation).toBe("disabled");
+
+    // --------------------------------------------
+    // GET
+    // --------------------------------------------
+    const getResponse = await managementClient.api.v2.applications[":id"].$get(
+      {
+        param: {
+          id,
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    expect(getResponse.status).toBe(200);
+
+    // --------------------------------------------
+    // DELETE
+    // --------------------------------------------
+    const deleteResponse = await managementClient.api.v2.applications[
+      ":id"
+    ].$delete(
+      {
+        param: {
+          id,
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    expect(deleteResponse.status).toBe(200);
+
+    // --------------------------------------------
+    // GET 404
+    // --------------------------------------------
+    const get404Response = await managementClient.api.v2.applications[
+      ":id"
+    ].$get(
+      {
+        param: {
+          id,
+        },
+        header: {
+          "tenant-id": "tenantId",
+        },
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    expect(get404Response.status).toBe(404);
   });
 });

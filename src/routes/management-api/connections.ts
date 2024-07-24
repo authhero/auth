@@ -169,7 +169,7 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: connectionInsertSchema.partial(),
+              schema: z.object(connectionInsertSchema.shape).partial(),
             },
           },
         },
@@ -219,7 +219,7 @@ export const connectionRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: z.object({}).extend(connectionInsertSchema.shape),
+              schema: z.object(connectionInsertSchema.shape),
             },
           },
         },

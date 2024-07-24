@@ -233,7 +233,7 @@ export const domainRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: domainInsertSchema,
+              schema: z.object(domainInsertSchema.shape),
             },
           },
         },
@@ -268,79 +268,6 @@ export const domainRoutes = new OpenAPIHono<{ Bindings: Env }>()
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
-
-      return ctx.json(domain);
-    },
-  )
-  // --------------------------------
-  // PUT /domains/:id
-  // --------------------------------
-  .openapi(
-    createRoute({
-      tags: ["domains"],
-      method: "put",
-      path: "/{:id}",
-      request: {
-        body: {
-          content: {
-            "application/json": {
-              schema: domainInsertSchema,
-            },
-          },
-        },
-        params: z.object({
-          id: z.string(),
-        }),
-        headers: z.object({
-          "tenant-id": z.string(),
-        }),
-      },
-      middleware: [authenticationMiddleware({ scopes: ["auth:write"] })],
-      security: [
-        {
-          Bearer: ["auth:write"],
-        },
-      ],
-      responses: {
-        200: {
-          content: {
-            "domain/json": {
-              schema: domainSchema,
-            },
-          },
-          description: "An domain",
-        },
-      },
-    }),
-    async (ctx) => {
-      const { "tenant-id": tenant_id } = ctx.req.valid("header");
-      const { id } = ctx.req.valid("param");
-      const body = ctx.req.valid("json");
-
-      const domain = {
-        ...body,
-        tenant_id,
-        id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const db = getDbFromEnv(ctx.env);
-
-      try {
-        await db.insertInto("domains").values(domain).execute();
-      } catch (err: any) {
-        if (!err.message.includes("AlreadyExists")) {
-          throw err;
-        }
-
-        const { id, created_at, tenant_id: tenantId, ...domainUpdate } = domain;
-        await db
-          .updateTable("domains")
-          .set(domainUpdate)
-          .where("id", "=", domain.id)
-          .execute();
-      }
 
       return ctx.json(domain);
     },

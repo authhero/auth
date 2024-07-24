@@ -27,6 +27,7 @@ const UnverifiedEmailPage: FC<Props> = ({ vendorSettings, state }) => {
             {i18next.t("sent_code_spam")}
           </div>
         </div>
+        <GoBack state={state} />
       </div>
       <GoBack state={state} />
     </Layout>

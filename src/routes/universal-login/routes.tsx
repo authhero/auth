@@ -260,6 +260,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
               vendorSettings={vendorSettings}
               state={state}
             />,
+
             400,
           );
         }
@@ -477,12 +478,14 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     async (ctx) => {
       const { state } = ctx.req.valid("query");
 
-      const { env } = ctx;
-
-      const { vendorSettings } = await initJSXRoute(ctx, state);
+      const { vendorSettings, session } = await initJSXRoute(ctx, state);
 
       return ctx.html(
-        <ForgotPasswordPage vendorSettings={vendorSettings} state={state} />,
+        <ForgotPasswordPage
+          vendorSettings={vendorSettings}
+          state={state}
+          email={session.authParams.username}
+        />,
       );
     },
   )

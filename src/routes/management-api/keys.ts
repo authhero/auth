@@ -4,7 +4,6 @@ import { HTTPException } from "hono/http-exception";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import authenticationMiddleware from "../../middlewares/authentication";
 import {
-  Certificate,
   certificateSchema,
   signingKeySchema,
 } from "@authhero/adapter-interfaces";

@@ -1,13 +1,12 @@
 import { HTTPException } from "hono/http-exception";
 import userIdGenerate from "../../utils/userIdGenerate";
 import userIdParse from "../../utils/userIdParse";
-import { Env } from "../../types";
+import { Env, Var } from "../../types";
 import { getUsersByEmail } from "../../utils/users";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { auth0QuerySchema } from "../../types/auth0/Query";
 import { parseSort } from "../../utils/sort";
 import { createLogMessage } from "../../utils/create-log-message";
-import { Var } from "../../types/Var";
 import { waitUntil } from "../../utils/wait-until";
 import authenticationMiddleware from "../../middlewares/authentication";
 import {
