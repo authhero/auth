@@ -441,10 +441,9 @@ describe("password-flow", () => {
       expect(Date.now() - lastLogin.getTime()).lessThan(1000);
     });
 
-    // this test looks like a duplicate of "should create a new user with a password and only allow login after email validation"
     it("should resend email validation email after login attempts, and this should work", async () => {
       const password = "Password1234!";
-      const env = await getEnv({ emailValidation: "disabled" });
+      const env = await getEnv();
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -467,35 +466,10 @@ describe("password-flow", () => {
         },
       });
 
-      const { login_ticket } = (await loginResponse.json()) as {
-        login_ticket: string;
-      };
-
       // ---------------------------
       // this will not work because email not validated
-      // the user is redirected to a page informing them that they need to validate their email
       // ---------------------------
-      const res = await oauthClient.authorize.$get(
-        {
-          query: {
-            auth0Client: "eyJuYW1lIjoiYXV0aDAuanMiLCJ2ZXJzaW9uIjoiOS4yMy4wIn0=",
-            client_id: "clientId",
-            login_ticket,
-            response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
-            redirect_uri: "http://login.example.com",
-            state: "state",
-            realm: "Username-Password-Authentication",
-          },
-        },
-        {
-          headers: {
-            referrer: "https://login.example.com",
-          },
-        },
-      );
-      expect(res.headers.get("location")).toBe(
-        "https://login2.sesamy.dev/unverified-email?email=password-login-test%40example.com&lang=sv",
-      );
+      expect(loginResponse.status).toBe(403);
 
       // this is the difference to the previous test - we are using the verified email that is sent after a failed login
       // either of these two emails would work

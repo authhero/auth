@@ -14,7 +14,7 @@ export const authenticateRoutes = new OpenAPIHono<{
   Variables: Var;
 }>()
   // --------------------------------
-  // GET /co/authenticate
+  // POST /co/authenticate
   // --------------------------------
   .openapi(
     createRoute({
