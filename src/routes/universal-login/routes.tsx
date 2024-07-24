@@ -15,7 +15,6 @@ import EnterPasswordPage from "../../components/EnterPasswordPage";
 import EnterEmailPage from "../../components/EnterEmailPage";
 import EnterCodePage from "../../components/EnterCodePage";
 import SignupPage from "../../components/SignUpPage";
-import UnverifiedEmail from "../../components/UnverifiedEmailPage";
 import MessagePage from "../../components/Message";
 import EmailValidatedPage from "../../components/EmailValidatedPage";
 import { nanoid } from "nanoid";
@@ -59,6 +58,7 @@ import { getAuthCookie } from "../../services/cookies";
 import PreSignupPage from "../../components/PreSignUpPage";
 import PreSignupComfirmationPage from "../../components/PreSignUpConfirmationPage";
 import bcryptjs from "bcryptjs";
+import UnverifiedEmailPage from "../../components/UnverifiedEmailPage";
 
 async function initJSXRoute(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -256,7 +256,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         } else if (customException.code === "EMAIL_NOT_VERIFIED") {
           // login2 looks a bit better - https://login2.sesamy.dev/unverified-email
           return ctx.html(
-            <UnverifiedEmail vendorSettings={vendorSettings} state={state} />,
+            <UnverifiedEmailPage
+              vendorSettings={vendorSettings}
+              state={state}
+            />,
+
             400,
           );
         }

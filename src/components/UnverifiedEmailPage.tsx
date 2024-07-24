@@ -10,7 +10,7 @@ type Props = {
   state: string;
 };
 
-const UnverifiedEmail: FC<Props> = ({ vendorSettings, state }) => {
+const UnverifiedEmailPage: FC<Props> = ({ vendorSettings, state }) => {
   return (
     <Layout
       title={i18next.t("unverified_email")}
@@ -29,8 +29,9 @@ const UnverifiedEmail: FC<Props> = ({ vendorSettings, state }) => {
         </div>
         <GoBack state={state} />
       </div>
+      <GoBack state={state} />
     </Layout>
   );
 };
 
-export default UnverifiedEmail;
+export default UnverifiedEmailPage;
