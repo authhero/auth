@@ -59,7 +59,7 @@ import PreSignupPage from "../../components/PreSignUpPage";
 import PreSignupComfirmationPage from "../../components/PreSignUpConfirmationPage";
 import bcryptjs from "bcryptjs";
 import UnverifiedEmailPage from "../../components/UnverifiedEmailPage";
-import ForgotPasswordSentPage from "src/components/ForgotPasswordSentPage";
+import ForgotPasswordSentPage from "../../components/ForgotPasswordSentPage";
 
 async function initJSXRoute(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -447,7 +447,8 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       return ctx.html(
-        <ForgotPasswordSentPage
+        <MessagePage
+          message={i18next.t("password_has_been_reset")}
           vendorSettings={vendorSettings}
           state={state}
         />,
@@ -542,8 +543,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       await requestPasswordReset(ctx, client, username, session.id);
 
       return ctx.html(
-        <MessagePage
-          message={i18next.t("forgot_password_email_sent")}
+        <ForgotPasswordSentPage
           vendorSettings={vendorSettings}
           state={state}
         />,
