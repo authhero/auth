@@ -40,17 +40,12 @@ const EnterEmailPage: FC<Props> = ({
   const showVipps = connections.includes("vipps");
   const anySocialLogin = showFacebook || showGoogle || showApple || showVipps;
 
-  const loginDescriptionText =
-    sendType === "code"
-      ? i18next.t("login_description_code")
-      : i18next.t("login_description_link");
-
   return (
     <Layout title={i18next.t("welcome")} vendorSettings={vendorSettings}>
       <div class="mb-4 text-lg font-medium sm:text-2xl">
         {i18next.t("welcome")}
       </div>
-      <div class="mb-8 text-gray-300">{loginDescriptionText}</div>
+      <div class="mb-8 text-gray-300">{i18next.t("login_description")}</div>
       <div class="flex flex-1 flex-col justify-center">
         <Form className="mb-7">
           <input
