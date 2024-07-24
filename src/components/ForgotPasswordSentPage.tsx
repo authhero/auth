@@ -6,7 +6,6 @@ import i18next from "i18next";
 import Icon from "./Icon";
 
 type Props = {
-  message: string;
   vendorSettings: VendorSettings;
   state: string;
 };
