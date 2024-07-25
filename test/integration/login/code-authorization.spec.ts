@@ -1,6 +1,5 @@
 import { test, expect } from "vitest";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import {
@@ -10,7 +9,7 @@ import {
 } from "@authhero/adapter-interfaces";
 
 test("code authorization flow should work", async () => {
-  const env = await getEnv({
+  const { oauthApp, env } = await getTestServer({
     testTenantLanguage: "en",
   });
   const oauthClient = testClient(oauthApp, env);

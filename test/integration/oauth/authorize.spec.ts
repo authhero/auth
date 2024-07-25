@@ -1,11 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { oauthApp } from "../../../src/app";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 
 describe("authorize", () => {
   it("should return a 403 if the origin isn't valid", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get(

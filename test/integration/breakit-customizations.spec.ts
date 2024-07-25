@@ -1,6 +1,5 @@
 import { test, expect } from "vitest";
-import { getEnv } from "./helpers/test-client";
-import { oauthApp } from "../../src/app";
+import { getTestServer } from "./helpers/test-server";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "./helpers/playwrightSnapshots";
 import { base64url } from "oslo/encoding";
@@ -17,7 +16,7 @@ function osloBtoa(payload: object) {
 
 test("only allows existing breakit users to progress to the enter code step", async () => {
   const testTenantLanguage = "en";
-  const env = await getEnv({
+  const { env, oauthApp } = await getTestServer({
     testTenantLanguage,
   });
   const oauthClient = testClient(oauthApp, env);
@@ -148,7 +147,7 @@ test("only allows existing breakit users to progress to the enter code step", as
 // cannot be redirect back to the callback
 test("only allows existing breakit users to progress to the enter code step with social signon", async () => {
   const testTenantLanguage = "en";
-  const env = await getEnv({
+  const { oauthApp, env } = await getTestServer({
     testTenantLanguage,
   });
   const oauthClient = testClient(oauthApp, env);

@@ -1,7 +1,6 @@
 import { describe, it, test, expect } from "vitest";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp, managementApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import {
   snapshotResponse,
@@ -37,7 +36,7 @@ function getCodeStateTo(email: EmailOptions) {
 describe("Register password", () => {
   it("should create a new user with a password and only allow login after email validation", async () => {
     const password = "Password1234!";
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const searchParams = {
@@ -113,9 +112,9 @@ describe("Register password", () => {
     });
 
     // this is the original email sent after signing up
-    const { to, code, state, subject } = getCodeStateTo(env.data.emails[0]);
+    const { to, code, state, subject } = getCodeStateTo(emails[0]);
 
-    await snapshotEmail(env.data.emails[0]);
+    await snapshotEmail(emails[0]);
 
     expect(to).toBe("password-login-test@example.com");
     expect(code).toBeDefined();
@@ -149,7 +148,7 @@ describe("Register password", () => {
 
   it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
     const password = "Password1234!";
-    const env = await getEnv();
+    const { managementApp, oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
     const token = await getAdminToken();
@@ -205,7 +204,7 @@ describe("Register password", () => {
     // -----------------------------
     // validate email
     // -----------------------------
-    const { to, code, state, subject } = getCodeStateTo(env.data.emails[0]);
+    const { to, code, state, subject } = getCodeStateTo(emails[0]);
     expect(to).toBe("existing-code-user@example.com");
     expect(code).toBeDefined();
     expect(subject).toBe("Bekräfta din e-postadress");
@@ -312,7 +311,7 @@ describe("Register password", () => {
 
   it("should resend email validation email after attempted login on unverified account", async () => {
     const password = "Password1234!";
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const searchParams = {
       client_id: "clientId",
@@ -353,8 +352,8 @@ describe("Register password", () => {
     // THIS IS THE ONLY CHANGE HERE - we're not using the initially sent email, we're using the email sent
     // after a failed login
     // -------------------------------
-    const { to, code, state, subject } = getCodeStateTo(env.data.emails[1]);
-    await snapshotEmail(env.data.emails[1]);
+    const { to, code, state, subject } = getCodeStateTo(emails[1]);
+    await snapshotEmail(emails[1]);
     expect(to).toBe("password-login-test@example.com");
     expect(code).toBeDefined();
     expect(state).toBeTypeOf("string");
@@ -385,7 +384,7 @@ describe("Register password", () => {
   // this test follows the new CTA button on the email verified page... we could just modify the existing tests... probably a good idea to have ONE test that does the above
   it("should create a new user with a password and follow the email validation CTA to login again and continue flow", async () => {
     const password = "Password1234!";
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const searchParams = {
@@ -414,7 +413,7 @@ describe("Register password", () => {
       },
     });
 
-    const { code, state } = getCodeStateTo(env.data.emails[0]);
+    const { code, state } = getCodeStateTo(emails[0]);
 
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
@@ -463,7 +462,7 @@ describe("Register password", () => {
 
   test("should be able to continue flow when new email validation email is sent out from a new flow", async () => {
     const password = "Password1234!";
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const initialAuthorizeUniversalLoginParams = {
@@ -535,7 +534,7 @@ describe("Register password", () => {
 
     // this is the second email sent.. the first one was after sign up, this is for a failed login
     // should the emails actually be the same? would help with testing to make them different (less chance of a false positive...)
-    const { code, state } = getCodeStateTo(env.data.emails[1]);
+    const { code, state } = getCodeStateTo(emails[1]);
     const emailValidatedRes = await oauthClient.u["validate-email"].$get({
       query: {
         state,
@@ -588,7 +587,7 @@ describe("Register password", () => {
 
 describe("Login with password user", () => {
   it("should login with password", async () => {
-    const env = await getEnv({
+    const { oauthApp, env } = await getTestServer({
       testTenantLanguage: "en",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -666,7 +665,7 @@ describe("Login with password user", () => {
   });
 
   it("should reject non-existent email", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({
@@ -712,7 +711,7 @@ describe("Login with password user", () => {
   });
 
   it("should reject bad password", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({

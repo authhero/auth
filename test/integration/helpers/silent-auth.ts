@@ -1,18 +1,13 @@
 import { expect } from "vitest";
-import { testClient } from "hono/testing";
 import { parseJwt } from "../../../src/utils/parse-jwt";
-import { oauthApp } from "../../../src/app";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
 } from "@authhero/adapter-interfaces";
 
-const client = testClient(oauthApp, {});
-type clientAppType = typeof client;
-
 export async function doSilentAuthRequest(
   setCookiesHeader: string,
-  client: clientAppType,
+  client: any,
   nonce: string,
   clientId: string,
 ): Promise<string> {
@@ -48,7 +43,7 @@ export async function doSilentAuthRequest(
 
 export async function doSilentAuthRequestAndReturnTokens(
   setCookiesHeader: string,
-  client: clientAppType,
+  client: any,
   nonce: string,
   clientId: string,
 ) {

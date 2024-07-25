@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 import {
   AuthorizationResponseMode,
   AuthorizationResponseType,
@@ -11,7 +10,7 @@ import {
 
 describe("logs", () => {
   it("should return an empty list of logs for a tenant", async () => {
-    const env = await getEnv();
+    const { managementApp, env } = await getTestServer();
     const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
@@ -36,7 +35,7 @@ describe("logs", () => {
   });
 
   it("should return a log row for a created user", async () => {
-    const env = await getEnv();
+    const { managementApp, env } = await getTestServer();
     const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
@@ -99,7 +98,7 @@ describe("logs", () => {
   });
 
   it.skip("should log a failed silent auth request", async () => {
-    const env = await getEnv();
+    const { managementApp, oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 

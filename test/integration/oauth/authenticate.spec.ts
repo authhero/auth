@@ -1,11 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { oauthApp } from "../../../src/app";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 
 describe("authenticate", () => {
   it("should return a token for a successful login", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const loginResponse = await oauthClient.co.authenticate.$post({

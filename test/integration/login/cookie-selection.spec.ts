@@ -1,7 +1,6 @@
 import { test, expect } from "vitest";
 import { SesamyPasswordLoginSelection } from "../../../src/utils/authCookies";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import cookie from "cookie";
 import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
@@ -24,7 +23,7 @@ const SESSION_FIXTURE = {
 };
 
 test("after entering email should go to enter code step if no cookie set", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   // shortcut instead of visiting the /authorize endpoint
@@ -44,7 +43,7 @@ test("after entering email should go to enter code step if no cookie set", async
 });
 
 test("after entering email should go to enter code step if code cookie is set", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
@@ -70,7 +69,7 @@ test("after entering email should go to enter code step if code cookie is set", 
 });
 
 test("after entering email should go to enter password step if password cookie is set", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
@@ -97,7 +96,7 @@ test("after entering email should go to enter password step if password cookie i
 });
 
 test("after entering email should go to enter code step if password cookie is set but no password user is available", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
@@ -122,7 +121,7 @@ test("after entering email should go to enter code step if password cookie is se
 });
 
 test("after entering email should go to enter code step if password cookie is set BUT have posted up login_selection code override", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
@@ -149,7 +148,7 @@ test("after entering email should go to enter code step if password cookie is se
 });
 
 test("should set cookie as code when visit enter code page", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
@@ -166,7 +165,7 @@ test("should set cookie as code when visit enter code page", async () => {
 });
 
 test("should set cookie as password when visit password page", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   // shortcut instead of visiting the /authorize endpoint

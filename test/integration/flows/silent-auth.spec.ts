@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import {
   AuthorizationResponseMode,
@@ -25,7 +24,7 @@ function getDefaultSilentAuthSearchParams() {
 
 describe("silent-auth", () => {
   it("should return a 200 when not logged in, with a login_required error", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const client = testClient(oauthApp, env);
 
     const query = {
@@ -54,7 +53,7 @@ describe("silent-auth", () => {
   });
 
   it("should set the used_at property on the session when the token is renewed", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const loginResponse = await oauthClient.co.authenticate.$post({
@@ -106,7 +105,7 @@ describe("silent-auth", () => {
   });
 
   it("should return a 200 for a valid silent auth request from the same client, same tenant, but not a different tenant", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const loginResponse = await oauthClient.co.authenticate.$post({

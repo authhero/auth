@@ -1,6 +1,5 @@
 import { describe, it, test, expect } from "vitest";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp, managementApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import {
@@ -31,7 +30,7 @@ function getCodeAndTo(email: EmailOptions) {
 
 describe("Login with code on liquidjs template", () => {
   it("should return a 400 if there's no code", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const incorrectCodeResponse = await oauthClient.co.authenticate.$post({
@@ -46,7 +45,7 @@ describe("Login with code on liquidjs template", () => {
     expect(incorrectCodeResponse.status).toBe(400);
   });
   it("should create new user when email does not exist", async () => {
-    const env = await getEnv({
+    const { oauthApp, managementApp, env, emails } = await getTestServer({
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -122,8 +121,8 @@ describe("Login with code on liquidjs template", () => {
 
     // flush pipe
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(env.data.emails.length).toBe(1);
-    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
+    expect(emails.length).toBe(1);
+    const { to, code, subject } = getCodeAndTo(emails[0]);
     expect(to).toBe("test@example.com");
     expect(subject).toBe(
       `Velkommen til Test Tenant ! ${code} er påloggingskoden`,
@@ -180,7 +179,7 @@ describe("Login with code on liquidjs template", () => {
 
   it("is an existing primary user", async () => {
     const token = await getAdminToken();
-    const env = await getEnv({
+    const { oauthApp, managementApp, env, emails } = await getTestServer({
       testTenantLanguage: "pl",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -262,12 +261,12 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(emails[0]);
     expect(to).toBe("bar@example.com");
     expect(subject).toBe(
       `Witamy na Test Tenant! ${code} to kod logowania do Twojego konta.`,
     );
-    await snapshotEmail(env.data.emails[0], true);
+    await snapshotEmail(emails[0], true);
 
     // Authenticate using the code
     const enterCodeParams = enterCodeLocation!.split("?")[1];
@@ -321,7 +320,7 @@ describe("Login with code on liquidjs template", () => {
   });
 
   it("is an existing linked user", async () => {
-    const env = await getEnv();
+    const { oauthApp, env, emails } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     // -----------------
@@ -371,7 +370,7 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(emails[0]);
     expect(to).toBe("foo@example.com");
     expect(subject).toBe(
       `Välkommen till Test Tenant! ${code} är koden för att logga in`,
@@ -412,7 +411,7 @@ describe("Login with code on liquidjs template", () => {
 
   it("should return existing username-primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const { managementApp, oauthApp, env, emails } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -440,7 +439,7 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(emails[0]);
     expect(to).toBe("foo@example.com");
     expect(subject).toBe(
       `Välkommen till Test Tenant! ${code} är koden för att logga in`,
@@ -507,7 +506,7 @@ describe("Login with code on liquidjs template", () => {
   describe("most complex linking flow I can think of", () => {
     it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, env, emails } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -615,7 +614,7 @@ describe("Login with code on liquidjs template", () => {
       const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
       await new Promise((resolve) => setTimeout(resolve, 0));
-      const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
+      const { to, code, subject } = getCodeAndTo(emails[0]);
 
       expect(to).toBe("same-email@example.com");
       expect(subject).toBe(
@@ -716,7 +715,7 @@ describe("Login with code on liquidjs template", () => {
   });
 
   test('snapshot desktop "enter code" form', async () => {
-    const env = await getEnv({
+    const { oauthApp, env } = await getTestServer({
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -748,7 +747,7 @@ describe("Login with code on liquidjs template", () => {
   });
 
   test('snapshot mobile "enter code" form', async () => {
-    const env = await getEnv({
+    const { oauthApp, env } = await getTestServer({
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -780,7 +779,7 @@ describe("Login with code on liquidjs template", () => {
   });
 
   it("should send a code email if auth0client is swift", async () => {
-    const env = await getEnv({});
+    const { oauthApp, env, emails } = await getTestServer({});
     const oauthClient = testClient(oauthApp, env);
 
     const auth0ClientSwift = {
@@ -826,11 +825,11 @@ describe("Login with code on liquidjs template", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 0));
     // this should not have a magic link in it
-    await snapshotEmail(env.data.emails[0], true);
+    await snapshotEmail(emails[0], true);
   });
 
   it.skip("should only allow a code to be used once", async () => {
-    const env = await getEnv();
+    const { oauthApp, env, emails } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({
@@ -863,7 +862,7 @@ describe("Login with code on liquidjs template", () => {
     );
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(emails[0]);
     expect(to).toBe("foo@example.com");
     expect(subject).toBe(
       `Velkommen til Test Tenant ! ${code} er påloggingskoden`,
@@ -896,7 +895,7 @@ describe("Login with code on liquidjs template", () => {
   });
 
   it("should reject bad code", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({
@@ -942,7 +941,7 @@ describe("Login with code on liquidjs template", () => {
   });
 
   it("should be case insensitive with email address", async () => {
-    const env = await getEnv();
+    const { oauthApp, env, emails } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({
@@ -971,7 +970,7 @@ describe("Login with code on liquidjs template", () => {
     const enterCodeLocation = postSendCodeResponse.headers.get("location");
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { to, code, subject } = getCodeAndTo(env.data.emails[0]);
+    const { to, code, subject } = getCodeAndTo(emails[0]);
     expect(to).toBe("john-doe@example.com");
     expect(subject).toBe(
       `Välkommen till Test Tenant! ${code} är koden för att logga in`,

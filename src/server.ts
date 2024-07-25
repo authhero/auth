@@ -1,10 +1,9 @@
 import { Env } from "./types/Env";
-import app from "./app";
+import createApp from "./app";
 import { oAuth2ClientFactory } from "./services/oauth2-client";
 import { PlanetScaleDialect } from "kysely-planetscale";
 import { getDb } from "./services/db";
 import sendEmail from "./services/email";
-import { addDataHooks } from "./hooks";
 import createAdapters from "@authhero/kysely-adapter";
 
 const server = {
@@ -17,6 +16,10 @@ const server = {
         fetch(new Request(opts, { ...init, cache: undefined })),
     });
     const db = getDb(dialect);
+    const dataAdapter = createAdapters(db);
+    const { app } = createApp({
+      dataAdapter,
+    });
 
     return app.fetch(
       request,
@@ -24,7 +27,6 @@ const server = {
       {
         ...env,
         oauth2ClientFactory: { create: oAuth2ClientFactory },
-        data: addDataHooks(createAdapters(db)),
         sendEmail,
       },
       ctx,

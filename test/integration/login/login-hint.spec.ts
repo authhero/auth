@@ -1,6 +1,5 @@
 import { test, expect } from "vitest";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import { chromium } from "playwright";
 import { toMatchImageSnapshot } from "jest-image-snapshot";
@@ -10,7 +9,7 @@ import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 expect.extend({ toMatchImageSnapshot });
 
 test("Should prefill email with login_hint if passed to /authorize", async () => {
-  const env = await getEnv();
+  const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
   const response = await oauthClient.authorize.$get({

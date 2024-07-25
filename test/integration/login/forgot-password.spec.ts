@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import {
   snapshotResponse,
@@ -36,7 +35,7 @@ function getCodeStateTo(email: EmailOptions) {
 
 describe("Forgot password", () => {
   it("should send forgot password email", async () => {
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
 
     const oauthClient = testClient(oauthApp, env);
 
@@ -90,9 +89,9 @@ describe("Forgot password", () => {
     // get the code & state from the forgot password email link
     // ---------------------
 
-    await snapshotEmail(env.data.emails[0]);
+    await snapshotEmail(emails[0]);
 
-    const { code, state, to, subject } = getCodeStateTo(env.data.emails[0]);
+    const { code, state, to, subject } = getCodeStateTo(emails[0]);
 
     expect(subject).toBe("Byt lösenord för ditt Test Tenant konto");
     expect(to).toBe("foo@example.com");
@@ -155,7 +154,7 @@ describe("Forgot password", () => {
   });
 
   it("should not send a forgot password email for a non-existing email address", async () => {
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
 
     const oauthClient = testClient(oauthApp, env);
 
@@ -190,6 +189,6 @@ describe("Forgot password", () => {
     // no email has been sent
     // ---------------------
 
-    expect(env.data.emails).toHaveLength(0);
+    expect(emails).toHaveLength(0);
   });
 });

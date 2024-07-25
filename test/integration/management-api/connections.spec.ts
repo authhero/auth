@@ -1,12 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { managementApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 
 describe("connections", () => {
   it("should add a new connection", async () => {
-    const env = await getEnv();
+    const { managementApp, env } = await getTestServer();
     const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();

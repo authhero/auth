@@ -4,8 +4,7 @@ import { getAdminToken } from "../helpers/token";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { managementApp, oauthApp } from "../../../src/app";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 import { base64url } from "oslo/encoding";
 import {
   AuthorizationResponseType,
@@ -81,7 +80,7 @@ describe("social sign on", () => {
       */
 
     it("should create correct args for social sign on from hitting /authorize with connection", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
 
       const socialSignOnResponse = await client.authorize.$get({
@@ -115,7 +114,7 @@ describe("social sign on", () => {
           state: SOCIAL_STATE_PARAM,
           code: "code",
         };
-        const env = await getEnv();
+        const { managementApp, oauthApp, env } = await getTestServer();
         const oauthClient = testClient(oauthApp, env);
         const managementClient = testClient(managementApp, env);
 
@@ -231,7 +230,7 @@ describe("social sign on", () => {
       it("should receive params in the body when a POST", async () => {
         const token = await getAdminToken();
 
-        const env = await getEnv();
+        const { managementApp, oauthApp, env } = await getTestServer();
         const oauthClient = testClient(oauthApp, env);
         const managementClient = testClient(managementApp, env);
 
@@ -338,7 +337,7 @@ describe("social sign on", () => {
       // create new user with same email as we have hardcoded on the mock id_token responses
       // ---------------------------------------------
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -591,7 +590,7 @@ describe("social sign on", () => {
     });
 
     it("should return existing primary account when logging in with new social sign on with same email address AND there is already another linked social account", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       await env.data.users.create("tenantId", {
@@ -659,7 +658,7 @@ describe("social sign on", () => {
     });
 
     it("should ignore un-verified password account when signing up with social account", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       // -----------------
@@ -707,7 +706,7 @@ describe("social sign on", () => {
   describe("Security", () => {
     describe("auth2 should not create a new user if callback from non-existing social provider", () => {
       it("should not when GET /callback", async () => {
-        const env = await getEnv();
+        const { oauthApp, env } = await getTestServer();
         const client = testClient(oauthApp, env);
 
         const socialCallbackQuery = {
@@ -734,7 +733,7 @@ describe("social sign on", () => {
         );
       });
       it("should not when POST /callback", async () => {
-        const env = await getEnv();
+        const { oauthApp, env } = await getTestServer();
         const client = testClient(oauthApp, env);
 
         const socialCallbackResponse = await client.callback.$post({
@@ -767,7 +766,7 @@ describe("social sign on", () => {
     test("error callback from SSO", async () => {
       // e.g. Facebook hit "not now" button
 
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
 
       const errorCallbackResponse = await client.callback.$get({

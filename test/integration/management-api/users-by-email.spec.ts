@@ -1,14 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 import { UserResponse } from "../../../src/types/auth0";
 import { Identity } from "@authhero/adapter-interfaces";
 
 describe("users by email", () => {
   it("should return empty list if there are no users with queried email address", async () => {
-    const env = await getEnv();
+    const { managementApp, env } = await getTestServer();
     const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
@@ -34,7 +33,7 @@ describe("users by email", () => {
   });
 
   it("should return a single user for a simple get by email - no linked accounts", async () => {
-    const env = await getEnv();
+    const { managementApp, env } = await getTestServer();
     const managementClient = testClient(managementApp, env);
 
     const token = await getAdminToken();
@@ -86,7 +85,7 @@ describe("users by email", () => {
   });
 
   it("should return multiple users for a simple get by email - no linked accounts", async () => {
-    const env = await getEnv();
+    const { managementApp, oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -172,7 +171,7 @@ describe("users by email", () => {
   });
 
   it("should return a single user when multiple accounts, with different email addresses, are linked to one primary account", async () => {
-    const env = await getEnv();
+    const { managementApp, oauthApp, env } = await getTestServer();
     const client = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 

@@ -13,6 +13,7 @@ export type Var = {
   };
   body?: unknown;
   userName?: string;
+  tenant_id?: string;
   // I'm not sure what connection_id actually means here...  In Auth0 we get con_TI7p6dEHf551Q9t6
   // connectionId?: string;
   connection?: string;

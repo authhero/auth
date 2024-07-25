@@ -1,10 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 import { getAdminToken } from "../helpers/token";
 import { testClient } from "hono/testing";
-import { managementApp, oauthApp } from "../../../src/app";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
 import { z } from "zod";
@@ -45,7 +44,7 @@ describe("magic link flow", () => {
   describe("should log in using the sent magic link, when", () => {
     it("is a new sign up", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -86,11 +85,11 @@ describe("magic link flow", () => {
         throw new Error(await response.text());
       }
 
-      const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+      const magicLink = getMagicLinkFromEmailBody(emails[0]);
 
-      await snapshotEmail(env.data.emails[0], true);
+      await snapshotEmail(emails[0], true);
 
-      expect(env.data.emails[0].to[0].email).toBe("new-user@example.com");
+      expect(emails[0].to[0].email).toBe("new-user@example.com");
 
       const link = magicLink!;
 
@@ -169,7 +168,7 @@ describe("magic link flow", () => {
 
     it("is an existing primary user", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -225,9 +224,9 @@ describe("magic link flow", () => {
         },
       });
 
-      const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+      const magicLink = getMagicLinkFromEmailBody(emails[0]);
 
-      expect(env.data.emails[0].to[0].email).toBe("bar@example.com");
+      expect(emails[0].to[0].email).toBe("bar@example.com");
 
       const link = magicLink!;
 
@@ -300,7 +299,7 @@ describe("magic link flow", () => {
     });
 
     it("is an existing linked user", async () => {
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       // -----------------
@@ -336,9 +335,9 @@ describe("magic link flow", () => {
         },
       });
 
-      const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+      const magicLink = getMagicLinkFromEmailBody(emails[0]);
 
-      expect(env.data.emails[0].to[0].email).toBe("foo@example.com");
+      expect(emails[0].to[0].email).toBe("foo@example.com");
 
       const link = magicLink!;
 
@@ -412,7 +411,7 @@ describe("magic link flow", () => {
     });
 
     it("is the same email address as an existing password user", async () => {
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       // -----------------
@@ -436,9 +435,9 @@ describe("magic link flow", () => {
         },
       );
 
-      const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+      const magicLink = getMagicLinkFromEmailBody(emails[0]);
 
-      expect(env.data.emails[0].to[0].email).toBe("foo@example.com");
+      expect(emails[0].to[0].email).toBe("foo@example.com");
 
       const link = magicLink!;
 
@@ -513,7 +512,7 @@ describe("magic link flow", () => {
     });
   });
   it.skip("should only allow a magic link to be used once", async () => {
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     // -----------
@@ -536,7 +535,7 @@ describe("magic link flow", () => {
       },
     );
 
-    const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+    const magicLink = getMagicLinkFromEmailBody(emails[0]);
 
     const link = magicLink!;
 
@@ -575,7 +574,7 @@ describe("magic link flow", () => {
   });
 
   it("should not accept an invalid code in the magic link", async () => {
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     // -----------
@@ -598,7 +597,7 @@ describe("magic link flow", () => {
       },
     );
 
-    const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+    const magicLink = getMagicLinkFromEmailBody(emails[0]);
 
     const link = magicLink!;
     // ------------
@@ -633,7 +632,7 @@ describe("magic link flow", () => {
   });
 
   it("should not accept a magic link where the email has been altered", async () => {
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     // -----------
@@ -656,7 +655,7 @@ describe("magic link flow", () => {
       },
     );
 
-    const magicLink = getMagicLinkFromEmailBody(env.data.emails[0]);
+    const magicLink = getMagicLinkFromEmailBody(emails[0]);
 
     const link = magicLink!;
     // ------------
@@ -683,7 +682,7 @@ describe("magic link flow", () => {
 
   describe("edge cases", () => {
     it("should ignore un-verified password account when signing up with magic link", async () => {
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       // -----------------
@@ -715,7 +714,7 @@ describe("magic link flow", () => {
         },
       });
 
-      const magicLink = getMagicLinkFromEmailBody(env.data.emails[1]);
+      const magicLink = getMagicLinkFromEmailBody(emails[1]);
 
       const authenticatePath = magicLink!?.split("https://example.com")[1];
 

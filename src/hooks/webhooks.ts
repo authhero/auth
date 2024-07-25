@@ -1,29 +1,42 @@
-import { DataAdapters, Hook, User } from "@authhero/adapter-interfaces";
+import {
+  DataAdapters,
+  Hook,
+  LogTypes,
+  User,
+} from "@authhero/adapter-interfaces";
+import { createLogMessage } from "../utils/create-log-message";
+import { Context } from "hono";
+import { Var, Env } from "../types";
 
-async function invokeHooks(hooks: Hook[], data: any) {
-  // TODO: handle with waitUntill, but it requires that we have the context here
-  await Promise.all(
-    hooks.map(async (hook) => {
-      const response = await fetch(hook.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+async function invokeHooks(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  hooks: Hook[],
+  data: any,
+) {
+  for await (const hook of hooks) {
+    const response = await fetch(hook.url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const log = createLogMessage(ctx, {
+        type: LogTypes.FAILED_LOGIN_INCORRECT_PASSWORD,
+        description: "Invalid password",
       });
 
-      if (!response.ok) {
-        console.log(
-          "Failed to send webhook",
-          response.status,
-          response.statusText,
-        );
-      }
-    }),
-  );
+      await data.logs.create(ctx.var.tenant_id, log);
+    }
+  }
 }
 
-export function postUserRegistrationWebhook(data: DataAdapters) {
+export function postUserRegistrationWebhook(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  data: DataAdapters,
+) {
   return async (tenant_id: string, user: User): Promise<User> => {
     const { hooks } = await data.hooks.list(tenant_id, {
       q: "trigger_id:post-user-registration",
@@ -32,7 +45,7 @@ export function postUserRegistrationWebhook(data: DataAdapters) {
       include_totals: false,
     });
 
-    await invokeHooks(hooks, {
+    await invokeHooks(ctx, hooks, {
       tenant_id,
       user,
       trigger_id: "post-user-registration",
@@ -42,7 +55,10 @@ export function postUserRegistrationWebhook(data: DataAdapters) {
   };
 }
 
-export function postUserLoginWebhook(data: DataAdapters) {
+export function postUserLoginWebhook(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  data: DataAdapters,
+) {
   return async (tenant_id: string, user: User): Promise<User> => {
     const { hooks } = await data.hooks.list(tenant_id, {
       q: "trigger_id:post-user-login",
@@ -51,7 +67,7 @@ export function postUserLoginWebhook(data: DataAdapters) {
       include_totals: false,
     });
 
-    await invokeHooks(hooks, {
+    await invokeHooks(ctx, hooks, {
       tenant_id,
       user,
       trigger_id: "post-user-login",

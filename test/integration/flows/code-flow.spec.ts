@@ -3,9 +3,8 @@ import { parseJwt } from "../../../src/utils/parse-jwt";
 import { UserResponse } from "../../../src/types/auth0";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
 import { testClient } from "hono/testing";
-import { oauthApp, managementApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 import { EmailOptions } from "../../../src/services/email/EmailOptions";
 import { snapshotEmail } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType, Log } from "@authhero/adapter-interfaces";
@@ -32,7 +31,7 @@ function getOTP(email: EmailOptions) {
 describe("code-flow", () => {
   it("should create new user when email does not exist", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const { managementApp, oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -77,9 +76,9 @@ describe("code-flow", () => {
       throw new Error(await response.text());
     }
 
-    const { otp } = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(emails[0]);
 
-    await snapshotEmail(env.data.emails[0], true);
+    await snapshotEmail(emails[0], true);
 
     const {
       logs: [clsLog],
@@ -214,7 +213,7 @@ describe("code-flow", () => {
       },
     });
 
-    const { otp: otpLogin } = getOTP(env.data.emails[1]);
+    const { otp: otpLogin } = getOTP(emails[1]);
 
     const authRes2 = await oauthClient.co.authenticate.$post({
       json: {
@@ -286,7 +285,7 @@ describe("code-flow", () => {
   });
   it("is an existing primary user", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const { managementApp, oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -340,7 +339,7 @@ describe("code-flow", () => {
       },
     });
 
-    const { otp } = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -398,7 +397,7 @@ describe("code-flow", () => {
     expect(silentAuthIdTokenPayload.sub).toBe("email|userId2");
   });
   it("is an existing linked user", async () => {
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     // -----------------
@@ -442,7 +441,7 @@ describe("code-flow", () => {
       },
     );
 
-    const { otp } = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(emails[0]);
 
     // Authenticate using the code
     const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -508,7 +507,7 @@ describe("code-flow", () => {
 
   it("should return existing username-primary account when logging in with new code sign on with same email address", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const { managementApp, oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -535,7 +534,7 @@ describe("code-flow", () => {
       },
     });
 
-    const { otp } = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(emails[0]);
 
     const authenticateResponse = await oauthClient.co.authenticate.$post({
       json: {
@@ -670,7 +669,7 @@ describe("code-flow", () => {
       },
     });
 
-    const { otp: otp2 } = getOTP(env.data.emails[1]);
+    const { otp: otp2 } = getOTP(emails[1]);
 
     const authenticateResponse2 = await oauthClient.co.authenticate.$post({
       json: {
@@ -734,7 +733,7 @@ describe("code-flow", () => {
   describe("most complex linking flow I can think of", () => {
     it("should follow linked_to chain when logging in with new code user with same email address as existing username-password user THAT IS linked to a code user with a different email address", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -827,7 +826,7 @@ describe("code-flow", () => {
       });
       expect(passwordlessStartRes.status).toBe(200);
 
-      const { otp } = getOTP(env.data.emails[0]);
+      const { otp } = getOTP(emails[0]);
 
       // Authenticate using the code
       const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -952,7 +951,7 @@ describe("code-flow", () => {
       state: "state",
     };
 
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     await oauthClient.passwordless.start.$post({
@@ -965,7 +964,7 @@ describe("code-flow", () => {
       },
     });
 
-    const { otp } = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(emails[0]);
 
     const authRes = await oauthClient.co.authenticate.$post({
       json: {
@@ -1006,7 +1005,7 @@ describe("code-flow", () => {
       state: "state",
     };
 
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     await oauthClient.passwordless.start.$post(
@@ -1043,7 +1042,7 @@ describe("code-flow", () => {
 
   it("should be case insensitive with email address", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const { managementApp, oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);
 
@@ -1094,8 +1093,8 @@ describe("code-flow", () => {
       },
     });
 
-    expect(env.data.emails.length).toBe(1);
-    const { otp, to } = getOTP(env.data.emails[0]);
+    expect(emails.length).toBe(1);
+    const { otp, to } = getOTP(emails[0]);
     expect(to).toBe("john-doe@example.com");
 
     // Authenticate using the code
@@ -1150,7 +1149,7 @@ describe("code-flow", () => {
   });
 
   it("should store new user email in lowercase", async () => {
-    const env = await getEnv();
+    const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const AUTH_PARAMS = {
@@ -1174,7 +1173,7 @@ describe("code-flow", () => {
       },
     });
 
-    const { otp } = getOTP(env.data.emails[0]);
+    const { otp } = getOTP(emails[0]);
     expect(otp).toBeTypeOf("string");
 
     // Authenticate using the code
@@ -1236,7 +1235,7 @@ describe("code-flow", () => {
     it("should login correctly for a code account linked to another account with a different email, when a password account has been registered but not verified", async () => {
       // create a new user with a password
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -1340,7 +1339,7 @@ describe("code-flow", () => {
       expect(response.status).toBe(200);
 
       // first email is email validation from sign up above
-      const { otp } = getOTP(env.data.emails[1]);
+      const { otp } = getOTP(emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -1402,7 +1401,7 @@ describe("code-flow", () => {
     });
 
     it("should ignore un-verified password account when signing up with code account", async () => {
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       // -----------------
@@ -1439,7 +1438,7 @@ describe("code-flow", () => {
       }
 
       // first email will be email verification
-      const { otp } = getOTP(env.data.emails[1]);
+      const { otp } = getOTP(emails[1]);
 
       // Authenticate using the code
       const authenticateResponse = await oauthClient.co.authenticate.$post({
@@ -1501,7 +1500,7 @@ describe("code-flow", () => {
         scope: "openid profile email",
         state: "state",
       };
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       await oauthClient.passwordless.start.$post({
@@ -1513,7 +1512,7 @@ describe("code-flow", () => {
           send: "code",
         },
       });
-      const { otp } = getOTP(env.data.emails[0]);
+      const { otp } = getOTP(emails[0]);
 
       const authenticateResponse = await oauthClient.co.authenticate.$post({
         json: {

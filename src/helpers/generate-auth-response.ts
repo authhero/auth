@@ -89,7 +89,7 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
   // Update the user's last login. Skip for client_credentials and refresh_tokens
   if (authFlow !== "refresh-token" && user) {
     // Invoke webhooks
-    await postUserLoginWebhook(env.data)(client.tenant_id, user);
+    await postUserLoginWebhook(ctx, env.data)(client.tenant_id, user);
 
     waitUntil(
       ctx,

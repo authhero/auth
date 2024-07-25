@@ -3,8 +3,7 @@ import {
   doSilentAuthRequest,
   doSilentAuthRequestAndReturnTokens,
 } from "../helpers/silent-auth";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import {
   AuthorizationResponseType,
@@ -14,7 +13,7 @@ import {
 
 describe("logout", () => {
   it("should delete the session if a user logs out", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const loginResponse = await oauthClient.co.authenticate.$post({

@@ -1,12 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { getEnv } from "./helpers/test-client";
-import { oauthApp } from "../../src/app";
+import { getTestServer } from "./helpers/test-server";
 import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 describe("userinfo", () => {
   it("return the userinfo for a user", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const loginResponse = await oauthClient.co.authenticate.$post({
