@@ -4,7 +4,7 @@ import { Database } from "@authhero/kysely-adapter";
 export async function up(db: Kysely<Database>): Promise<void> {
   await db.schema
     .createTable("sessions")
-    .addColumn("id", "varchar(255)", (col) => col.primaryKey())
+    .addColumn("session_id", "varchar(255)", (col) => col.primaryKey())
     .addColumn("client_id", "varchar(255)", (col) =>
       col.references("applications.id").onDelete("cascade").notNull(),
     )
@@ -21,6 +21,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
     .addColumn("expires_at", "varchar(255)", (col) => col.notNull())
     .addColumn("used_at", "varchar(255)")
+    .addColumn("deleted_at", "varchar(255)")
     .execute();
 
   await db.schema
