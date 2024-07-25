@@ -5,16 +5,17 @@ import { migrateToLatest } from "../../../migrate/migrate";
 import { getCertificate } from "./token";
 import { mockOAuth2ClientFactory } from "../mockOauth2Client";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
-import { addDataHooks } from "../../../src/hooks";
 import {
   Application,
   AuthorizationResponseMode,
   AuthorizationResponseType,
   Client,
   Connection,
+  DataAdapters,
   Tenant,
 } from "@authhero/adapter-interfaces";
 import createAdapters, { Database } from "@authhero/kysely-adapter";
+import createApp from "../../../src/app";
 
 type getEnvParams = {
   testTenantLanguage?: string;
@@ -26,7 +27,8 @@ export const testPasswordUser = {
   password: "Test1234!",
 };
 
-export async function getEnv(args: getEnvParams = {}) {
+// @ts-ignore
+export async function getTestServer(args: getEnvParams = {}) {
   const dialect = new SqliteDialect({
     database: new SQLite(":memory:"),
   });
@@ -44,7 +46,7 @@ export async function getEnv(args: getEnvParams = {}) {
 
   await migrateToLatest(dialect, false, db);
 
-  const data = createAdapters(db);
+  const data: DataAdapters = createAdapters(db);
   const certificate = getCertificate();
   await data.keys.create(certificate);
 
@@ -209,8 +211,7 @@ export async function getEnv(args: getEnvParams = {}) {
     password: bcryptjs.hashSync(testPasswordUser.password, 10),
   });
 
-  return {
-    data: { ...addDataHooks(data), emails },
+  const env = {
     JWKS_URL: "https://example.com/.well-known/jwks.json",
     TOKEN_SERVICE: {
       fetch: async () => ({
@@ -222,6 +223,7 @@ export async function getEnv(args: getEnvParams = {}) {
         }),
       }),
     },
+    data,
     sendEmail: sendEmailAdapter,
     ISSUER: "https://example.com/",
     READ_PERMISSION: "auth:read",
@@ -232,6 +234,11 @@ export async function getEnv(args: getEnvParams = {}) {
     db,
     oauth2ClientFactory: mockOAuth2ClientFactory,
   };
-}
 
-export type EnvType = Awaited<ReturnType<typeof getEnv>>;
+  const apps = createApp({ dataAdapter: data });
+  return {
+    ...apps,
+    env,
+    emails,
+  };
+}

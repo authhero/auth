@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vitest } from "vitest";
-import { getEnv } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
@@ -12,7 +11,7 @@ describe("Vendor settings", () => {
   });
 
   it("should fallback to sesamy styling with invalid vendor_id", async () => {
-    const env = await getEnv({
+    const { oauthApp, env } = await getTestServer({
       testTenantLanguage: "nb",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -45,7 +44,7 @@ describe("Vendor settings", () => {
   });
 
   it("should fallback to sesamy styling with invalid vendor settings response", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get({

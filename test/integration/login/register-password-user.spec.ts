@@ -1,13 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { oauthApp } from "../../../src/app";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import { snapshotResponse } from "../helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 describe("Register password user", () => {
   it("should register a new user with password", async () => {
-    const env = await getEnv({
+    const { oauthApp, env } = await getTestServer({
       testTenantLanguage: "it",
     });
     const oauthClient = testClient(oauthApp, env);
@@ -100,7 +99,7 @@ describe("Register password user", () => {
   });
 
   it("should reject a weak password", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const response = await oauthClient.authorize.$get(

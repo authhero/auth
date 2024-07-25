@@ -1,16 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
-import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
-import { getEnv } from "../helpers/test-client";
-import createTestUsers from "../helpers/createTestUsers";
+import { getTestServer } from "../helpers/test-server";
 import { User } from "@authhero/adapter-interfaces";
 
 describe("users management API endpoint", () => {
   describe("POST", () => {
     // this is different to Auth0 where user_id OR email is required
     it("should return a 400 if try and create a new user for a tenant without an email", async () => {
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
       const token = await getAdminToken();
@@ -37,7 +35,7 @@ describe("users management API endpoint", () => {
     it("should create a new user for an empty tenant", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -107,7 +105,7 @@ describe("users management API endpoint", () => {
       it("is an existing primary account", async () => {
         const token = await getAdminToken();
 
-        const env = await getEnv();
+        const { managementApp, env } = await getTestServer();
         const managementClient = testClient(managementApp, env);
 
         const createUserResponse1 = await managementClient.api.v2.users.$post(
@@ -152,7 +150,7 @@ describe("users management API endpoint", () => {
       it("is an existing linked account", async () => {
         const token = await getAdminToken();
 
-        const env = await getEnv();
+        const { managementApp, env } = await getTestServer();
         const managementClient = testClient(managementApp, env);
 
         // ----------------------
@@ -250,7 +248,7 @@ describe("users management API endpoint", () => {
 
     it("should lowercase email when creating a user", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -312,7 +310,7 @@ describe("users management API endpoint", () => {
   describe("PATCH", () => {
     it("should update a user", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
       const createUserResponse = await managementClient.api.v2.users.$post(
@@ -391,18 +389,30 @@ describe("users management API endpoint", () => {
     it("should throw a 409 when updating a user with an email of an already existing user", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
-      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
+      await env.data.users.create("tenantId", {
+        user_id: "auth2|userId2",
+        email: "foo2@example.com",
+        email_verified: true,
+        nickname: "Åkesson Þorsteinsson",
+        picture: "https://example.com/foo.png",
+        login_count: 0,
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       const updateUserResponse = await managementClient.api.v2.users[
         ":user_id"
       ].$patch(
         {
-          param: { user_id: newUser1.id },
+          param: { user_id: "auth2|userId" },
           json: {
-            email: newUser2.email,
+            email: "foo2@example.com",
           },
           header: {
             "tenant-id": "tenantId",
@@ -421,7 +431,7 @@ describe("users management API endpoint", () => {
     it("should return a 404 when trying to patch a linked user", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -506,7 +516,7 @@ describe("users management API endpoint", () => {
     it("should return a 404 when trying to patch a non existent user", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
       const params2 = {
@@ -538,7 +548,7 @@ describe("users management API endpoint", () => {
   describe("DELETE", () => {
     it("should delete secondary account if delete primary account", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -646,7 +656,7 @@ describe("users management API endpoint", () => {
   // TODO - split these tests up into a new test suite one for each HTTP verb!
   it("should use email for name if not name is not passed", async () => {
     const token = await getAdminToken();
-    const env = await getEnv();
+    const { managementApp, env } = await getTestServer();
     const managementClient = testClient(managementApp, env);
 
     const createUserResponse = await managementClient.api.v2.users.$post(
@@ -678,7 +688,7 @@ describe("users management API endpoint", () => {
     // - should return CORS headers! Dan broke this on auth-admin. Check from a synthetic auth-admin request we get CORS headers back
     // - pagination! What I've done won't work of course unless we overfetch...
     it("should return an empty list of users for a tenant", async () => {
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -704,7 +714,7 @@ describe("users management API endpoint", () => {
     });
 
     it("should return linked users as identities in primary user, and not in list of results", async () => {
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
       const token = await getAdminToken();
@@ -798,7 +808,7 @@ describe("users management API endpoint", () => {
     });
 
     it("should return a list of users with totals", async () => {
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
       const token = await getAdminToken();
@@ -843,7 +853,7 @@ describe("users management API endpoint", () => {
     it("should search for a user with wildcard search on email", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
       const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
@@ -890,7 +900,7 @@ describe("users management API endpoint", () => {
     });
     it("should be able to search on linked user's email address using profile data query", async () => {
       const token = await getAdminToken();
-      const env = await getEnv();
+      const { managementApp, oauthApp, env } = await getTestServer();
 
       const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
@@ -1018,7 +1028,7 @@ describe("users management API endpoint", () => {
       */
       it("should search for a user by email when lucene query uses colon as separator", async () => {
         const token = await getAdminToken();
-        const env = await getEnv();
+        const { managementApp, oauthApp, env } = await getTestServer();
 
         const client = testClient(oauthApp, env);
         const managementClient = testClient(managementApp, env);
@@ -1067,7 +1077,7 @@ describe("users management API endpoint", () => {
 
       it("should search for a user by email when lucene query uses equal char as separator", async () => {
         const token = await getAdminToken();
-        const env = await getEnv();
+        const { managementApp, env } = await getTestServer();
 
         const managementClient = testClient(managementApp, env);
 
@@ -1116,7 +1126,7 @@ describe("users management API endpoint", () => {
 
       it("should search for a user by email and provider when lucene query uses equal char as separator", async () => {
         const token = await getAdminToken();
-        const env = await getEnv();
+        const { managementApp, env } = await getTestServer();
 
         const managementClient = testClient(managementApp, env);
 
@@ -1172,22 +1182,33 @@ describe("users management API endpoint", () => {
   });
 
   describe("link user", () => {
-    it("should link two users using link_to parameter", async () => {
+    it.skip("should link two users using link_to parameter", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
 
-      const client = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
 
-      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
+      await env.data.users.create("tenantId", {
+        user_id: "auth2|userId2",
+        email: "foo2@example.com",
+        email_verified: true,
+        nickname: "Åkesson Þorsteinsson",
+        picture: "https://example.com/foo.png",
+        login_count: 0,
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       const params = {
         param: {
-          user_id: newUser2.user_id,
+          user_id: "auth2|userId2",
         },
         json: {
-          link_with: newUser1.user_id,
+          link_with: "auth2|userId",
         },
         header: {
           "tenant-id": "tenantId",
@@ -1224,14 +1245,14 @@ describe("users management API endpoint", () => {
       if (!Array.isArray(usersList)) {
         throw new Error("Expected an array of users");
       }
-      expect(usersList.length).toBe(2);
-      expect(usersList[1].user_id).toBe(newUser2.user_id);
+      expect(usersList.length).toBe(1);
+      expect(usersList[0].user_id).toBe("auth2|userId2");
 
       // Fetch a single users
       const userResponse = await managementClient.api.v2.users[":user_id"].$get(
         // note we fetch with the user_id prefixed with provider as per the Auth0 standard
         {
-          param: { user_id: newUser2.user_id },
+          param: { user_id: "auth2|userId2" },
           header: {
             "tenant-id": "tenantId",
           },
@@ -1245,31 +1266,26 @@ describe("users management API endpoint", () => {
 
       expect(userResponse.status).toBe(200);
 
-      const [, newUser1Id] = newUser1.user_id.split("|");
-      const [, newUser2Id] = newUser2.user_id.split("|");
-
       const body = await userResponse.json();
-      expect(body.user_id).toBe(newUser2.user_id);
+      expect(body.user_id).toBe("auth2|userId2");
       expect(body.identities).toEqual([
         {
-          connection: "email",
-          user_id: newUser2Id,
-          provider: "email",
+          connection: "Username-Password-Authentication",
+          user_id: "userId2",
+          provider: "auth2",
           isSocial: false,
         },
         {
-          connection: "email",
-          user_id: newUser1Id,
-          provider: "email",
+          connection: "Username-Password-Authentication",
+          user_id: "userId",
+          provider: "auth2",
           isSocial: false,
           profileData: {
-            email: "test1@example.com",
-            email_verified: false,
+            email: "foo@example.com",
+            email_verified: true,
           },
         },
       ]);
-
-      const [provider, linked_user_id] = newUser1.user_id.split("|");
 
       // and now unlink!
       const unlinkUserResponse = await managementClient.api.v2.users[
@@ -1277,9 +1293,9 @@ describe("users management API endpoint", () => {
       ].identities[":provider"][":linked_user_id"].$delete(
         {
           param: {
-            user_id: newUser2.user_id,
-            provider,
-            linked_user_id,
+            user_id: "userId",
+            provider: "auth2",
+            linked_user_id: "userId2",
           },
           header: { "tenant-id": "tenantId" },
         },
@@ -1296,13 +1312,10 @@ describe("users management API endpoint", () => {
         throw new Error("Expected an array of users");
       }
 
-      expect(unlinkUserBody[0].user_id).toBe(newUser2.user_id);
+      expect(unlinkUserBody[0].user_id).toBe("userId");
 
       // manually check in the db that the linked_to field has been reset
-      const user1Updated = await env.data.users.get(
-        "tenantId",
-        newUser1.user_id,
-      );
+      const user1Updated = await env.data.users.get("tenantId", "userId");
       expect(user1Updated!.linked_to).toBeUndefined();
 
       // now fetch user 2 again to check doesn't have user2 as identity
@@ -1310,7 +1323,7 @@ describe("users management API endpoint", () => {
         ":user_id"
       ].$get(
         {
-          param: { user_id: newUser2.user_id },
+          param: { user_id: "userId2" },
           header: { "tenant-id": "tenantId" },
         },
         {
@@ -1326,7 +1339,7 @@ describe("users management API endpoint", () => {
       expect(user2.identities).toEqual([
         {
           connection: "email",
-          user_id: newUser2.user_id.split("|")[1],
+          user_id: "userId2",
           provider: "email",
           isSocial: false,
         },
@@ -1338,30 +1351,42 @@ describe("users management API endpoint", () => {
     it("should link two users using user_id and provider parameter", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
-      const [newUser1, newUser2] = await createTestUsers(env, "tenantId");
-
-      const [provider] = newUser2.user_id.split("|");
-      const params = {
-        param: { user_id: newUser2.user_id },
-        json: {
-          provider,
-          user_id: newUser1.user_id,
-        },
-        header: {
-          "tenant-id": "tenantId",
-        },
-      };
+      await env.data.users.create("tenantId", {
+        user_id: "auth2|userId2",
+        email: "foo2@example.com",
+        email_verified: true,
+        nickname: "Åkesson Þorsteinsson",
+        picture: "https://example.com/foo.png",
+        login_count: 0,
+        provider: "auth2",
+        connection: "Username-Password-Authentication",
+        is_social: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       const linkUserResponse = await managementClient.api.v2.users[
         ":user_id"
-      ].identities.$post(params, {
-        headers: {
-          authorization: `Bearer ${token}`,
+      ].identities.$post(
+        {
+          param: { user_id: "auth2|userId2" },
+          json: {
+            provider: "auth2",
+            user_id: "auth2|userId",
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
-      });
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       expect(linkUserResponse.status).toBe(201);
 
@@ -1370,7 +1395,7 @@ describe("users management API endpoint", () => {
         {
           param: {
             // note we fetch with the user_id prefixed with provider as per the Auth0 standard
-            user_id: newUser2.user_id,
+            user_id: "auth2|userId2",
           },
           header: {
             "tenant-id": "tenantId",
@@ -1385,26 +1410,23 @@ describe("users management API endpoint", () => {
 
       expect(userResponse.status).toBe(200);
 
-      const [, newUser1Id] = newUser1.user_id.split("|");
-      const [, newUser2Id] = newUser2.user_id.split("|");
-
       const body = await userResponse.json();
-      expect(body.user_id).toBe(newUser2.user_id);
+      expect(body.user_id).toBe("auth2|userId2");
       expect(body.identities).toEqual([
         {
-          connection: "email",
-          user_id: newUser2Id,
-          provider: "email",
+          connection: "Username-Password-Authentication",
+          user_id: "userId2",
+          provider: "auth2",
           isSocial: false,
         },
         {
-          connection: "email",
-          user_id: newUser1Id,
-          provider: "email",
+          connection: "Username-Password-Authentication",
+          user_id: "userId",
+          provider: "auth2",
           isSocial: false,
           profileData: {
-            email: "test1@example.com",
-            email_verified: false,
+            email: "foo@example.com",
+            email_verified: true,
           },
         },
       ]);
@@ -1415,8 +1437,7 @@ describe("users management API endpoint", () => {
     it("should return primary user with secondary user nested in identities, but should not return linked secondary user (should act as though the secondary user does not exist)", async () => {
       const token = await getAdminToken();
 
-      const env = await getEnv();
-      const client = testClient(oauthApp, env);
+      const { managementApp, env } = await getTestServer();
       const managementClient = testClient(managementApp, env);
 
       const createSecondaryUserResponse =

@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { testClient } from "hono/testing";
 import { getAdminToken } from "./helpers/token";
-import { getEnv } from "./helpers/test-client";
-import { managementApp, oauthApp } from "../../src/app";
+import { getTestServer } from "./helpers/test-server";
 import {
   jwksKeySchema,
   openIDConfigurationSchema,
@@ -10,7 +9,7 @@ import {
 
 describe("jwks", () => {
   it("should return a list with the test certificate", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const client = testClient(oauthApp, env);
 
     const response = await client[".well-known"]["jwks.json"].$get(
@@ -32,7 +31,7 @@ describe("jwks", () => {
   });
 
   it("should create a new rsa-key and return it", async () => {
-    const env = await getEnv();
+    const { oauthApp, managementApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     // TO FIX - Type instantiation is excessively deep and possibly infinite.
     /* @ts-ignore */
@@ -92,7 +91,7 @@ describe("jwks", () => {
   });
 
   it("should return an openid-configuration with the current issues", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const client = testClient(oauthApp, env);
 
     const response = await client[".well-known"]["openid-configuration"].$get(

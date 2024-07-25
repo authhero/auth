@@ -1,9 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { parseJwt } from "../../../src/utils/parse-jwt";
 import { doSilentAuthRequestAndReturnTokens } from "../helpers/silent-auth";
-import { getEnv } from "../helpers/test-client";
+import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
-import { managementApp, oauthApp } from "../../../src/app";
 import { getAdminToken } from "../helpers/token";
 import type { EmailOptions } from "../../../src/services/email/EmailOptions";
 import {
@@ -36,7 +35,7 @@ function getCodeStateTo(email: EmailOptions) {
 describe("password-flow", () => {
   describe("Register password", () => {
     it("should return a 403 if an invalid client is passed", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       const response = await oauthClient.dbconnections.signup.$post({
@@ -54,7 +53,7 @@ describe("password-flow", () => {
 
     it("should create a new user with a password and only allow login after email validation", async () => {
       const password = "Password1234!";
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -106,9 +105,9 @@ describe("password-flow", () => {
       });
 
       // this is the original email sent after signing up
-      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+      const { to, code, state } = getCodeStateTo(emails[0]);
 
-      await snapshotEmail(env.data.emails[0]);
+      await snapshotEmail(emails[0]);
 
       expect(to).toBe("password-login-test@example.com");
       expect(code).toBeDefined();
@@ -262,7 +261,7 @@ describe("password-flow", () => {
     // still more to test e.g. resent email validation email after failed login (here we are just testing the verify email email which is only sent once)
     it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
       const password = "Password1234!";
-      const env = await getEnv();
+      const { managementApp, oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       const managementClient = testClient(managementApp, env);
       const token = await getAdminToken();
@@ -295,7 +294,7 @@ describe("password-flow", () => {
       // -----------------------------
       // validate email
       // -----------------------------
-      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+      const { to, code, state } = getCodeStateTo(emails[0]);
 
       expect(to).toBe("existing-code-user@example.com");
       expect(code).toBeDefined();
@@ -443,7 +442,7 @@ describe("password-flow", () => {
 
     it("should resend email validation email after login attempts, and this should work", async () => {
       const password = "Password1234!";
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -473,7 +472,7 @@ describe("password-flow", () => {
 
       // this is the difference to the previous test - we are using the verified email that is sent after a failed login
       // either of these two emails would work
-      const { to, code, state } = getCodeStateTo(env.data.emails[1]);
+      const { to, code, state } = getCodeStateTo(emails[1]);
 
       expect(to).toBe("password-login-test@example.com");
 
@@ -532,7 +531,7 @@ describe("password-flow", () => {
     });
 
     it("should not allow a new sign up to overwrite the password of an existing signup", async () => {
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const aNewPassword = "A-new-valid-password-1234!";
       const oauthClient = testClient(oauthApp, env);
 
@@ -562,7 +561,7 @@ describe("password-flow", () => {
       expect(loginResponse.status).toBe(403);
     });
     it("should reject signups for weak passwords", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
 
       const oauthClient = testClient(oauthApp, env);
 
@@ -584,7 +583,7 @@ describe("password-flow", () => {
   });
   describe("Login with password", () => {
     it("should login with existing user", async () => {
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
       // foo@example.com is an existing username-password user, with password - Test!
 
@@ -669,8 +668,9 @@ describe("password-flow", () => {
         picture: "https://example.com/foo.png",
       });
     });
+
     it("should reject login of existing user with incorrect password", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       const loginResponse = await oauthClient.co.authenticate.$post({
@@ -685,8 +685,11 @@ describe("password-flow", () => {
       // no body returned
       expect(loginResponse.status).toBe(403);
     });
+
     it("should not allow password of a different user to be used", async () => {
-      const env = await getEnv({ emailValidation: "disabled" });
+      const { oauthApp, env } = await getTestServer({
+        emailValidation: "disabled",
+      });
       const oauthClient = testClient(oauthApp, env);
 
       const signupResponse = await oauthClient.dbconnections.signup.$post({
@@ -733,7 +736,7 @@ describe("password-flow", () => {
     });
 
     it("should not allow non-existent user & password to login", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       const loginResponse = await oauthClient.co.authenticate.$post({
@@ -747,8 +750,9 @@ describe("password-flow", () => {
       });
       expect(loginResponse.status).toBe(403);
     });
+
     it("should not allow login to username-password but on different tenant", async () => {
-      const env = await getEnv();
+      const { oauthApp, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       const loginResponse = await oauthClient.co.authenticate.$post({
@@ -767,9 +771,10 @@ describe("password-flow", () => {
     // - username-password user across different clients on the same tenant
     // - username-password user existing on two different tenants, but with different passwords... then check each doesn't work on the other
   });
+
   describe("Password reset", () => {
     it("should send password reset email for existing user, and allow password to be changed", async () => {
-      const env = await getEnv({
+      const { oauthApp, emails, env } = await getTestServer({
         // emails are based on tenant styling... I'm surprised we don't already have bugs
         // vendor_id: "fokus",
         testTenantLanguage: "sv",
@@ -796,13 +801,13 @@ describe("password-flow", () => {
         "We've just sent you an email to reset your password.",
       );
 
-      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+      const { to, code, state } = getCodeStateTo(emails[0]);
 
       expect(to).toBe("foo@example.com");
       expect(code).toBeDefined();
       expect(state).toBeDefined();
 
-      await snapshotEmail(env.data.emails[0]);
+      await snapshotEmail(emails[0]);
 
       //-------------------
       // reset password
@@ -882,7 +887,7 @@ describe("password-flow", () => {
     });
 
     it("should send password reset email for users with a matching email but no password user", async () => {
-      const env = await getEnv({
+      const { oauthApp, emails, env } = await getTestServer({
         testTenantLanguage: "sv",
       });
       const oauthClient = testClient(oauthApp, env);
@@ -916,7 +921,7 @@ describe("password-flow", () => {
         "We've just sent you an email to reset your password.",
       );
 
-      const { to, code, state } = getCodeStateTo(env.data.emails[0]);
+      const { to, code, state } = getCodeStateTo(emails[0]);
 
       expect(to).toBe("test@example.com");
       expect(code).toBeDefined();
@@ -924,7 +929,7 @@ describe("password-flow", () => {
     });
 
     it("should reject weak passwords", async () => {
-      const env = await getEnv({
+      const { oauthApp, env, emails } = await getTestServer({
         // vendor_id: "kvartal",
         testTenantLanguage: "nb",
       });
@@ -943,7 +948,7 @@ describe("password-flow", () => {
           connection: "Username-Password-Authentication",
         },
       });
-      const { code, state } = getCodeStateTo(env.data.emails[0]);
+      const { code, state } = getCodeStateTo(emails[0]);
 
       //-------------------
       // reject when try to set weak password
@@ -965,7 +970,7 @@ describe("password-flow", () => {
       await snapshotResponse(resetPassword);
     });
     it("should reject non-matching confirmation password", async () => {
-      const env = await getEnv({
+      const { oauthApp, env, emails } = await getTestServer({
         // vendor_id: "breakit",
         testTenantLanguage: "it",
       });
@@ -985,7 +990,7 @@ describe("password-flow", () => {
           connection: "Username-Password-Authentication",
         },
       });
-      const { code, state } = getCodeStateTo(env.data.emails[0]);
+      const { code, state } = getCodeStateTo(emails[0]);
 
       //-------------------
       // reject when confrimation password does not match!
@@ -1007,7 +1012,7 @@ describe("password-flow", () => {
       await snapshotResponse(resetPassword);
     });
     it("should send password reset email for new unvalidated signup AND set email_verified to true", async () => {
-      const env = await getEnv();
+      const { oauthApp, emails, env } = await getTestServer();
       const oauthClient = testClient(oauthApp, env);
 
       const createUserResponse = await oauthClient.dbconnections.signup.$post({
@@ -1037,7 +1042,7 @@ describe("password-flow", () => {
       );
 
       // first email is the verify email email sent after sign up
-      const { to, code, state } = getCodeStateTo(env.data.emails[1]);
+      const { to, code, state } = getCodeStateTo(emails[1]);
 
       expect(to).toBe("reset-new-user@example.com");
       expect(code).toBeDefined();

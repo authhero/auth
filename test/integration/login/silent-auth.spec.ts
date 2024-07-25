@@ -1,12 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { getEnv, testPasswordUser } from "../helpers/test-client";
-import { oauthApp } from "../../../src/app";
+import { getTestServer, testPasswordUser } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 describe("Silent auth", () => {
   it("should login using silent auth and the check-account page", async () => {
-    const env = await getEnv();
+    const { oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
 
     const searchParams = {

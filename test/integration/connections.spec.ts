@@ -1,13 +1,12 @@
 import { test } from "vitest";
 import { testClient } from "hono/testing";
-import { getEnv } from "./helpers/test-client";
-import { oauthApp } from "../../src/app";
+import { getTestServer } from "./helpers/test-server";
 import { snapshotResponse } from "./helpers/playwrightSnapshots";
 import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
 
 test("should hide social buttons for fokus by not specifying any connection", async () => {
   const testTenantLanguage = "en";
-  const env = await getEnv({
+  const { oauthApp, env } = await getTestServer({
     testTenantLanguage,
   });
   const oauthClient = testClient(oauthApp, env);
@@ -56,7 +55,7 @@ test("should hide social buttons for fokus by not specifying any connection", as
 
 test("should show Vipps for parcferme as entered as connection", async () => {
   const testTenantLanguage = "en";
-  const env = await getEnv({
+  const { oauthApp, env } = await getTestServer({
     testTenantLanguage,
   });
   const oauthClient = testClient(oauthApp, env);
@@ -121,7 +120,7 @@ test("should show Vipps for parcferme as entered as connection", async () => {
 
 test("should hide password entry button if auth2 not specified as a connection", async () => {
   const testTenantLanguage = "en";
-  const env = await getEnv({
+  const { oauthApp, env } = await getTestServer({
     testTenantLanguage,
   });
   const oauthClient = testClient(oauthApp, env);
