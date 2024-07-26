@@ -508,15 +508,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
             description: "The state parameter from the authorization request",
           }),
         }),
-        body: {
-          content: {
-            "application/x-www-form-urlencoded": {
-              schema: z.object({
-                username: z.string(),
-              }),
-            },
-          },
-        },
       },
       responses: {
         200: {
@@ -526,25 +517,18 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     }),
     async (ctx) => {
       const { state } = ctx.req.valid("query");
-      const { username } = ctx.req.valid("form");
-
-      const { env } = ctx;
 
       const { vendorSettings, client, session } = await initJSXRoute(
         ctx,
         state,
       );
 
-      if (session.authParams.username !== username) {
-        session.authParams.username = username;
-        await env.data.universalLoginSessions.update(
-          client.tenant_id,
-          session.id,
-          session,
-        );
-      }
-
-      await requestPasswordReset(ctx, client, username, session.id);
+      await requestPasswordReset(
+        ctx,
+        client,
+        session.authParams.username!,
+        session.id,
+      );
 
       return ctx.html(
         <ForgotPasswordSentPage
@@ -694,9 +678,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           ) || SesamyPasswordLoginSelection.code;
 
         if (passwordLoginSelection === SesamyPasswordLoginSelection.password) {
-          return ctx.redirect(
-            `/u/enter-password?state=${state}&username=${params.username}`,
-          );
+          return ctx.redirect(`/u/enter-password?state=${state}`);
         }
       }
 
@@ -1028,7 +1010,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const otps = await env.data.OTP.list(client.tenant_id, email);
 
       try {
-        const existingUser = await getPrimaryUserByEmailAndProvider({
+        const existingUser = await getUserByEmailAndProvider({
           userAdapter: ctx.env.data.users,
           tenant_id: client.tenant_id,
           email,

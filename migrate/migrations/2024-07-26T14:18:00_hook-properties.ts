@@ -13,9 +13,9 @@ export async function up(db: Kysely<Database>): Promise<void> {
 }
 
 export async function down(db: Kysely<Database>): Promise<void> {
-  await db.schema
-    .alterTable("hooks")
-    .dropColumn("algorithm")
-    .dropColumn("priority")
-    .execute();
+  // await db.schema
+  //   .alterTable("hooks")
+  //   .dropColumn("algorithm")
+  //   .dropColumn("priority")
+  //   .execute();
 }
