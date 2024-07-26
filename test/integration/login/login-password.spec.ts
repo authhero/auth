@@ -146,7 +146,7 @@ describe("Register password", () => {
     expect(workingLoginResponse.status).toBe(302);
   });
 
-  it.only("should create a new user with a password using the pre signup verification", async () => {
+  it("should create a new user with a password using the pre signup verification", async () => {
     const password = "Password1234!";
     const { oauthApp, emails, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
