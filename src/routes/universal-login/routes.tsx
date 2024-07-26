@@ -1040,8 +1040,20 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ctx.set("userName", newUser.email);
         ctx.set("connection", newUser.connection);
 
+        // fetch the user again to get the user_id of the password user in case they have been linked
+        const newPasswordUser = await getUserByEmailAndProvider({
+          userAdapter: ctx.env.data.users,
+          tenant_id: client.tenant_id,
+          email,
+          provider: "auth2",
+        });
+
+        if (!newPasswordUser) {
+          throw new HTTPException(400, { message: "Invalid sign up" });
+        }
+
         await env.data.passwords.create(client.tenant_id, {
-          user_id: newUser.user_id,
+          user_id: newPasswordUser.user_id,
           password: await bcryptjs.hash(loginParams.password, 10),
           algorithm: "bcrypt",
         });
