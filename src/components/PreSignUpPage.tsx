@@ -10,10 +10,9 @@ type Props = {
   state: string;
   vendorSettings: VendorSettings;
   email?: string;
-  code?: string;
 };
 
-const PreSignupPage: FC<Props> = ({ vendorSettings, email, code, state }) => {
+const PreSignupPage: FC<Props> = ({ vendorSettings, email, state }) => {
   return (
     <Layout
       title={i18next.t("create_password_account_title")}
@@ -27,7 +26,6 @@ const PreSignupPage: FC<Props> = ({ vendorSettings, email, code, state }) => {
       </div>
       <div class="flex flex-1 flex-col justify-center">
         <Form className="pt-2">
-          <input type="hidden" name="code" value={code} />
           <input
             type="email"
             name="username"
