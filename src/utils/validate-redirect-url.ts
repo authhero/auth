@@ -1,3 +1,4 @@
+// TODO: Remove this and use the oslo implementation instead
 function matchHostnameWithWildcards(
   allowedHostname: string,
   redirectHostname: string,

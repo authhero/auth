@@ -53,5 +53,6 @@ const data = createAdapters(db);
   await data.passwords.create(tenant.id, {
     user_id: user.user_id,
     password: "Password1!",
+    algorithm: "bcrypt",
   });
 })();

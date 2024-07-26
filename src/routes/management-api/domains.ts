@@ -62,8 +62,6 @@ export const domainRoutes = new OpenAPIHono<{ Bindings: Env }>()
         q,
       });
 
-      console.log("result", result);
-
       if (include_totals) {
         return ctx.json(result);
       }

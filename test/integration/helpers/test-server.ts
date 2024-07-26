@@ -209,6 +209,7 @@ export async function getTestServer(args: getEnvParams = {}) {
   await data.passwords.create("tenantId", {
     user_id: testPasswordUser.user_id,
     password: bcryptjs.hashSync(testPasswordUser.password, 10),
+    algorithm: "bcrypt",
   });
 
   const env = {

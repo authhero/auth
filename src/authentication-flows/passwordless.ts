@@ -122,16 +122,15 @@ export async function sendEmailVerificationEmail({
 
   const state = session.id;
 
-  const code = generateOTP();
+  const code_id = generateOTP();
 
   await env.data.codes.create(client.tenant_id, {
-    id: nanoid(),
-    code,
-    type: "validation",
-    user_id: user.user_id,
+    code_id,
+    code_type: "email_verification",
+    login_id: session.id,
     created_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
   });
 
-  await sendValidateEmailAddress(env, client, user.email, code, state);
+  await sendValidateEmailAddress(env, client, user.email, code_id, state);
 }

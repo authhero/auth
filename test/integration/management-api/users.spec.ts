@@ -357,10 +357,6 @@ describe("users management API endpoint", () => {
         },
       );
 
-      if (updateUserResponse.status !== 200) {
-        console.log(await updateUserResponse.text());
-      }
-
       expect(updateUserResponse.status).toBe(200);
 
       const usersResponse = await managementClient.api.v2.users.$get(

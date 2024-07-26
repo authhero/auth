@@ -406,8 +406,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       }
 
       try {
-        const codes = await env.data.codes.list(client.tenant_id, user.user_id);
-        const foundCode = codes.find((storedCode) => storedCode.code === code);
+        const foundCode = await env.data.codes.get(
+          client.tenant_id,
+          code,
+          "password_reset",
+        );
 
         if (!foundCode) {
           // surely we should check this on the GET rather than have the user waste time entering a new password?
@@ -426,6 +429,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         await env.data.passwords.update(client.tenant_id, {
           user_id: user.user_id,
           password: await bcryptjs.hash(password, 10),
+          algorithm: "bcrypt",
         });
 
         // we could do this on the GET...
@@ -978,7 +982,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         },
       },
     }),
-    // very similar to dbconnections/signup
+    //TODO: merge logic with dbconnections/signup
     async (ctx) => {
       const { state } = ctx.req.valid("query");
       const loginParams = ctx.req.valid("form");
@@ -1055,6 +1059,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         await env.data.passwords.create(client.tenant_id, {
           user_id: newUser.user_id,
           password: await bcryptjs.hash(loginParams.password, 10),
+          algorithm: "bcrypt",
         });
 
         const log = createLogMessage(ctx, {
@@ -1107,6 +1112,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
     createRoute({
       tags: ["login"],
       method: "get",
+      // TODO: change the route to /u/verify-email
       path: "/validate-email",
       request: {
         query: z.object({
@@ -1151,8 +1157,11 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         throw new HTTPException(500, { message: "No user found" });
       }
 
-      const codes = await env.data.codes.list(client.tenant_id, user.user_id);
-      const foundCode = codes.find((storedCode) => storedCode.code === code);
+      const foundCode = await env.data.codes.get(
+        client.tenant_id,
+        code,
+        "email_verification",
+      );
 
       if (!foundCode) {
         throw new HTTPException(400, { message: "Code not found or expired" });
