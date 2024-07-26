@@ -13,6 +13,10 @@ export async function up(db: Kysely<Database>): Promise<void> {
     .addColumn("enabled", "boolean", (col) => col.notNull())
     .addColumn("created_at", "varchar(255)", (col) => col.notNull())
     .addColumn("updated_at", "varchar(255)", (col) => col.notNull())
+    .addColumn("synchronous", "boolean", (col) =>
+      col.defaultTo(false).notNull(),
+    )
+    .addColumn("priority", "integer")
     .execute();
 }
 
