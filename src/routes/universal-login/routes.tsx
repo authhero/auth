@@ -1003,6 +1003,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         return ctx.html(
           <SignupPage
             state={state}
+            code={loginParams.code}
             vendorSettings={vendorSettings}
             error={i18next.t("create_account_passwords_didnt_match")}
             email={session.authParams.username}
@@ -1015,6 +1016,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         return ctx.html(
           <SignupPage
             state={state}
+            code={loginParams.code}
             vendorSettings={vendorSettings}
             error={i18next.t("create_account_weak_password")}
             email={session.authParams.username}
@@ -1372,9 +1374,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           state: z.string().openapi({
             description: "The state parameter from the authorization request",
           }),
-          code: z.string().optional().openapi({
-            description: "The code parameter from an email verification link",
-          }),
         }),
       },
       responses: {
@@ -1384,7 +1383,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       },
     }),
     async (ctx) => {
-      const { state, code } = ctx.req.valid("query");
+      const { state } = ctx.req.valid("query");
       const { vendorSettings, session } = await initJSXRoute(ctx, state);
 
       const { username } = session.authParams;
@@ -1398,7 +1397,6 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
           state={state}
           vendorSettings={vendorSettings}
           email={username}
-          code={code}
         />,
       );
     },

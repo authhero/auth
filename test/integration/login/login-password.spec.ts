@@ -146,6 +146,60 @@ describe("Register password", () => {
     expect(workingLoginResponse.status).toBe(302);
   });
 
+  it("should create a new user with a password using the pre signup verification", async () => {
+    const password = "Password1234!";
+    const { oauthApp, emails, env } = await getTestServer();
+    const oauthClient = testClient(oauthApp, env);
+
+    const searchParams = {
+      client_id: "clientId",
+      vendor_id: "kvartal",
+      response_type: AuthorizationResponseType.TOKEN_ID_TOKEN,
+      scope: "openid",
+      redirect_uri: "http://localhost:3000/callback",
+      state: "state",
+      username: "password-login-test@example.com",
+    };
+    const response = await oauthClient.authorize.$get({
+      query: searchParams,
+    });
+    const location = response.headers.get("location");
+    const stateParam = new URLSearchParams(location!.split("?")[1]);
+    const query = Object.fromEntries(stateParam.entries());
+
+    const preSignupResponse = await oauthClient.u["pre-signup"].$post({
+      query: {
+        state: query.state,
+      },
+    });
+
+    expect(preSignupResponse.status).toBe(200);
+    expect(emails.length).toBe(1);
+    const [, code] = emails[0].content[0].value.match(/code=(\d+)/) as string[];
+
+    const createUserResponse = await oauthClient.u.signup.$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        password,
+        "re-enter-password": password,
+        code,
+      },
+    });
+
+    expect(createUserResponse.status).toBe(302);
+
+    const user = await env.data.users.list("tenantId", {
+      q: "email:password-login-test@example.com",
+      page: 0,
+      per_page: 1,
+      include_totals: false,
+    });
+
+    expect(user.users[0].email_verified).toBe(true);
+  });
+
   it("should create a new user with a password, only allow login after email validation AND link this to an existing code user with the same email", async () => {
     const password = "Password1234!";
     const { managementApp, oauthApp, emails, env } = await getTestServer();
