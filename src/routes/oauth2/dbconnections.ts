@@ -105,6 +105,7 @@ export const dbConnectionRoutes = new OpenAPIHono<{
       await ctx.env.data.passwords.create(client.tenant_id, {
         user_id: newUser.user_id,
         password: bcryptjs.hashSync(password, 10),
+        algorithm: "bcrypt",
       });
 
       await sendEmailVerificationEmail({

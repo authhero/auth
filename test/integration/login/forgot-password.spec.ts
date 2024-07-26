@@ -147,7 +147,6 @@ describe("Forgot password", () => {
     expect(loginResponse.status).toBe(302);
 
     const locationAfterLogin = loginResponse.headers.get("location");
-    console.log(locationAfterLogin);
     expect(locationAfterLogin!.split("#")[0]).toEqual(
       "http://localhost:3000/callback",
     );
