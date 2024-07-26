@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const hookResponseSchema = z.object({
-  state: z.enum(["suceess", "fail"]),
+  status: z.enum(["suceess", "fail"]),
   message: z.string().optional(),
 });
 
