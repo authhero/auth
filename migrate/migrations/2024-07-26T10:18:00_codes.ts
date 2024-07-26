@@ -34,18 +34,13 @@ export async function up(db: Kysely<Database>): Promise<void> {
   await db.schema
     .createTable("codes")
     .addColumn("code_id", "varchar(255)", (col) => col.primaryKey())
-    // .addColumn("tenant_id", "varchar(255)", (col) =>
-    //   col.references("tenants.id").onDelete("cascade").notNull(),
-    // )
+    .addColumn("tenant_id", "varchar(255)", (col) =>
+      col.references("tenants.id").onDelete("cascade").notNull(),
+    )
     .addColumn("user_id", "varchar(255)")
-    .addColumn("tenant_id", "varchar(255)")
     .addColumn("login_id", "varchar(255)")
-    // fk mismatch - we were referencing user - singular - non-existent table
-    // .addColumn("user_id", "varchar(255)", (col) =>
-    //   col.references("user.id").onDelete("cascade").notNull(),
-    // )
     .addForeignKeyConstraint(
-      "user_id_constraint",
+      "codes_user_id_tenant_id_constraint",
       ["user_id", "tenant_id"],
       "users",
       ["user_id", "tenant_id"],
@@ -72,7 +67,7 @@ export async function down(db: Kysely<Database>): Promise<void> {
     .addColumn("user_id", "varchar(255)")
     .addColumn("tenant_id", "varchar(255)")
     .addForeignKeyConstraint(
-      "user_id_constraint",
+      "codes_user_id_tenant_id_constraint",
       ["user_id", "tenant_id"],
       "users",
       ["user_id", "tenant_id"],
