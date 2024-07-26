@@ -127,7 +127,10 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
         body: {
           content: {
             "application/json": {
-              schema: hookInsertSchema.omit({ hook_id: true }).partial(),
+              schema: z
+                .object(hookInsertSchema.shape)
+                .omit({ hook_id: true })
+                .partial(),
             },
           },
         },
@@ -142,7 +145,7 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
         200: {
           content: {
             "application/json": {
-              schema: hookSchema,
+              schema: hookSchema.shape,
             },
           },
           description: "The updated hook",
@@ -156,6 +159,8 @@ export const hooksRoutes = new OpenAPIHono<{ Bindings: Env }>()
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { hook_id } = ctx.req.valid("param");
       const hook = ctx.req.valid("json");
+
+      console.log("hook", hook);
 
       await ctx.env.data.hooks.update(tenant_id, hook_id, hook);
       const result = await ctx.env.data.hooks.get(tenant_id, hook_id);

@@ -128,7 +128,6 @@ export async function sendEmailVerificationEmail({
     code_id,
     code_type: "email_verification",
     login_id: session.id,
-    created_at: new Date().toISOString(),
     expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
   });
 

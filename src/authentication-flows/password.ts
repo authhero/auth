@@ -71,8 +71,6 @@ export async function requestPasswordReset(
   );
 
   const createdCode = await ctx.env.data.codes.create(client.tenant_id, {
-    // TODO: remove this
-    created_at: "",
     code_id: generateOTP(),
     code_type: "password_reset",
     login_id: loginSession.id,
