@@ -93,6 +93,7 @@ export const authorizeRoutes = new OpenAPIHono<{
       } = ctx.req.valid("query");
 
       const client = await getClient(env, client_id);
+      ctx.set("client_id", client.id);
 
       const authParams: AuthParams = {
         redirect_uri,

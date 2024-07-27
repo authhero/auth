@@ -34,7 +34,7 @@ function getCodeStateTo(email: EmailOptions) {
 }
 
 describe("Forgot password", () => {
-  it.skip("should send forgot password email", async () => {
+  it("should send forgot password email", async () => {
     const { oauthApp, emails, env } = await getTestServer();
 
     const oauthClient = testClient(oauthApp, env);
@@ -50,6 +50,19 @@ describe("Forgot password", () => {
 
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
+
+    // ---------------------
+    // Enter email address
+    // ---------------------
+    const emailResponse = await oauthClient.u["enter-email"].$post({
+      query: {
+        state: query.state,
+      },
+      form: {
+        username: "foo@example.com",
+      },
+    });
+    expect(emailResponse.status).toBe(302);
 
     // ---------------------
     // Open forgot password page
@@ -75,10 +88,6 @@ describe("Forgot password", () => {
       query: {
         state: query.state,
       },
-      // form: {
-      //   // this user exists in the fixutres
-      //   username: "foo@example.com",
-      // },
     });
 
     expect(forgotPasswordEmailResponse.status).toBe(200);
@@ -89,9 +98,9 @@ describe("Forgot password", () => {
     // get the code & state from the forgot password email link
     // ---------------------
 
-    await snapshotEmail(emails[0]);
+    await snapshotEmail(emails[1]);
 
-    const { code, state, to, subject } = getCodeStateTo(emails[0]);
+    const { code, state, to, subject } = getCodeStateTo(emails[1]);
 
     expect(subject).toBe("Byt lösenord för ditt Test Tenant konto");
     expect(to).toBe("foo@example.com");

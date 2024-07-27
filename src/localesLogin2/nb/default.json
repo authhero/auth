@@ -46,7 +46,7 @@
   "expired_code": "Den magiske lenken er utløpt. Vennligst klikk på knappen nedenfor for å motta en ny lenke i innboksen din.",
   "fokus_info_message": "Hei! Vi oppdaterte påloggingsopplevelsen vår. <0>Klikk her for å lære mer om det.</0>",
   "forgot_password_cta": "Send e-post om tilbakestilling av passord",
-  "forgot_password_description": "Skriv inn e-postadressen din her",
+  "forgot_password_description": "Klikk på knappen nedenfor, så sender vi deg instruksjoner om hvordan du tilbakestiller passordet ditt.",
   "forgot_password_email_sent": "E-post om tilbakestilling av passord sendt",
   "forgot_password_link": "Har du glemt passordet?",
   "forgot_password_title": "Har du glemt passordet?",

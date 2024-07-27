@@ -46,7 +46,7 @@
   "expired_code": "Länken är inte längre giltig. Klicka på knappen för att skicka en ny länk till din epost.",
   "fokus_info_message": "Vi har bytt inloggningssystem, <0>här kan du läsa mer om vad det innebär</0>",
   "forgot_password_cta": "Skicka",
-  "forgot_password_description": "Ange din e-postadress",
+  "forgot_password_description": "Klicka på knappen nedan så skickar vi instruktioner om hur du återställer ditt lösenord.",
   "forgot_password_email_sent": "Vi har skickat ett e-postmeddelande med instruktioner om hur du återställer ditt lösenord till den e-postadress du angav.",
   "forgot_password_link": "Har du glömt lösenordet?",
   "forgot_password_title": "Har du glömt lösenordet?",

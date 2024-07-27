@@ -97,7 +97,7 @@ describe("logs", () => {
     expect(log.details?.request.method).toBe("POST");
   });
 
-  it.skip("should log a failed silent auth request", async () => {
+  it("should log a failed silent auth request", async () => {
     const { managementApp, oauthApp, env } = await getTestServer();
     const oauthClient = testClient(oauthApp, env);
     const managementClient = testClient(managementApp, env);

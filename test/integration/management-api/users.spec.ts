@@ -1178,7 +1178,7 @@ describe("users management API endpoint", () => {
   });
 
   describe("link user", () => {
-    it.skip("should link two users using link_to parameter", async () => {
+    it("should link two users using link_to parameter", async () => {
       const token = await getAdminToken();
 
       const { managementApp, env } = await getTestServer();
@@ -1199,24 +1199,26 @@ describe("users management API endpoint", () => {
         updated_at: new Date().toISOString(),
       });
 
-      const params = {
-        param: {
-          user_id: "auth2|userId2",
-        },
-        json: {
-          link_with: "auth2|userId",
-        },
-        header: {
-          "tenant-id": "tenantId",
-        },
-      };
       const linkUserResponse = await managementClient.api.v2.users[
         ":user_id"
-      ].identities.$post(params, {
-        headers: {
-          authorization: `Bearer ${token}`,
+      ].identities.$post(
+        {
+          param: {
+            user_id: "auth2|userId2",
+          },
+          json: {
+            link_with: "auth2|userId",
+          },
+          header: {
+            "tenant-id": "tenantId",
+          },
         },
-      });
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       expect(linkUserResponse.status).toBe(201);
 
@@ -1243,28 +1245,7 @@ describe("users management API endpoint", () => {
       }
       expect(usersList.length).toBe(1);
       expect(usersList[0].user_id).toBe("auth2|userId2");
-
-      // Fetch a single users
-      const userResponse = await managementClient.api.v2.users[":user_id"].$get(
-        // note we fetch with the user_id prefixed with provider as per the Auth0 standard
-        {
-          param: { user_id: "auth2|userId2" },
-          header: {
-            "tenant-id": "tenantId",
-          },
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      expect(userResponse.status).toBe(200);
-
-      const body = await userResponse.json();
-      expect(body.user_id).toBe("auth2|userId2");
-      expect(body.identities).toEqual([
+      expect(usersList[0].identities).toEqual([
         {
           connection: "Username-Password-Authentication",
           user_id: "userId2",
@@ -1289,9 +1270,9 @@ describe("users management API endpoint", () => {
       ].identities[":provider"][":linked_user_id"].$delete(
         {
           param: {
-            user_id: "userId",
+            user_id: "auth2|userId2",
             provider: "auth2",
-            linked_user_id: "userId2",
+            linked_user_id: "userId",
           },
           header: { "tenant-id": "tenantId" },
         },
@@ -1307,11 +1288,10 @@ describe("users management API endpoint", () => {
       if (!Array.isArray(unlinkUserBody)) {
         throw new Error("Expected an array of users");
       }
-
-      expect(unlinkUserBody[0].user_id).toBe("userId");
+      expect(unlinkUserBody[0].user_id).toBe("auth2|userId2");
 
       // manually check in the db that the linked_to field has been reset
-      const user1Updated = await env.data.users.get("tenantId", "userId");
+      const user1Updated = await env.data.users.get("tenantId", "auth2|userId");
       expect(user1Updated!.linked_to).toBeUndefined();
 
       // now fetch user 2 again to check doesn't have user2 as identity
@@ -1319,7 +1299,7 @@ describe("users management API endpoint", () => {
         ":user_id"
       ].$get(
         {
-          param: { user_id: "userId2" },
+          param: { user_id: "auth2|userId2" },
           header: { "tenant-id": "tenantId" },
         },
         {
@@ -1334,9 +1314,9 @@ describe("users management API endpoint", () => {
 
       expect(user2.identities).toEqual([
         {
-          connection: "email",
+          connection: "Username-Password-Authentication",
           user_id: "userId2",
-          provider: "email",
+          provider: "auth2",
           isSocial: false,
         },
       ]);
