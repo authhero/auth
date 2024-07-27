@@ -46,7 +46,7 @@
   "expired_code": "Magiczny link wygasł. Kliknij poniższy przycisk, aby otrzymać nowy link w skrzynce odbiorczej.",
   "fokus_info_message": "Zaktualizowaliśmy sposób logowania. <0>Kliknij tutaj, aby dowiedzieć się więcej.</0>",
   "forgot_password_cta": "Wyślij wiadomość e-mail z resetem hasła",
-  "forgot_password_description": "Wprowadź tutaj swój adres e-mail",
+  "forgot_password_description": "Kliknij poniższy przycisk, a my wyślemy Ci instrukcje, jak zresetować hasło.",
   "forgot_password_email_sent": "Wysłano wiadomość e-mail z resetem hasła",
   "forgot_password_link": "Zapomniałeś hasła?",
   "forgot_password_title": "Zapomniałeś hasła?",

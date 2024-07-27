@@ -46,7 +46,7 @@
   "expired_code": "The magic link has expired. Please click on the button below to receive a new link in your inbox.",
   "fokus_info_message": "Hey! We updated our login experience. <0>Click here to learn more about it.</0>",
   "forgot_password_cta": "Send password reset email",
-  "forgot_password_description": "Enter your email address here",
+  "forgot_password_description": "Click the button below and we’ll send instructions on how to reset your password.",
   "forgot_password_email_sent": "Password reset email sent",
   "forgot_password_link": "Forgot password?",
   "forgot_password_title": "Forgot password?",
