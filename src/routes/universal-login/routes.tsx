@@ -1451,6 +1451,40 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         state,
       );
 
+      return ctx.redirect(`/u/pre-signup-sent?state=${state}`);
+    },
+  )
+  // --------------------------------
+  // GET /u/pre-signup-sent
+  // --------------------------------
+  .openapi(
+    createRoute({
+      tags: ["login"],
+      method: "get",
+      path: "/pre-signup-sent",
+      request: {
+        query: z.object({
+          state: z.string().openapi({
+            description: "The state parameter from the authorization request",
+          }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Response",
+        },
+      },
+    }),
+    async (ctx) => {
+      const { state } = ctx.req.valid("query");
+      const { vendorSettings, session } = await initJSXRoute(ctx, state);
+
+      const { username } = session.authParams;
+
+      if (!username) {
+        throw new HTTPException(400, { message: "Username required" });
+      }
+
       return ctx.html(
         <PreSignupComfirmationPage
           vendorSettings={vendorSettings}
