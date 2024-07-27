@@ -551,7 +551,7 @@ export const userRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
       const { "tenant-id": tenant_id } = ctx.req.valid("header");
       const { user_id, provider, linked_user_id } = ctx.req.valid("param");
 
-      await ctx.env.data.users.unlink(
+      const result = await ctx.env.data.users.unlink(
         tenant_id,
         user_id,
         provider,
