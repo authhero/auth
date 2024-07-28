@@ -173,7 +173,7 @@ describe("Register password", () => {
       },
     });
 
-    expect(preSignupResponse.status).toBe(200);
+    expect(preSignupResponse.status).toBe(302);
     expect(emails.length).toBe(1);
     const [, code] = emails[0].content[0].value.match(/code=(\d+)/) as string[];
 
