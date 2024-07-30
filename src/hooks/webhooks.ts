@@ -83,6 +83,7 @@ export function postUserRegistrationWebhook(
 
     await invokeHooks(ctx, hooks, {
       tenant_id,
+      client_id: ctx.var.client_id,
       user,
       trigger_id: "post-user-registration",
     });
