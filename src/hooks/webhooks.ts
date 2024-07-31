@@ -45,11 +45,11 @@ async function invokeHook(
       }
     } catch (error: any) {
       const log = createLogMessage(ctx, {
-        type: LogTypes.SUCCESS_API_OPERATION,
+        // TODO: Change this to a failed hook type
+        type: LogTypes.FAILED_LOGIN,
         description: `Invalid webhook response: ${hook.url}, ${error.message}`,
       });
-
-      await data.logs.create(ctx.var.tenant_id, log);
+      await ctx.env.data.logs.create(ctx.var.tenant_id || "", log);
     }
   }
 }
@@ -59,8 +59,9 @@ async function invokeHooks(
   hooks: Hook[],
   data: any,
 ) {
-  hooks.sort(({ priority: a = 0 }, { priority: b = 0 }) => b - a);
-  for await (const hook of hooks) {
+  const enabledHooks = hooks.filter((hook) => hook.enabled);
+  enabledHooks.sort(({ priority: a = 0 }, { priority: b = 0 }) => b - a);
+  for await (const hook of enabledHooks) {
     if (hook.synchronous) {
       await invokeHook(ctx, hook, data);
     } else {
