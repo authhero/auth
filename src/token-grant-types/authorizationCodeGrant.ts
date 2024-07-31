@@ -1,10 +1,11 @@
 import { Env, Var } from "../types";
 import { getClient } from "../services/clients";
 import { HTTPException } from "hono/http-exception";
-import { generateAuthData } from "../helpers/generate-auth-response";
+import { generateAuthResponse } from "../helpers/generate-auth-response";
 import { Context } from "hono";
 import {
   AuthorizationCodeGrantTypeParams,
+  AuthorizationResponseMode,
   AuthorizationResponseType,
 } from "@authhero/adapter-interfaces";
 
@@ -14,6 +15,7 @@ export async function authorizeCodeGrant(
 ) {
   const client = await getClient(ctx.env, params.client_id);
   ctx.set("client_id", client.id);
+  ctx.set("tenant_id", client.tenant_id);
 
   // TODO: this does not set the used_at attribute
   const { user_id, authParams, used_at, expires_at } =
@@ -25,6 +27,7 @@ export async function authorizeCodeGrant(
 
   // Set the response_type to token id_token for the code grant flow
   authParams.response_type = AuthorizationResponseType.TOKEN_ID_TOKEN;
+  authParams.response_mode = AuthorizationResponseMode.FORM_POST;
 
   const user = await ctx.env.data.users.get(client.tenant_id, user_id);
   if (!user) {
@@ -44,13 +47,11 @@ export async function authorizeCodeGrant(
     throw new HTTPException(403, { message: "Invalid Secret" });
   }
 
-  const tokens = await generateAuthData({
+  return generateAuthResponse({
     ctx,
     authParams,
     user,
     client,
     authFlow: "code",
   });
-
-  return ctx.json(tokens);
 }
