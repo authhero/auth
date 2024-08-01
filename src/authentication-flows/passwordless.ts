@@ -17,7 +17,7 @@ import {
   AuthParams,
   Client,
   LogTypes,
-  UniversalLoginSession,
+  Login,
   User,
 } from "@authhero/adapter-interfaces";
 
@@ -108,8 +108,8 @@ export async function sendEmailVerificationEmail({
     username: user.email,
   };
 
-  const session: UniversalLoginSession = {
-    id: nanoid(),
+  const login: Login = {
+    login_id: nanoid(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     expires_at: new Date(
@@ -118,16 +118,16 @@ export async function sendEmailVerificationEmail({
     authParams,
   };
 
-  await env.data.universalLoginSessions.create(client.tenant_id, session);
+  await env.data.logins.create(client.tenant_id, login);
 
-  const state = session.id;
+  const state = login.login_id;
 
   const code_id = generateOTP();
 
   await env.data.codes.create(client.tenant_id, {
     code_id,
     code_type: "email_verification",
-    login_id: session.id,
+    login_id: login.login_id,
     expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
   });
 

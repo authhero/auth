@@ -3,14 +3,12 @@ import { SesamyPasswordLoginSelection } from "../../../src/utils/authCookies";
 import { getTestServer } from "../helpers/test-server";
 import { testClient } from "hono/testing";
 import cookie from "cookie";
-import { AuthorizationResponseType } from "@authhero/adapter-interfaces";
+import {
+  AuthorizationResponseType,
+  LoginInsert,
+} from "@authhero/adapter-interfaces";
 
-const SESSION_FIXTURE = {
-  id: "session-id",
-  client_id: "clientId",
-  tenant_id: "tenantId",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+const SESSION_FIXTURE: LoginInsert = {
   expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
   authParams: {
     client_id: "clientId",
@@ -27,10 +25,10 @@ test("after entering email should go to enter code step if no cookie set", async
   const oauthClient = testClient(oauthApp, env);
 
   // shortcut instead of visiting the /authorize endpoint
-  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+  const session = await env.data.logins.create("tenantId", SESSION_FIXTURE);
 
   const enterEmailResponse = await oauthClient.u["enter-email"].$post({
-    query: { state: "session-id" },
+    query: { state: session.login_id },
     form: {
       username: "test@example.com",
     },
@@ -46,11 +44,11 @@ test("after entering email should go to enter code step if code cookie is set", 
   const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
-  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+  const session = await env.data.logins.create("tenantId", SESSION_FIXTURE);
 
   const enterEmailResponse = await oauthClient.u["enter-email"].$post(
     {
-      query: { state: "session-id" },
+      query: { state: session.login_id },
       form: {
         username: "test@example.com",
       },
@@ -72,11 +70,11 @@ test("after entering email should go to enter password step if password cookie i
   const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
-  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+  const session = await env.data.logins.create("tenantId", SESSION_FIXTURE);
 
   const enterEmailResponse = await oauthClient.u["enter-email"].$post(
     {
-      query: { state: "session-id" },
+      query: { state: session.login_id },
       form: {
         username: "foo@example.com",
       },
@@ -99,11 +97,11 @@ test("after entering email should go to enter code step if password cookie is se
   const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
-  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+  const session = await env.data.logins.create("tenantId", SESSION_FIXTURE);
 
   const enterEmailResponse = await oauthClient.u["enter-email"].$post(
     {
-      query: { state: "session-id" },
+      query: { state: session.login_id },
       form: {
         username: "test@example.com",
       },
@@ -124,11 +122,11 @@ test("after entering email should go to enter code step if password cookie is se
   const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
-  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+  const session = await env.data.logins.create("tenantId", SESSION_FIXTURE);
 
   const enterEmailResponse = await oauthClient.u["enter-email"].$post(
     {
-      query: { state: "session-id" },
+      query: { state: session.login_id },
       form: {
         username: "test@example.com",
         // this is the override
@@ -151,10 +149,10 @@ test("should set cookie as code when visit enter code page", async () => {
   const { oauthApp, env } = await getTestServer();
   const oauthClient = testClient(oauthApp, env);
 
-  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+  const session = await env.data.logins.create("tenantId", SESSION_FIXTURE);
 
   const enterCodeForm = await oauthClient.u["enter-code"].$get({
-    query: { state: "session-id" },
+    query: { state: session.login_id },
   });
   expect(enterCodeForm.status).toBe(200);
 
@@ -169,11 +167,11 @@ test("should set cookie as password when visit password page", async () => {
   const oauthClient = testClient(oauthApp, env);
 
   // shortcut instead of visiting the /authorize endpoint
-  await env.data.universalLoginSessions.create("tenantId", SESSION_FIXTURE);
+  const session = await env.data.logins.create("tenantId", SESSION_FIXTURE);
 
   const enterPasswordForm = await oauthClient.u["enter-password"].$get({
     query: {
-      state: "session-id",
+      state: session.login_id,
     },
   });
   expect(enterPasswordForm.status).toBe(200);

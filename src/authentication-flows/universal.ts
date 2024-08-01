@@ -1,12 +1,11 @@
 import { Context } from "hono";
 import { Env, Var } from "../types";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../constants";
-import { nanoid } from "nanoid";
 import {
   AuthParams,
   Client,
   Session,
-  UniversalLoginSessionInsert,
+  LoginInsert,
 } from "@authhero/adapter-interfaces";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
 
@@ -45,24 +44,19 @@ export async function universalAuth({
     }
   }
 
-  const universalLoginSession: UniversalLoginSessionInsert = {
-    id: nanoid(),
+  const login = await ctx.env.data.logins.create(client.tenant_id, {
     expires_at: new Date(
       Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
     ).toISOString(),
     authParams,
-    auth0Client,
-  };
-
-  await ctx.env.data.universalLoginSessions.create(
-    client.tenant_id,
-    universalLoginSession,
-  );
+    // TODO: add this back once the schema is updated
+    // auth0Client,
+  });
 
   // If there is a sesion we redirect to the check-account page
   if (session) {
-    return ctx.redirect(`/u/check-account?state=${universalLoginSession.id}`);
+    return ctx.redirect(`/u/check-account?state=${login.login_id}`);
   }
 
-  return ctx.redirect(`/u/enter-email?state=${universalLoginSession.id}`);
+  return ctx.redirect(`/u/enter-email?state=${login.login_id}`);
 }

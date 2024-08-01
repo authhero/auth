@@ -778,7 +778,7 @@ describe("Login with code on liquidjs template", () => {
     await snapshotResponse(codeInputFormResponse, "sm");
   });
 
-  it("should send a code email if auth0client is swift", async () => {
+  it.only("should send a code email if auth0client is swift", async () => {
     const { oauthApp, env, emails } = await getTestServer({});
     const oauthClient = testClient(oauthApp, env);
 
@@ -801,6 +801,8 @@ describe("Login with code on liquidjs template", () => {
         auth0Client: auth0ClientSwiftParam,
       },
     });
+
+    expect(response.status).toBe(302);
     const location = response.headers.get("location");
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());

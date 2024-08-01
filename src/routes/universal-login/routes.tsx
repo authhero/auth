@@ -1,4 +1,3 @@
-// TODO - move this file to src/routes/oauth2/login.ts
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { Env, Var } from "../../types";
 import ResetPasswordPage from "../../components/ResetPasswordPage";
@@ -47,12 +46,7 @@ import {
 } from "../../authentication-flows/password";
 import { CustomException } from "../../models/CustomError";
 import { CODE_EXPIRATION_TIME } from "../../constants";
-import {
-  Client,
-  LogTypes,
-  UniversalLoginSession,
-  User,
-} from "@authhero/adapter-interfaces";
+import { Client, Login, LogTypes, User } from "@authhero/adapter-interfaces";
 import CheckEmailPage from "../../components/CheckEmailPage";
 import { getAuthCookie } from "../../services/cookies";
 import PreSignupPage from "../../components/PreSignUpPage";
@@ -67,7 +61,7 @@ async function initJSXRoute(
   state: string,
 ) {
   const { env } = ctx;
-  const session = await env.data.universalLoginSessions.get(state);
+  const session = await env.data.logins.get(ctx.var.tenant_id || "", state);
   if (!session) {
     throw new HTTPException(400, { message: "Session not found" });
   }
@@ -94,7 +88,7 @@ async function initJSXRoute(
 async function handleLogin(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
   user: User,
-  session: UniversalLoginSession,
+  session: Login,
   client: Client,
 ) {
   if (session.authParams.redirect_uri) {
@@ -528,7 +522,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ctx,
         client,
         session.authParams.username!,
-        session.id,
+        session.login_id,
       );
 
       return ctx.html(
@@ -662,11 +656,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
 
       // Add the username to the state
       session.authParams.username = params.username;
-      await env.data.universalLoginSessions.update(
-        client.tenant_id,
-        session.id,
-        session,
-      );
+      await env.data.logins.update(client.tenant_id, session.login_id, session);
 
       // we want to be able to override this with a value in the POST
       if (
@@ -845,7 +835,7 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         const authResponse = await generateAuthResponse({
           ctx,
           client,
-          sid: session.id,
+          sid: session.login_id,
           authParams: session.authParams,
           user,
         });

@@ -1,9 +1,5 @@
 import type { FC } from "hono/jsx";
-import {
-  Client,
-  UniversalLoginSession,
-  VendorSettings,
-} from "@authhero/adapter-interfaces";
+import { Client, Login, VendorSettings } from "@authhero/adapter-interfaces";
 import Layout from "./Layout";
 import i18next from "i18next";
 import cn from "classnames";
@@ -19,7 +15,7 @@ import VippsLogo from "./VippsLogo";
 type Props = {
   error?: string;
   vendorSettings: VendorSettings;
-  session: UniversalLoginSession;
+  session: Login;
   email?: string;
   client: Client;
 };

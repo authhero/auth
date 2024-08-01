@@ -1,6 +1,6 @@
 import cn from "classnames";
 import Button from "./Button";
-import { UniversalLoginSession } from "@authhero/adapter-interfaces";
+import { Login } from "@authhero/adapter-interfaces";
 
 type Props = {
   connection: "google-oauth2" | "apple" | "facebook" | "vipps";
@@ -8,7 +8,7 @@ type Props = {
   icon: any;
   text: string;
   canResize?: boolean;
-  session: UniversalLoginSession;
+  session: Login;
 };
 
 const SocialButton = ({
