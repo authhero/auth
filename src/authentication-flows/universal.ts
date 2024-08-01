@@ -49,8 +49,7 @@ export async function universalAuth({
       Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
     ).toISOString(),
     authParams,
-    // TODO: add this back once the schema is updated
-    // auth0Client,
+    auth0Client,
   });
 
   // If there is a sesion we redirect to the check-account page
