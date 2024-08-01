@@ -1,5 +1,4 @@
 import { HTTPException } from "hono/http-exception";
-import { nanoid } from "nanoid";
 import bcryptjs from "bcryptjs";
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import userIdGenerate from "../../utils/userIdGenerate";
@@ -11,11 +10,7 @@ import validatePassword from "../../utils/validatePassword";
 import { createLogMessage } from "../../utils/create-log-message";
 import { requestPasswordReset } from "../../authentication-flows/password";
 import { UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS } from "../../constants";
-import {
-  AuthParams,
-  LogTypes,
-  UniversalLoginSession,
-} from "@authhero/adapter-interfaces";
+import { AuthParams, LogTypes } from "@authhero/adapter-interfaces";
 
 export const dbConnectionRoutes = new OpenAPIHono<{
   Bindings: Env;
@@ -165,22 +160,14 @@ export const dbConnectionRoutes = new OpenAPIHono<{
         username: email,
       };
 
-      const session: UniversalLoginSession = {
-        id: nanoid(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+      const session = await ctx.env.data.logins.create(client.tenant_id, {
         expires_at: new Date(
           Date.now() + UNIVERSAL_AUTH_SESSION_EXPIRES_IN_SECONDS * 1000,
         ).toISOString(),
         authParams,
-      };
+      });
 
-      await ctx.env.data.universalLoginSessions.create(
-        client.tenant_id,
-        session,
-      );
-
-      await requestPasswordReset(ctx, client, email, session.id);
+      await requestPasswordReset(ctx, client, email, session.login_id);
 
       return ctx.html("We've just sent you an email to reset your password.");
     },

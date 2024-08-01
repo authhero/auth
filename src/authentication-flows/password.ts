@@ -58,22 +58,18 @@ export async function requestPasswordReset(
     });
   }
 
-  const loginSession = await ctx.env.data.universalLoginSessions.create(
-    client.tenant_id,
-    {
-      id: nanoid(),
-      expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
-      authParams: {
-        client_id: client.id,
-        username: email,
-      },
+  const loginSession = await ctx.env.data.logins.create(client.tenant_id, {
+    expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
+    authParams: {
+      client_id: client.id,
+      username: email,
     },
-  );
+  });
 
   const createdCode = await ctx.env.data.codes.create(client.tenant_id, {
     code_id: generateOTP(),
     code_type: "password_reset",
-    login_id: loginSession.id,
+    login_id: loginSession.login_id,
     expires_at: new Date(Date.now() + CODE_EXPIRATION_TIME).toISOString(),
   });
 

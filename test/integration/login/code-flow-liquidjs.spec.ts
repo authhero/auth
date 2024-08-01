@@ -801,6 +801,8 @@ describe("Login with code on liquidjs template", () => {
         auth0Client: auth0ClientSwiftParam,
       },
     });
+
+    expect(response.status).toBe(302);
     const location = response.headers.get("location");
     const stateParam = new URLSearchParams(location!.split("?")[1]);
     const query = Object.fromEntries(stateParam.entries());
