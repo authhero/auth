@@ -4,7 +4,7 @@ import { pemToBuffer } from "../utils/jwt";
 import { createJWT } from "oslo/jwt";
 import { TimeSpan } from "oslo";
 import { serializeAuthCookie } from "../services/cookies";
-import { applyTokenResponse } from "./apply-token-response-new";
+import { applyTokenResponse } from "./apply-token-response";
 import { nanoid } from "nanoid";
 import { createLogMessage } from "../utils/create-log-message";
 import { Context } from "hono";
@@ -12,6 +12,7 @@ import { waitUntil } from "../utils/wait-until";
 import { postUserLoginWebhook } from "../hooks/webhooks";
 import {
   AuthParams,
+  AuthorizationResponseMode,
   AuthorizationResponseType,
   Client,
   CodeResponse,
@@ -86,11 +87,11 @@ export async function generateTokens(params: GenerateAuthResponseParams) {
   const { ctx, client, authParams, user, sid, authFlow } = params;
   const { env } = ctx;
 
-  // Update the user's last login. Skip for client_credentials and refresh_tokens
   if (authFlow !== "refresh-token" && user) {
     // Invoke webhooks
     await postUserLoginWebhook(ctx, env.data)(client.tenant_id, user);
 
+    // Update the user's last login. Skip for client_credentials and refresh_tokens
     waitUntil(
       ctx,
       ctx.env.data.users.update(client.tenant_id, user.user_id, {
@@ -201,8 +202,6 @@ export async function generateAuthResponse(params: GenerateAuthResponseParams) {
   const tokens = await generateAuthData(params);
 
   const headers = new Headers();
-  headers.set("location", applyTokenResponse(tokens, authParams));
-
   if (user) {
     const sessionId =
       sid ||
@@ -210,6 +209,12 @@ export async function generateAuthResponse(params: GenerateAuthResponseParams) {
 
     headers.set("set-cookie", serializeAuthCookie(client.tenant_id, sessionId));
   }
+
+  if (authParams.response_mode === AuthorizationResponseMode.FORM_POST) {
+    return ctx.json(tokens, { headers });
+  }
+
+  headers.set("location", applyTokenResponse(tokens, authParams));
 
   // TODO: should we have different response for different response modes?
   return new Response("Redirecting", {

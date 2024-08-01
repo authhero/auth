@@ -1,4 +1,4 @@
-import { AuthParams, LogTypes } from "@authhero/adapter-interfaces";
+import { AuthParams } from "@authhero/adapter-interfaces";
 import { Env } from "../types";
 import userIdGenerate from "../utils/userIdGenerate";
 import { generateAuthResponse } from "../helpers/generate-auth-response";
@@ -6,10 +6,7 @@ import { HTTPException } from "hono/http-exception";
 import { Context } from "hono";
 import { Var } from "../types/Var";
 import { getPrimaryUserByEmailAndProvider } from "../utils/users";
-import { sendEmailVerificationEmail } from "./passwordless";
 import { getClient } from "../services/clients";
-import { createLogMessage } from "../utils/create-log-message";
-import { setSearchParams } from "../utils/url";
 
 function getProviderFromRealm(realm: string) {
   if (realm === "Username-Password-Authentication") {

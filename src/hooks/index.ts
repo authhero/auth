@@ -9,7 +9,7 @@ import { postUserRegistrationWebhook, preUserSignupWebhook } from "./webhooks";
 import { Context } from "hono";
 import { Env, Var } from "../types";
 import { HTTPException } from "hono/http-exception";
-import { createLogMessage } from "src/utils/create-log-message";
+import { createLogMessage } from "../utils/create-log-message";
 
 function createUserHooks(
   ctx: Context<{ Bindings: Env; Variables: Var }>,

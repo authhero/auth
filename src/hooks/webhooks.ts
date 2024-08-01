@@ -1,5 +1,4 @@
 import {
-  Client,
   DataAdapters,
   Hook,
   LogTypes,
@@ -58,8 +57,9 @@ async function invokeHooks(
   hooks: Hook[],
   data: any,
 ) {
-  hooks.sort(({ priority: a = 0 }, { priority: b = 0 }) => b - a);
-  for await (const hook of hooks) {
+  const enabledHooks = hooks.filter((hook) => hook.enabled);
+  enabledHooks.sort(({ priority: a = 0 }, { priority: b = 0 }) => b - a);
+  for await (const hook of enabledHooks) {
     if (hook.synchronous) {
       await invokeHook(ctx, hook, data);
     } else {

@@ -13,6 +13,8 @@ export async function clientCredentialsGrant(
   params: ClientCredentialsGrantTypeParams,
 ) {
   const client = await getClient(ctx.env, params.client_id);
+  ctx.set("client_id", client.id);
+  ctx.set("tenant_id", client.tenant_id);
 
   if (client.client_secret !== params.client_secret) {
     throw new HTTPException(403, { message: "Invalid secret" });
