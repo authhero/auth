@@ -778,7 +778,7 @@ describe("Login with code on liquidjs template", () => {
     await snapshotResponse(codeInputFormResponse, "sm");
   });
 
-  it.only("should send a code email if auth0client is swift", async () => {
+  it("should send a code email if auth0client is swift", async () => {
     const { oauthApp, env, emails } = await getTestServer({});
     const oauthClient = testClient(oauthApp, env);
 
