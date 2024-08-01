@@ -1,8 +1,15 @@
-import { DataAdapters, User } from "@authhero/adapter-interfaces";
+import {
+  Client,
+  DataAdapters,
+  LogTypes,
+  User,
+} from "@authhero/adapter-interfaces";
 import { linkUsersHook } from "./link-users";
-import { postUserRegistrationWebhook } from "./webhooks";
+import { postUserRegistrationWebhook, preUserSignupWebhook } from "./webhooks";
 import { Context } from "hono";
 import { Env, Var } from "../types";
+import { HTTPException } from "hono/http-exception";
+import { createLogMessage } from "../utils/create-log-message";
 
 function createUserHooks(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -16,6 +23,28 @@ function createUserHooks(
 
     return result;
   };
+}
+
+export async function preUserSignupHook(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  client: Client,
+  data: DataAdapters,
+  email: string,
+) {
+  // Check the disabled flag on the client
+  if (client.disable_sign_ups) {
+    const log = createLogMessage(ctx, {
+      type: LogTypes.FAILED_SIGNUP,
+      description: "Public signup is disabled",
+    });
+    await ctx.env.data.logs.create(client.tenant_id, log);
+
+    throw new HTTPException(400, {
+      message: "Signups are disabled for this client",
+    });
+  }
+
+  await preUserSignupWebhook(ctx, data)(ctx.var.tenant_id || "", email);
 }
 
 export function addDataHooks(

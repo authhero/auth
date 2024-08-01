@@ -60,6 +60,7 @@ import PreSignupComfirmationPage from "../../components/PreSignUpConfirmationPag
 import bcryptjs from "bcryptjs";
 import UnverifiedEmailPage from "../../components/UnverifiedEmailPage";
 import ForgotPasswordSentPage from "../../components/ForgotPasswordSentPage";
+import { preUserSignupHook } from "../../hooks";
 
 async function initJSXRoute(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -635,9 +636,10 @@ export const loginRoutes = new OpenAPIHono<{ Bindings: Env; Variables: Var }>()
         ctx.set("userId", user.user_id);
       }
 
-      if (client.disable_sign_ups) {
-        if (!user) {
-          // Auth0 doesn't set this, it's nested inside details
+      if (!user) {
+        try {
+          await preUserSignupHook(ctx, client, ctx.env.data, params.username);
+        } catch (err) {
           const log = createLogMessage(ctx, {
             type: LogTypes.FAILED_SIGNUP,
             description: "Public signup is disabled",

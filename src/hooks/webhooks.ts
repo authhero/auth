@@ -27,7 +27,7 @@ async function invokeHook(
     const log = createLogMessage(ctx, {
       // TODO: Add log time for failed api operation
       type: LogTypes.SUCCESS_API_OPERATION,
-      description: `Failed webhook invocation: ${hook.url}`,
+      description: `Failed webhook invocation fror ${data.trigger_id}: ${hook.url}`,
     });
 
     await data.logs.create(ctx.var.tenant_id, log);
@@ -35,21 +35,19 @@ async function invokeHook(
 
   if (response.headers.get("content-type")?.startsWith("application/json")) {
     const body = await response.json();
-    try {
-      const hookResponse = hookResponseSchema.parse(body);
+    const hookResponse = hookResponseSchema.parse(body);
 
-      if (hookResponse.status === "fail") {
-        throw new HTTPException(400, {
-          message: hookResponse.message,
-        });
-      }
-    } catch (error: any) {
+    if (hookResponse.status === "fail") {
       const log = createLogMessage(ctx, {
-        // TODO: Change this to a failed hook type
-        type: LogTypes.FAILED_LOGIN,
-        description: `Invalid webhook response: ${hook.url}, ${error.message}`,
+        type: LogTypes.SUCCESS_API_OPERATION,
+        description: `Failed by webhook: ${hook.url}, ${hookResponse.message}`,
       });
-      await ctx.env.data.logs.create(ctx.var.tenant_id || "", log);
+
+      await data.logs.create(ctx.var.tenant_id, log);
+
+      throw new HTTPException(400, {
+        message: hookResponse.message,
+      });
     }
   }
 }
@@ -90,6 +88,26 @@ export function postUserRegistrationWebhook(
     });
 
     return user;
+  };
+}
+
+export function preUserSignupWebhook(
+  ctx: Context<{ Bindings: Env; Variables: Var }>,
+  data: DataAdapters,
+) {
+  return async (tenant_id: string, email: string): Promise<void> => {
+    const { hooks } = await data.hooks.list(tenant_id, {
+      q: "trigger_id:pre-user-signup",
+      page: 0,
+      per_page: 100,
+      include_totals: false,
+    });
+
+    await invokeHooks(ctx, hooks, {
+      tenant_id,
+      email,
+      trigger_id: "pre-user-signup",
+    });
   };
 }
 
