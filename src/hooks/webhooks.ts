@@ -25,8 +25,7 @@ async function invokeHook(
 
   if (!response.ok) {
     const log = createLogMessage(ctx, {
-      // TODO: Add log time for failed api operation
-      type: LogTypes.SUCCESS_API_OPERATION,
+      type: LogTypes.FAILED_HOOK,
       description: `Failed webhook invocation fror ${data.trigger_id}: ${hook.url}`,
     });
 
