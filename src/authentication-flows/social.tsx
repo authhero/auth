@@ -20,6 +20,7 @@ import { fetchVendorSettings } from "../utils/fetchVendorSettings";
 import { createLogMessage } from "../utils/create-log-message";
 import { setSearchParams } from "../utils/url";
 import i18next from "i18next";
+import { preUserSignupHook } from "../hooks";
 
 export async function socialAuth(
   ctx: Context<{ Bindings: Env; Variables: Var }>,
@@ -195,15 +196,9 @@ export async function socialAuthCallback({
   if (user) {
     ctx.set("userId", user.user_id);
   } else {
-    const callerIsLogin2 = state.authParams.redirect_uri.includes("login2");
-
-    if (client.disable_sign_ups && !callerIsLogin2) {
-      const log = createLogMessage(ctx, {
-        type: LogTypes.FAILED_SIGNUP,
-        description: "Public signup is disabled",
-      });
-      await ctx.env.data.logs.create(client.tenant_id, log);
-
+    try {
+      await preUserSignupHook(ctx, client, ctx.env.data, email);
+    } catch (err) {
       const vendorSettings = await fetchVendorSettings(
         env,
         client.id,
