@@ -10,7 +10,7 @@
     "format": "prettier --write '**/*.{ts,css,json,md}'",
     "format:ci-cd": "prettier --check '**/*.{ts,css,json,md}'",
     "lint": "eslint",
-    "test": "vitest --pool=forks",
+    "test": "vitest run --pool=forks",
     "test:snapshots": "TEST_SNAPSHOTS=true vitest --pool=forks",
     "test:update-snapshots": "TEST_SNAPSHOTS=true vitest --pool=forks -u",
     "semantic-release": "semantic-release",

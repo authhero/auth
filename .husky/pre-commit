@@ -1,1 +1,2 @@
+yarn type-check
 yarn test
