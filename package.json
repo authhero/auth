@@ -14,6 +14,7 @@
     "test:snapshots": "TEST_SNAPSHOTS=true vitest --pool=forks",
     "test:update-snapshots": "TEST_SNAPSHOTS=true vitest --pool=forks -u",
     "semantic-release": "semantic-release",
+    "prepare": "husky install",
     "type-check": "tsc",
     "pull-translations": "i18nexus pull -k U5P1_tq3Teu7FZx4OrfI9w --path ./src/localesLogin2 && prettier --write ./src/localesLogin2/**/*.json && yarn sort-translations",
     "knip": "knip",
